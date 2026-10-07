@@ -1,0 +1,6 @@
+{
+  "mcpServers": {
+    "kiwi": { "type": "http", "url": "https://mcp.kiwi.com" },
+    "frankfurter": { "type": "http", "url": "https://mcp.frankfurter.dev/" }
+  }
+}

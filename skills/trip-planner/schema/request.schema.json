@@ -1,0 +1,12 @@
+{
+  "title": "trip-planner request",
+  "description": "What the system sends each turn. Plain text input is read as {\"kind\": \"message\", \"text\": <input>}.",
+  "type": "object",
+  "required": ["kind"],
+  "properties": {
+    "kind": { "enum": ["message"] },
+    "text": { "type": "string", "description": "The user's message." },
+    "profile": { "type": "object", "description": "This user's stored preferences: everything earlier replies put in profile_updates." },
+    "now": { "type": "string", "description": "Current time, ISO 8601 with offset." }
+  }
+}

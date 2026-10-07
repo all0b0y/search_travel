@@ -1,0 +1,21 @@
+{
+  "buffers_min": {
+    "before_flight_international": 180,
+    "before_flight_domestic": 120,
+    "before_train": 30,
+    "after_flight": 45,
+    "after_flight_with_baggage": 75
+  },
+  "taxi_time_factor": 1.2,
+  "risk_slack_min": 60,
+  "reminders": {
+    "taxi": { "lead_min": 10, "text": "Пора вызывать такси: {from} → {to}, выезд в {time}" },
+    "transfer": { "lead_min": 30, "text": "Трансфер {from} → {to} в {time}" },
+    "flight": { "lead_min": 60, "text": "Рейс {carrier} {from} → {to}, вылет в {time}" },
+    "train": { "lead_min": 20, "text": "Поезд {carrier} {from} → {to}, отправление в {time}" },
+    "stay": { "lead_min": 60, "text": "Заселение в {to} с {time}" }
+  },
+  "affiliate": {
+    "booking.com": { "param": "aid", "value": "" }
+  }
+}

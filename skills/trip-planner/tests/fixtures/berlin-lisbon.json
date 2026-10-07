@@ -1,0 +1,61 @@
+{
+  "_fixture": "Invented prices and times for tests; not real offers.",
+  "type": "itinerary",
+  "trip_id": "2026-11-12-lisbon",
+  "message": "Черновик",
+  "brief": {
+    "origin": "Berlin, Kreuzberg",
+    "destination": "Lisbon",
+    "depart": { "from": "2026-11-12", "to": "2026-11-13" },
+    "return": { "from": "2026-11-15", "to": "2026-11-15" },
+    "travellers": { "adults": 2 },
+    "budget_rub": 150000,
+    "value_of_hour_rub": 1500,
+    "constraints": []
+  },
+  "rates": { "source": "CBR", "date": "2026-11-01", "rub_per_unit": { "EUR": 95.0 } },
+  "variants": [
+    {
+      "id": "v-cheap",
+      "label": "cheapest",
+      "tradeoff": "Ранние вылеты и отель попроще",
+      "steps": [
+        { "id": "s1", "type": "taxi", "from": "Berlin, Kreuzberg", "to": "BER", "start": "2026-11-12T05:10:00+01:00", "end": "2026-11-12T05:50:00+01:00", "duration_estimate_min": 30, "price": { "amount": 35, "currency": "EUR", "estimate": true, "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://m.uber.com/ul/?action=setPickup", "status": "planned" },
+        { "id": "s2", "type": "flight", "from": "BER", "to": "LIS", "start": "2026-11-12T09:00:00+01:00", "end": "2026-11-12T11:05:00+00:00", "carrier": "easyJet", "international": true, "checked_baggage": false, "price": { "amount": 180, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.kiwi.com/example-out", "status": "planned" },
+        { "id": "s3", "type": "transfer", "from": "LIS", "to": "Hotel Alfama Lisboa", "start": "2026-11-12T11:55:00+00:00", "end": "2026-11-12T12:25:00+00:00", "duration_estimate_min": 25, "price": { "amount": 30, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.welcomepickups.com/example", "status": "planned" },
+        { "id": "s4", "type": "stay", "from": "Hotel Alfama Lisboa", "to": "Hotel Alfama Lisboa", "start": "2026-11-12T15:00:00+00:00", "end": "2026-11-15T11:00:00+00:00", "price": { "amount": 360, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00", "note": "3 ночи, городской налог включён" }, "link": "https://www.booking.com/hotel/pt/example.html", "status": "planned" },
+        { "id": "s5", "type": "transfer", "from": "Hotel Alfama Lisboa", "to": "LIS", "start": "2026-11-15T13:30:00+00:00", "end": "2026-11-15T14:00:00+00:00", "duration_estimate_min": 25, "price": { "amount": 30, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.welcomepickups.com/example", "status": "planned" },
+        { "id": "s6", "type": "flight", "from": "LIS", "to": "BER", "start": "2026-11-15T17:00:00+00:00", "end": "2026-11-15T21:35:00+01:00", "carrier": "easyJet", "international": true, "checked_baggage": false, "price": { "amount": 170, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.kiwi.com/example-back", "status": "planned" },
+        { "id": "s7", "type": "taxi", "from": "BER", "to": "Berlin, Kreuzberg", "start": "2026-11-15T22:20:00+01:00", "end": "2026-11-15T23:00:00+01:00", "duration_estimate_min": 30, "price": { "amount": 38, "currency": "EUR", "estimate": true, "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://m.uber.com/ul/?action=setPickup", "status": "planned" }
+      ]
+    },
+    {
+      "id": "v-fast",
+      "label": "fastest",
+      "tradeoff": "Прямые рейсы TAP, отель в центре",
+      "steps": [
+        { "id": "f1", "type": "taxi", "from": "Berlin, Kreuzberg", "to": "BER", "start": "2026-11-12T06:30:00+01:00", "end": "2026-11-12T07:00:00+01:00", "duration_estimate_min": 25, "price": { "amount": 35, "currency": "EUR", "estimate": true, "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://m.uber.com/ul/?action=setPickup", "status": "planned" },
+        { "id": "f2", "type": "flight", "from": "BER", "to": "LIS", "start": "2026-11-12T10:00:00+01:00", "end": "2026-11-12T11:55:00+00:00", "carrier": "TAP Air Portugal", "international": true, "checked_baggage": false, "price": { "amount": 290, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.kiwi.com/example-out-fast", "status": "planned" },
+        { "id": "f3", "type": "transfer", "from": "LIS", "to": "Hotel Baixa Lisboa", "start": "2026-11-12T12:40:00+00:00", "end": "2026-11-12T13:10:00+00:00", "duration_estimate_min": 25, "price": { "amount": 30, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.welcomepickups.com/example", "status": "planned" },
+        { "id": "f4", "type": "stay", "from": "Hotel Baixa Lisboa", "to": "Hotel Baixa Lisboa", "start": "2026-11-12T14:00:00+00:00", "end": "2026-11-15T11:00:00+00:00", "price": { "amount": 420, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.booking.com/hotel/pt/example-baixa.html", "status": "planned" },
+        { "id": "f5", "type": "transfer", "from": "Hotel Baixa Lisboa", "to": "LIS", "start": "2026-11-15T14:30:00+00:00", "end": "2026-11-15T15:00:00+00:00", "duration_estimate_min": 25, "price": { "amount": 30, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.welcomepickups.com/example", "status": "planned" },
+        { "id": "f6", "type": "flight", "from": "LIS", "to": "BER", "start": "2026-11-15T18:00:00+00:00", "end": "2026-11-15T22:20:00+01:00", "carrier": "TAP Air Portugal", "international": true, "checked_baggage": false, "price": { "amount": 280, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.kiwi.com/example-back-fast", "status": "planned" },
+        { "id": "f7", "type": "taxi", "from": "BER", "to": "Berlin, Kreuzberg", "start": "2026-11-15T23:05:00+01:00", "end": "2026-11-15T23:35:00+01:00", "duration_estimate_min": 25, "price": { "amount": 38, "currency": "EUR", "estimate": true, "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://m.uber.com/ul/?action=setPickup", "status": "planned" }
+      ]
+    },
+    {
+      "id": "v-comfort",
+      "label": "comfort",
+      "tradeoff": "Багаж включён, бутик-отель в Алфаме",
+      "steps": [
+        { "id": "c1", "type": "taxi", "from": "Berlin, Kreuzberg", "to": "BER", "start": "2026-11-12T05:10:00+01:00", "end": "2026-11-12T05:50:00+01:00", "duration_estimate_min": 30, "price": { "amount": 40, "currency": "EUR", "estimate": true, "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://m.uber.com/ul/?action=setPickup", "status": "planned" },
+        { "id": "c2", "type": "flight", "from": "BER", "to": "LIS", "start": "2026-11-12T09:00:00+01:00", "end": "2026-11-12T11:05:00+00:00", "carrier": "TAP Air Portugal", "international": true, "checked_baggage": true, "price": { "amount": 340, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00", "note": "багаж 23 кг включён" }, "link": "https://www.kiwi.com/example-out-comfort", "status": "planned" },
+        { "id": "c3", "type": "transfer", "from": "LIS", "to": "Memmo Alfama", "start": "2026-11-12T12:20:00+00:00", "end": "2026-11-12T12:50:00+00:00", "duration_estimate_min": 25, "price": { "amount": 45, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.welcomepickups.com/example", "status": "planned" },
+        { "id": "c4", "type": "stay", "from": "Memmo Alfama", "to": "Memmo Alfama", "start": "2026-11-12T15:00:00+00:00", "end": "2026-11-15T12:00:00+00:00", "price": { "amount": 690, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.booking.com/hotel/pt/example-memmo.html", "status": "planned" },
+        { "id": "c5", "type": "transfer", "from": "Memmo Alfama", "to": "LIS", "start": "2026-11-15T13:30:00+00:00", "end": "2026-11-15T14:00:00+00:00", "duration_estimate_min": 25, "price": { "amount": 45, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://www.welcomepickups.com/example", "status": "planned" },
+        { "id": "c6", "type": "flight", "from": "LIS", "to": "BER", "start": "2026-11-15T17:00:00+00:00", "end": "2026-11-15T21:35:00+01:00", "carrier": "TAP Air Portugal", "international": true, "checked_baggage": true, "price": { "amount": 330, "currency": "EUR", "checked_at": "2026-11-01T10:00:00+01:00", "note": "багаж 23 кг включён" }, "link": "https://www.kiwi.com/example-back-comfort", "status": "planned" },
+        { "id": "c7", "type": "taxi", "from": "BER", "to": "Berlin, Kreuzberg", "start": "2026-11-15T22:50:00+01:00", "end": "2026-11-15T23:30:00+01:00", "duration_estimate_min": 30, "price": { "amount": 40, "currency": "EUR", "estimate": true, "checked_at": "2026-11-01T10:00:00+01:00" }, "link": "https://m.uber.com/ul/?action=setPickup", "status": "planned" }
+      ]
+    }
+  ]
+}

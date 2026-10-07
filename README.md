@@ -1,10 +1,11 @@
 # search_travel
 skill for discovery and booking trip
 
-The skill lives in [`skills/search-travel/SKILL.md`](skills/search-travel/SKILL.md). Install it:
+Ядро — скилл [`skills/trip-planner`](skills/trip-planner/SKILL.md) для Claude Code: планирует поездку от двери до двери и отвечает JSON для системы. План и этапы: [`SYSTEM_PLAN.md`](SYSTEM_PLAN.md).
 
 ```sh
-npx skills add https://github.com/all0b0y/search_travel --skill search-travel
+npx skills add https://github.com/all0b0y/search_travel --skill trip-planner
+python3 -m unittest discover -s skills/trip-planner/tests
 ```
 
-Skills used to work on this repo are installed in `.claude/skills/` and pinned in `skills-lock.json` (`npx skills experimental_install` restores them).
+Скиллы для работы над репозиторием лежат в `.claude/skills/` и закреплены в `skills-lock.json` (`npx skills experimental_install` восстанавливает их).
