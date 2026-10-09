@@ -8,6 +8,8 @@
   },
   "taxi_time_factor": 1.2,
   "risk_slack_min": 60,
+  "late_checkin": ["22:00", "05:00"],
+  "meeting_window_min": 60,
   "reminders": {
     "taxi": { "lead_min": 10, "text": "Пора вызывать такси: {from} → {to}, выезд в {time}" },
     "transfer": { "lead_min": 30, "text": "Трансфер {from} → {to} в {time}" },

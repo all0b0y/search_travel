@@ -2,161 +2,507 @@
   "title": "trip-planner response",
   "description": "The single JSON object trip-planner returns every turn. Strings the user reads are Russian. Times are ISO 8601 with the local offset of the place.",
   "type": "object",
-  "required": ["type", "message"],
+  "required": [
+    "type",
+    "message"
+  ],
   "properties": {
     "type": {
-      "enum": ["questions", "options", "itinerary", "error"],
-      "description": "questions: the brief has open fields, waiting for answers. options: destinations to pick from (discovery). itinerary: finished variants. error: cannot continue, message says why."
+      "enum": [
+        "questions",
+        "options",
+        "itinerary",
+        "update",
+        "error"
+      ],
+      "description": "questions: the brief has open fields, waiting for answers. options: destinations to pick from (discovery). itinerary: finished variants. update: the trip in progress after an event, with changes. error: cannot continue, message says why."
     },
     "trip_id": {
       "type": "string",
       "description": "<departure date>-<destination slug>, e.g. 2026-11-12-lisbon. Stable across the turns of one trip."
     },
-    "message": { "type": "string", "description": "Text shown to the user." },
-    "questions": { "type": "array", "items": { "$ref": "#/$defs/question" } },
-    "options": { "type": "array", "items": { "$ref": "#/$defs/destination" } },
-    "brief": { "$ref": "#/$defs/brief" },
-    "rates": { "$ref": "#/$defs/rates" },
-    "variants": { "type": "array", "minItems": 2, "maxItems": 3, "items": { "$ref": "#/$defs/variant" } },
-    "recommended_variant": { "type": "string", "description": "id of the variant recommended for this user." },
+    "message": {
+      "type": "string",
+      "description": "Text shown to the user."
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/question"
+      }
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/destination"
+      }
+    },
+    "brief": {
+      "$ref": "#/$defs/brief"
+    },
+    "rates": {
+      "$ref": "#/$defs/rates"
+    },
+    "variants": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/variant"
+      }
+    },
+    "recommended_variant": {
+      "type": "string",
+      "description": "id of the variant recommended for this user."
+    },
+    "chosen_variant": {
+      "type": "string",
+      "description": "id of the variant the user travels on; set by the system once they choose."
+    },
+    "changes": {
+      "type": "array",
+      "description": "update: what the event changed in the chosen variant.",
+      "items": {
+        "type": "object",
+        "required": [
+          "step",
+          "change"
+        ],
+        "properties": {
+          "step": {
+            "type": "string"
+          },
+          "change": {
+            "enum": [
+              "done",
+              "delayed",
+              "shifted",
+              "plan_b",
+              "missed",
+              "late_checkin",
+              "cancelled",
+              "replaced"
+            ],
+            "description": "missed and cancelled mean the step still needs a replacement; replaced means you found one."
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "profile_updates": {
       "type": "object",
       "description": "Preferences learned this turn; the system merges them into the stored profile. Preferences only (travel class, seats, stay type, budget habits, value_of_hour_rub, diet); passport, card and exact address stay in the brief of the trip that needs them."
     },
     "unmet_checks": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "Judge checks still failing after 2 rework rounds; empty when the itinerary passed."
     },
     "files": {
       "type": "object",
-      "description": "Filled by finalize: paths of the written itinerary and of one .ics calendar per variant id.",
+      "description": "Filled by finalize: paths of the written itinerary, the .ics calendars and the shareable HTML pages, keyed by variant id (variant-party for a group).",
       "properties": {
-        "itinerary": { "type": "string" },
-        "calendars": { "type": "object", "additionalProperties": { "type": "string" } }
+        "itinerary": {
+          "type": "string"
+        },
+        "calendars": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "date_shift": {
+      "type": "object",
+      "description": "Flexible dates: the cheapest shift found inside brief.flexible_days.",
+      "required": [
+        "days",
+        "saves_rub"
+      ],
+      "properties": {
+        "days": {
+          "type": "integer",
+          "description": "Negative: earlier, positive: later."
+        },
+        "saves_rub": {
+          "type": "number"
+        }
       }
     }
   },
   "$defs": {
     "question": {
       "type": "object",
-      "required": ["id", "text"],
+      "required": [
+        "id",
+        "text"
+      ],
       "properties": {
-        "id": { "type": "string", "description": "Brief field this question settles, e.g. budget_rub." },
-        "text": { "type": "string" },
-        "choices": { "type": "array", "items": { "type": "string" } },
-        "recommended": { "type": "string", "description": "Your recommended answer." }
+        "id": {
+          "type": "string",
+          "description": "Brief field this question settles, e.g. budget_rub."
+        },
+        "text": {
+          "type": "string"
+        },
+        "choices": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recommended": {
+          "type": "string",
+          "description": "Your recommended answer."
+        }
       }
     },
     "destination": {
       "type": "object",
-      "required": ["id", "title", "why", "season", "est_total_rub", "entry"],
+      "required": [
+        "id",
+        "title",
+        "why",
+        "season",
+        "est_total_rub",
+        "entry"
+      ],
       "properties": {
-        "id": { "type": "string" },
-        "title": { "type": "string" },
-        "why": { "type": "string", "description": "Why it fits this brief." },
-        "season": { "type": "string", "description": "Weather and season on the travel dates." },
-        "est_total_rub": { "type": "number", "description": "Rough door-to-door total for all travellers." },
-        "entry": { "type": "string", "description": "Entry rules for the travellers' passports, including transit." }
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "why": {
+          "type": "string",
+          "description": "Why it fits this brief."
+        },
+        "season": {
+          "type": "string",
+          "description": "Weather and season on the travel dates."
+        },
+        "est_total_rub": {
+          "type": "number",
+          "description": "Rough door-to-door total for all travellers."
+        },
+        "entry": {
+          "type": "string",
+          "description": "Entry rules for the travellers' passports, including transit."
+        }
       }
     },
     "brief": {
       "type": "object",
-      "required": ["origin", "travellers", "budget_rub"],
+      "required": [
+        "travellers",
+        "budget_rub"
+      ],
       "properties": {
-        "origin": { "type": "string", "description": "Where the trip starts and ends: the exact address when the user gave one for this trip, otherwise the home area." },
-        "destination": { "type": "string" },
-        "depart": { "$ref": "#/$defs/window" },
-        "return": { "$ref": "#/$defs/window" },
+        "origin": {
+          "type": "string",
+          "description": "Where the trip starts and ends: the exact address when the user gave one for this trip, otherwise the home area. A group trip sets parties instead."
+        },
+        "destination": {
+          "type": "string"
+        },
+        "depart": {
+          "$ref": "#/$defs/window"
+        },
+        "return": {
+          "$ref": "#/$defs/window"
+        },
         "travellers": {
+          "$ref": "#/$defs/travellers"
+        },
+        "budget_rub": {
+          "type": "number",
+          "description": "Door-to-door total for all travellers."
+        },
+        "value_of_hour_rub": {
+          "type": "number",
+          "description": "What one hour of the user's travel time is worth, in rubles; drives effective_rub."
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Hard constraints: direct flights only, pets, accessibility, visa limits."
+        },
+        "buffers_override": {
           "type": "object",
-          "required": ["adults"],
-          "properties": {
-            "adults": { "type": "integer", "minimum": 1 },
-            "children_ages": { "type": "array", "items": { "type": "integer" } }
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Per-user override of rules.json buffers_min, same keys."
+        },
+        "parties": {
+          "type": "array",
+          "minItems": 2,
+          "description": "Group trip: parties leaving from different places to meet at one stay.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "origin",
+              "travellers"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "origin": {
+                "type": "string",
+                "description": "Like brief.origin, for this party."
+              },
+              "travellers": {
+                "$ref": "#/$defs/travellers"
+              }
+            }
           }
         },
-        "budget_rub": { "type": "number", "description": "Door-to-door total for all travellers." },
-        "value_of_hour_rub": { "type": "number", "description": "What one hour of the user's travel time is worth, in rubles; drives effective_rub." },
-        "constraints": { "type": "array", "items": { "type": "string" }, "description": "Hard constraints: direct flights only, pets, accessibility, visa limits." },
-        "buffers_override": { "type": "object", "additionalProperties": { "type": "number" }, "description": "Per-user override of rules.json buffers_min, same keys." }
+        "flexible_days": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many days the user can shift departure and return either way; 0 or absent means fixed dates."
+        }
       }
     },
     "window": {
       "type": "object",
-      "required": ["from", "to"],
+      "required": [
+        "from",
+        "to"
+      ],
       "description": "Inclusive date window, YYYY-MM-DD; from == to for a fixed date.",
-      "properties": { "from": { "type": "string" }, "to": { "type": "string" } }
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      }
     },
     "rates": {
       "type": "object",
-      "required": ["source", "date", "rub_per_unit"],
+      "required": [
+        "source",
+        "date",
+        "rub_per_unit"
+      ],
       "properties": {
-        "source": { "type": "string", "description": "CBR for the Central Bank of Russia rate." },
-        "date": { "type": "string" },
-        "rub_per_unit": { "type": "object", "additionalProperties": { "type": "number" }, "description": "Rubles per 1 unit of each currency (CBR rate divided by Nominal), keyed by ISO 4217 code." }
+        "source": {
+          "type": "string",
+          "description": "CBR for the Central Bank of Russia rate."
+        },
+        "date": {
+          "type": "string"
+        },
+        "rub_per_unit": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Rubles per 1 unit of each currency (CBR rate divided by Nominal), keyed by ISO 4217 code."
+        }
       }
     },
     "price": {
       "type": "object",
-      "required": ["amount", "currency", "checked_at"],
+      "required": [
+        "amount",
+        "currency",
+        "checked_at"
+      ],
       "properties": {
-        "amount": { "type": "number", "description": "Total for all travellers, taxes and fees included." },
-        "currency": { "type": "string", "description": "ISO 4217 code of the price as the seller charges it." },
-        "estimate": { "type": "boolean", "description": "true for taxi fares and other estimates; shown as ≈." },
-        "checked_at": { "type": "string", "description": "When the price was read." },
-        "note": { "type": "string", "description": "What the amount includes or leaves out (bag fee, city tax)." },
-        "rub": { "type": "number", "description": "Filled by finalize." }
+        "amount": {
+          "type": "number",
+          "description": "Total for all travellers, taxes and fees included."
+        },
+        "currency": {
+          "type": "string",
+          "description": "ISO 4217 code of the price as the seller charges it."
+        },
+        "estimate": {
+          "type": "boolean",
+          "description": "true for taxi fares and other estimates; shown as ≈."
+        },
+        "checked_at": {
+          "type": "string",
+          "description": "When the price was read."
+        },
+        "note": {
+          "type": "string",
+          "description": "What the amount includes or leaves out (bag fee, city tax)."
+        },
+        "rub": {
+          "type": "number",
+          "description": "Filled by finalize."
+        }
       }
     },
     "step": {
       "type": "object",
-      "required": ["id", "type", "from", "to", "start", "end", "price", "link", "status"],
+      "required": [
+        "id",
+        "type",
+        "from",
+        "to",
+        "start",
+        "end",
+        "price",
+        "link",
+        "status"
+      ],
       "properties": {
-        "id": { "type": "string" },
-        "type": { "enum": ["taxi", "flight", "train", "transfer", "stay"] },
-        "from": { "type": "string", "description": "Airports as IATA codes (BER), stations and stays by one name. Spelled exactly like the previous step's to: finalize checks the chain by string equality. A stay has from == to." },
-        "to": { "type": "string" },
-        "start": { "type": "string", "description": "Departure, pickup, or check-in for a stay." },
-        "end": { "type": "string", "description": "Arrival, drop-off, or check-out for a stay." },
-        "carrier": { "type": "string" },
-        "international": { "type": "boolean", "description": "Flights: crosses a border." },
-        "checked_baggage": { "type": "boolean", "description": "Flights: a bag is checked in." },
-        "duration_estimate_min": { "type": "integer", "description": "Taxi and transfer: routing estimate before the safety margin." },
-        "price": { "$ref": "#/$defs/price" },
-        "link": { "type": "string", "description": "Where the user books this step; for a taxi, the one-click ride link." },
-        "status": { "enum": ["planned", "booked", "done", "changed"] },
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "taxi",
+            "flight",
+            "train",
+            "transfer",
+            "stay"
+          ]
+        },
+        "from": {
+          "type": "string",
+          "description": "Airports as IATA codes (BER), stations and stays by one name. Spelled exactly like the previous step's to: finalize checks the chain by string equality. A stay has from == to."
+        },
+        "to": {
+          "type": "string"
+        },
+        "start": {
+          "type": "string",
+          "description": "Departure, pickup, or check-in for a stay."
+        },
+        "end": {
+          "type": "string",
+          "description": "Arrival, drop-off, or check-out for a stay."
+        },
+        "carrier": {
+          "type": "string"
+        },
+        "international": {
+          "type": "boolean",
+          "description": "Flights: crosses a border."
+        },
+        "checked_baggage": {
+          "type": "boolean",
+          "description": "Flights: a bag is checked in."
+        },
+        "duration_estimate_min": {
+          "type": "integer",
+          "description": "Taxi and transfer: routing estimate before the safety margin."
+        },
+        "price": {
+          "$ref": "#/$defs/price"
+        },
+        "link": {
+          "type": "string",
+          "description": "Where the user books this step; for a taxi, the one-click ride link."
+        },
+        "status": {
+          "enum": [
+            "planned",
+            "booked",
+            "done",
+            "changed"
+          ]
+        },
         "risk": {
           "type": "object",
           "description": "Filled by finalize for a flight or train reached from another flight or train.",
-          "properties": { "slack_min": { "type": "number" }, "risky": { "type": "boolean" } }
+          "properties": {
+            "slack_min": {
+              "type": "number"
+            },
+            "risky": {
+              "type": "boolean"
+            }
+          }
         },
-        "plan_b": { "$ref": "#/$defs/plan_b" }
+        "plan_b": {
+          "$ref": "#/$defs/plan_b"
+        }
       }
     },
     "plan_b": {
       "type": "object",
-      "required": ["trigger", "step"],
+      "required": [
+        "trigger",
+        "step"
+      ],
       "properties": {
-        "trigger": { "type": "string", "description": "When to switch, e.g. «рейс задержан больше чем на 40 мин»." },
-        "step": { "$ref": "#/$defs/step" }
+        "trigger": {
+          "type": "string",
+          "description": "When to switch, e.g. «рейс задержан больше чем на 40 мин»."
+        },
+        "step": {
+          "$ref": "#/$defs/step"
+        }
       }
     },
     "variant": {
       "type": "object",
-      "required": ["id", "label", "steps", "tradeoff"],
+      "required": [
+        "id",
+        "label",
+        "tradeoff"
+      ],
       "properties": {
-        "id": { "type": "string" },
-        "label": { "enum": ["cheapest", "fastest", "comfort"] },
-        "steps": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/step" }, "description": "Door to door in time order: origin → stay → origin." },
-        "tradeoff": { "type": "string", "description": "What this variant gives up against the others, in rubles and hours." },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "enum": [
+            "cheapest",
+            "fastest",
+            "comfort"
+          ]
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "$ref": "#/$defs/step"
+          },
+          "description": "Door to door in time order: origin → stay → origin. Single-origin trips; a group trip sets parties instead."
+        },
+        "tradeoff": {
+          "type": "string",
+          "description": "What this variant gives up against the others, in rubles and hours."
+        },
         "totals": {
           "type": "object",
           "description": "Filled by finalize.",
           "properties": {
-            "rub": { "type": "number" },
-            "hours": { "type": "number", "description": "Door-to-door travel time, stays excluded." },
-            "effective_rub": { "type": "number", "description": "rub + hours × value_of_hour_rub." }
+            "rub": {
+              "type": "number"
+            },
+            "hours": {
+              "type": "number",
+              "description": "Door-to-door travel time, stays excluded; for a group, the longest party's."
+            },
+            "effective_rub": {
+              "type": "number",
+              "description": "rub + travel hours × value_of_hour_rub, hours summed over parties."
+            }
           }
         },
         "reminders": {
@@ -164,7 +510,63 @@
           "description": "Filled by finalize; the system turns them into push notifications.",
           "items": {
             "type": "object",
-            "properties": { "at": { "type": "string" }, "step_id": { "type": "string" }, "text": { "type": "string" } }
+            "properties": {
+              "at": {
+                "type": "string"
+              },
+              "step_id": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "party": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "parties": {
+          "type": "array",
+          "minItems": 2,
+          "description": "Group trip: one door-to-door chain per brief party, all meeting at the same stay.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "steps"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "id of the brief party."
+              },
+              "steps": {
+                "type": "array",
+                "minItems": 3,
+                "items": {
+                  "$ref": "#/$defs/step"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "travellers": {
+      "type": "object",
+      "required": [
+        "adults"
+      ],
+      "properties": {
+        "adults": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "children_ages": {
+          "type": "array",
+          "items": {
+            "type": "integer"
           }
         }
       }

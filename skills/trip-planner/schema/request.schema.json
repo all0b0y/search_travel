@@ -2,11 +2,68 @@
   "title": "trip-planner request",
   "description": "What the system sends each turn. Plain text input is read as {\"kind\": \"message\", \"text\": <input>}.",
   "type": "object",
-  "required": ["kind"],
+  "required": [
+    "kind"
+  ],
   "properties": {
-    "kind": { "enum": ["message"] },
-    "text": { "type": "string", "description": "The user's message." },
-    "profile": { "type": "object", "description": "This user's stored preferences: everything earlier replies put in profile_updates." },
-    "now": { "type": "string", "description": "Current time, ISO 8601 with offset." }
+    "kind": {
+      "enum": [
+        "message",
+        "event"
+      ],
+      "description": "message: the user wrote something. event: the system observed something on a trip in progress."
+    },
+    "text": {
+      "type": "string",
+      "description": "The user's message."
+    },
+    "event": {
+      "$ref": "#/$defs/event"
+    },
+    "itinerary": {
+      "type": "object",
+      "description": "The trip in progress: the last itinerary or update reply, with chosen_variant set. Its presence means the user is on the way."
+    },
+    "profile": {
+      "type": "object",
+      "description": "This user's stored preferences: everything earlier replies put in profile_updates."
+    },
+    "now": {
+      "type": "string",
+      "description": "Current time, ISO 8601 with offset."
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Files and links the user shared: image paths readable from the working directory, or URLs (a post, a place page)."
+    }
+  },
+  "$defs": {
+    "event": {
+      "type": "object",
+      "required": [
+        "type",
+        "step_id"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "step_done",
+            "delay",
+            "cancelled"
+          ],
+          "description": "step_done: this step and all before it are behind the traveller (a taxi ordered counts as started, not done). delay: the step departs delay_min later. cancelled: the step will not happen."
+        },
+        "step_id": {
+          "type": "string"
+        },
+        "delay_min": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
   }
 }

@@ -58,6 +58,9 @@ class FinalizeFixture(unittest.TestCase):
         self.assertEqual(ics.count("BEGIN:VALARM"), 7)
         self.assertIn("DTSTART:20261112T041000Z", ics)
 
+    def test_shareable_page_per_variant(self):
+        self.assertEqual(set(self.out["files"]["pages"]), {"v-cheap", "v-fast", "v-comfort"})
+
     def test_output_is_a_valid_response(self):
         self.assertEqual(trip.validate_doc(self.out), [])
         self.assertEqual(self.out["type"], "itinerary")
@@ -131,6 +134,131 @@ class RiskyConnection(unittest.TestCase):
         report, out, _ = run(self.doc)
         self.assertNotIn(("plan_b", "v-cheap", "t2"), checks(report))
         self.assertEqual(step(out, "v-cheap", "t2")["plan_b"]["step"]["price"]["rub"], 475)
+
+
+class JudgeGate(unittest.TestCase):
+    def final(self, verdict=None, unmet=None):
+        doc = copy.deepcopy(FIXTURE)
+        if unmet:
+            doc["unmet_checks"] = unmet
+        with tempfile.TemporaryDirectory() as tmp:
+            draft = Path(tmp) / "draft.json"
+            draft.write_text(json.dumps(doc), encoding="utf-8")
+            if verdict is not None:
+                (Path(tmp) / "judge.json").write_text(json.dumps(verdict), encoding="utf-8")
+            return checks(trip.finalize(draft, final=True))
+
+    def test_final_needs_a_verdict(self):
+        self.assertIn(("judge", None, None), self.final())
+
+    def test_passed_verdict(self):
+        self.assertEqual(self.final({"pass": True, "failed": []}), set())
+
+    def test_failed_verdict_needs_unmet_checks(self):
+        self.assertIn(("judge", None, None), self.final({"pass": False, "failed": [{"check": 5}]}))
+        self.assertEqual(self.final({"pass": False, "failed": [{"check": 5}]}, ["5: fastest is not faster"]), set())
+
+
+class OnTheWay(unittest.TestCase):
+    def setUp(self):
+        _, self.doc, _ = run(copy.deepcopy(FIXTURE))
+        self.doc["chosen_variant"] = "v-cheap"
+
+    def changes(self, report):
+        return [(c["step"], c["change"]) for c in report["changes"]]
+
+    def test_step_done_marks_everything_before(self):
+        report = trip.apply_event(self.doc, {"type": "step_done", "step_id": "s2"})
+        self.assertEqual(self.changes(report), [("s1", "done"), ("s2", "done")])
+
+    def test_delay_shifts_transfer_and_finalize_passes(self):
+        report = trip.apply_event(self.doc, {"type": "delay", "step_id": "s2", "delay_min": 120})
+        self.assertTrue(report["ok"])
+        self.assertEqual(self.changes(report), [("s2", "delayed"), ("s3", "shifted")])
+        self.assertEqual(step(self.doc, "v-cheap", "s3")["start"], "2026-11-12T13:50:00+00:00")
+        final, out, _ = run(self.doc)
+        self.assertEqual(final["problems"], [])
+        self.assertEqual(out["type"], "update")
+
+    def test_late_arrival_flags_checkin(self):
+        report = trip.apply_event(self.doc, {"type": "delay", "step_id": "s2", "delay_min": 660})
+        self.assertIn(("s4", "late_checkin"), self.changes(report))
+
+
+class OnTheWayConnections(RiskyConnection):
+    def setUp(self):
+        super().setUp()
+        self.doc["chosen_variant"] = "v-cheap"
+
+    def test_missed_train_needs_replacement(self):
+        report = trip.apply_event(self.doc, {"type": "delay", "step_id": "s2", "delay_min": 60})
+        self.assertFalse(report["ok"])
+        self.assertEqual(self.changes(report)[-1], ("t2", "missed"))
+
+    def test_plan_b_takes_over(self):
+        train = variant(self.doc, "v-cheap")["steps"][3]
+        train["plan_b"] = {"trigger": "опоздание", "step": dict(train, id="t2b", start="2026-11-12T13:50:00+00:00", end="2026-11-12T14:20:00+00:00")}
+        report = trip.apply_event(self.doc, {"type": "delay", "step_id": "s2", "delay_min": 60})
+        self.assertTrue(report["ok"])
+        self.assertEqual(variant(self.doc, "v-cheap")["steps"][3]["id"], "t2b")
+
+    def test_cancelled_without_plan_b(self):
+        report = trip.apply_event(self.doc, {"type": "cancelled", "step_id": "t2"})
+        self.assertEqual(self.changes(report), [("t2", "cancelled")])
+        self.assertFalse(report["ok"])
+
+    changes = OnTheWay.changes
+
+
+def group_doc(warsaw_late_min=0):
+    """Two parties, Berlin and Warsaw, meeting at the same Lisbon stay."""
+    doc = copy.deepcopy(FIXTURE)
+    doc["brief"].pop("origin")
+    doc["brief"]["budget_rub"] = 400000
+    doc["brief"]["parties"] = [
+        {"id": "berlin", "origin": "Berlin, Kreuzberg", "travellers": {"adults": 2}},
+        {"id": "warsaw", "origin": "Warsaw, Mokotow", "travellers": {"adults": 1}},
+    ]
+    doc["variants"] = doc["variants"][:2]
+    for v in doc["variants"]:
+        warsaw = []
+        for s in copy.deepcopy(v["steps"]):
+            s["id"] = "w" + s["id"]
+            for end in ("from", "to"):
+                s[end] = {"Berlin, Kreuzberg": "Warsaw, Mokotow", "BER": "WAW"}.get(s[end], s[end])
+            if s["type"] != "stay":
+                trip.shift(s, trip.timedelta(minutes=warsaw_late_min))
+            warsaw.append(s)
+        v["parties"] = [{"id": "berlin", "steps": v.pop("steps")}, {"id": "warsaw", "steps": warsaw}]
+    return doc
+
+
+class GroupTrip(unittest.TestCase):
+    def test_group_passes_with_calendar_per_party(self):
+        report, out, calendars = run(group_doc())
+        self.assertEqual(report["problems"], [])
+        self.assertIn("trip-v-cheap-warsaw.ics", calendars)
+        self.assertEqual(variant(out, "v-cheap")["totals"]["rub"], 2 * 80085)
+        self.assertEqual(variant(out, "v-cheap")["totals"]["effective_rub"], 2 * 80085 + 2 * 9 * 1500)
+
+    def test_late_party_breaks_the_meeting(self):
+        report, _, _ = run(group_doc(warsaw_late_min=90))
+        self.assertIn(("meeting", "v-cheap", None), checks(report))
+
+    def test_parties_must_share_the_stay(self):
+        doc = group_doc()
+        warsaw = variant(doc, "v-cheap")["parties"][1]["steps"]
+        for s in warsaw[2:5]:
+            for end in ("from", "to"):
+                s[end] = "Other hotel" if s[end] == "Hotel Alfama Lisboa" else s[end]
+        report, _, _ = run(doc)
+        self.assertIn(("meeting", "v-cheap", None), checks(report))
+
+    def test_event_reaches_a_party_step(self):
+        _, doc, _ = run(group_doc())
+        doc["chosen_variant"] = "v-cheap"
+        report = trip.apply_event(doc, {"type": "delay", "step_id": "ws2", "delay_min": 30})
+        self.assertEqual([c["step"] for c in report["changes"]], ["ws2", "ws3"])
 
 
 class Links(unittest.TestCase):
