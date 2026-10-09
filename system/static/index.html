@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Поездка от двери до двери</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🧳%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1c1c1a;--muted:#6b6a64;--line:#e2e0d8;--accent:#0b6e4f;--accent-ink:#fff;--soft:#e6f2ec;--warn:#9a4d0c;--warn-soft:#fbefe3;--bad:#a12a2a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151513;--card:#1e1e1b;--ink:#ecebe5;--muted:#a3a29b;--line:#33322e;--accent:#5cc49b;--accent-ink:#0f1f18;--soft:#1d3329;--warn:#f0a35e;--warn-soft:#3a2a1a;--bad:#f08080}}
+:root[data-theme="dark"]{--bg:#151513;--card:#1e1e1b;--ink:#ecebe5;--muted:#a3a29b;--line:#33322e;--accent:#5cc49b;--accent-ink:#0f1f18;--soft:#1d3329;--warn:#f0a35e;--warn-soft:#3a2a1a;--bad:#f08080}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:2;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{max-width:760px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.bar h1{font-size:18px;margin:0;flex:1}
+.demo{background:var(--warn-soft);color:var(--warn);font-size:14px;text-align:center;padding:6px 16px}
+main{max-width:760px;margin:0 auto;padding:16px 16px 140px}
+.msg{margin:0 0 16px}.user{display:flex;justify-content:flex-end}
+.user .bubble{background:var(--accent);color:var(--accent-ink);border-radius:16px 16px 4px 16px;padding:10px 14px;max-width:85%;white-space:pre-wrap}
+.bot .text{white-space:pre-wrap;margin-bottom:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 10px}
+.card h3{margin:0 0 4px;font-size:17px}.muted{color:var(--muted);font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
+.chip.rec{border-color:var(--accent)}.chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.primary,a.primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:8px 14px;font:inherit;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}
+button.ghost,a.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent);border-radius:10px;padding:7px 13px;font:inherit;font-size:15px;cursor:pointer;text-decoration:none;display:inline-block}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.tiles{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.tile{background:var(--bg);border-radius:10px;padding:8px 12px;flex:1 1 120px}.tile b{display:block;font-size:19px}.tile span{color:var(--muted);font-size:13px}
+.badge{display:inline-block;background:var(--soft);color:var(--accent);border-radius:999px;padding:2px 10px;font-size:13px;margin-left:6px;vertical-align:2px}
+.note{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:8px 12px;font-size:14px;margin:8px 0}
+.error{border-color:var(--bad)}
+ol.steps{list-style:none;margin:10px 0 0;padding:0}
+ol.steps li{display:grid;grid-template-columns:62px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.time{font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted)}.time b{display:block;color:var(--ink);font-size:16px}
+.step-line{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.step-title{font-weight:600}.step-sub{font-size:14px;color:var(--muted)}
+.status{font-size:12px;border-radius:999px;padding:1px 8px;margin-left:6px;background:var(--bg);color:var(--muted)}
+.status.done{background:var(--soft);color:var(--accent)}.status.changed{background:var(--warn-soft);color:var(--warn)}
+details summary{cursor:pointer;color:var(--accent);margin-top:6px}
+.composer{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line)}
+.composer form{max-width:760px;margin:0 auto;padding:12px 16px;display:flex;gap:8px}
+.composer textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;background:var(--card);color:var(--ink);min-height:46px;max-height:140px}
+.thinking{display:flex;align-items:center;gap:10px;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite alternate}
+@keyframes pulse{from{opacity:.25}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar"><h1>🧳 Поездка от двери до двери</h1><button class="ghost" id="new">Новая поездка</button></div>
+  <div class="demo" id="demo" hidden>Демо-режим: данные выдуманы, ядро не вызывается</div>
+</header>
+<main id="feed">
+  <div class="msg bot"><div class="text">Расскажите, куда и когда хотите поехать, откуда выезжаете и сколько вас. Я соберу маршрут от двери до двери: такси, рейсы, трансферы и жильё, с ценой в рублях.</div></div>
+</main>
+<div class="composer"><form id="form">
+  <textarea id="input" rows="1" placeholder="Например: из Берлина в Лиссабон вдвоём на 3 ночи в ноябре, до 150 000 ₽"></textarea>
+  <button class="primary" id="send">Отправить</button>
+</form></div>
+<script>
+const $ = (s) => document.querySelector(s);
+const feed = $("#feed");
+const ICON = {taxi: "🚕", flight: "✈️", train: "🚆", transfer: "🚐", stay: "🏨"};
+const TYPE = {taxi: "Такси", flight: "Рейс", train: "Поезд", transfer: "Трансфер", stay: "Жильё"};
+const LABEL = {cheapest: "Дешевле", fastest: "Быстрее", comfort: "Комфортнее"};
+const STATUS = {planned: "", done: "пройдено", changed: "изменено", booked: "забронировано"};
+let conversation = null, busy = false, itinerary = null, chosen = null;
+
+function el(tag, attrs = {}, ...kids) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "class") node.className = v;
+    else if (k.startsWith("on")) node.addEventListener(k.slice(2), v);
+    else if (k === "href") { if (/^(https?:|\/files\/)/.test(v)) node.setAttribute("href", v); }
+    else node.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null && kid !== false) node.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+  return node;
+}
+const rub = (n) => n == null ? "? ₽" : Math.round(n).toLocaleString("ru-RU") + " ₽";
+const hhmm = (iso) => iso.slice(11, 16);
+const ddmm = (iso) => iso.slice(8, 10) + "." + iso.slice(5, 7);
+function scroll() { window.scrollTo({top: document.body.scrollHeight, behavior: "smooth"}); }
+function recall(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+async function api(path, body) {
+  const res = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+async function ensureConversation() {
+  if (!conversation) { conversation = (await api("/api/start", {user: recall("user") || "guest"})).conversation; }
+}
+async function run(label, call) {
+  if (busy) return;
+  busy = true; $("#send").disabled = true;
+  if (label) feed.append(el("div", {class: "msg user"}, el("div", {class: "bubble"}, label)));
+  const wait = el("div", {class: "msg bot thinking"}, el("span", {class: "dot"}), "Ищу варианты и проверяю стыковки… обычно 1–2 минуты");
+  feed.append(wait); scroll();
+  try { await ensureConversation(); render(await call()); }
+  catch (e) { feed.append(el("div", {class: "msg bot"}, el("div", {class: "card error"}, "Не получилось: " + e.message))); }
+  finally { wait.remove(); busy = false; $("#send").disabled = false; scroll(); }
+}
+const say = (text) => run(text, () => api("/api/message", {conversation, text}));
+
+function render(view) {
+  const r = view.reply, box = el("div", {class: "msg bot"});
+  chosen = view.chosen_variant || chosen;
+  if (r.message) box.append(el("div", {class: "text"}, r.message));
+  if (r.type === "questions") box.append(questions(r.questions || []));
+  if (r.type === "options") for (const o of r.options || []) box.append(option(o));
+  if (r.type === "itinerary") { itinerary = r; box.append(itineraryView(r, view.urls)); }
+  if (r.type === "update") { itinerary = r; box.append(updateView(r, view.urls)); }
+  if (r.type === "error") box.firstChild && box.firstChild.classList.add("card", "error");
+  feed.append(box);
+}
+
+function questions(list) {
+  const answers = {};
+  const card = el("div", {class: "card"});
+  for (const q of list) {
+    const chips = el("div", {class: "chips"});
+    for (const c of q.choices || []) {
+      const chip = el("button", {class: "chip" + (c === q.recommended ? " rec" : ""), type: "button", onclick: () => {
+        answers[q.id] = c; chips.querySelectorAll(".chip").forEach((x) => x.classList.toggle("on", x === chip));
+      }}, c);
+      chips.append(chip);
+    }
+    card.append(el("div", {style: "margin-bottom:12px"}, el("div", {}, q.text),
+      q.recommended ? el("div", {class: "muted"}, "Рекомендую: " + q.recommended) : null, q.choices ? chips : null));
+  }
+  card.append(el("div", {class: "actions"},
+    el("button", {class: "primary", type: "button", onclick: () => {
+      const lines = list.map((q) => answers[q.id] ? `${q.text} — ${answers[q.id]}` : null).filter(Boolean);
+      const typed = $("#input").value.trim(); $("#input").value = "";
+      if (typed) lines.push(typed);
+      if (lines.length) say(lines.join("\n"));
+    }}, "Ответить"),
+    el("button", {class: "ghost", type: "button", onclick: () => say("Согласен с вашими рекомендациями")}, "Как вы рекомендуете")));
+  return card;
+}
+
+function option(o) {
+  return el("div", {class: "card"}, el("h3", {}, o.title), el("div", {}, o.why),
+    el("div", {class: "muted"}, `${o.season} · ≈ ${rub(o.est_total_rub)} · ${o.entry}`),
+    el("div", {class: "actions"}, el("button", {class: "primary", type: "button", onclick: () => say("Выбираю: " + o.title)}, "Сюда")));
+}
+
+function chains(v) { return v.parties ? v.parties.map((p) => ({id: p.id, steps: p.steps})) : [{id: null, steps: v.steps || []}]; }
+
+function steps(list, withEvents) {
+  const ol = el("ol", {class: "steps"});
+  const next = list.find((s) => s.status !== "done");
+  for (const s of list) {
+    const p = s.price || {};
+    const notes = [];
+    if (s.risk && s.risk.risky) notes.push(el("div", {class: "note"}, `Короткая стыковка: запас ${s.risk.slack_min} мин`));
+    if (s.plan_b) notes.push(el("div", {class: "note"}, `План Б (${s.plan_b.trigger}): ${s.plan_b.step.from} → ${s.plan_b.step.to}, ${hhmm(s.plan_b.step.start)}`));
+    const events = withEvents && s === next ? el("div", {class: "actions"},
+      el("button", {class: "ghost", type: "button", onclick: () => sendEvent({type: "step_done", step_id: s.id}, `✓ ${TYPE[s.type]}: пройдено`)}, "✓ Пройдено"),
+      s.type !== "stay" ? el("button", {class: "ghost", type: "button", onclick: () => sendEvent({type: "delay", step_id: s.id, delay_min: 60}, `${TYPE[s.type]}: задержка на час`)}, "Задержка +60 мин") : null,
+      el("button", {class: "ghost", type: "button", onclick: () => sendEvent({type: "cancelled", step_id: s.id}, `${TYPE[s.type]}: отменено`)}, "Отменено")) : null;
+    ol.append(el("li", {},
+      el("div", {class: "time"}, el("b", {}, hhmm(s.start)), ddmm(s.start)),
+      el("div", {},
+        el("div", {class: "step-line"},
+          el("span", {class: "step-title"}, `${ICON[s.type]} ${s.type === "stay" ? s.to : s.from + " → " + s.to}`,
+            STATUS[s.status] ? el("span", {class: "status " + s.status}, STATUS[s.status]) : null),
+          el("a", {class: "ghost", href: s.link, target: "_blank", rel: "noopener"}, s.type === "taxi" ? "Вызвать" : "Открыть")),
+        el("div", {class: "step-sub"}, `до ${ddmm(s.end)} ${hhmm(s.end)}${s.carrier ? " · " + s.carrier : ""} · ${p.estimate ? "≈ " : ""}${rub(p.rub)} (${p.amount} ${p.currency})`),
+        notes, events)));
+  }
+  return ol;
+}
+
+function variantCard(v, r, urls, opts) {
+  const t = v.totals || {};
+  const card = el("div", {class: "card"},
+    el("h3", {}, LABEL[v.label] || v.label, r.recommended_variant === v.id ? el("span", {class: "badge"}, "рекомендую") : null,
+      chosen === v.id ? el("span", {class: "badge"}, "ваш маршрут") : null),
+    el("div", {class: "muted"}, v.tradeoff),
+    el("div", {class: "tiles"},
+      el("div", {class: "tile"}, el("b", {}, rub(t.rub)), el("span", {}, "от двери до двери")),
+      el("div", {class: "tile"}, el("b", {}, String(t.hours).replace(".", ",") + " ч"), el("span", {}, "в пути")),
+      t.effective_rub != null ? el("div", {class: "tile"}, el("b", {}, rub(t.effective_rub)), el("span", {}, "с ценой вашего времени")) : null));
+  for (const c of chains(v)) {
+    const list = steps(c.steps, opts.events);
+    card.append(opts.open ? el("div", {}, c.id ? el("div", {class: "step-title"}, "Группа: " + c.id) : null, list)
+      : el("details", {}, el("summary", {}, c.id ? `Маршрут группы ${c.id}` : "Весь маршрут по шагам"), list));
+  }
+  const actions = el("div", {class: "actions"});
+  if (opts.choose) actions.append(el("button", {class: "primary", type: "button", onclick: () => choose(v.id)}, "Выбрать этот маршрут"));
+  for (const [key, url] of Object.entries(urls.calendars || {})) if (url && key.startsWith(v.id)) actions.append(el("a", {class: "ghost", href: url}, "📅 В календарь" + (key !== v.id ? ` (${key.slice(v.id.length + 1)})` : "")));
+  for (const [key, url] of Object.entries(urls.pages || {})) if (url && key.startsWith(v.id)) actions.append(el("a", {class: "ghost", href: url, target: "_blank"}, "Поделиться"));
+  card.append(actions);
+  return card;
+}
+
+function itineraryView(r, urls) {
+  const wrap = el("div", {});
+  if (r.date_shift) wrap.append(el("div", {class: "note"}, `Сдвиг дат на ${r.date_shift.days > 0 ? "+" : ""}${r.date_shift.days} дн. сэкономит ${rub(r.date_shift.saves_rub)}`));
+  for (const u of r.unmet_checks || []) wrap.append(el("div", {class: "note"}, "Не проверено: " + u));
+  for (const v of r.variants || []) wrap.append(variantCard(v, r, urls, {choose: !chosen, events: false, open: false}));
+  return wrap;
+}
+
+function updateView(r, urls) {
+  const wrap = el("div", {});
+  if ((r.changes || []).length) wrap.append(el("div", {class: "card"}, el("h3", {}, "Что изменилось"),
+    el("ul", {}, r.changes.map((c) => el("li", {}, `${c.step}: ${c.change}${c.detail ? " — " + c.detail : ""}`)))));
+  const v = (r.variants || []).find((x) => x.id === (r.chosen_variant || chosen));
+  if (v) wrap.append(variantCard(v, r, urls, {choose: false, events: true, open: true}));
+  return wrap;
+}
+
+async function choose(id) {
+  await run(`Выбираю «${LABEL[(itinerary.variants.find((v) => v.id === id) || {}).label] || id}»`, async () => {
+    const view = await api("/api/choose", {conversation, variant: id});
+    chosen = id;
+    view.reply = Object.assign({}, view.reply, {type: "update", changes: [], chosen_variant: id,
+      message: "Маршрут выбран. Напоминания придут по ходу поездки; отмечайте шаги или пишите, если что-то пошло не так."});
+    return view;
+  });
+}
+const sendEvent = (event, label) => run(label, () => api("/api/event", {conversation, event}));
+
+$("#form").addEventListener("submit", (e) => { e.preventDefault(); const t = $("#input").value.trim(); if (t) { $("#input").value = ""; say(t); } });
+$("#input").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#form").requestSubmit(); } });
+$("#new").addEventListener("click", () => { location.reload(); });
+fetch("/api/config").then((r) => r.json()).then((c) => { $("#demo").hidden = !c.demo; }).catch(() => {});
+</script>
+</body>
+</html>
