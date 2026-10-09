@@ -36,6 +36,8 @@ Dispatch subagents (Agent tool) in parallel. Each prompt carries the full text o
 - `workers/stays.md`.
 - `workers/trains.md` when rail competes on the main leg (under ~7 hours).
 
+When live sources are unreachable (an MCP server down, a booking site blocked), the trip is still built: prices come from the airline, hotel and aggregator pages web search finds, each marked `estimate: true`, and `message` says the prices need checking via the links. Tell each worker this rule. An `error` reply is for a brief that no option can satisfy.
+
 Done when each worker returned at least 3 options per direction, or named the constraint that cut them.
 
 ## 3. Variants
