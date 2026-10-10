@@ -90,6 +90,8 @@ const ICON = {taxi: "🚕", flight: "✈️", train: "🚆", transfer: "🚐", s
 const TYPE = {taxi: "Такси", flight: "Рейс", train: "Поезд", transfer: "Трансфер", stay: "Жильё"};
 const LABEL = {cheapest: "Дешевле", fastest: "Быстрее", comfort: "Комфортнее"};
 const STATUS = {planned: "", done: "пройдено", changed: "изменено", booked: "забронировано"};
+const CHANGE = {done: "пройдено", delayed: "задержка", shifted: "перенесено", plan_b: "переход на план Б", missed: "не успеваете — нужна замена",
+  late_checkin: "поздний заезд — предупредите жильё", cancelled: "отменено — нужна замена", replaced: "заменено"};
 const CAT = {flights: "Билеты", stays: "Жильё", trains: "Поезда", taxi: "Такси", transfers: "Трансферы", rates: "Курс валют"};
 const ACCESS = {mcp: "MCP-сервер", public_api: "открытый API", api_key: "API по ключу", site_only: "только сайт"};
 let conversation = null, busy = false, itinerary = null, chosen = null, providers = [];
@@ -286,7 +288,11 @@ function itineraryView(r, urls) {
 function updateView(r, urls) {
   const wrap = el("div", {});
   if ((r.changes || []).length) wrap.append(el("div", {class: "card"}, el("h3", {}, "Что изменилось"),
-    el("ul", {}, r.changes.map((c) => el("li", {}, `${c.step}: ${c.change}${c.detail ? " — " + c.detail : ""}`)))));
+    el("ul", {}, r.changes.map((c) => {
+      const s = (r.variants || []).flatMap((v) => chains(v).flatMap((ch) => ch.steps)).find((x) => x.id === c.step);
+      const name = s ? `${ICON[s.type]} ${s.type === "stay" ? s.to : s.from + " → " + s.to}` : c.step;
+      return el("li", {}, `${name}: ${CHANGE[c.change] || c.change}${c.detail ? " " + c.detail : ""}`);
+    }))));
   const v = (r.variants || []).find((x) => x.id === (r.chosen_variant || chosen));
   if (v) wrap.append(variantCard(v, r, urls, {choose: false, events: true, open: true}));
   return wrap;

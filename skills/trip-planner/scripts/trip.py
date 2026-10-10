@@ -306,20 +306,20 @@ def cascade(steps, i, buffers, rules, changes):
             arrival = ts(a["end"]).time().strftime("%H:%M")
             late_from, late_to = rules["late_checkin"]
             if arrival >= late_from or arrival < late_to:
-                changes.append({"step": b["id"], "change": "late_checkin", "detail": f"arrival at {arrival}"})
+                changes.append({"step": b["id"], "change": "late_checkin", "detail": f"прибытие в {arrival}"})
             return
         if b["type"] in ("taxi", "transfer"):
             shift(b, timedelta(minutes=late))
             b["status"] = "changed"
-            changes.append({"step": b["id"], "change": "shifted", "detail": f"+{late:.0f} min"})
+            changes.append({"step": b["id"], "change": "shifted", "detail": f"на {late:.0f} мин позже, теперь в {ts(b['start']).strftime('%H:%M')}"})
             continue
         backup = b.get("plan_b", {}).get("step")
         if backup and minutes(ts(a["end"]), ts(backup["start"])) >= need:
             steps[j] = dict(backup, status="changed")
-            changes.append({"step": b["id"], "change": "plan_b", "detail": f"now {backup['id']} at {backup['start']}"})
+            changes.append({"step": b["id"], "change": "plan_b", "detail": f"запасной вариант в {ts(backup['start']).strftime('%H:%M')}"})
             continue
         b["status"] = "changed"
-        changes.append({"step": b["id"], "change": "missed", "detail": f"short by {late:.0f} min"})
+        changes.append({"step": b["id"], "change": "missed", "detail": f"не хватает {late:.0f} мин"})
         return
 
 
@@ -338,13 +338,13 @@ def apply_event(doc, event):
     elif event["type"] == "delay":
         shift(steps[i], timedelta(minutes=event["delay_min"]))
         steps[i]["status"] = "changed"
-        changes.append({"step": steps[i]["id"], "change": "delayed", "detail": f"+{event['delay_min']} min"})
+        changes.append({"step": steps[i]["id"], "change": "delayed", "detail": f"на {event['delay_min']} мин, теперь в {ts(steps[i]['start']).strftime('%H:%M')}"})
         cascade(steps, i, buffers, rules, changes)
     else:
         backup = steps[i].get("plan_b", {}).get("step")
         if backup:
             steps[i] = dict(backup, status="changed")
-            changes.append({"step": event["step_id"], "change": "plan_b", "detail": f"now {backup['id']} at {backup['start']}"})
+            changes.append({"step": event["step_id"], "change": "plan_b", "detail": f"запасной вариант в {ts(backup['start']).strftime('%H:%M')}"})
             cascade(steps, i, buffers, rules, changes)
         else:
             steps[i]["status"] = "changed"

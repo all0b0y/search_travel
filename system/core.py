@@ -100,13 +100,6 @@ DEMO_SETUP = {
     ],
 }
 
-CHANGE_TEXT = {
-    "done": "пройдено", "delayed": "задержка", "shifted": "перенесено", "plan_b": "переход на план Б",
-    "missed": "не успеваете — нужна замена", "late_checkin": "поздний заезд — предупредите отель",
-    "cancelled": "отменено — нужна замена", "replaced": "заменено",
-}
-
-
 class DemoCore:
     """Replays the Berlin → Lisbon test fixture; events run through the real trip.py logic."""
 
@@ -145,8 +138,7 @@ class DemoCore:
     def _event(self, request, out):
         doc = copy.deepcopy(request["itinerary"])
         report = trip.apply_event(doc, request["event"])
-        lines = [f"{c['step']}: {CHANGE_TEXT[c['change']]}" + (f" ({c['detail']})" if c.get("detail") else "") for c in report["changes"]]
-        doc["message"] = "Демо-режим. " + ("; ".join(lines) or "Ничего не изменилось.")
+        doc["message"] = "Демо-режим. " + ("Маршрут обновлён: изменения ниже." if report["changes"] else "Ничего не изменилось.")
         return self._finalize(doc, out)
 
     def _finalize(self, doc, out):

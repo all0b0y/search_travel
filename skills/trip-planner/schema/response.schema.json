@@ -87,7 +87,8 @@
             "description": "missed and cancelled mean the step still needs a replacement; replaced means you found one."
           },
           "detail": {
-            "type": "string"
+            "type": "string",
+            "description": "Shown to the user, in Russian."
           }
         }
       }
