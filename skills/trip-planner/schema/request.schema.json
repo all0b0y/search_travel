@@ -38,6 +38,13 @@
         "type": "string"
       },
       "description": "Files and links the user shared: image paths readable from the working directory, or URLs (a post, a place page)."
+    },
+    "providers": {
+      "type": "array",
+      "description": "The services this user chose per category, as the system has them. Keys never travel here: a provider with has_key carries only the name of the environment variable that holds it.",
+      "items": {
+        "$ref": "#/$defs/provider"
+      }
     }
   },
   "$defs": {
@@ -62,6 +69,50 @@
         "delay_min": {
           "type": "integer",
           "minimum": 1
+        }
+      }
+    },
+    "provider": {
+      "type": "object",
+      "required": [
+        "category",
+        "name",
+        "access"
+      ],
+      "properties": {
+        "category": {
+          "enum": [
+            "flights",
+            "stays",
+            "trains",
+            "taxi",
+            "transfers",
+            "rates"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "access": {
+          "enum": [
+            "mcp",
+            "public_api",
+            "api_key",
+            "site_only"
+          ],
+          "description": "mcp: an MCP server's tools. public_api: an HTTP API with no key. api_key: an HTTP API that needs a key. site_only: no API; search the site and give links."
+        },
+        "url": {
+          "type": "string",
+          "description": "Site, API base URL, or MCP server URL."
+        },
+        "env": {
+          "type": "string",
+          "description": "Environment variable holding the key, e.g. PROVIDER_DUFFEL_KEY."
+        },
+        "has_key": {
+          "type": "boolean",
+          "description": "The user saved a key; it is in env for this run."
         }
       }
     }

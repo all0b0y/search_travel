@@ -15,6 +15,18 @@ Paths below are relative to this skill's directory: call scripts by their full p
 
 A request carrying `itinerary` means the user is already travelling: skip to **On the way**.
 
+## 0. Connections
+
+The user picks the services; you find out how to reach them. `providers` in the request lists what the system already has, per category: `flights`, `stays`, `trains`, `taxi`, `transfers`, `rates`.
+
+1. For each category the trip needs that has no provider, ask which service the user wants, in the first `questions` round alongside the brief: choices from `providers.md` that work in the trip's countries, your recommendation first, and «любой — ищи сам».
+2. For each service the user names that `providers` does not list, find out how to reach it: `providers.md` first, else its developer pages. It has an MCP server, a public API, an API behind a key (where to sign up, the price, whether approval is needed), or only a site.
+3. When a service the trip will use is not ready, reply `setup`: one `connections` entry per service, each not-ready one with `need` (what to do, in Russian) and `signup_url`, plus `env` for `api_key`. The user saves keys in the system's form; a key reaches you only as the environment variable named in `env`.
+
+Done when every category the trip needs has a ready provider, or the user chose site-only or «ищи сам» for it. On later turns `providers` carries the answers.
+
+A key stays inside its variable: call the API from Bash with it (`curl -H "Authorization: Bearer $PROVIDER_DUFFEL_KEY" …`) and pass workers the variable's name.
+
 ## 1. Brief
 
 The **brief** (`$defs/brief`) is the fixed set of facts every search is filtered against. Fill it from the message and the profile, then put each open field to the user in a `questions` reply: 3–5 questions per round, each with your recommended answer. Facts (airports near the origin, entry rules, season) are yours to look up; only decisions go to the user. Always settle `value_of_hour_rub`, e.g. «Сколько готовы доплатить, чтобы доехать на час быстрее?».
@@ -30,13 +42,13 @@ Done when every brief field holds a value or the user marked it flexible.
 
 ## 2. Main legs
 
-Dispatch subagents (Agent tool) in parallel. Each prompt carries the full text of its worker file, `$defs/step` from the response schema, the brief, and `rules.json`.
+Dispatch subagents (Agent tool) in parallel. Each prompt carries the full text of its worker file and of `workers/sources.md`, the providers of its category in the user's order with their rows from `providers.md`, `$defs/step` from the response schema, the brief, and `rules.json`.
 
 - `workers/flights.md`: outbound and return; for a group, one dispatch per party.
 - `workers/stays.md`.
 - `workers/trains.md` when rail competes on the main leg (under ~7 hours).
 
-When live sources are unreachable (an MCP server down, a booking site blocked), the trip is still built: prices come from the airline, hotel and aggregator pages web search finds, each marked `estimate: true`, and `message` says the prices need checking via the links. Tell each worker this rule. An `error` reply is for a brief that no option can satisfy.
+When the providers are unreachable, the trip is still built from what web search finds (`workers/sources.md`), and `message` says the prices need checking via the links. An `error` reply is for a brief that no option can satisfy.
 
 Done when each worker returned at least 3 options per direction, or named the constraint that cut them.
 
@@ -50,7 +62,7 @@ With `flexible_days`, the flights worker returns a price per departure date; set
 
 ## 4. Finalize
 
-Get today's Central Bank of Russia rate for every currency in the draft into `rates`: Frankfurter MCP with provider `CBR`, or `https://www.cbr.ru/scripts/XML_daily.asp` (rate divided by `Nominal`). Run `python3 scripts/trip.py finalize trips/<trip_id>/draft.json`. It fills rubles, totals (`rub`, door-to-door `hours`, `effective_rub`), connection risk and reminders, writes `itinerary.json` and a `.ics` calendar per variant, and prints problems.
+Get today's Central Bank of Russia rate for every currency in the draft into `rates`, from the `rates` provider or `https://www.cbr.ru/scripts/XML_daily.asp` (rate divided by `Nominal`). Run `python3 scripts/trip.py finalize trips/<trip_id>/draft.json`. It fills rubles, totals (`rub`, door-to-door `hours`, `effective_rub`), connection risk and reminders, writes `itinerary.json` and a `.ics` calendar per variant, and prints problems.
 
 Fix each problem in the draft by re-timing or re-searching the leg, then rerun. A `plan_b` problem marks a **risky** connection: dispatch that leg's worker for the next departure after the planned one and attach it as `plan_b` with its trigger («рейс задержан больше чем на 40 мин»). Buffers and thresholds come from `rules.json`, overridden per user by `brief.buffers_override`.
 

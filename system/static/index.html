@@ -45,18 +45,40 @@ details summary{cursor:pointer;color:var(--accent);margin-top:6px}
 .composer textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;background:var(--card);color:var(--ink);min-height:46px;max-height:140px}
 .thinking{display:flex;align-items:center;gap:10px;color:var(--muted)}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite alternate}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);padding:0;width:min(560px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+.dlg{padding:16px}.dlg h2{margin:0 0 8px;font-size:18px}
+.prov{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.prov>div{min-width:0}.prov>button{flex:none}
+.row-form{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.row-form input,.row-form select,.keyrow input{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;background:var(--bg);color:var(--ink);flex:1 1 140px;min-width:0}
+.keyrow{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.badge.wait{background:var(--warn-soft);color:var(--warn)}
 @keyframes pulse{from{opacity:.25}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.dot{animation:none}}
 </style>
 </head>
 <body>
 <header>
-  <div class="bar"><h1>🧳 Поездка от двери до двери</h1><button class="ghost" id="new">Новая поездка</button></div>
+  <div class="bar"><h1>🧳 Поездка от двери до двери</h1><button class="ghost" id="services">Мои сервисы</button><button class="ghost" id="new">Новая</button></div>
   <div class="demo" id="demo" hidden>Демо-режим: данные выдуманы, ядро не вызывается</div>
 </header>
 <main id="feed">
   <div class="msg bot"><div class="text">Расскажите, куда и когда хотите поехать, откуда выезжаете и сколько вас. Я соберу маршрут от двери до двери: такси, рейсы, трансферы и жильё, с ценой в рублях.</div></div>
 </main>
+<dialog id="dlg"><div class="dlg">
+  <h2>Мои сервисы</h2>
+  <div class="muted">Где искать билеты и жильё, чем заказывать такси. Агент берёт их по порядку; без сервисов он ищет сам и даёт ссылки. Ключи хранит система: в переписку и в ответы они не попадают, агент получает их только при обращении к API.</div>
+  <div id="provlist"></div>
+  <form class="row-form" id="provform">
+    <select id="pcat"><option value="flights">Билеты</option><option value="stays">Жильё</option><option value="trains">Поезда</option><option value="taxi">Такси</option><option value="transfers">Трансферы</option><option value="rates">Курс валют</option></select>
+    <input id="pname" placeholder="Название, напр. Bolt" required>
+    <select id="pacc"><option value="site_only">Только сайт</option><option value="mcp">MCP-сервер</option><option value="public_api">Открытый API</option><option value="api_key">API по ключу</option></select>
+    <input id="purl" placeholder="Адрес сайта, API или MCP">
+    <button class="primary">Добавить</button>
+  </form>
+  <div class="actions"><button class="ghost" type="button" onclick="document.getElementById('dlg').close()">Закрыть</button></div>
+</div></dialog>
 <div class="composer"><form id="form">
   <textarea id="input" rows="1" placeholder="Например: из Берлина в Лиссабон вдвоём на 3 ночи в ноябре, до 150 000 ₽"></textarea>
   <button class="primary" id="send">Отправить</button>
@@ -68,7 +90,9 @@ const ICON = {taxi: "🚕", flight: "✈️", train: "🚆", transfer: "🚐", s
 const TYPE = {taxi: "Такси", flight: "Рейс", train: "Поезд", transfer: "Трансфер", stay: "Жильё"};
 const LABEL = {cheapest: "Дешевле", fastest: "Быстрее", comfort: "Комфортнее"};
 const STATUS = {planned: "", done: "пройдено", changed: "изменено", booked: "забронировано"};
-let conversation = null, busy = false, itinerary = null, chosen = null;
+const CAT = {flights: "Билеты", stays: "Жильё", trains: "Поезда", taxi: "Такси", transfers: "Трансферы", rates: "Курс валют"};
+const ACCESS = {mcp: "MCP-сервер", public_api: "открытый API", api_key: "API по ключу", site_only: "только сайт"};
+let conversation = null, busy = false, itinerary = null, chosen = null, providers = [];
 
 function el(tag, attrs = {}, ...kids) {
   const node = document.createElement(tag);
@@ -112,7 +136,9 @@ const say = (text) => run(text, () => api("/api/message", {conversation, text}))
 function render(view) {
   const r = view.reply, box = el("div", {class: "msg bot"});
   chosen = view.chosen_variant || chosen;
+  if (view.providers) providers = view.providers;
   if (r.message) box.append(el("div", {class: "text"}, r.message));
+  if (r.type === "setup") box.append(setupView(r.connections || []));
   if (r.type === "questions") box.append(questions(r.questions || []));
   if (r.type === "options") for (const o of r.options || []) box.append(option(o));
   if (r.type === "itinerary") { itinerary = r; box.append(itineraryView(r, view.urls)); }
@@ -144,6 +170,53 @@ function questions(list) {
     }}, "Ответить"),
     el("button", {class: "ghost", type: "button", onclick: () => say("Согласен с вашими рекомендациями")}, "Как вы рекомендуете")));
   return card;
+}
+
+function setupView(list) {
+  const wrap = el("div", {});
+  for (const c of list) {
+    const saved = providers.some((p) => p.env && p.env === c.env && p.has_key);
+    const badge = el("span", {class: "badge" + (c.ready || saved ? "" : " wait")}, c.ready || saved ? "готово" : "нужно действие");
+    const card = el("div", {class: "card"},
+      el("h3", {}, c.name, badge), el("div", {class: "muted"}, `${CAT[c.category] || c.category} · ${ACCESS[c.access] || c.access}`),
+      c.need && !c.ready ? el("div", {}, c.need) : null,
+      el("div", {class: "actions"},
+        c.signup_url ? el("a", {class: "ghost", href: c.signup_url, target: "_blank", rel: "noopener"}, "Получить доступ") : null,
+        c.docs_url ? el("a", {class: "ghost", href: c.docs_url, target: "_blank", rel: "noopener"}, "Документация") : null));
+    if (c.access === "api_key" && c.env && !c.ready) {
+      const input = el("input", {type: "password", placeholder: "Ключ API", autocomplete: "off"});
+      card.append(el("div", {class: "keyrow"}, input, el("button", {class: "primary", type: "button", onclick: async () => {
+        try {
+          providers = (await api("/api/key", {conversation, env: c.env, key: input.value})).providers;
+          input.value = ""; badge.textContent = "ключ сохранён"; badge.className = "badge";
+        } catch (e) { badge.textContent = "ошибка: " + e.message; }
+      }}, "Сохранить ключ")));
+    }
+    wrap.append(card);
+  }
+  wrap.append(el("div", {class: "actions"},
+    el("button", {class: "primary", type: "button", onclick: () => say("Готово, продолжай")}, "Продолжить"),
+    el("button", {class: "ghost", type: "button", onclick: () => say("Без недостающих сервисов: ищи сам и дай ссылки")}, "Без них — ищи сам")));
+  return wrap;
+}
+
+function renderProviders() {
+  const list = $("#provlist"); list.replaceChildren();
+  if (!providers.length) list.append(el("div", {class: "muted", style: "margin-top:10px"}, "Пока пусто — агент спросит перед поиском."));
+  providers.forEach((p, i) => {
+    const key = el("input", {type: "password", placeholder: "Ключ API", autocomplete: "off"});
+    list.append(el("div", {class: "prov"},
+      el("div", {style: "flex:1"}, el("b", {}, p.name), el("div", {class: "muted"}, `${CAT[p.category]} · ${ACCESS[p.access]}${p.access === "api_key" ? (p.has_key ? " · ключ есть" : " · нет ключа") : ""}`),
+        p.access === "api_key" && p.env ? el("div", {class: "keyrow"}, key, el("button", {class: "ghost", type: "button", onclick: async () => {
+          providers = (await api("/api/key", {conversation, env: p.env, key: key.value})).providers; renderProviders();
+        }}, p.has_key ? "Заменить ключ" : "Сохранить ключ")) : null),
+      el("button", {class: "ghost", type: "button", onclick: () => saveProviders(providers.filter((_, j) => j !== i))}, "Убрать")));
+  });
+}
+async function saveProviders(next) {
+  await ensureConversation();
+  providers = (await api("/api/providers", {conversation, providers: next.map(({has_key, ...p}) => p)})).providers;
+  renderProviders();
 }
 
 function option(o) {
@@ -233,6 +306,17 @@ const sendEvent = (event, label) => run(label, () => api("/api/event", {conversa
 $("#form").addEventListener("submit", (e) => { e.preventDefault(); const t = $("#input").value.trim(); if (t) { $("#input").value = ""; say(t); } });
 $("#input").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#form").requestSubmit(); } });
 $("#new").addEventListener("click", () => { location.reload(); });
+$("#services").addEventListener("click", async () => {
+  try { await ensureConversation(); providers = (await api("/api/providers", {conversation})).providers; } catch (e) {}
+  renderProviders(); $("#dlg").showModal();
+});
+$("#provform").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = $("#pname").value.trim(); if (!name) return;
+  const p = {category: $("#pcat").value, name, access: $("#pacc").value, url: $("#purl").value.trim() || undefined};
+  if (p.access === "api_key") p.env = "PROVIDER_" + (name.toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 30) || "CUSTOM" + providers.length) + "_KEY";
+  await saveProviders([...providers, p]); $("#pname").value = ""; $("#purl").value = "";
+});
 fetch("/api/config").then((r) => r.json()).then((c) => { $("#demo").hidden = !c.demo; }).catch(() => {});
 </script>
 </body>

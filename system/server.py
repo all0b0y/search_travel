@@ -60,6 +60,12 @@ def make_handler(app, demo):
                     return self.send_json(200, app.choose(key, body["variant"]))
                 if self.path == "/api/event":
                     return self.send_json(200, app.event(key, body["event"]))
+                if self.path == "/api/providers":
+                    if "providers" in body:
+                        return self.send_json(200, {"providers": app.set_providers(key, body["providers"])})
+                    return self.send_json(200, {"providers": app.providers(key)})
+                if self.path == "/api/key":
+                    return self.send_json(200, {"providers": app.set_key(key, body["env"], body["key"])})
                 self.send_json(404, {"error": "not found"})
             except (KeyError, json.JSONDecodeError) as e:
                 self.send_json(400, {"error": f"bad request: {e}"})

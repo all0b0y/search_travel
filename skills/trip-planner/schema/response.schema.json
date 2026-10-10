@@ -9,13 +9,14 @@
   "properties": {
     "type": {
       "enum": [
+        "setup",
         "questions",
         "options",
         "itinerary",
         "update",
         "error"
       ],
-      "description": "questions: the brief has open fields, waiting for answers. options: destinations to pick from (discovery). itinerary: finished variants. update: the trip in progress after an event, with changes. error: cannot continue, message says why."
+      "description": "setup: which services you will use per category and what the user must provide for the ones not ready. questions: the brief has open fields, waiting for answers. options: destinations to pick from (discovery). itinerary: finished variants. update: the trip in progress after an event, with changes. error: cannot continue, message says why."
     },
     "trip_id": {
       "type": "string",
@@ -138,6 +139,13 @@
         "saves_rub": {
           "type": "number"
         }
+      }
+    },
+    "connections": {
+      "type": "array",
+      "description": "setup: one entry per service the trip will use; the system stores them as the user's providers.",
+      "items": {
+        "$ref": "#/$defs/connection"
       }
     }
   },
@@ -568,6 +576,62 @@
           "items": {
             "type": "integer"
           }
+        }
+      }
+    },
+    "connection": {
+      "type": "object",
+      "required": [
+        "category",
+        "name",
+        "access",
+        "ready"
+      ],
+      "properties": {
+        "category": {
+          "enum": [
+            "flights",
+            "stays",
+            "trains",
+            "taxi",
+            "transfers",
+            "rates"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "access": {
+          "enum": [
+            "mcp",
+            "public_api",
+            "api_key",
+            "site_only"
+          ],
+          "description": "mcp: an MCP server's tools. public_api: an HTTP API with no key. api_key: an HTTP API that needs a key. site_only: no API; search the site and give links."
+        },
+        "ready": {
+          "type": "boolean",
+          "description": "Usable now: an MCP server or public API that answers, a key already saved, or site_only."
+        },
+        "url": {
+          "type": "string",
+          "description": "Site, API base URL, or MCP server URL."
+        },
+        "env": {
+          "type": "string",
+          "description": "api_key: the environment variable name the key will be stored under, PROVIDER_<NAME>_KEY."
+        },
+        "need": {
+          "type": "string",
+          "description": "What the user must do or provide when not ready, in Russian."
+        },
+        "signup_url": {
+          "type": "string",
+          "description": "Where to get access or a key."
+        },
+        "docs_url": {
+          "type": "string"
         }
       }
     }

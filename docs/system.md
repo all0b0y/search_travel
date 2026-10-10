@@ -4,27 +4,29 @@
 
 Реализация в `system/` (Python stdlib, без зависимостей):
 
-- `core.py` — вызов ядра (`ClaudeCore`) и демо-ядро (`DemoCore`: тестовые данные Берлин → Лиссабон, события идут через настоящий `trip.py`). Готовит рабочую папку `runtime/`: скилл в `.claude/skills/`, `.mcp.json`.
+- `core.py` — вызов ядра (`ClaudeCore`) и демо-ядро (`DemoCore`: тестовые данные Берлин → Лиссабон, события идут через настоящий `trip.py`). Готовит рабочую папку `runtime/` со скиллом в `.claude/skills/`; MCP-серверы и ключи берёт из сервисов пользователя на каждый вызов.
 - `app.py` — сессия на разговор, профиль, поездка в пути: после выбора маршрута каждый запрос несёт `itinerary`.
-- `store.py` — профили и разговоры в JSON-файлах `runtime/data/`.
-- `server.py` + `static/index.html` — страница и API: `POST /api/start`, `/api/message`, `/api/choose`, `/api/event`; `GET /files/…` отдаёт календари и страницы из `runtime/trips/`.
+- `store.py` — профили, сервисы и разговоры в JSON-файлах `runtime/data/`; ключи отдельно в `runtime/data/secrets/` (права 600).
+- `server.py` + `static/index.html` — страница и API: `POST /api/start`, `/api/message`, `/api/choose`, `/api/event`, `/api/providers` (список; с полем `providers` — заменить), `/api/key` (сохранить ключ); `GET /files/…` отдаёт календари и страницы из `runtime/trips/`.
 
 Кнопки «Пройдено / Задержка / Отменено» на странице изображают события, которые в боевой системе придут от слежения за рейсами (этап 4).
 
 ## Вызов ядра
 
-Одна сессия Claude Code на поездку, запуск в рабочей папке системы, где лежат `.mcp.json` и скилл:
+Одна сессия Claude Code на поездку, запуск в рабочей папке системы со скиллом:
 
 ```sh
 claude -p "$REQUEST_JSON" \
   --output-format json \
   --json-schema "$(cat skills/trip-planner/schema/response.schema.json)" \
-  --mcp-config .mcp.json \
-  --allowedTools "Skill Agent Read Write Bash WebSearch WebFetch mcp__kiwi mcp__frankfurter" \
+  --mcp-config '{"mcpServers": {"kiwi_com": {"type": "http", "url": "https://mcp.kiwi.com"}}}' \
+  --allowedTools Skill Agent Read Write Edit Bash WebSearch WebFetch mcp__kiwi_com \
   --resume "$SESSION_ID"          # со второго хода поездки
 ```
 
-- `REQUEST_JSON` — запрос по `request.schema.json`: текст пользователя, его профиль, текущее время.
+- `REQUEST_JSON` — запрос по `request.schema.json`: текст пользователя, его профиль, его сервисы (`providers`), текущее время.
+- `--mcp-config` и `mcp__<имя>` собираются из сервисов пользователя с `access: mcp`; без них флага нет.
+- Ключи пользователя (`PROVIDER_<ИМЯ>_KEY`) система кладёт в окружение процесса `claude`. В запросе — только имя переменной и `has_key`.
 - Ответ ядра — в поле `structured_output` вывода; объект по `response.schema.json`. Перед показом система проверяет его тем же `trip.py validate` или своей библиотекой JSON Schema.
 - `session_id` первого ответа система хранит при поездке и передаёт в `--resume`.
 - `Bash` разрешён целиком, а ядро запускается в изолированном контейнере: агент склеивает вызов `trip.py` с `cd`, и узкое правило `Bash(python3:*)` его отклоняет.
@@ -34,6 +36,7 @@ claude -p "$REQUEST_JSON" \
 
 | `type` | Показ |
 |---|---|
+| `setup` | сервисы по категориям: готов / нужно действие, что сделать (`need`), ссылки «получить доступ» и «документация», поле для ключа у `api_key`; кнопки «Продолжить» и «Без них — ищи сам». `connections` система сохраняет как сервисы пользователя |
 | `questions` | вопросы с кнопками `choices`, рекомендованный ответ выделен |
 | `options` | карточки направлений |
 | `itinerary` | 2–3 маршрута с таймлайном, итог в ₽, часы, `effective_rub`, рекомендация, `date_shift`; кнопки «в календарь» (`files.calendars`), «поделиться» (`files.pages`, готовый HTML) и ссылки бронирования |

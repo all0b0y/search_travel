@@ -2,7 +2,6 @@
 
 Find flights for the brief you were given: outbound in `brief.depart`, return in `brief.return`.
 
-- Search with the Kiwi MCP tools; when they are unavailable, search airline and aggregator sites.
 - Include airports near the origin and the destination. A cheaper far airport is a real option: the door-to-door total decides, after transfers are added.
 - Cover all three criteria in each direction: cheapest, fastest (fewest stops, shortest), comfort (direct, daytime, checked bag included).
 
