@@ -884,16 +884,17 @@ def run_search(ctx, brief, dest, check_in, check_out, track=True):
                 key = f"{h['hotel_id']}|out|{point}"
                 tjobs[key] = ("search_transfers", {"from": frm, "to": {"hotel_id": h["hotel_id"]}, "at": at,
                                                    "pax": pax, "today": today})
-                meta[key] = (h["hotel_id"], "out", point)
+                meta[key] = (h["hotel_id"], "out", point, frm)
             for point, (frm, at) in depart.items():
                 key = f"{h['hotel_id']}|back|{point}"
                 tjobs[key] = ("search_transfers", {"from": frm, "to": {"hotel_id": h["hotel_id"]}, "reverse": True,
                                                    "at": at, "pax": pax, "today": today})
-                meta[key] = (h["hotel_id"], "back", point)
-        tout = _parallel(ctx, tjobs)
+                meta[key] = (h["hotel_id"], "back", point, frm)
+        tout = _parallel(ctx, tjobs, tolerant=True)   # a missing transfer is a risk, not a failed search
         for key, value in tout.items():
-            hotel_id, direction, point = meta[key]
-            offers = [{**o, "point": point} for o in (value or {}).get("offers", [])]
+            hotel_id, direction, point, frm = meta[key]
+            offers = [{**o, "point": point, "point_ref": frm, "hotel_id": hotel_id}
+                      for o in (value or {}).get("offers", [])]
             results[f"transfers_{direction}"].setdefault(hotel_id, []).extend(offers)
     districts = {}
     for h in results["hotels"]:
@@ -905,7 +906,8 @@ def run_search(ctx, brief, dest, check_in, check_out, track=True):
     return results, districts, called
 
 
-def _parallel(ctx, jobs):
+def _parallel(ctx, jobs, tolerant=False):
+    """Run tool jobs in parallel. tolerant: a failed job is left out (and noted) instead of failing all."""
     if not jobs:
         return {}
     with ThreadPoolExecutor(max_workers=min(6, len(jobs))) as pool:
@@ -916,8 +918,10 @@ def _parallel(ctx, jobs):
                 out[key] = fut.result()
             except ToolError as exc:
                 errors.append(exc)
-    if errors:
+    if errors and not tolerant:
         raise errors[0]
+    if errors:
+        ctx.trace["notes"].append(f"{len(errors)} of {len(jobs)} tool jobs failed and were skipped: {errors[0]}")
     return out
 
 
@@ -973,11 +977,58 @@ def _as_variant(v):
     return v if isinstance(v, Variant) else Variant.model_validate(v)
 
 
-def build(ctx, brief, results, districts, exclude=()):
+def build(ctx, brief, results, districts, exclude=(), pin=True):
     if exclude:
         results = _exclude_offers(results, set(exclude))
     built = ctx.domain.build_variants(brief, results, districts, rules_view(ctx), ctx.session.today())
-    return [_as_variant(v) for v in built or []][: int(ctx.rules.get("max_variants", 3))]
+    variants = [_as_variant(v) for v in built or []][: int(ctx.rules.get("max_variants", 3))]
+    return _pin_transfers(ctx, variants, results) if pin else variants
+
+
+def _pin_transfers(ctx, variants, results):
+    """Re-quote every transfer step at the exact time of its own leg.
+
+    Transfers are searched once per hotel and arrival point (at the earliest arrival there), so the
+    offer behind a step may carry another pickup time; booking it would put a car at the airport before
+    the plane lands. Here each step gets the offer of the same kind at the step's own start time.
+    """
+    index = {}
+    for key in ("transfers_out", "transfers_back"):
+        for offers in (results.get(key) or {}).values():
+            for o in offers:
+                index[o.get("offer_id")] = (o, key == "transfers_back")
+    party = _party_payload(ctx.brief)
+    pax = party["adults"] + len(party["children_ages"])
+    jobs, where = {}, {}
+    for v in variants:
+        for s in v.steps:
+            if s.type != "transfer" or s.offer_id not in index:
+                continue
+            o, reverse = index[s.offer_id]
+            if not o.get("point_ref") or not o.get("hotel_id"):
+                continue
+            payload = {"from": o["point_ref"], "to": {"hotel_id": o["hotel_id"]}, "at": s.start,
+                       "pax": pax, "today": ctx.session.today().isoformat()}
+            if reverse:
+                payload["reverse"] = True
+            key = f"{v.id}|{s.id}"
+            jobs[key] = ("search_transfers", payload)
+            where[key] = (v, s, o.get("kind"))
+    found = _parallel(ctx, jobs, tolerant=True)
+    for key, value in found.items():
+        v, s, kind = where[key]
+        offers = (value or {}).get("offers") or []
+        pick = next((o for o in offers if o.get("kind") == kind), None) or (offers[0] if offers else None)
+        if pick is None:
+            continue
+        new_rub, old_rub = pick.get("price_rub"), s.price.rub if s.price.rub is not None else s.price.amount
+        s.offer_id = pick["offer_id"]
+        s.link = f"ostrovok-mock:transfer/{pick['offer_id']}"
+        delta = int(new_rub) - int(old_rub) if new_rub is not None and old_rub is not None else 0
+        if delta:
+            s.price = s.price.model_copy(update={"amount": int(pick["price_rub"]), "rub": int(pick["price_rub"])})
+            v.totals = v.totals.model_copy(update={"rub": v.totals.rub + delta})
+    return variants
 
 
 def _exclude_offers(results, bad):
@@ -1091,7 +1142,7 @@ def rerun_for(ctx):
         if not (start and end):
             start, end = _date(ctx.results["check_in"]), _date(ctx.results["check_out"])
         results, districts, _ = run_search(ctx, brief2, dest, start, end, track=False)
-        return build(ctx, brief2, results, districts)
+        return build(ctx, brief2, results, districts, pin=False)   # sensitivity only compares, never books
     return rerun
 
 
@@ -1373,8 +1424,8 @@ def step_cart_add(ctx):
     ctx.cart = cart
     title = variant.title or P.VARIANT_TITLES.get(variant.id, variant.id)
     msg = f"Положил «{title}» в корзину: {P.fmt_rub(cart.get('total_rub') or 0)} за всё."
-    problems = [i["message"] for i in cart.get("issues") or [] if i.get("message")]
-    msg += (" Есть что проверить: " + " ".join(problems)) if problems else " Дальше — данные путешественников."
+    problems = attention(cart.get("issues"))
+    msg += (" Есть что проверить: " + problems) if problems else " Дальше — данные путешественников."
     ctx.message = msg
 
 
@@ -1430,10 +1481,9 @@ def step_checkout(ctx):
     ctx.order = tool(ctx, "order_get", {"order_id": out["order_id"]}, cache=False)
     ctx.order_issues = list(hook_issues)
     msg = f"Заказ собран, осталось оплатить {P.fmt_rub(ctx.order['total_rub'])}."
-    problems = [i["message"] for i in (ctx.order.get("issues") or []) if i.get("message")]
-    problems += [i["message"] for i in hook_issues if i.get("message")]
+    problems = attention(list(ctx.order.get("issues") or []) + list(hook_issues))
     if problems:
-        msg += " Обратите внимание: " + " ".join(problems)
+        msg += " Обратите внимание: " + problems
     ctx.message = msg
 
 
@@ -1479,6 +1529,35 @@ def step_pay(ctx):
     ctx.files = render_files(ctx, ctx.order)
     ctx.message = ("Оплачено, всё подтверждено! Если захотите заселиться пораньше, поменять даты или добавить "
                    "трансфер — пишите.")
+
+
+def attention(issues) -> str:
+    """Cart/order issues worth a sentence: warnings and blockers ("info" notes stay in the cart card)."""
+    texts = []
+    for i in issues or []:
+        sev = (i.get("severity") or "").lower()
+        if sev in ("info", "") or not i.get("message"):
+            continue
+        t = i["message"].strip().rstrip(".")
+        t = t[:1].lower() + t[1:] if t[:2] != t[:2].upper() else t
+        if t not in texts:
+            texts.append(t)
+    return ("; ".join(texts) + ".") if texts else ""
+
+
+def _hotel_checkin(ctx):
+    """Booked check-in time of the order's hotel (the order item start), else of the variant's stay."""
+    for item in (ctx.order or {}).get("items") or []:
+        if item.get("kind") == "hotel" and item.get("start"):
+            return _dt(item["start"])
+    return None
+
+
+def _order_has_transfers(ctx) -> bool:
+    items = (ctx.order or {}).get("items") or []
+    transfers = [i for i in items if i.get("kind") == "transfer" and i.get("status") != "cancelled"]
+    legs = [i for i in items if i.get("kind") in ("flight", "train") and i.get("status") != "cancelled"]
+    return bool(transfers) and len(transfers) >= len(legs)
 
 
 def _arrival(ctx):

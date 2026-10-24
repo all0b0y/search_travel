@@ -5,7 +5,7 @@ Prices, times and totals come from code data (variants, mock carts and orders); 
 by id. When the card failed (degraded turn) the code-written Note texts are used instead.
 """
 from . import payloads as P
-from .steps import _arrival, _hhmm_after, recommended_hint
+from .steps import _arrival, _hhmm_after, _hotel_checkin, _order_has_transfers, recommended_hint
 
 MAX_ITEMS = 6
 SEVERITY = {"block": "blocking", "warn": "warning", "blocking": "blocking", "warning": "warning", "info": "info"}
@@ -167,12 +167,14 @@ def build_actions(ctx, cards, order):
         actions.append({"type": "pay", "label": f"Оплатить {P.fmt_rub(order['total_rub'])}",
                         "payload": {"order_id": order["order_id"]}})
     if s.stage in ("ordered", "aftercare") and s.order_id:
-        arr = _arrival(ctx)
-        params = {"time": _hhmm_after(arr)} if arr else {}
-        actions.append({"type": "order_action", "label": "Ранний заезд",
-                        "payload": {"order_id": s.order_id, "kind": "early_checkin", "params": params}})
-        actions.append({"type": "order_action", "label": "Добавить трансфер",
-                        "payload": {"order_id": s.order_id, "kind": "add_transfer", "params": {}}})
+        arr, checkin = _arrival(ctx), _hotel_checkin(ctx)
+        if arr is not None and (checkin is None or arr < checkin):   # early check-in only if they arrive early
+            actions.append({"type": "order_action", "label": "Ранний заезд",
+                            "payload": {"order_id": s.order_id, "kind": "early_checkin",
+                                        "params": {"time": _hhmm_after(arr)}}})
+        if not _order_has_transfers(ctx):
+            actions.append({"type": "order_action", "label": "Добавить трансфер",
+                            "payload": {"order_id": s.order_id, "kind": "add_transfer", "params": {}}})
     return actions
 
 
