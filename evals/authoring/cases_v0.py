@@ -120,7 +120,7 @@ def pred(name, **args):
 
 
 UNDERSTAND_BASE = [a("schema")]
-RATIO_RE = r"вдвое|втрое|вчетверо|в полтора раза|в (два|три|четыре|\d+) раза"
+RATIO_RE = r"(?<!\w)(?:вдвое|втрое|вчетверо|в полтора раза|в (два|три|четыре|\d+) раза)(?!\w)"   # not «вдвоём»
 TY_RE = r"(?<![\w-])(ты|тебе|тебя|тобой|твой|твоя|твоё|твои|твоих|твоим)(?![\w-])"
 PRESENT_BASE = [a("schema"), a("ids_subset"), a("numbers_subset"), pred("russian_only"), pred("tone_no_bureaucratese"),
                 pred("at_most_one_joke"), pred("money_risks_plain"), pred("no_upsell_without_candidate"),

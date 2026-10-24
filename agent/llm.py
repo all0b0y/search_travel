@@ -136,6 +136,19 @@ class RawReply:
     usage: dict = field(default_factory=empty_usage)
 
 
+TRANSIENT_ERRORS = {"APIConnectionError", "APITimeoutError", "RateLimitError", "InternalServerError",
+                    "ConnectError", "ConnectTimeout", "ReadTimeout", "ReadError", "RemoteProtocolError",
+                    "TimeoutException", "ServiceUnavailableError"}
+
+
+def is_transient(exc) -> bool:
+    """Network blips, timeouts, 429 and 5xx: worth another try. Auth, other 4xx and our own errors are not."""
+    if type(exc).__name__ in TRANSIENT_ERRORS:
+        return True
+    status = getattr(exc, "status_code", None) or getattr(getattr(exc, "response", None), "status_code", None)
+    return isinstance(status, int) and (status == 429 or status >= 500)
+
+
 class JsonBackend:
     """Validation + exactly-one-retry loop shared by real and fake backends."""
     name = "json"
@@ -146,6 +159,20 @@ class JsonBackend:
     def _clock(self):
         return time.monotonic()
 
+    transport_delays = (0.4, 1.2)   # seconds before the 2nd and 3rd attempt of a transient transport failure
+
+    def _call_with_transport_retry(self, req, messages, usage):
+        for attempt in range(len(self.transport_delays) + 1):
+            try:
+                return self._call(req, messages)
+            except LLMError:
+                raise
+            except Exception as exc:
+                if attempt >= len(self.transport_delays) or not is_transient(exc):
+                    raise
+                usage["transport_retries"] = usage.get("transport_retries", 0) + 1
+                time.sleep(self.transport_delays[attempt])
+
     def complete(self, req: LLMRequest) -> LLMResult:
         messages = build_messages(req)
         usage = empty_usage()
@@ -155,7 +182,7 @@ class JsonBackend:
         reply = None
         for attempt in range(MAX_INVALID_RETRIES + 1):
             try:
-                reply = self._call(req, messages)
+                reply = self._call_with_transport_retry(req, messages, usage)
             except LLMError as exc:
                 exc.card = exc.card or req.card
                 exc.retries = attempt

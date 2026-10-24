@@ -1,0 +1,113 @@
+{
+  "run_id": "20261025-012617-L2-cases",
+  "level": 2,
+  "set": "cases",
+  "model": "flash",
+  "flags": "stage1",
+  "flags_enabled": [],
+  "dry_run": false,
+  "persona": null,
+  "started_at": "2026-10-25T01:26:17+03:00",
+  "run_dir": "/Users/all0b0y/VSCodeProjects/search_travel/evals/runs/20261025-012617-L2-cases",
+  "argv": [
+    "--level",
+    "2",
+    "--model",
+    "flash",
+    "--runs",
+    "1",
+    "--only",
+    "a1_warm_sea_kid,c2_sochi_variants,ap1_landmark_hagia_sophia,x4_not_about_travel"
+  ],
+  "cases": [
+    {
+      "id": "a1_warm_sea_kid",
+      "category": "A",
+      "card": "understand",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 1783,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "ap1_landmark_hagia_sophia",
+      "category": "A_photo",
+      "card": "understand",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 2261,
+      "failures": [],
+      "unsure": "place.name may be «Айя-София» (the building) instead of the city; the engine geocodes it either way."
+    },
+    {
+      "id": "c2_sochi_variants",
+      "category": "C",
+      "card": "present.variants",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 6355,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "x4_not_about_travel",
+      "category": "edge",
+      "card": "understand",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 827,
+      "failures": [],
+      "unsure": null
+    }
+  ],
+  "metrics": {
+    "cases_total": 4,
+    "cases_full_pass": 4,
+    "cases_full_pass_rate": 1.0,
+    "runs_total": 4,
+    "runs_passed": 4,
+    "runs_pass_rate": 1.0,
+    "llm_errors": 0,
+    "input_errors": 0,
+    "retries_total": 0,
+    "latency_p50_ms": 2022.0,
+    "latency_p95_ms": 5740.900000000001,
+    "input_tokens": 22570,
+    "output_tokens": 1617,
+    "cost_usd_total": 0.0015521159999999999,
+    "served_models": {
+      "deepseek/deepseek-v4.1-flash-1017": 4
+    },
+    "served_providers": {
+      "DeepSeek": 4
+    },
+    "by_category": {
+      "A": "1/1",
+      "A_photo": "1/1",
+      "C": "1/1",
+      "edge": "1/1"
+    }
+  },
+  "finished_at": "2026-10-25T01:26:28+03:00",
+  "notes": [],
+  "thresholds": [
+    {
+      "metric": "cases_full_pass_rate",
+      "label": "фазовые кейсы 5/5 (каждый кейс прошёл все прогоны)",
+      "value": 1.0,
+      "op": ">=",
+      "threshold": 1.0,
+      "pass": true
+    }
+  ],
+  "green": true,
+  "report_paths": {
+    "json": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-012617-L2-cases.json",
+    "md": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-012617-L2-cases.md"
+  }
+}

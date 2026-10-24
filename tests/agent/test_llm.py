@@ -125,8 +125,19 @@ def test_still_invalid_after_retry_raises():
     assert err.value.retries == 1 and err.value.card == "understand" and err.value.errors
 
 
-def test_api_error_is_llm_error_without_retry():
+def test_server_error_is_retried_then_llm_error(monkeypatch):
+    import agent.llm as llm
+    monkeypatch.setattr(llm.time, "sleep", lambda s: None)
     t = Transport(status=500)
+    with pytest.raises(LLMError):
+        backend(t).complete(req())
+    assert len(t.requests) == 3          # a 5xx is transient: two more tries, then an honest error
+
+
+def test_client_error_is_llm_error_without_retry(monkeypatch):
+    import agent.llm as llm
+    monkeypatch.setattr(llm.time, "sleep", lambda s: None)
+    t = Transport(status=400)
     with pytest.raises(LLMError):
         backend(t).complete(req())
     assert len(t.requests) == 1
@@ -186,3 +197,49 @@ def test_fake_backend_exception_item():
 def test_fake_backend_unknown_card():
     with pytest.raises(LLMError):
         FakeBackend().complete(req(card="present.variants"))
+
+
+def test_transient_transport_errors_are_retried_then_succeed(monkeypatch):
+    import agent.llm as llm
+    monkeypatch.setattr(llm.time, "sleep", lambda s: None)
+
+    class APIConnectionError(Exception):
+        pass
+
+    class Flaky(llm.JsonBackend):
+        name = "flaky"
+
+        def __init__(self):
+            self.calls = 0
+
+        def _call(self, req, messages):
+            self.calls += 1
+            if self.calls < 3:
+                raise APIConnectionError("Connection error.")
+            return llm.RawReply(text='{"ok": true}', model="m", provider="p")
+
+    b = Flaky()
+    req = llm.LLMRequest(card="x", system="s", user="{}", schema={"type": "object"})
+    out = b.complete(req)
+    assert out.data == {"ok": True} and b.calls == 3
+    assert out.usage.get("transport_retries") == 2
+
+
+def test_non_transient_errors_are_not_retried(monkeypatch):
+    import agent.llm as llm
+    monkeypatch.setattr(llm.time, "sleep", lambda s: None)
+
+    class AuthenticationError(Exception):
+        status_code = 401
+
+    class Bad(llm.JsonBackend):
+        name = "bad"
+        calls = 0
+
+        def _call(self, req, messages):
+            Bad.calls += 1
+            raise AuthenticationError("no")
+
+    with __import__("pytest").raises(llm.LLMError):
+        Bad().complete(llm.LLMRequest(card="x", system="s", user="{}", schema={"type": "object"}))
+    assert Bad.calls == 1

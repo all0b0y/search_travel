@@ -48,7 +48,7 @@ DEFAULT_GUARDS = {"small_int_max": 10, "max_emoji": 2, "max_exclamations": None,
                   "question_mark_needs_questions": None}
 RATIO = re.compile(r"\b(?:вдвое|втрое|вчетверо|впятеро|в\s+полтора\s+раза|в\s+\d+(?:[.,]\d+)?\s+раз[а]?|"
                    r"в\s+(?:два|три|четыре|пять|десять)\s+раз[а]?|на\s+треть|на\s+четверть|наполовину|"
-                   r"на\s+\d+(?:[.,]\d+)?\s*%\s+(?:дешевле|дороже|быстрее|медленнее))", re.I)
+                   r"на\s+\d+(?:[.,]\d+)?\s*%\s+(?:дешевле|дороже|быстрее|медленнее))(?!\w)", re.I)   # not «вдвоём»
 ITEM_TEXT_KEYS = ("why", "sacrifices", "risks", "not_for", "watch_out")
 ID_KEYS = {"id", "candidate_id", "recommended_id", "offer_id", "hotel_id", "destination_id", "rule_id"}
 MONEY_WORDS = re.compile(r"₽|руб|\bцен|стоим|отмен|штраф|невозврат|риск|стыковк|опозда|доплат", re.I)
