@@ -1,0 +1,112 @@
+"""Train generator: Russian domestic pairs only, great-circle distance <= 1000 km, both cities
+with stations. Rail distance = great circle x 1.25.
+
+Per pair and date 2-5 trains (seeded). A train is either
+- `fast` (day train, <= 750 km rail, 120 km/h, class `seat`) or
+- `regular` (70 km/h incl. stops; classes platzkart / coupe / sv).
+Fare per passenger (RUB): seat 500 + 3.2/km, platzkart 400 + 1.6/km, coupe 700 + 2.8/km,
+sv 1500 + 5.5/km, x season x lead time (flight table, softened by half) x noise 0.92-1.12.
+"""
+from __future__ import annotations
+
+from datetime import date, timedelta
+
+from . import geo, pricing, rng
+from .offer_ids import encode
+
+MAX_KM = 1000
+RAIL_FACTOR = 1.25
+CLASS_TARIFF = {"seat": (500, 3.2), "platzkart": (400, 1.6), "coupe": (700, 2.8), "sv": (1500, 5.5)}
+
+
+def pair_note(a: geo.City | None, b: geo.City | None) -> str | None:
+    """Why there are no trains for this pair (Russian), or None when trains are possible."""
+    if a is None or b is None:
+        return "Город не найден в демо-каталоге, поезда не ищем"
+    if a.country_code != "RU" or b.country_code != "RU":
+        return "Поезда в демо — только по России"
+    if not a.stations or not b.stations:
+        return "В одном из городов нет вокзала в каталоге"
+    km = geo.haversine_km(a.lat, a.lon, b.lat, b.lon)
+    if km > MAX_KM:
+        return f"Поезда в демо — только до ~{MAX_KM} км, здесь около {int(round(km, -1))} км"
+    if km < 30:
+        return "Города слишком близко для поезда дальнего следования"
+    return None
+
+
+def _train(a: geo.City, b: geo.City, day: date, i: int) -> dict:
+    km = geo.haversine_km(a.lat, a.lon, b.lat, b.lon) * RAIL_FACTOR
+    pair = f"{a.name_ru}>{b.name_ru}"
+    fast = km <= 750 and rng.unit("train", pair, "fast", i) < 0.5
+    speed = 120 if fast else 70
+    if fast:
+        dep_min = rng.rint(66, 216, "train", pair, "dep", i) * 5        # 05:30 .. 18:00
+    else:
+        dep_min = rng.rint(216, 282, "train", pair, "dep", i) * 5       # 18:00 .. 23:30 (overnight)
+    number = rng.rint(1, 799, "train", pair, "number", i)
+    letter = rng.pick("АВГЕЖИМНСУЧЯ", "train", pair, "letter", i)
+    return {"fast": fast, "km": km, "duration": int(round(km / speed * 60)), "dep_min": dep_min,
+            "train_no": f"{number:03d}{letter}", "carrier": "РЖД" if fast else "ФПК"}
+
+
+def active(a: geo.City, b: geo.City, day: date) -> list[int]:
+    pair = f"{a.name_ru}>{b.name_ru}"
+    n = rng.rint(2, 5, "train", pair, "count", day.isoformat())
+    return list(range(n))
+
+
+def classes(train: dict) -> list[str]:
+    return ["seat"] if train["fast"] else ["platzkart", "coupe", "sv"]
+
+
+def build(params: dict) -> dict | None:
+    a, b = geo.resolve_city(params["o"]), geo.resolve_city(params["d"])
+    if pair_note(a, b) is not None:
+        return None
+    day, today = date.fromisoformat(params["dt"]), date.fromisoformat(params["t"])
+    lead = (day - today).days
+    if lead < 0 or lead > pricing.MAX_HORIZON_DAYS:
+        return None
+    i, cls, pax = int(params["s"]), params["cls"], int(params["p"])
+    if i not in active(a, b, day):
+        return None
+    tr = _train(a, b, day, i)
+    if cls not in classes(tr):
+        return None
+    tz_a = geo.zone(a.tz, a.country_code, a.lon)
+    tz_b = geo.zone(b.tz, b.country_code, b.lon)
+    dep = geo.local_dt(day, tr["dep_min"], tz_a)
+    arr = (dep + timedelta(minutes=tr["duration"])).astimezone(tz_b)
+    base, per_km = CLASS_TARIFF[cls]
+    fare = (base + per_km * tr["km"])
+    prof = pricing.profile(b.kind, b.tags, b.country_code)
+    fare *= pricing.season_factor(day, prof)
+    fare *= 1 + (pricing.lead_factor(lead, pricing.FLIGHT_LEAD) - 1) / 2
+    fare *= rng.between(0.92, 1.12, "train", a.name_ru, b.name_ru, "demand", day.isoformat(), i, cls)
+    return {
+        "offer_id": encode("train", params),
+        "carrier": tr["carrier"], "train_no": tr["train_no"],
+        "from_station": geo.station_for(a, b), "to_station": geo.station_for(b, a),
+        "dep": geo.iso(dep), "arr": geo.iso(arr), "duration_min": max(1, tr["duration"]),
+        "car_class": cls, "price_rub": pricing.round10(fare * pax), "date": day.isoformat(), "synthetic": True,
+    }
+
+
+def search(origin_city: str, dest_city: str, day: date, passengers: int, today: date) -> tuple[list[dict], str | None]:
+    a, b = geo.resolve_city(origin_city), geo.resolve_city(dest_city)
+    note = pair_note(a, b)
+    if note:
+        return [], note
+    if day < today:
+        return [], "Дата в прошлом"
+    offers = []
+    for i in active(a, b, day):
+        for cls in classes(_train(a, b, day, i)):
+            params = {"o": a.name_ru, "d": b.name_ru, "dt": day.isoformat(), "s": i, "cls": cls,
+                      "p": passengers, "t": today.isoformat()}
+            offer = build(params)
+            if offer:
+                offers.append(offer)
+    offers.sort(key=lambda x: (x["dep"], x["price_rub"]))
+    return offers, None if offers else "На эту дату поездов нет"

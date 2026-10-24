@@ -100,8 +100,10 @@ class DestinationQuote(Model):
     flight_price_rub: Optional[Rub] = None   # round trip for the party
     stay_price_rub: Optional[Rub] = None
     total_rub: Optional[Rub] = None
-    flight_offer_id: Optional[str] = None
+    flight_offer_id: Optional[str] = None          # outbound
+    return_flight_offer_id: Optional[str] = None   # back
     hotel_offer_id: Optional[str] = None
+    notes: list[str] = PField(default_factory=list)  # Russian: why a part is missing or approximated
     currency_notes: list[str] = PField(default_factory=list)  # Russian, e.g. "цены отеля пересчитаны из USD по курсу ЦБ"
     synthetic: bool = True
 
@@ -131,6 +133,8 @@ class SearchHotelsIn(Model):
     filters: HotelFilters = PField(default_factory=HotelFilters)
     limit: int = PField(default=20, ge=1, le=40)
     today: Date
+    hotel_id: Optional[str] = None   # only this hotel (room / meal upgrades of a chosen stay)
+    all_rooms: bool = False          # one offer per fitting room type instead of the cheapest only
 
     @model_validator(mode="after")
     def _order(self):
@@ -267,6 +271,7 @@ class Baggage(Model):
 
 
 class Fare(Model):
+    name: Optional[Literal["basic", "standard", "flex"]] = None   # flex = the flexible_fare upsell
     refundable: bool
     change_fee_rub: Optional[Rub] = None  # None = changes not allowed
 
