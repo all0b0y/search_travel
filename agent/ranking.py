@@ -226,6 +226,13 @@ def _is_dorm(room) -> bool:
     return room.get("bed") == "bunk" or "общем номере" in name or "dorm" in name
 
 
+def _penalty_rub(h, canc):
+    pct, price = canc.get("penalty_pct"), h.get("price_total_rub")
+    if not pct or not price:
+        return None
+    return int(round(price * pct / 100 / 10.0)) * 10
+
+
 def _free_cancel(h) -> bool:
     c = h.get("cancellation") or {}
     return bool(c.get("free_until")) or c.get("penalty_pct", 100) == 0
@@ -544,6 +551,7 @@ def _facts(c: Combo, brief, districts, segments, rr):
         "free_cancellation": _free_cancel(h),
         "free_cancellation_until": (canc.get("free_until") or "")[:10] or None,
         "cancellation_penalty_pct": canc.get("penalty_pct"),
+        "cancellation_penalty_rub": _penalty_rub(h, canc),   # code computes it: models must not take percents
         "distance_beach_m": h.get("distance_beach_m"),
         "distance_center_m": h.get("distance_center_m"),
         "room_name": room.get("name"),
@@ -647,9 +655,10 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
             out.append(_note("tight_connection", f"Короткая стыковка: запас {risk['slack_min']} мин",
                              slack_min=risk["slack_min"], step=sid))
     if not facts.get("free_cancellation"):
-        pct = facts.get("cancellation_penalty_pct")
-        out.append(_note("no_free_cancel", "Отель без бесплатной отмены" + (f": штраф {pct}%" if pct else ""),
-                         penalty_pct=pct))
+        pct, rub = facts.get("cancellation_penalty_pct"), facts.get("cancellation_penalty_rub")
+        text = "Отель без бесплатной отмены" + (f": штраф {pct}% — {fmt_rub(rub)}" if pct and rub else
+                                               (f": штраф {pct}%" if pct else ""))
+        out.append(_note("no_free_cancel", text, penalty_pct=pct, penalty_rub=rub))
     for direction, tr in (("out", c.tr_out), ("back", c.tr_back)):
         if tr is not None and tr["duration_min"] > rr["long_transfer_min"]:
             out.append(_note("long_transfer", f"Дорога {'до отеля' if direction == 'out' else 'в аэропорт'} {tr['duration_min']} мин",

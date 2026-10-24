@@ -247,7 +247,8 @@
           "free_cancellation": false,
           "penalty_pct": 30,
           "delta_vs_before_rub": -2200,
-          "total_before_rub": 90300
+          "total_before_rub": 90300,
+          "penalty_rub": 17640
         },
         "sacrifices": [
           {

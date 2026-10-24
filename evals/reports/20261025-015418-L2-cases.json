@@ -1,0 +1,515 @@
+{
+  "run_id": "20261025-015418-L2-cases",
+  "level": 2,
+  "set": "cases",
+  "model": "flash",
+  "flags": "stage1",
+  "flags_enabled": [],
+  "dry_run": false,
+  "persona": null,
+  "started_at": "2026-10-25T01:54:18+03:00",
+  "run_dir": "/Users/all0b0y/VSCodeProjects/search_travel/evals/runs/20261025-015418-L2-cases",
+  "argv": [
+    "--level",
+    "2",
+    "--model",
+    "flash",
+    "--parallel",
+    "6"
+  ],
+  "cases": [
+    {
+      "id": "a1_warm_sea_kid",
+      "category": "A",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1864,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "a2_ski_couple",
+      "category": "A",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1400,
+      "failures": [],
+      "unsure": "dates.month is allowed but not required for «этой зимой»; Dec/Jan/Feb are all acceptable."
+    },
+    {
+      "id": "a3_destinations_family_sea",
+      "category": "A",
+      "card": "present.destinations",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2384,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "a4_destinations_missing_quote",
+      "category": "A",
+      "card": "present.destinations",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2211,
+      "failures": [],
+      "unsure": "The honesty phrase list may miss a valid wording; check failures by eye."
+    },
+    {
+      "id": "a5_weekend_food_spb",
+      "category": "A",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1100,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "ap1_landmark_hagia_sophia",
+      "category": "A_photo",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1666,
+      "failures": [],
+      "unsure": "place.name may be «Айя-София» (the building) instead of the city; the engine geocodes it either way."
+    },
+    {
+      "id": "ap2_coast_same_vibe",
+      "category": "A_photo",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1658,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "ap3_ambiguous_photo",
+      "category": "A_photo",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1305,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "b1_istanbul_may",
+      "category": "B",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1035,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "b2_istanbul_variants_assumed_dates",
+      "category": "B",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2680,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "b3_kaliningrad_summer",
+      "category": "B",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1118,
+      "failures": [],
+      "unsure": "If the model picks dates.month 6/7/8 for «летом» that still passes; a strict reading would forbid it."
+    },
+    {
+      "id": "b4_choose_second_destination",
+      "category": "B",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1055,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "c1_sochi_exact",
+      "category": "C",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1114,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "c2_sochi_variants",
+      "category": "C",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 3081,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "c3_sochi_compare",
+      "category": "C",
+      "card": "present.compare",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2958,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "d1_kazan_hotel_only",
+      "category": "D",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1222,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "d2_kazan_stay_variants",
+      "category": "D",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2541,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "d3_flights_only_ekb",
+      "category": "D",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1114,
+      "failures": [],
+      "unsure": "«Билеты» can mean train tickets too; scope [flights, trains] is accepted."
+    },
+    {
+      "id": "e1_shift_two_days",
+      "category": "E",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 929,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "e2_with_dog",
+      "category": "E",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1094,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "e3_update_after_shift",
+      "category": "E",
+      "card": "present.update",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2577,
+      "failures": [],
+      "unsure": "The model may describe the change without the delta; the second mentions_any then fails."
+    },
+    {
+      "id": "e4_update_pet_friendly",
+      "category": "E",
+      "card": "present.update",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2617,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "f1_early_checkin_ask",
+      "category": "F",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1342,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "f2_aftercare_on_request",
+      "category": "F",
+      "card": "present.aftercare",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1175,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "f3_change_dates_after_purchase",
+      "category": "F",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 964,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "s1_friends_nightlife",
+      "category": "segments",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 3023,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "s2_family_lively_warning",
+      "category": "segments",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2788,
+      "failures": [],
+      "unsure": "recommended_id cheapest would also be defensible; only fastest is forbidden."
+    },
+    {
+      "id": "s3_quiet_please",
+      "category": "segments",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1044,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "s4_friends_party_spb",
+      "category": "segments",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1292,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "t1_upsell_night_transfer",
+      "category": "tone",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 3169,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "t2_no_candidates_no_upsell",
+      "category": "tone",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 4,
+      "full_pass": false,
+      "latency_p50_ms": 2855,
+      "failures": [
+        "run 0: numbers_subset : numbers not in input: [27090]"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "t3_upsell_cap_two",
+      "category": "tone",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 3003,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "t4_smalltalk_thanks",
+      "category": "tone",
+      "card": "present.fallback",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1178,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "t5_money_risks_plain",
+      "category": "tone",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 3117,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "x1_impossible_budget",
+      "category": "edge",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2171,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "x2_city_outside_catalog",
+      "category": "edge",
+      "card": "present.destinations",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2514,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "x3_contradiction_party",
+      "category": "edge",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1132,
+      "failures": [],
+      "unsure": "Leaving party unset (to ask) is accepted; setting couple / 2 adults is the failure."
+    },
+    {
+      "id": "x4_not_about_travel",
+      "category": "edge",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1178,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "x5_prompt_injection",
+      "category": "edge",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1268,
+      "failures": [],
+      "unsure": "budget 0 «requested» by the user could be read as a user value; we treat it as part of the injection."
+    },
+    {
+      "id": "x6_english_message",
+      "category": "edge",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1114,
+      "failures": [],
+      "unsure": "origin.city «Moscow» (English) would fail; the catalog/geocoder may accept it, but the plan's names are Russian."
+    }
+  ],
+  "metrics": {
+    "cases_total": 40,
+    "cases_full_pass": 39,
+    "cases_full_pass_rate": 0.975,
+    "runs_total": 200,
+    "runs_passed": 199,
+    "runs_pass_rate": 0.995,
+    "llm_errors": 0,
+    "input_errors": 0,
+    "retries_total": 1,
+    "latency_p50_ms": 1442.5,
+    "latency_p95_ms": 3130.4500000000003,
+    "input_tokens": 1063409,
+    "output_tokens": 46467,
+    "cost_usd_total": 0.03669714600000002,
+    "served_models": {
+      "deepseek/deepseek-v4.1-flash-1017": 200
+    },
+    "served_providers": {
+      "DeepSeek": 200
+    },
+    "by_category": {
+      "A": "5/5",
+      "A_photo": "3/3",
+      "B": "4/4",
+      "C": "3/3",
+      "D": "3/3",
+      "E": "4/4",
+      "F": "3/3",
+      "edge": "6/6",
+      "segments": "4/4",
+      "tone": "4/5"
+    }
+  },
+  "finished_at": "2026-10-25T01:55:21+03:00",
+  "notes": [],
+  "thresholds": [
+    {
+      "metric": "cases_full_pass_rate",
+      "label": "фазовые кейсы 5/5 (каждый кейс прошёл все прогоны)",
+      "value": 0.975,
+      "op": ">=",
+      "threshold": 1.0,
+      "pass": false
+    }
+  ],
+  "green": false,
+  "report_paths": {
+    "json": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-015418-L2-cases.json",
+    "md": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-015418-L2-cases.md"
+  }
+}

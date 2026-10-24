@@ -254,7 +254,8 @@
           "pets_allowed": true,
           "pet_fee_rub": 3500,
           "delta_vs_before_rub": 5600,
-          "total_before_rub": 90300
+          "total_before_rub": 90300,
+          "penalty_rub": 19320
         },
         "sacrifices": [
           {

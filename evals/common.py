@@ -176,6 +176,9 @@ def number_pool(data):
         for run in re.findall(r"\d+", s):
             pool.add(int(run))
     pool |= _unit_forms(data)
+    for s in iter_strings(data):   # «до 09.11» is the date 2026-11-09, not the number 9.11
+        for y, m, d in re.findall(r"(\d{4})-(\d{2})-(\d{2})", s):
+            pool.add(float(f"{int(d)}.{m}"))
     return pool
 
 

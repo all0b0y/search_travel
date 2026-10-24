@@ -252,7 +252,8 @@
           "nights": 7,
           "meals": "breakfast",
           "free_cancellation": false,
-          "penalty_pct": 30
+          "penalty_pct": 30,
+          "penalty_rub": 17640
         },
         "sacrifices": [
           {
