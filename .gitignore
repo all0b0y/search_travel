@@ -17,3 +17,7 @@ evals/runs/
 
 # Isolated Codex profile for the strong-model check
 .codex-profile/
+
+# Raw downloads of the offline data builders
+data_build/cache/
+.pytest_cache/
