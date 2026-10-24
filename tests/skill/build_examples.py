@@ -240,7 +240,7 @@ def sochi_variants(shift=0, totals=(56400, 90300, 128900)):
     ]
 
 
-EARLY = {"candidate_id": "u_fastest_early_checkin", "kind": "early_checkin", "label": "Ранний заезд", "price_rub": 2500,
+EARLY = {"candidate_id": "u_fastest_early_checkin", "variant_id": "fastest", "kind": "early_checkin", "label": "Ранний заезд", "price_rub": 2500,
          "reason": "Вы прилетаете в 10:40, а заселение с 15:00. Ранний заезд — 2 500 ₽, и не придётся ждать в лобби."}
 
 # variants.1 — entry C, Sochi couple, early check-in upsell
@@ -306,7 +306,7 @@ def antalya_variants():
     ]
 
 
-TRANSFER = {"candidate_id": "u_cheapest_transfer", "kind": "transfer", "label": "Добавить трансфер", "price_rub": 2400,
+TRANSFER = {"candidate_id": "u_cheapest_transfer", "variant_id": "cheapest", "kind": "transfer", "label": "Добавить трансфер", "price_rub": 2400,
             "reason": "Прилёт в 23:55, а ночью с ребёнком ловить такси — так себе: трансфер встретит у выхода, 2 400 ₽."}
 write("present.variants", 2, v_input(ANT, "selection", antalya_variants(), "fastest",
                                      questions=[{"id": "q_children_ages", "text": "Сколько лет ребёнку?"}],

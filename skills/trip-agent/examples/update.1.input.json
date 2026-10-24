@@ -404,6 +404,7 @@
   "upsell_candidates": [
     {
       "candidate_id": "u_fastest_early_checkin",
+      "variant_id": "fastest",
       "kind": "early_checkin",
       "label": "Ранний заезд",
       "price_rub": 2500,

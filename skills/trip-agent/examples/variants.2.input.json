@@ -369,6 +369,7 @@
   "upsell_candidates": [
     {
       "candidate_id": "u_cheapest_transfer",
+      "variant_id": "cheapest",
       "kind": "transfer",
       "label": "Добавить трансфер",
       "price_rub": 2400,
