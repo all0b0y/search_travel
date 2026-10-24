@@ -225,8 +225,10 @@ def test_example_input_binding_keys(stem, card, inp, out):
             assert all(set(s) == STEP_KEYS for s in item["steps"]), stem
             assert set(item["totals"]) == {"rub", "door_to_door_hours"}
     if card in ("present.variants", "present.update"):
+        item_ids = {i.get("id") for i in inp.get("items") or []}
         for c in inp["upsell_candidates"]:
-            assert set(c) == {"candidate_id", "kind", "label", "price_rub", "reason"}
+            assert set(c) == {"candidate_id", "variant_id", "kind", "label", "price_rub", "reason"}
+            assert not item_ids or c["variant_id"] in item_ids, c   # an add-on belongs to a shown variant
             assert c["kind"] in UPSELL_ALLOWED
     if card == "understand":
         for s in inp["shown"]:
