@@ -1,0 +1,936 @@
+{
+"version": 0.6,
+"osm3s": {
+"timestamp_osm_base": "2026-10-24T22:05:06Z",
+"copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+},
+"elements": [
+{
+"type": "node",
+"id": 8498921418,
+"lat": 36.9014708,
+"lon": 30.6607299,
+"tags": {
+"name:en": "White cat sevgi hotel",
+"name:ru": "White cat sevgi hotel, не едет сюда",
+"operator": "Шарлотан",
+"tourism": "hotel"
+}
+},
+{
+"type": "node",
+"id": 2291851186,
+"lat": 36.8858752,
+"lon": 30.6743329,
+"tags": {
+"addr:city": "Antalya",
+"addr:country": "TR",
+"addr:place": "Konyaaltı Sahili",
+"addr:postcode": "07050",
+"addr:province": "Antalya",
+"addr:street": "Sakıp Sabancı Bulvarı",
+"email": "downtown@rixos.com",
+"fax": "+90 242 249 49 00",
+"internet_access": "yes",
+"internet_access:fee": "no",
+"name": "Rixos Downtown Antalya Hotel",
+"payment:cash": "yes",
+"payment:coins": "no",
+"payment:notes": "no",
+"phone": "+90 242 249 49 49",
+"tourism": "hotel",
+"website": "https://downtownantalya-tr.rixos.com/",
+"wikidata": "Q111400159"
+}
+},
+{
+"type": "node",
+"id": 8345963817,
+"lat": 36.8860405,
+"lon": 30.6939145,
+"tags": {
+"name:en": "DIMO HOTEL",
+"tourism": "hotel"
+}
+},
+{
+"type": "node",
+"id": 11158852908,
+"lat": 36.8864101,
+"lon": 30.6969597,
+"tags": {
+"addr:housenumber": "121",
+"addr:postcode": "07050",
+"addr:street": "121. Sokak",
+"name": "Afflon Loft City Hotel",
+"tourism": "hotel",
+"wikidata": "Q111998194"
+}
+},
+{
+"type": "node",
+"id": 5099938223,
+"lat": 36.8873426,
+"lon": 30.6824826,
+"tags": {
+"guest_house": "hostel",
+"internet_access": "wlan",
+"internet_access:fee": "no",
+"name": "Polis Evi",
+"name:en": "Police House",
+"opening_hours": "24/7",
+"operator": "Polis",
+"rooms": "20",
+"tourism": "guest_house",
+"website": "https://www.polisevi.com/antalya-polis-evi/"
+}
+},
+{
+"type": "node",
+"id": 6612604889,
+"lat": 36.890353,
+"lon": 30.6810233,
+"tags": {
+"tourism": "apartment"
+}
+},
+{
+"type": "node",
+"id": 6612619986,
+"lat": 36.8903164,
+"lon": 30.680527,
+"tags": {
+"name:en": "Aapa",
+"tourism": "apartment"
+}
+},
+{
+"type": "node",
+"id": 1710776972,
+"lat": 36.8783292,
+"lon": 30.7067888,
+"tags": {
+"name": "Anadolu Pansiyon",
+"tourism": "guest_house"
+}
+},
+{
+"type": "node",
+"id": 1710776986,
+"lat": 36.8781139,
+"lon": 30.7069617,
+"tags": {
+"name": "Park Pansiyon",
+"tourism": "guest_house"
+}
+},
+{
+"type": "node",
+"id": 452873465,
+"lat": 36.881874,
+"lon": 30.7048437,
+"tags": {
+"check_date": "2022-11-26",
+"int_name": "Sabah Pension",
+"name": "Sabah Pansiyon",
+"tourism": "guest_house",
+"wikidata": "Q111118420"
+}
+},
+{
+"type": "node",
+"id": 5030217901,
+"lat": 36.8861008,
+"lon": 30.7045403,
+"tags": {
+"name": "Altun Pansiyon",
+"tourism": "hostel"
+}
+},
+{
+"type": "node",
+"id": 7258993792,
+"lat": 36.8813533,
+"lon": 30.7092877,
+"tags": {
+"addr:city": "Antalya",
+"addr:district": "Muratpaşa",
+"addr:housenumber": "22",
+"addr:neighbourhood": "Haşim İşcan Mah.",
+"addr:postcode": "07100",
+"addr:street": "1304 Sokak",
+"guest_house": "hostel",
+"internet_access": "wlan",
+"name": "Hostel Vague",
+"operator": "Yasmin",
+"rooms": "5",
+"tourism": "hostel",
+"wikidata": "Q111118414"
+}
+},
+{
+"type": "node",
+"id": 7946213609,
+"lat": 36.8836618,
+"lon": 30.7066324,
+"tags": {
+"addr:housenumber": "34",
+"addr:street": "Hesapçı Sokak",
+"amenity": "pub",
+"check_date": "2022-11-26",
+"name": "Old House Hostel & Pub",
+"tourism": "hostel"
+}
+},
+{
+"type": "node",
+"id": 7995276022,
+"lat": 36.8823014,
+"lon": 30.7075073,
+"tags": {
+"internet_access": "wlan",
+"name": "Kuyu Beergarden Hostel",
+"tourism": "hostel",
+"wikidata": "Q111118416"
+}
+},
+{
+"type": "node",
+"id": 13246120006,
+"lat": 36.8826345,
+"lon": 30.7113044,
+"tags": {
+"tourism": "apartment"
+}
+},
+{
+"type": "node",
+"id": 8140804817,
+"lat": 36.8879245,
+"lon": 30.7101462,
+"tags": {
+"addr:housenumber": "7",
+"addr:postcode": "07100",
+"addr:street": "1262",
+"name:en": "Leslion Luxury Hotel Spa",
+"tourism": "apartment"
+}
+},
+{
+"type": "node",
+"id": 1304981020,
+"lat": 36.8738049,
+"lon": 30.7149986,
+"tags": {
+"amenity": "restaurant",
+"check_date": "2023-12-19",
+"cuisine": "fish_and_chips",
+"name": "Lara Fish"
+}
+},
+{
+"type": "node",
+"id": 5254326128,
+"lat": 36.8736832,
+"lon": 30.7159482,
+"tags": {
+"bench": "yes",
+"bus": "yes",
+"highway": "bus_stop",
+"name": "TEVFİK IŞIK CD-1",
+"public_transport": "platform",
+"ref": "11906",
+"shelter": "yes"
+}
+},
+{
+"type": "node",
+"id": 1305561917,
+"lat": 36.8733017,
+"lon": 30.7170667,
+"tags": {
+"amenity": "restaurant",
+"cuisine": "burger",
+"name": "Evren Bufe"
+}
+},
+{
+"type": "node",
+"id": 4428295520,
+"lat": 36.8737849,
+"lon": 30.7172179,
+"tags": {
+"bench": "yes",
+"bus": "yes",
+"highway": "bus_stop",
+"name": "TEVFİK IŞIK CD-2",
+"public_transport": "platform",
+"ref": "10136",
+"shelter": "yes"
+}
+},
+{
+"type": "node",
+"id": 5254121221,
+"lat": 36.8710505,
+"lon": 30.7191349,
+"tags": {
+"amenity": "pharmacy",
+"healthcare": "pharmacy",
+"name": "Serhat Eczanesi"
+}
+},
+{
+"type": "node",
+"id": 5259772628,
+"lat": 36.8704501,
+"lon": 30.7199728,
+"tags": {
+"amenity": "pharmacy",
+"healthcare": "pharmacy",
+"name": "Zencefil Eczanesi"
+}
+},
+{
+"type": "node",
+"id": 5615351626,
+"lat": 36.8693696,
+"lon": 30.7182475,
+"tags": {
+"amenity": "cafe"
+}
+},
+{
+"type": "node",
+"id": 6354378891,
+"lat": 36.8709614,
+"lon": 30.7193063,
+"tags": {
+"addr:street": "Metin Kasapoğlu Caddesi",
+"amenity": "cafe",
+"brand": "Özsüt",
+"brand:wikidata": "Q20472928",
+"cuisine": "coffee_shop",
+"name": "Özsüt",
+"name:en": "Ozsut Cafe",
+"takeaway": "yes"
+}
+},
+{
+"type": "node",
+"id": 12248769115,
+"lat": 36.8699999,
+"lon": 30.7213952,
+"tags": {
+"name": "Çağlarsoy şarküteri Gold",
+"shop": "convenience"
+}
+},
+{
+"type": "node",
+"id": 12278281730,
+"lat": 36.8684631,
+"lon": 30.7200537,
+"tags": {
+"name": "Karakaş market",
+"shop": "convenience"
+}
+},
+{
+"type": "node",
+"id": 2029659893,
+"lat": 36.87894,
+"lon": 30.6603043,
+"tags": {
+"amenity": "fast_food",
+"brand": "McDonald's",
+"brand:wikidata": "Q38076",
+"brand:wikipedia": "en:McDonald's",
+"check_date": "2024-06-22",
+"cuisine": "burger",
+"name": "McDonald's",
+"takeaway": "yes"
+}
+},
+{
+"type": "node",
+"id": 6258864385,
+"lat": 36.8762913,
+"lon": 30.6607455,
+"tags": {
+"leisure": "playground"
+}
+},
+{
+"type": "node",
+"id": 6388088485,
+"lat": 36.8793995,
+"lon": 30.6591495,
+"tags": {
+"leisure": "playground"
+}
+},
+{
+"type": "node",
+"id": 10683019746,
+"lat": 36.8802932,
+"lon": 30.6672877,
+"tags": {
+"amenity": "fast_food",
+"check_date": "2023-02-21",
+"cuisine": "pizza",
+"name": "Pasaport pizza"
+}
+},
+{
+"type": "node",
+"id": 13815455879,
+"lat": 36.880187,
+"lon": 30.6652714,
+"tags": {
+"name": "Carrefour express",
+"shop": "supermarket"
+}
+},
+{
+"type": "node",
+"id": 4570026489,
+"lat": 36.8840829,
+"lon": 30.6617522,
+"tags": {
+"leisure": "park",
+"name": "Güneş Ev"
+}
+},
+{
+"type": "node",
+"id": 10707754628,
+"lat": 36.8825931,
+"lon": 30.6592406,
+"tags": {
+"brand": "Migros",
+"brand:wikidata": "Q1754510",
+"brand:wikipedia": "en:Migros",
+"name": "Migros",
+"opening_hours": "Mo-Su 10:00-22:00",
+"shop": "supermarket"
+}
+},
+{
+"type": "node",
+"id": 14089457217,
+"lat": 36.8806676,
+"lon": 30.667938,
+"tags": {
+"amenity": "pub",
+"contact:phone": "+90 545 122 15 55",
+"name": "Unlock",
+"opening_hours": "Mo-Su 08:00-02:00"
+}
+},
+{
+"type": "node",
+"id": 9203048639,
+"lat": 36.8926388,
+"lon": 30.6699293,
+"tags": {
+"name": "Meltem",
+"public_transport": "stop_position",
+"railway": "tram_stop",
+"tram": "yes"
+}
+},
+{
+"type": "node",
+"id": 9203048640,
+"lat": 36.8925633,
+"lon": 30.669925,
+"tags": {
+"name": "Meltem",
+"public_transport": "stop_position",
+"railway": "tram_stop",
+"tram": "yes"
+}
+},
+{
+"type": "node",
+"id": 10045076832,
+"lat": 36.9051608,
+"lon": 30.6600211,
+"tags": {
+"bus": "yes",
+"public_transport": "stop_position"
+}
+},
+{
+"type": "node",
+"id": 8018932285,
+"lat": 36.8846515,
+"lon": 30.6746999,
+"tags": {
+"addr:city": "Antalya",
+"addr:district": "Muratpaşa",
+"addr:neighbourhood": "Moon Garden Antalya, Meltem Mahallesi, Tarık Akıltopu Caddesi Atatürk Kültür Parkı içi No1/2 Muratpaşa/ANTALYA, Antalya, Turkey",
+"addr:postcode": "07050",
+"amenity": "bar",
+"cuisine": "coffee_shop",
+"name": "MOON GARDEN ANTALYA",
+"name:tr": "MOON GARDEN ANTALYA",
+"opening_hours": "24/7"
+}
+},
+{
+"type": "node",
+"id": 12878797042,
+"lat": 36.8772627,
+"lon": 30.7083777,
+"tags": {
+"addr:city": "Antalya",
+"addr:district": "Muratpaşa",
+"addr:neighbourhood": "Gençlik",
+"addr:postcode": "07100",
+"amenity": "bar",
+"brewery": "various",
+"min_age": "18",
+"name": "Elefante",
+"not:name": "Jugglers",
+"outdoor_seating": "yes",
+"payment:cash": "yes",
+"payment:credit_cards": "yes",
+"smoking": "outside"
+}
+},
+{
+"type": "node",
+"id": 13246205780,
+"lat": 36.8802363,
+"lon": 30.7047329,
+"tags": {
+"leisure": "park",
+"name": "Dog Park"
+}
+},
+{
+"type": "node",
+"id": 11158852805,
+"lat": 36.8856716,
+"lon": 30.7015716,
+"tags": {
+"amenity": "nightclub",
+"name": "King Meyhane ve Pub",
+"name:en": "King Pub"
+}
+},
+{
+"type": "node",
+"id": 1489666906,
+"lat": 36.8816424,
+"lon": 30.7085153,
+"tags": {
+"amenity": "pub"
+}
+},
+{
+"type": "node",
+"id": 10219528264,
+"lat": 36.8863804,
+"lon": 30.7087364,
+"tags": {
+"amenity": "nightclub",
+"check_date": "2022-11-26",
+"name": "Kamyon Disco"
+}
+},
+{
+"type": "node",
+"id": 6762026887,
+"lat": 36.909425,
+"lon": 30.6796795,
+"tags": {
+"bus": "yes",
+"public_transport": "stop_position"
+}
+},
+{
+"type": "node",
+"id": 8343173021,
+"lat": 36.9058263,
+"lon": 30.6866775,
+"tags": {
+"addr:street": "Zambak Caddesi",
+"amenity": "marketplace",
+"brand": "Şok",
+"brand:wikidata": "Q19613992",
+"brand:wikipedia": "tr:Şok (market)",
+"name": "Şok",
+"opening_hours": "Perşembe 09:00-18.00",
+"organic": "yes",
+"shop": "supermarket"
+}
+},
+{
+"type": "node",
+"id": 3037262691,
+"lat": 36.8652842,
+"lon": 30.7280529,
+"tags": {
+"amenity": "pub",
+"name": "ForFun",
+"tourism": "theme_park"
+}
+},
+{
+"type": "node",
+"id": 5920760898,
+"lat": 36.8758967,
+"lon": 30.7069351,
+"tags": {
+"name:en": "Cliff beach access STP",
+"natural": "beach"
+}
+},
+{
+"type": "way",
+"id": 120399112,
+"bounds": {
+"minlat": 36.873333,
+"minlon": 30.7183659,
+"maxlat": 36.8737044,
+"maxlon": 30.7303908
+},
+"geometry": [
+{
+"lat": 36.8735135,
+"lon": 30.7183659
+},
+{
+"lat": 36.8735301,
+"lon": 30.7185568
+},
+{
+"lat": 36.8735582,
+"lon": 30.718812
+},
+{
+"lat": 36.8736047,
+"lon": 30.719141
+},
+{
+"lat": 36.873677,
+"lon": 30.7195645
+},
+{
+"lat": 36.8736878,
+"lon": 30.7197834
+}
+],
+"tags": {
+"highway": "primary",
+"name": "Portakal Çiceği Caddesi",
+"oneway": "yes",
+"source": "bing",
+"surface": "asphalt"
+}
+},
+{
+"type": "way",
+"id": 120399129,
+"bounds": {
+"minlat": 36.8736502,
+"minlon": 30.7176755,
+"maxlat": 36.8821482,
+"maxlon": 30.7185202
+},
+"geometry": [
+{
+"lat": 36.8736502,
+"lon": 30.7185202
+},
+{
+"lat": 36.8737893,
+"lon": 30.7184737
+},
+{
+"lat": 36.8748052,
+"lon": 30.718088
+},
+{
+"lat": 36.8752452,
+"lon": 30.7179621
+},
+{
+"lat": 36.8760214,
+"lon": 30.7177384
+},
+{
+"lat": 36.8761832,
+"lon": 30.7177251
+}
+],
+"tags": {
+"highway": "primary",
+"lanes": "2",
+"maxspeed": "70",
+"name": "Burhanettin Onat Caddesi",
+"oneway": "yes",
+"shoulder": "right",
+"source": "bing",
+"surface": "asphalt"
+}
+},
+{
+"type": "way",
+"id": 1414047013,
+"bounds": {
+"minlat": 36.900492,
+"minlon": 30.65601,
+"maxlat": 36.900889,
+"maxlon": 30.6603749
+},
+"geometry": [
+{
+"lat": 36.900889,
+"lon": 30.6603749
+},
+{
+"lat": 36.9005777,
+"lon": 30.6571019
+},
+{
+"lat": 36.9005313,
+"lon": 30.6566019
+},
+{
+"lat": 36.9005022,
+"lon": 30.6562221
+},
+{
+"lat": 36.900492,
+"lon": 30.65601
+}
+],
+"tags": {
+"highway": "trunk",
+"oneway": "yes",
+"start_date": "2025-08-09"
+}
+},
+{
+"type": "way",
+"id": 1414047014,
+"bounds": {
+"minlat": 36.9003275,
+"minlon": 30.6560336,
+"maxlat": 36.9007169,
+"maxlon": 30.6610038
+},
+"geometry": [
+{
+"lat": 36.9003275,
+"lon": 30.6560336
+},
+{
+"lat": 36.9003377,
+"lon": 30.6562457
+},
+{
+"lat": 36.9007169,
+"lon": 30.6610038
+}
+],
+"tags": {
+"highway": "trunk",
+"oneway": "yes"
+}
+},
+{
+"type": "way",
+"id": 27313979,
+"bounds": {
+"minlat": 36.8931016,
+"minlon": 30.6939956,
+"maxlat": 36.8992439,
+"maxlon": 30.7022947
+},
+"geometry": [
+{
+"lat": 36.8931016,
+"lon": 30.7022947
+},
+{
+"lat": 36.8931195,
+"lon": 30.702272
+},
+{
+"lat": 36.8931596,
+"lon": 30.7022213
+},
+{
+"lat": 36.8932224,
+"lon": 30.7021417
+},
+{
+"lat": 36.8934753,
+"lon": 30.701844
+},
+{
+"lat": 36.893956,
+"lon": 30.7013047
+}
+],
+"tags": {
+"highway": "pedestrian",
+"lit": "yes",
+"name": "Şarampol Caddesi",
+"surface": "asphalt"
+}
+},
+{
+"type": "way",
+"id": 91744786,
+"bounds": {
+"minlat": 36.8930661,
+"minlon": 30.6938891,
+"maxlat": 36.8991127,
+"maxlon": 30.7021116
+},
+"geometry": [
+{
+"lat": 36.8991127,
+"lon": 30.6938891
+},
+{
+"lat": 36.8981179,
+"lon": 30.695745
+},
+{
+"lat": 36.8977715,
+"lon": 30.6964009
+},
+{
+"lat": 36.8974011,
+"lon": 30.6970635
+},
+{
+"lat": 36.89725,
+"lon": 30.6972994
+},
+{
+"lat": 36.8970927,
+"lon": 30.6974776
+}
+],
+"tags": {
+"highway": "pedestrian",
+"lit": "yes",
+"name": "Şarampol Caddesi",
+"surface": "asphalt"
+}
+},
+{
+"type": "way",
+"id": 380301961,
+"bounds": {
+"minlat": 36.8829747,
+"minlon": 30.7026356,
+"maxlat": 36.8834563,
+"maxlon": 30.7029742
+},
+"geometry": [
+{
+"lat": 36.8834024,
+"lon": 30.7026519
+},
+{
+"lat": 36.8832635,
+"lon": 30.7028147
+},
+{
+"lat": 36.8831522,
+"lon": 30.7028839
+},
+{
+"lat": 36.8830312,
+"lon": 30.7028929
+},
+{
+"lat": 36.8829747,
+"lon": 30.7028784
+},
+{
+"lat": 36.8829785,
+"lon": 30.7029368
+}
+],
+"tags": {
+"fee": "yes",
+"image": "https://photos.app.goo.gl/F4VH6anDFbSuwEZy6",
+"leisure": "beach_resort",
+"name:en": "Mermerli beach",
+"name:ru": "Мермерли",
+"natural": "beach",
+"surface": "sand"
+}
+},
+{
+"type": "way",
+"id": 724760484,
+"bounds": {
+"minlat": 36.8596401,
+"minlon": 30.7288475,
+"maxlat": 36.8600167,
+"maxlon": 30.7291534
+},
+"geometry": [
+{
+"lat": 36.8600167,
+"lon": 30.728909
+},
+{
+"lat": 36.8598932,
+"lon": 30.7288475
+},
+{
+"lat": 36.8598291,
+"lon": 30.7290119
+},
+{
+"lat": 36.8597306,
+"lon": 30.7290096
+},
+{
+"lat": 36.8596401,
+"lon": 30.7291358
+},
+{
+"lat": 36.8598165,
+"lon": 30.7291534
+}
+],
+"tags": {
+"lifeguard": "yes",
+"name": "İnciraltı Plajı",
+"natural": "beach"
+}
+},
+{
+"type": "node",
+"id": 1,
+"lat": 36.88,
+"lon": 30.7,
+"tags": {
+"tourism": "hotel",
+"name": "โรงแรม"
+}
+},
+{
+"type": "node",
+"id": 2,
+"lat": 36.88,
+"lon": 30.7,
+"tags": {
+"tourism": "hotel"
+}
+}
+]
+}

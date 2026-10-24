@@ -353,13 +353,19 @@ def at_most_one_joke(output, inp, n=1):
 
 
 MONEY_RISK_RE = re.compile(r"₽|руб|отмен|штраф|невозврат|риск|пересадк|ночью|поздн", re.IGNORECASE)
+RISK_ONLY_RE = re.compile(r"штраф|невозврат|риск|пересадк|ночью|ночной|поздн|нюанс|без обмена|не вернут|отмен", re.IGNORECASE)
+FREE_CANCEL_RE = re.compile(r"бесплатн\w*\s+отмен\w*|отмен\w*\s+бесплатн\w*", re.IGNORECASE)
 
 
 def money_risks_plain(output, inp):
-    """No joke markers in sentences about money, cancellation or risks."""
+    """Money and risks are said plainly: no text jokes or smileys next to money or a risk, and no emoji at all
+    in a sentence that states a risk. A decorative emoji next to a price or good news («бесплатная отмена»)
+    is not a joke."""
     for s in sentences(all_text(output)):
-        if MONEY_RISK_RE.search(s) and joke_markers(s):
+        if MONEY_RISK_RE.search(s) and SMILEY_RE.findall(s):
             return _res(False, f"joke next to money/risk: {s[:120]!r}")
+        if RISK_ONLY_RE.search(FREE_CANCEL_RE.sub("", s)) and EMOJI_RE.findall(s):
+            return _res(False, f"emoji next to a risk: {s[:120]!r}")
     return _res(True)
 
 

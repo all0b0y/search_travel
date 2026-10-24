@@ -163,3 +163,13 @@ def test_attention_skips_info_and_joins_readably():
     assert attention(issues) == ("между посадкой и трансфером 20 мин — нужно не меньше 45; "
                                  "трансфер подаётся раньше посадки самолёта.")
     assert attention([issues[0]]) == ""
+
+
+def test_calm_risks_drops_emoji_only_from_risk_sentences():
+    from agent.respond import calm_risks
+    text = ("Советую «Быстрее»: 105 080 ₽ и бесплатная отмена 🌴 У «Дешевле» пересадка всего 40 минут 🌴 "
+            "Хорошей поездки! ☀️")
+    assert calm_risks(text) == ("Советую «Быстрее»: 105 080 ₽ и бесплатная отмена 🌴 У «Дешевле» пересадка всего 40 минут "
+                                "Хорошей поездки! ☀️")
+    assert calm_risks("Обратный вылет ночью, в 05:10 😴.") == "Обратный вылет ночью, в 05:10."
+    assert calm_risks("Без эмодзи.") == "Без эмодзи."

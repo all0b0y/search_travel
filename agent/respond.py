@@ -4,6 +4,8 @@ Prices, times and totals come from code data (variants, mock carts and orders); 
 `why` / `sacrifices` / `risks` / `not_for` / upsell lines come from the present card's output, matched
 by id. When the card failed (degraded turn) the code-written Note texts are used instead.
 """
+import re
+
 from . import payloads as P
 from .steps import _arrival, _hhmm_after, _hotel_checkin, _order_has_transfers, recommended_hint
 
@@ -202,7 +204,31 @@ def build_message(ctx):
         body = DEGRADED.get(ctx.present or "", "Готово.")
         if ctx.present == "present.info" and ctx.info_facts:
             body = "Вот что есть в данных по вашему вопросу — без пересказа моделью."
-    return " ".join(ctx.notes + [body]).strip()
+    return " ".join(ctx.notes + [calm_risks(body)]).strip()
+
+
+EMOJI_RE = re.compile("[\U0001F300-\U0001FAFF\U00002600-\U000027BF]\uFE0F?")
+RISK_RE = re.compile(r"штраф|невозврат|риск|пересадк|ночью|ночной|поздн|нюанс|без обмена|не вернут|не успе|отмен", re.I)
+FREE_CANCEL_RE = re.compile(r"бесплатн\w*\s+отмен\w*|отмен\w*\s+бесплатн\w*", re.I)
+
+
+def calm_risks(text: str) -> str:
+    """Risks are said plainly: drop emoji from any sentence that states a risk (voice rule 5).
+
+    Cheap models sometimes end a risk sentence with a palm tree; code removes it instead of a rerun.
+    «Бесплатная отмена» is good news, not a risk.
+    """
+    if not text or not EMOJI_RE.search(text):
+        return text
+    # a sentence ends at . ! ? … or at an emoji followed by a new capitalised sentence («… отмена 🌴 У «Дешевле» …»)
+    parts = re.split(r"(?<=[.!?…])\s+|(?<=[\U0001F300-\U0001FAFF\U00002600-\U000027BF\uFE0F])\s+(?=[А-ЯЁA-Z«])", text)
+    out = []
+    for part in parts:
+        if RISK_RE.search(FREE_CANCEL_RE.sub("", part)) and EMOJI_RE.search(part):
+            part = re.sub(r"\s{2,}", " ", EMOJI_RE.sub("", part)).strip()
+            part = re.sub(r"\s+([.!?…,])", r"\1", part)
+        out.append(part)
+    return " ".join(out)
 
 
 # ---------------------------------------------------------------- response

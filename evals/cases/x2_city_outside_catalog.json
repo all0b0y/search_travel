@@ -187,30 +187,6 @@
     },
     {
       "type": "predicate",
-      "name": "mentions_any",
-      "args": {
-        "words": [
-          "Тромс"
-        ]
-      }
-    },
-    {
-      "type": "predicate",
-      "name": "mentions_any",
-      "args": {
-        "words": [
-          "нет в демо",
-          "в демо нет",
-          "не нашл",
-          "нет в каталоге",
-          "пока нет",
-          "не могу",
-          "нет "
-        ]
-      }
-    },
-    {
-      "type": "predicate",
       "name": "recommended_in_items",
       "args": {
         "allow_null": true
@@ -218,6 +194,5 @@
     }
   ],
   "runs": 5,
-  "notes": "The user asked for Tromsø (not in the catalog; brief.destination has id null): say so honestly and offer the similar northern places.",
-  "unsure": "How the engine flags «not in catalog» to the destinations card is not fixed in the contract (here: destination id null in the brief)."
+  "notes": "The user asked for Tromsø (not in the catalog; brief.destination has id null): say so honestly and offer the similar northern places."
 }

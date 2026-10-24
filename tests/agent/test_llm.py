@@ -131,7 +131,7 @@ def test_server_error_is_retried_then_llm_error(monkeypatch):
     t = Transport(status=500)
     with pytest.raises(LLMError):
         backend(t).complete(req())
-    assert len(t.requests) == 3          # a 5xx is transient: two more tries, then an honest error
+    assert len(t.requests) == 4          # a 5xx is transient: three more tries, then an honest error
 
 
 def test_client_error_is_llm_error_without_retry(monkeypatch):

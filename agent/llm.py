@@ -159,7 +159,7 @@ class JsonBackend:
     def _clock(self):
         return time.monotonic()
 
-    transport_delays = (0.4, 1.2)   # seconds before the 2nd and 3rd attempt of a transient transport failure
+    transport_delays = (0.5, 1.5, 3.0)   # seconds before each extra attempt after a transient transport failure
 
     def _call_with_transport_retry(self, req, messages, usage):
         for attempt in range(len(self.transport_delays) + 1):
