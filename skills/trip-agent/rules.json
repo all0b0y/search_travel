@@ -16,7 +16,8 @@
     "guard_fail": 0.5,
     "segment": 0.8,
     "district": 0.7,
-    "timeout_s": 1.5
+    "timeout_s": 1.5,
+    "short_reply_max_words": 4
   },
   "image": {
     "place_min_conf": 0.8,

@@ -1,0 +1,636 @@
+"""Engine facade: the turn pipeline (AGENT_PLAN.md section 5, "Module interfaces").
+
+    engine = Engine()                                   # real defaults (skill, OpenRouter, Jev, mock, open data)
+    sid = engine.new_session(profile_id="demo", debug=True)
+    response = engine.handle(sid, {"session_id": sid, "text": "к тёплому морю в ноябре"})
+
+Per turn: action mapping (no model) or Jev routing / `understand` -> patch validation hook ->
+shift_days and image pre-route -> route match -> steps -> validation hooks (one rerun) ->
+sensitivity / ask-or-assume -> present card + output guards (one rerun) -> response -> analytics
+and prefetch hooks. Budget: <= rules.max_flash_calls_per_turn model calls per turn plus at most one
+rerun per card; enforced and recorded in the trace. `handle` never raises for user-caused problems
+(unknown destination, no offers, model or tool failure): it answers with an honest error response.
+"""
+import json
+import os
+import threading
+import time
+from collections import defaultdict
+from datetime import date, timedelta
+from pathlib import Path
+
+import jsonschema
+
+from . import jev as jev_module
+from . import payloads as P
+from .hooks import DEFAULT_HOOKS, as_issue, blocking, issue
+from .jev_policy import guard_card_output, route_short_reply
+from .llm import LLMError, LLMRequest
+from .mcp_client import ToolError, default_client
+from .prefetch import Prefetcher
+from .profiles import ProfileStore
+from .respond import build_response, error_response
+from .sessions import SessionStore
+from .state import (ALLOWED_PATCH_PATHS, ALLOWED_UNSET_PATHS, CachedResult, PatchError, Session, apply_patch)
+from .steps import (STEP_REGISTRY, Ctx, Domain, StepError, after_travellers_hook, check_variants_hook,
+                    destination_record, merge_prefetched, prepare_brief, recommended_hint, run_image_match,
+                    run_search, resolve_dates, step_log_event, store_result)
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+REQUEST_SCHEMA = json.loads((REPO_ROOT / "agent/contracts/request.schema.json").read_text(encoding="utf-8"))
+DEFAULT_FILES_DIR = REPO_ROOT / "runtime" / "files"
+STAGE_OF_CARD = {"present.destinations": "inspiration", "present.variants": "selection", "present.update": "selection"}
+QUESTION_CARDS = ("present.destinations", "present.variants", "present.update")
+
+
+class BudgetExceeded(RuntimeError):
+    """The pipeline tried to call the model beyond the per-turn budget (a programming error)."""
+
+
+def _default_lazy_city(name):
+    from data_build.lazy import build_city  # network: one attempt per unknown name per session
+    return build_city(name, timeout_s=60)
+
+
+class _Lazy:
+    """Build a default dependency on first use (no key/network/DB needed to construct the Engine)."""
+
+    def __init__(self, factory):
+        self.factory = factory
+        self.value = None
+        self.lock = threading.Lock()
+
+    def get(self):
+        if self.value is None:
+            with self.lock:
+                if self.value is None:
+                    self.value = self.factory()
+        return self.value
+
+
+def _default_backend():
+    from .env import load_env
+    from .llm import OpenRouterBackend
+    load_env(str(REPO_ROOT / ".env"))
+    return OpenRouterBackend()
+
+
+def _default_opendata():
+    from .opendata import OpenData   # ENGINE-B
+    return OpenData()
+
+
+class Engine:
+    def __init__(self, skill=None, backend=None, jev=None, ostrovok=None, opendata=None, flags=None, store=None,
+                 profiles=None, clock=None, *, domain=None, hooks=None, prefetcher=None, lazy_city=None,
+                 files_dir=None):
+        if skill is None:
+            from .skill_loader import load_skill
+            skill = load_skill()
+        if flags is None:
+            from .flags import parse_flags
+            flags = parse_flags()
+        self.skill = skill
+        self.flags = flags
+        self._backend = _Lazy(_default_backend) if backend is None else None
+        self._backend_value = backend
+        self.jev = jev if jev is not None else jev_module.decide
+        self.ostrovok = ostrovok if ostrovok is not None else default_client()
+        self._opendata = _Lazy(_default_opendata) if opendata is None else None
+        self._opendata_value = opendata
+        self.store = store if store is not None else SessionStore()
+        self.profiles = profiles if profiles is not None else ProfileStore()
+        self.clock = clock
+        self.domain = domain if domain is not None else Domain()
+        self.prefetcher = prefetcher if prefetcher is not None else Prefetcher()
+        if lazy_city is None:
+            lazy_city = _default_lazy_city if os.environ.get("TRIP_AGENT_LAZY_CITY", "1") != "0" else False
+        self.lazy_city = lazy_city or None
+        self.files_dir = Path(files_dir) if files_dir else DEFAULT_FILES_DIR
+        self.hooks = hooks if hooks is not None else self._default_hooks()
+        self._locks = defaultdict(threading.Lock)
+        self._locks_guard = threading.Lock()
+
+    # ------------------------------------------------------------ dependencies
+    @property
+    def backend(self):
+        return self._backend_value if self._backend is None else self._backend.get()
+
+    @property
+    def opendata(self):
+        if self._opendata is None:
+            return self._opendata_value
+        try:
+            return self._opendata.get()
+        except ImportError:
+            return None
+
+    def _default_hooks(self):
+        hooks = DEFAULT_HOOKS.copy()
+        hooks.register("after_understand", validate_patch_hook, "validate", "patch")
+        hooks.register("after_variants", check_variants_hook, "validate", "checks")
+        hooks.register("after_travellers", after_travellers_hook, "validate", "travellers")
+        hooks.register("after_present", prefetch_hook, "prefetch", "prefetch_next")
+        hooks.register("turn_end", step_log_event, "analytics", "insights")
+        return hooks
+
+    # ------------------------------------------------------------ sessions
+    def new_session(self, profile_id=None, debug=False, now=None):
+        if now is None and self.clock is not None:
+            now = self.clock()
+        session = Session.new(now=now, profile_id=profile_id, debug=debug)
+        self.store.put(session)
+        return session.id
+
+    def get_session(self, session_id):
+        session = self.store.get(session_id)
+        if session is None:
+            raise KeyError(f"unknown session: {session_id}")
+        return session
+
+    def close(self):
+        if self.prefetcher is not None:
+            self.prefetcher.shutdown(wait=False)
+        close = getattr(self.ostrovok, "close", None)
+        if close:
+            close()
+
+    def _lock_for(self, session_id):
+        with self._locks_guard:
+            return self._locks[session_id]
+
+    # ------------------------------------------------------------ turn
+    def handle(self, session_id, request):
+        request = dict(request or {})
+        request.setdefault("session_id", session_id)
+        session = self.store.get(session_id) if isinstance(session_id, str) else None
+        if session is None:
+            return error_response(session_id, "session_not_found",
+                                  "Сессия не найдена — начните новый разговор.", retryable=False)
+        errors = sorted(jsonschema.Draft7Validator(REQUEST_SCHEMA).iter_errors(request), key=lambda e: e.path)
+        if errors or request["session_id"] != session_id:
+            return error_response(session_id, "bad_request", "Не понял запрос — попробуйте ещё раз.",
+                                  turn=session.turn, stage=session.stage)
+        with self._lock_for(session_id):
+            session = self.store.get(session_id)
+            return self._handle(session, request)
+
+    def _handle(self, session, request):
+        started = time.perf_counter()
+        if self.clock is not None:
+            session.now = self.clock()
+        session.turn += 1
+        ctx = Ctx(engine=self, session=session, request=request, text=request.get("text"),
+                  image=request.get("image"), action=request.get("action"))
+        ctx.profile = self.profiles.get(session.profile_id)
+        ctx.old_totals = {v.id: v.totals.rub for v in session.variants}
+        ctx.trace["stage_path"].append(session.stage)
+        ctx.trace["flags"] = self.flags.as_dict()
+        try:
+            self._run_turn(ctx)
+        except StepError as exc:
+            self._fail(ctx, exc.code, exc.message, exc.retryable)
+        except ToolError as exc:
+            code = "bad_request" if exc.code == "bad_request" else "tool_unavailable"
+            self._fail(ctx, code, "Сервис бронирования сейчас не ответил, поэтому вариантов не будет — выдумывать их "
+                                  "не хочу. Попробуйте ещё раз через минуту, ваш запрос я запомнил."
+                       if code == "tool_unavailable" else "Не получилось выполнить запрос с такими данными.",
+                       exc.retryable)
+            ctx.trace["errors"].append(f"tool {exc.tool}: {exc.message}")
+        except LLMError as exc:
+            invalid = bool(exc.errors)
+            self._fail(ctx, "invalid_model_output" if invalid else "model_unavailable",
+                       "Не получилось разобрать сообщение — модель сейчас отвечает с ошибками. Повторите, "
+                       "пожалуйста, чуть позже или нажмите на кнопку.", True)
+            ctx.trace["errors"].append(f"llm {exc.card}: {exc}")
+        ctx.trace["timings_ms"]["total"] = round((time.perf_counter() - started) * 1000, 1)
+        ctx.trace["stage_path"].append(session.stage)
+        response = build_response(ctx)
+        self._finish(ctx, response)
+        return response
+
+    def _fail(self, ctx, code, message, retryable):
+        ctx.error = {"code": code, "retryable": bool(retryable)}
+        ctx.message = message
+        ctx.questions, ctx.chips = [], []
+        ctx.trace["errors"].append(f"{code}: {message}")
+
+    def _run_turn(self, ctx):
+        s = ctx.session
+        merge_prefetched(ctx)
+        route_kw = {}
+        if ctx.action:
+            self._map_action(ctx)
+            route_kw = {"action": ctx.action["type"]}
+        else:
+            routed = None
+            if self.flags.jev_routing and ctx.text and not ctx.image:
+                routed = route_short_reply(self.jev, s, ctx.text, self.skill, ctx.trace["jev"])
+            if routed is not None:
+                ctx.action = routed
+                ctx.trace["routed_by"] = "jev"
+                self._map_action(ctx)
+                route_kw = {"action": routed["type"]}
+            else:
+                self._understand(ctx)
+                route_kw = {"intent": ctx.intent}
+        self._validate_patch(ctx)
+        self._resolve_shift(ctx)
+        if ctx.stop:
+            return
+        if ctx.image_info:
+            run_image_match(ctx)
+        tentative, _, _ = prepare_brief(ctx, s.brief, ctx.patch)
+        route = self.skill.match_route(stage=s.stage, brief=tentative, **route_kw)
+        if route is None:
+            raise StepError("bad_request", "Не понял, что сделать — попробуйте сформулировать иначе.")
+        ctx.route = route
+        ctx.present = route.present
+        ctx.trace["route"] = route.id or f"routes[{route.index}]"
+        if route.present == "present.fallback":
+            ctx.fallback_reason = ctx.intent if ctx.intent in ("smalltalk", "out_of_scope") else "unknown"
+        for name in route.steps:
+            if ctx.stop:
+                break
+            t0 = time.perf_counter()
+            STEP_REGISTRY[name](ctx)
+            ctx.trace["steps"].append(name)
+            ctx.trace["timings_ms"][name] = round((time.perf_counter() - t0) * 1000, 1)
+        if ctx.present and not ctx.message and not ctx.stop:
+            self._present(ctx)
+        if ctx.present in STAGE_OF_CARD and not ctx.error and (ctx.variants or ctx.destination_items):
+            s.stage = STAGE_OF_CARD[ctx.present]
+
+    # ------------------------------------------------------------ 1. actions
+    def _map_action(self, ctx):
+        s = ctx.session
+        kind, p = ctx.action["type"], ctx.action.get("payload") or {}
+        sets, unsets = ctx.patch["set"], ctx.patch["unset"]
+
+        def put(field, value):
+            if value is None and field in ALLOWED_UNSET_PATHS:
+                unsets.append(field)
+            elif value is not None:
+                sets[field] = value
+
+        if kind == "answer_question":
+            q = next((q for q in s.pending_questions if q.id == p["question_id"]), None)
+            if q is None:
+                spec = next((f for f, spec in (self.skill.questions or {}).items() if spec.get("id") == p["question_id"]),
+                            None)
+                if spec is None:
+                    raise StepError("bad_request", "Этот вопрос уже неактуален — выберите из последних кнопок.")
+                field = spec
+            else:
+                field = q.field
+            put(field, p.get("value"))
+        elif kind == "set_chip":
+            put(p["field"], p.get("value"))
+        elif kind == "choose_destination":
+            item = s.find_shown("destination", p["destination_id"])
+            ctx.destination_hint = p["destination_id"]
+            sets["destination.name"] = item.title if item else p["destination_id"]
+        elif kind in ("choose_variant", "add_to_cart"):
+            ctx.variant_ids = [p["variant_id"]]
+            ctx.extras = list(p.get("extras") or [])
+        elif kind == "swap_hotel":
+            ctx.swap = dict(p)
+            ctx.variant_ids = [p["variant_id"]]
+        elif kind == "compare":
+            ctx.variant_ids = list(p["variant_ids"])
+        elif kind == "checkout":
+            ctx.checkout_payload = dict(p)
+        elif kind == "pay":
+            pass
+        elif kind == "order_action":
+            if s.order_id and p["order_id"] != s.order_id:
+                raise StepError("bad_request", "Это не ваш текущий заказ.")
+            ctx.post_purchase = {"kind": p["kind"], "params": dict(p.get("params") or {})}
+        ctx.trace["notes"].append(f"action {kind}")
+
+    # ------------------------------------------------------------ 2. understand
+    def _understand(self, ctx):
+        s = ctx.session
+        payload = P.understand_input(s, ctx.text or "", bool(ctx.image))
+        out = self._call_card(ctx, "understand", payload, images=[ctx.image] if ctx.image else [])
+        ctx.understand = out
+        ctx.intent = out.get("intent")
+        patch = out.get("patch") or {}
+        ctx.patch = {"set": dict(patch.get("set") or {}), "unset": list(patch.get("unset") or [])}
+        ctx.refs = list(out.get("refs") or [])
+        ctx.image_info = out.get("image") if ctx.image else None
+        ctx.post_purchase = out.get("post_purchase")
+        ctx.trace["understand"] = {"intent": ctx.intent, "patch": ctx.patch, "refs": ctx.refs}
+
+    # ------------------------------------------------------------ 3. patch validation
+    def _validate_patch(self, ctx):
+        issues = self.hooks.run("after_understand", ctx, kinds=("validate",))
+        bad = {(i.get("data") or {}).get("path") for i in blocking(issues)}
+        if bad:
+            ctx.patch["set"] = {k: v for k, v in ctx.patch["set"].items() if k not in bad}
+            ctx.patch["unset"] = [k for k in ctx.patch["unset"] if k not in bad]
+            ctx.trace["notes"].append(f"patch: dropped {sorted(p for p in bad if p)}")
+            for i in blocking(issues):
+                if (i.get("data") or {}).get("say"):
+                    ctx.note(i["data"]["say"])
+        answered = set(ctx.patch["set"]) | set(ctx.patch["unset"])
+        if answered:
+            ctx.session.pending_questions = [q for q in ctx.session.pending_questions if q.field not in answered]
+
+    # ------------------------------------------------------------ shift_days (decision 6)
+    def _resolve_shift(self, ctx):
+        sets = ctx.patch["set"]
+        if "dates.shift_days" not in sets:
+            return
+        k = sets["dates.shift_days"]
+        s = ctx.session
+        shown = [v for v in (s.variant(i.id) for i in s.shown.variants) if v is not None] or list(s.variants)
+        span = None
+        for v in shown:
+            stay = next((st for st in v.steps if st.type == "stay"), None)
+            if stay is not None:
+                span = (date.fromisoformat(stay.start[:10]), date.fromisoformat(stay.end[:10]))
+                break
+            if v.steps:
+                span = (date.fromisoformat(v.steps[0].start[:10]), date.fromisoformat(v.steps[-1].end[:10]))
+                break
+        if span is not None and isinstance(k, int):
+            sets.pop("dates.shift_days")
+            ctx.shift_days = k
+            sets["dates.start"] = (span[0] + timedelta(days=k)).isoformat()
+            sets["dates.end"] = (span[1] + timedelta(days=k)).isoformat()
+            ctx.trace["notes"].append(f"shift_days {k} resolved against shown dates {span[0]}..{span[1]}")
+        elif not s.brief.has("dates.start"):
+            ctx.stop = True
+            ctx.present = None
+            ctx.message = "От каких дат сдвинуть? Напишите даты поездки — например, «с 12 по 19 ноября»."
+
+    # ------------------------------------------------------------ model calls
+    def _call_card(self, ctx, card, payload, images=(), rerun_issues=None):
+        spec = self.skill.card(card)
+        budget = ctx.trace["budget"]
+        limit = int(self.skill.rules.get("max_flash_calls_per_turn", 2))
+        reruns = budget.setdefault("reruns", {})
+        if rerun_issues is not None:
+            max_rerun = int((self.skill.rules.get("retries") or {}).get("card_rerun_on_hook_fail", 1))
+            if reruns.get(card, 0) >= max_rerun:
+                raise BudgetExceeded(f"rerun budget exceeded for {card}")
+            reruns[card] = reruns.get(card, 0) + 1
+        else:
+            if ctx.flash_calls >= limit:
+                raise BudgetExceeded(f"model call budget exceeded ({limit}) at {card}")
+            ctx.flash_calls += 1
+        budget.update(flash_calls=ctx.flash_calls, limit=limit)
+        system = self.skill.system_prompt(card)
+        if rerun_issues:
+            system += ("\n\nYour previous reply was rejected by the checks: "
+                       + "; ".join(f"{i['code']}: {i['message']}" for i in rerun_issues)
+                       + ". Write it again from the same input and fix exactly these problems.")
+        req = LLMRequest(card=card, system=system, user=json.dumps(payload, ensure_ascii=False, default=str),
+                         schema=spec.schema, images=list(images), thinking=spec.thinking, max_tokens=spec.max_tokens)
+        record = {"card": card, "rerun": rerun_issues is not None}
+        t0 = time.perf_counter()
+        try:
+            res = self.backend.complete(req)
+        except LLMError as exc:
+            record.update(ok=False, error=str(exc), retries=exc.retries,
+                          latency_ms=exc.latency_ms or round((time.perf_counter() - t0) * 1000),
+                          tokens=exc.usage, cost=(exc.usage or {}).get("cost_usd"))
+            ctx.trace["calls"].append(record)
+            raise
+        record.update(ok=True, model=res.model, provider=res.provider, tokens=res.usage, latency_ms=res.latency_ms,
+                      cost=res.usage.get("cost_usd"), retries=res.retries)
+        ctx.trace["calls"].append(record)
+        return res.data
+
+    # ------------------------------------------------------------ 7. present
+    def _present(self, ctx):
+        card = ctx.present
+        ctx.chips = self._chips(ctx, card)
+        payload = self._card_input(ctx, card)
+        ctx.card_input = payload
+        self.hooks.run("before_present", ctx)
+        try:
+            out = self._call_card(ctx, card, payload)
+        except LLMError:
+            ctx.degraded = True
+            ctx.trace["notes"].append(f"{card}: model failed, code texts used")
+            return
+        issues = self._guard(ctx, card, payload, out)
+        if blocking(issues):
+            try:
+                out2 = self._call_card(ctx, card, payload, rerun_issues=blocking(issues))
+                issues2 = self._guard(ctx, card, payload, out2)
+            except LLMError:
+                out2, issues2 = None, [issue("llm_error", "rerun failed")]
+            if out2 is not None and not blocking(issues2):
+                out = out2
+            else:
+                ctx.degraded = True
+                ctx.trace["notes"].append(f"{card}: guard failed twice, code texts used")
+                out = None
+        ctx.card_output = out
+
+    def _guard(self, ctx, card, payload, out):
+        issues = basic_card_guard(card, payload, out)
+        check = self.domain.get("check_card_output", required=False)
+        if check is not None:
+            issues += [as_issue(i) for i in check(card, payload, out, self.skill.rules) or []]
+        if self.flags.jev_guard:
+            issues += guard_card_output(self.jev, card, payload, out, self.skill, ctx.trace["jev"])
+        verdict = "block" if blocking(issues) else ("warn" if issues else "ok")
+        ctx.trace["hooks"].append({"event": "after_present", "name": "card_guard", "kind": "validate",
+                                   "verdict": verdict, "issues": issues, "card": card})
+        return issues
+
+    def _chips(self, ctx, card):
+        if card not in QUESTION_CARDS:
+            return []
+        asked = {q.field for q in ctx.questions}
+        chips = P.build_chips(self.skill, ctx.session.brief, exclude_fields=asked) if self.flags.sensitivity else []
+        scope = P.scope_chip(self.skill, ctx.session.brief)
+        if scope is not None and all(c.field != "scope" for c in chips):
+            chips.append(scope)
+        return chips
+
+    def _card_input(self, ctx, card):
+        s = ctx.session
+        if card == "present.destinations":
+            items = [{k: v for k, v in i.items() if k != "image_url"} for i in ctx.destination_items]
+            return P.destinations_input(s, items, ctx.questions, ctx.image_info, ctx.insight, ctx.chips)
+        if card in ("present.variants", "present.update"):
+            labels = P.record_shown(s, "variant", [(v.id, v.title or P.VARIANT_TITLES.get(v.id, v.id))
+                                                   for v in ctx.variants])
+            items = [P.variant_item(v, labels[v.id], self._district_counts(ctx, v)) for v in ctx.variants]
+            cap = int(self.skill.rules.get("max_upsell", 2)) * 2
+            changes = rebuilt = None
+            if card == "present.update":
+                new_totals = {v.id: v.totals.rub for v in ctx.variants}
+                totals = [{"field": f"totals.{vid}.rub", "before": ctx.old_totals.get(vid), "after": new_totals.get(vid)}
+                          for vid in list(ctx.old_totals) + [i for i in new_totals if i not in ctx.old_totals]
+                          if ctx.old_totals.get(vid) != new_totals.get(vid)]
+                changes, rebuilt = ctx.changes + totals, ctx.rebuilt
+            return P.variants_input(s, items, recommended_hint(ctx.variants), ctx.questions, ctx.upsell[:cap],
+                                    ctx.chips, changes, rebuilt)
+        if card == "present.compare":
+            labels = {i.id: i.label for i in s.shown.variants}
+            items = [P.variant_item(v, labels.get(v.id, str(n + 1)), self._district_counts(ctx, v))
+                     for n, v in enumerate(ctx.variants)]
+            return P.compare_input(s, items, P.compare_dimensions(s.brief), ctx.chips)
+        if card == "present.info":
+            return P.info_input(s, ctx.info_question, ctx.info_facts, ctx.chips)
+        if card == "present.aftercare":
+            from .steps import order_summary
+            return P.aftercare_input(s, order_summary(ctx.order) if ctx.order else None, ctx.aftercare_result,
+                                     ctx.chips)
+        return P.fallback_input(s, ctx.text or "", ctx.fallback_reason, ctx.chips)
+
+    def _district_counts(self, ctx, variant):
+        if variant.hotel is None:
+            return {}
+        from .steps import as_dict, find_offer
+        offer = find_offer(ctx, variant.hotel.offer_id) or {}
+        prof = as_dict(ctx.districts.get(offer.get("osm_id"))) if offer.get("osm_id") else None
+        counts = (prof or {}).get("poi_counts") or (prof or {}).get("counts") or {}
+        if isinstance(counts, str):
+            try:
+                counts = json.loads(counts)
+            except json.JSONDecodeError:
+                counts = {}
+        return counts
+
+    # ------------------------------------------------------------ 8. finish
+    def _finish(self, ctx, response):
+        s = ctx.session
+        if ctx.text:
+            s.remember_user(ctx.text)
+        elif ctx.image and not ctx.action:
+            s.remember_user("[фото]")
+        if response["message"]:
+            s.remember_agent(response["message"])
+        if not ctx.error and (ctx.present in QUESTION_CARDS or ctx.questions):
+            s.pending_questions = list(ctx.questions)
+        if any(ctx.files.values()) and s.order_id:
+            store_result(s, CachedResult(key=f"files:{s.order_id}", kind="files", params={},
+                                         fetched_at=s.clock(), data=dict(ctx.files)))
+        self.hooks.run("turn_end", ctx, kinds=("analytics",))
+        if self.flags.prefetch and not ctx.error:
+            self.hooks.run("after_present", ctx, kinds=("prefetch",))
+        t = ctx.trace
+        s.add_trace({"turn": s.turn, "route": t["route"], "stage_path": t["stage_path"], "steps": t["steps"],
+                     "calls": t["calls"], "budget": t["budget"], "hooks": t["hooks"], "jev": t["jev"],
+                     "tools": t["tools"], "timings_ms": t["timings_ms"], "notes": t["notes"], "errors": t["errors"],
+                     "degraded": ctx.degraded, "error": ctx.error})
+        self.store.put(s)
+
+
+# ---------------------------------------------------------------- default hooks and guards
+
+def validate_patch_hook(ctx):
+    """after_understand: every patch path must apply on its own; dates must be sane (not past, end > start)."""
+    out = []
+    brief = ctx.session.brief
+    sets, unsets = ctx.patch["set"], ctx.patch["unset"]
+    for path, value in list(sets.items()):
+        if path not in ALLOWED_PATCH_PATHS:
+            out.append(issue("patch_path", f"path not allowed: {path}", path=path))
+            continue
+        try:
+            apply_patch(brief, {"set": {path: value}})
+        except PatchError as exc:
+            out.append(issue("patch_value", str(exc), path=path))
+    for path in unsets:
+        if path not in ALLOWED_UNSET_PATHS:
+            out.append(issue("patch_unset", f"cannot unset {path}", path=path))
+    today = ctx.session.today()
+    start = sets.get("dates.start")
+    if isinstance(start, str):
+        try:
+            if date.fromisoformat(start) < today:
+                out.append(issue("date_past", f"start {start} is in the past", path="dates.start",
+                                 say="Эта дата уже прошла — взял ближайшие подходящие даты."))
+        except ValueError:
+            pass
+    end = sets.get("dates.end")
+    if isinstance(start, str) and isinstance(end, str):
+        try:
+            if date.fromisoformat(end) <= date.fromisoformat(start):
+                out.append(issue("date_order", "end is not after start", path="dates.end"))
+        except ValueError:
+            pass
+    return out
+
+
+def basic_card_guard(card, payload, out):
+    """Deterministic minimum (always on): ids and upsell candidates must come from the input."""
+    issues = []
+    ids = {i["id"] for i in payload.get("items") or [] if isinstance(i, dict) and "id" in i}
+    for item in out.get("items") or []:
+        if ids and item.get("id") not in ids:
+            issues.append(issue("unknown_id", f"item id {item.get('id')} is not in the input"))
+    rec = out.get("recommended_id")
+    if rec is not None and ids and rec not in ids:
+        issues.append(issue("unknown_recommended", f"recommended_id {rec} is not in the input"))
+    cands = {c["candidate_id"] for c in payload.get("upsell_candidates") or []}
+    for u in out.get("upsell") or []:
+        if u.get("candidate_id") not in cands:
+            issues.append(issue("unknown_upsell", f"upsell {u.get('candidate_id')} is not an input candidate"))
+    return issues
+
+
+def prefetch_hook(ctx):
+    """after_present (flag prefetch): search for the leading destination; hotel details for the leader."""
+    engine, s = ctx.engine, ctx.session
+    pf = engine.prefetcher
+    if pf is None:
+        return
+    if ctx.present == "present.destinations" and ctx.destination_items:
+        rec_id = (ctx.card_output or {}).get("recommended_id")
+        ids = [i["id"] for i in ctx.destination_items]
+        leader = rec_id if rec_id in ids else ids[0]
+        snapshot = s.model_copy(deep=True)
+        pf.submit(s.id, f"search:{leader}:{s.turn}", lambda: _prefetch_search(engine, snapshot, ctx.profile, leader))
+    elif ctx.present in ("present.variants", "present.update") and ctx.variants:
+        rec_id = (ctx.card_output or {}).get("recommended_id")
+        leader = s.variant(rec_id) if rec_id else None
+        leader = leader or s.variant(recommended_hint(ctx.variants))
+        if leader is not None and leader.hotel is not None:
+            snapshot = s.model_copy(deep=True)
+            pf.submit(s.id, f"hotel:{leader.hotel.hotel_id}",
+                      lambda: _prefetch_tools(engine, snapshot, [("get_hotel", {"hotel_id": leader.hotel.hotel_id})]))
+
+
+def _shadow_ctx(engine, session, profile):
+    shadow = Ctx(engine=engine, session=session, request={})
+    shadow.profile = profile
+    return shadow
+
+
+def _new_records(before_keys, session):
+    return [r for k, r in session.results.items() if k not in before_keys]
+
+
+def _prefetch_search(engine, snapshot, profile, destination_id):
+    shadow = _shadow_ctx(engine, snapshot, profile)
+    before = set(snapshot.results)
+    rec = destination_record(shadow, dest_id=destination_id)
+    if rec is None:
+        return []
+    shadow.destination_hint = destination_id
+    brief, _, _ = prepare_brief(shadow, snapshot.brief, {"set": {"destination.name": rec["name"]}}, allow_lazy=False)
+    snapshot.brief = brief
+    check_in, check_out = resolve_dates(shadow, rec)
+    run_search(shadow, snapshot.brief, rec, check_in, check_out, track=False)
+    return _new_records(before, snapshot)
+
+
+def _prefetch_tools(engine, snapshot, calls):
+    from .steps import tool
+    shadow = _shadow_ctx(engine, snapshot, None)
+    before = set(snapshot.results)
+    for name, payload in calls:
+        try:
+            tool(shadow, name, payload)
+        except ToolError:
+            pass
+    return _new_records(before, snapshot)
