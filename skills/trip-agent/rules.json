@@ -99,7 +99,7 @@
   "taxi_time_factor": 1.2,
   "risk_slack_min": 60,
   "late_checkin": [
-    "22:00",
+    "23:00",
     "05:00"
   ],
   "meeting_window_min": 60,
@@ -156,6 +156,9 @@
       "fare": 0.05,
       "transfer": 0.05,
       "district": 0.1
-    }
+    },
+    "fastest_hours_tolerance": 0.25,
+    "fastest_price_weight": 0.5,
+    "comfort_max_extra_hours": 3
   }
 }

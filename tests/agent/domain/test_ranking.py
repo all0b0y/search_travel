@@ -78,7 +78,9 @@ class TestSea:
         assert codes(self.v["comfort"].risks) == []
 
     def test_not_for_from_districts(self):
-        assert {"quiet_no_nightlife", "no_playground", "not_walkable"} <= set(codes(self.v["cheapest"].not_for))
+        got = set(codes(self.v["cheapest"].not_for))
+        assert {"quiet_no_nightlife", "not_walkable"} <= got
+        assert "no_playground" not in got          # a couple without kids: not their concern
         assert all(len(v.not_for) <= 4 for v in self.vs)
 
     def test_district_profile_on_hotel(self):
@@ -343,3 +345,32 @@ def test_inputs_not_mutated():
     snap = copy.deepcopy(res)
     build(sea_brief(), res)
     assert res == snap
+
+
+# ---------------------------------------------------------------- orchestrator fixes after the first live run
+
+def test_dorm_beds_never_offered_to_a_couple_or_family():
+    from agent.ranking import _party_ok
+    from agent.state import Brief, apply_patch
+    couple, _ = apply_patch(Brief(), {"set": {"party.segment": "couple", "party.adults": 2}})
+    solo, _ = apply_patch(Brief(), {"set": {"party.segment": "solo", "party.adults": 1}})
+    dorm = {"room": {"name": "Место в общем номере", "capacity_adults": 4, "bed": "bunk"}}
+    double = {"room": {"name": "Двухместный номер", "capacity_adults": 2, "bed": "double"}}
+    assert not _party_ok(dorm, couple) and _party_ok(double, couple)
+    assert _party_ok(dorm, solo)
+
+
+
+def test_not_for_is_about_this_party():
+    from agent.ranking import _not_for
+    from types import SimpleNamespace
+    rr = __import__("agent.ranking", fromlist=["ranking_rules"]).ranking_rules({})
+    hotel = {"name": "H", "hotel_id": "h1", "osm_id": "d1", "kids_policy": {}}
+    districts = {"d1": {"scores": {"quiet": 0.9, "lively": 0.1, "walkable": 0.8}, "counts": {"playground": 0}}}
+    combo = SimpleNamespace(hotel=hotel)
+    family = sea_brief(**{"party.segment": "family", "party.children_ages": [5]})
+    couple = sea_brief()
+    fam = set(codes(_not_for(combo, {}, family, districts, rr)))
+    cpl = set(codes(_not_for(combo, {}, couple, districts, rr)))
+    assert "no_playground" in fam and "quiet_no_nightlife" not in fam
+    assert "no_playground" not in cpl and "quiet_no_nightlife" in cpl

@@ -55,8 +55,10 @@ def test_load_from_relative_default_path(monkeypatch, tmp_path):
 
 def test_buffers_copied_from_trip_planner(pkg, root):
     old = json.loads((root / "skills/trip-planner/rules.json").read_text(encoding="utf-8"))
-    for key in ("buffers_min", "taxi_time_factor", "risk_slack_min", "late_checkin", "meeting_window_min"):
+    for key in ("buffers_min", "taxi_time_factor", "risk_slack_min", "meeting_window_min"):
         assert pkg.rules[key] == old[key]
+    # deliberate deviation: arriving at 22:xx is normal for a hotel, the warning starts at 23:00
+    assert pkg.rules["late_checkin"] == ["23:00", old["late_checkin"][1]]
 
 
 def test_system_prompt_composition(pkg):

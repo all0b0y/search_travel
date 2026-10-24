@@ -143,3 +143,13 @@ def test_jev_policy_fail_open_and_thresholds(pinned_now):
     out = guard_card_output(FakeJev(answers={"unsupported": {"type": "noul", "noul": 0.6}}).decide, "present.info", {},
                             {"message": "x"}, sk, trace)
     assert out and out[0]["severity"] == "block"
+
+
+def test_offer_ids_of_follows_the_step_of_an_issue():
+    from types import SimpleNamespace
+    from agent.steps import _offer_ids_of
+    v = SimpleNamespace(id="cheapest", steps=[SimpleNamespace(id="s1", offer_id="fl-1"),
+                                               SimpleNamespace(id="s3", offer_id="ho-9")])
+    issues = [{"code": "nights", "severity": "block", "data": {"variant_id": "cheapest", "step": "s3"}},
+              {"code": "budget", "severity": "block", "data": {"variant_id": "cheapest", "offer_id": "x"}}]
+    assert _offer_ids_of(issues, [v]) == {"ho-9", "x"}

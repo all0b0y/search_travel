@@ -34,7 +34,7 @@ from .state import (Brief, CachedResult, PatchError, Question, UpsellCandidate, 
 from .steps_spec import STEP_NAMES
 
 RESULTS_CAP = 80          # cached tool results kept per session
-TRANSFER_HOTELS = 5       # hotels per search that get transfer quotes
+TRANSFER_HOTELS = 40      # every hotel offer gets transfer quotes: ranking may pick any of them
 ITEM_KINDS = {"flight": "flight", "train": "train", "stay": "hotel", "transfer": "transfer"}
 UPSELL_ITEM_KIND = {"transfer": "transfer", "early_checkin": "hotel", "room_upgrade": "hotel",
                     "meal_upgrade": "hotel", "flexible_fare": "flight"}
@@ -811,13 +811,13 @@ def _cheapest(offers, price="price_rub"):
 
 
 def _transfer_hotels(hotels):
-    picks = []
-    for order in (sorted(hotels, key=lambda h: h.get("price_total_rub") or 0)[:2],
-                  sorted(hotels, key=lambda h: -(h.get("rating") or 0))[:2],
-                  sorted(hotels, key=lambda h: -(h.get("stars") or 0))[:1]):
-        for h in order:
-            if h["hotel_id"] not in [p["hotel_id"] for p in picks]:
-                picks.append(h)
+    """Every distinct hotel of the search: a variant built on a hotel without transfer quotes would
+    wrongly say «трансфер не нашли» (the mock answers these in-process in ~2 ms each)."""
+    picks, seen = [], set()
+    for h in hotels:
+        if h["hotel_id"] not in seen:
+            seen.add(h["hotel_id"])
+            picks.append(h)
     return picks[:TRANSFER_HOTELS]
 
 
@@ -863,28 +863,38 @@ def run_search(ctx, brief, dest, check_in, check_out, track=True):
                "trains_back": (out.get("trains.back") or {}).get("offers", []),
                "hotels": (out.get("hotels") or {}).get("offers", []), "transfers_out": {}, "transfers_back": {}}
     if "transfers" in scope and results["hotels"]:
-        tjobs, points = {}, {}
-        f_out, f_back = _cheapest(results["flights_out"]), _cheapest(results["flights_back"])
-        t_out, t_back = _cheapest(results["trains_out"]), _cheapest(results["trains_back"])
-        arrive = ({"iata": f_out["dest_iata"]}, f_out["arr"]) if f_out else (
-            ({"station": t_out["to_station"]}, t_out["arr"]) if t_out else (None, None))
-        depart = ({"iata": f_back["origin_iata"]}, _dt(f_back["dep"]) - timedelta(hours=3)) if f_back else (
-            ({"station": t_back["from_station"]}, _dt(t_back["dep"]) - timedelta(minutes=90)) if t_back else (None, None))
+        # One transfer quote per hotel and per arrival/departure point that any offered leg uses
+        # (a destination can have several airports, e.g. Antalya AYT and Alanya GZP): ranking pairs each
+        # leg with the transfer from its own point, so quoting only the cheapest leg's point leaves the
+        # other legs with «трансфер не нашли» and a wrong ride time.
+        arrive, depart = {}, {}
+        for f in sorted(results["flights_out"], key=lambda o: o.get("arr") or ""):
+            arrive.setdefault(f["dest_iata"], ({"iata": f["dest_iata"]}, f["arr"]))
+        for t in sorted(results["trains_out"], key=lambda o: o.get("arr") or ""):
+            arrive.setdefault(t["to_station"], ({"station": t["to_station"]}, t["arr"]))
+        for f in sorted(results["flights_back"], key=lambda o: o.get("dep") or ""):
+            depart.setdefault(f["origin_iata"], ({"iata": f["origin_iata"]},
+                                                 (_dt(f["dep"]) - timedelta(hours=3)).isoformat(timespec="minutes")))
+        for t in sorted(results["trains_back"], key=lambda o: o.get("dep") or ""):
+            depart.setdefault(t["from_station"], ({"station": t["from_station"]},
+                                                  (_dt(t["dep"]) - timedelta(minutes=90)).isoformat(timespec="minutes")))
+        tjobs, meta = {}, {}
         for h in _transfer_hotels(results["hotels"]):
-            if arrive[0]:
-                tjobs[f"{h['hotel_id']}.out"] = ("search_transfers", {"from": arrive[0], "to": {"hotel_id": h["hotel_id"]},
-                                                                      "at": arrive[1], "pax": pax, "today": today})
-                points["out"] = next(iter(arrive[0].values()))
-            if depart[0]:
-                tjobs[f"{h['hotel_id']}.back"] = ("search_transfers", {
-                    "from": depart[0], "to": {"hotel_id": h["hotel_id"]}, "reverse": True,
-                    "at": depart[1].isoformat(timespec="minutes"), "pax": pax, "today": today})
-                points["back"] = next(iter(depart[0].values()))
+            for point, (frm, at) in arrive.items():
+                key = f"{h['hotel_id']}|out|{point}"
+                tjobs[key] = ("search_transfers", {"from": frm, "to": {"hotel_id": h["hotel_id"]}, "at": at,
+                                                   "pax": pax, "today": today})
+                meta[key] = (h["hotel_id"], "out", point)
+            for point, (frm, at) in depart.items():
+                key = f"{h['hotel_id']}|back|{point}"
+                tjobs[key] = ("search_transfers", {"from": frm, "to": {"hotel_id": h["hotel_id"]}, "reverse": True,
+                                                   "at": at, "pax": pax, "today": today})
+                meta[key] = (h["hotel_id"], "back", point)
         tout = _parallel(ctx, tjobs)
         for key, value in tout.items():
-            hotel_id, _, direction = key.rpartition(".")
-            offers = [{**o, "point": points[direction]} for o in (value or {}).get("offers", [])]
-            results[f"transfers_{direction}"][hotel_id] = offers
+            hotel_id, direction, point = meta[key]
+            offers = [{**o, "point": point} for o in (value or {}).get("offers", [])]
+            results[f"transfers_{direction}"].setdefault(hotel_id, []).extend(offers)
     districts = {}
     for h in results["hotels"]:
         if h.get("osm_id") and h["osm_id"] not in districts:
@@ -1018,13 +1028,20 @@ def check_variants_hook(ctx):
     return out
 
 
-def _offer_ids_of(issues):
+def _offer_ids_of(issues, variants=()):
+    """Offers to leave out of the rebuild: named by the issue, or the offer of the step it points at."""
     ids = set()
+    by_id = {v.id: v for v in variants}
     for i in issues:
         d = i.get("data") or {}
         if d.get("offer_id"):
             ids.add(d["offer_id"])
         ids.update(d.get("offer_ids") or [])
+        v = by_id.get(d.get("variant_id") or d.get("variant"))
+        if v is not None and d.get("step"):
+            step = next((s for s in v.steps if s.id == d["step"]), None)
+            if step is not None and getattr(step, "offer_id", None):
+                ids.add(step.offer_id)
     return ids
 
 
@@ -1034,13 +1051,21 @@ def step_check(ctx):
         return
     issues = ctx.engine.hooks.run("after_variants", ctx, kinds=("validate",))
     if blocking(issues):
-        bad = _offer_ids_of(blocking(issues))
+        bad = _offer_ids_of(blocking(issues), ctx.variants)
         rebuilt = build(ctx, ctx.brief, ctx.results, ctx.districts, exclude=bad) if bad else []
         ctx.trace["notes"].append(f"check: rerun build_variants without {sorted(bad)}")
         if rebuilt:
             ctx.variants = rebuilt
             ctx.session.variants = rebuilt
         issues = ctx.engine.hooks.run("after_variants", ctx, kinds=("validate",))
+        broken = {(i.get("data") or {}).get("variant_id") for i in blocking(issues)}
+        kept = [v for v in ctx.variants if v.id not in broken]
+        if blocking(issues) and kept:
+            # a variant that still breaks a hard rule is not an offer: show the sound ones only
+            ctx.trace["notes"].append(f"check: dropped {sorted(broken)} after the rerun")
+            ctx.variants = kept
+            ctx.session.variants = kept
+            issues = [i for i in issues if (i.get("data") or {}).get("variant_id") not in broken]
         if blocking(issues):
             ctx.degraded = True
             for i in blocking(issues):

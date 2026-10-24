@@ -360,7 +360,7 @@ def _dates_window(dates, which):
     return None
 
 
-def check_dates(steps, brief, vid=None) -> list[dict]:
+def check_dates(steps, brief, vid=None, rules=None) -> list[dict]:
     """Outbound departure within dates.start ± flexible_days (or the window / month), return around
     dates.end (or start + nights), stay nights == dates.nights. An overnight outbound leaving after
     18:00 the evening before the start date and arriving on it is fine."""
@@ -393,7 +393,9 @@ def check_dates(steps, brief, vid=None) -> list[dict]:
                                day=day.isoformat(), month=dates.month))
     if i is not None and dates.nights:
         stay = steps[i]
-        nights = (ts(stay["end"]).date() - ts(stay["start"]).date()).days
+        start = ts(stay["start"])
+        first_night = start.date() - timedelta(days=1) if start.hour + start.minute / 60 < _late_end_hour(rules or {}) else start.date()
+        nights = (ts(stay["end"]).date() - first_night).days   # booked nights: 03:23 on the 8th uses the night of the 7th
         if nights != dates.nights:
             found.append(issue("nights", "block" if brief.source_of("dates.nights") == "user" else "warn",
                                f"В отеле {nights_text(nights)}, а нужно {nights_text(dates.nights)}",
@@ -475,7 +477,7 @@ def check_variant(variant, brief, rules) -> list[dict]:
     if steps:
         found += check_timing(steps, rules, v.id)
         found += check_stay(steps, rules, v.id)
-        found += check_dates(steps, b, v.id)
+        found += check_dates(steps, b, v.id, rules)
     found += check_totals(v)
     found += check_budget(v, b)
     found += check_party(v, b)

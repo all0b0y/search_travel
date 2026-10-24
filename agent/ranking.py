@@ -40,7 +40,10 @@ from .checks import (DEFAULT_BUFFERS, DEFAULT_LATE_CHECKIN, DEFAULT_TAXI_FACTOR,
 RANKING_DEFAULTS = {
     "max_legs": 6,                    # transport offers kept per direction (cheapest + fastest union)
     "max_hotels": 15,                 # hotel offers kept (cheapest + most comfortable union)
-    "fastest_min_gain_h": 0.25,       # a separate "fastest" must save at least this vs the cheapest
+    "fastest_min_gain_h": 0.25,
+    "fastest_hours_tolerance": 0.25,  # combos this close to the minimum time count as "fastest"
+    "fastest_price_weight": 0.5,      # among them: comfort minus this x relative extra price
+    "comfort_max_extra_hours": 3,     # comfort variant: at most this many hours longer than the fastest journey       # a separate "fastest" must save at least this vs the cheapest
     "comfort_min_gain": 0.03,         # a separate "comfort" must beat the others' comfort score by this
     "comfort_price_cap_ratio": 2.0,   # without a budget, comfort costs at most this x the cheapest
     "after_train_min": 10,            # leaving the platform after a train
@@ -213,7 +216,14 @@ def _party_ok(h, brief):
                 return False
     if wants_pet(brief) and h.get("pets_allowed") is False:
         return False
+    if party is not None and _is_dorm(room) and (party.segment in ("couple", "family") or party.children):
+        return False   # a bed in a shared dorm is not a stay for a couple or a family
     return True
+
+
+def _is_dorm(room) -> bool:
+    name = str(room.get("name") or "").casefold()
+    return room.get("bed") == "bunk" or "общем номере" in name or "dorm" in name
 
 
 def _free_cancel(h) -> bool:
@@ -666,6 +676,20 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
 
 
 def _not_for(c: Combo, facts, brief, districts, rr):
+    out = _not_for_all(c, facts, brief, districts, rr)
+    party = brief.party.value
+    traits = set(brief.traits.value or [])
+    drop = set()
+    if party is not None and not party.children:
+        drop |= {"no_playground", "no_children", "min_child_age"}   # no kids on this trip
+    if party is not None and party.children:
+        drop.add("quiet_no_nightlife")                              # quiet is a plus for a family
+    if "nightlife" in traits:
+        drop.add("noisy_evening")                                   # lively is what they asked for
+    return [n for n in out if n.code not in drop]
+
+
+def _not_for_all(c: Combo, facts, brief, districts, rr):
     out = []
     h = c.hotel
     profile = district_of(h, districts) or {}
@@ -903,7 +927,11 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     cheapest = min(combos, key=lambda c: (c.rub, c.hours, -c.comfort))
     picked.append(("cheapest", cheapest))
     if door:
-        fastest = min(combos, key=lambda c: (c.hours, c.rub, -c.comfort))
+        min_h = min(c.hours for c in combos)
+        near = [c for c in combos if c.hours <= min_h + rr["fastest_hours_tolerance"]]
+        base = min(c.rub for c in near) or 1
+        fastest = max(near, key=lambda c: (round(c.comfort - rr["fastest_price_weight"] * (c.rub / base - 1), 6),
+                                           -c.hours, -c.rub))
         if fastest.key != cheapest.key and cheapest.hours - fastest.hours >= rr["fastest_min_gain_h"]:
             picked.append(("fastest", fastest))
         else:
@@ -912,6 +940,10 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     budget = brief.budget_rub.value.max if brief.budget_rub.value else None
     cap = budget if budget else cheapest.rub * rr["comfort_price_cap_ratio"]
     pool = [c for c in combos if c.key not in taken and c.rub <= max(cap, cheapest.rub)]
+    if door:   # comfort is about the stay, not about a long detour: keep its journey near the fastest one
+        min_hours = min(c.hours for c in combos)
+        near = [c for c in pool if c.hours <= min_hours + rr["comfort_max_extra_hours"]]
+        pool = near or pool
     best_other = max(c.comfort for _, c in picked)
     comfort = max(pool, key=lambda c: (c.comfort, -c.rub)) if pool else None
     if comfort is not None and comfort.comfort >= best_other + rr["comfort_min_gain"]:
