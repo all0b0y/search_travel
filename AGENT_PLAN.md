@@ -289,7 +289,7 @@ Budget: ≤ 2 Flash calls per turn (plus at most one rerun per card on a failed 
   "debug": {"stage_path": [], "calls": [], "hooks": [], "timings_ms": {}, "jev": [], "flags": {}}
 }
 ```
-Action types: `answer_question {question_id, value}`, `set_chip {field, value}`, `choose_destination {destination_id}`, `choose_variant {variant_id}`, `swap_hotel {variant_id, hotel_offer_id}`, `compare {variant_ids}`, `add_to_cart {variant_id, extras: [offer_id]}`, `checkout {travellers: [{name, birth_date}], contact}`, `pay {order_id}`, `order_action {order_id, kind: early_checkin|change_dates|add_transfer, params}`. `debug` is present only when the session is created with `debug: true`.
+Action types: `answer_question {question_id, value}`, `set_chip {field, value}`, `choose_destination {destination_id}`, `choose_variant {variant_id}`, `swap_hotel {variant_id, hotel_offer_id}`, `compare {variant_ids}`, `add_to_cart {variant_id, extras: [offer_id]}`, `checkout {travellers: [{name, birth_date}], contact}`, `pay {order_id}`, `order_action {order_id, kind: early_checkin|change_dates|add_transfer, params}`. `debug` is present only when the session is created with `debug: true`. The `checkout` action in a response is a form template (empty `travellers`, `contact: null`): the UI fills it in before sending, and the request schema rejects it unfilled. Server-level problems answer `{"error": {code, message, details?}}` with an HTTP error status; problems inside a turn answer a normal Response with `error` set and HTTP 200.
 
 ## 7. Ostrovok mock: MCP tool contract
 

@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Трип-агент — отладочный макет</title>
+<!--
+  TEST MOCKUP of the Response contract (agent/contracts/response.schema.json), not the product UI.
+  Self-contained: no CDN, no build, no external URLs. Served by `python -m agent.server` at / and /debug.
+  Every interactive element sends the matching contract action through sendAction(type, payload).
+  ?api=<base> points the page at another server base (default: same origin).
+-->
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --ink: #1d232b; --muted: #677284; --line: #dde2e8;
+  --accent: #0b6bcb; --accent-ink: #ffffff; --user: #dcecff; --agent: #ffffff; --ok: #1d8a4e;
+  --warn: #b26a00; --bad: #c62828; --rec: #fff4cc; --rec-line: #e3b400; --code: #f0f2f5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12161b; --panel: #1a2027; --ink: #e6eaef; --muted: #98a3b3; --line: #2c3540;
+    --accent: #4aa3ff; --accent-ink: #08121d; --user: #1d3550; --agent: #1a2027; --ok: #4cc38a;
+    --warn: #f0b04a; --bad: #ff6b6b; --rec: #3a3214; --rec-line: #c9a227; --code: #0f1317;
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+header { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+header h1 { font-size: 15px; margin: 0 12px 0 0; }
+header .mode { padding: 2px 8px; border-radius: 10px; background: var(--code); color: var(--muted); font-size: 12px; }
+main { display: grid; grid-template-columns: minmax(0, 1fr) 420px; height: calc(100% - 46px); }
+#chat-col { display: flex; flex-direction: column; min-width: 0; border-right: 1px solid var(--line); }
+#chat { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+#composer { border-top: 1px solid var(--line); padding: 10px; background: var(--panel); display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+#composer textarea { flex: 1; min-width: 200px; min-height: 40px; max-height: 140px; resize: vertical; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: inherit; }
+#debug-col { overflow-y: auto; padding: 12px; background: var(--panel); }
+button, select, input { font: inherit; color: inherit; }
+button { cursor: pointer; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 5px 10px; }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button:disabled { opacity: .5; cursor: default; }
+input[type=text], input[type=date], input[type=email], input[type=tel], input[type=time], select { border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; background: var(--bg); }
+.bubble { max-width: 92%; border-radius: 12px; padding: 10px 12px; border: 1px solid var(--line); }
+.bubble.user { align-self: flex-end; background: var(--user); }
+.bubble.agent { align-self: flex-start; background: var(--agent); width: 92%; cursor: default; }
+.bubble.agent.selected { outline: 2px solid var(--accent); }
+.bubble.system { align-self: center; background: var(--code); color: var(--muted); font-size: 13px; }
+.bubble.system.bad { color: var(--bad); }
+.meta { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+.msg { white-space: pre-wrap; }
+.section { margin-top: 10px; }
+.section > .title { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 4px; }
+.row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.q { margin-top: 6px; }
+.q .text { font-weight: 600; margin-bottom: 4px; }
+.choice.rec { background: var(--rec); border-color: var(--rec-line); font-weight: 600; }
+.chip { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 16px; padding: 2px 4px 2px 10px; background: var(--bg); }
+.chip select { border: none; background: transparent; padding: 2px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--bg); display: flex; flex-direction: column; gap: 6px; }
+.card.rec { border-color: var(--rec-line); box-shadow: 0 0 0 1px var(--rec-line) inset; }
+.card h3 { margin: 0; font-size: 15px; }
+.card img { width: 100%; max-height: 140px; object-fit: cover; border-radius: 6px; }
+.badge { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 9px; background: var(--code); color: var(--muted); }
+.badge.rec { background: var(--rec); color: var(--ink); border: 1px solid var(--rec-line); }
+.badge.ok { color: var(--ok); } .badge.warn { color: var(--warn); } .badge.bad { color: var(--bad); }
+.facts { display: flex; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 13px; }
+.facts b { color: var(--ink); font-weight: 600; }
+.big { font-size: 18px; font-weight: 700; }
+ul.notes { margin: 2px 0; padding-left: 18px; }
+ul.notes.risk li { color: var(--warn); }
+ul.notes.notfor li { color: var(--muted); }
+.timeline { border-left: 2px solid var(--line); margin: 4px 0 4px 4px; padding-left: 8px; font-size: 12.5px; }
+.timeline .step { margin: 3px 0; }
+.timeline .step .t { color: var(--muted); font-variant-numeric: tabular-nums; }
+.timeline .step.risky { color: var(--warn); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: left; vertical-align: top; }
+td.best { font-weight: 700; color: var(--ok); }
+th.rec { background: var(--rec); }
+.issue { padding: 4px 8px; border-left: 3px solid var(--line); margin: 3px 0; font-size: 13px; }
+.issue.info { border-color: var(--accent); } .issue.warning { border-color: var(--warn); } .issue.blocking { border-color: var(--bad); color: var(--bad); }
+.error-box { border: 1px solid var(--bad); color: var(--bad); border-radius: 8px; padding: 6px 8px; margin-top: 8px; }
+form.checkout { display: flex; flex-direction: column; gap: 6px; border: 1px dashed var(--line); padding: 8px; border-radius: 8px; }
+.files a { color: var(--accent); margin-right: 12px; }
+#preview { display: none; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+#preview img { height: 40px; border-radius: 4px; }
+.dbg h2 { font-size: 14px; margin: 14px 0 6px; }
+.dbg .path { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.dbg .path span.step { background: var(--code); border-radius: 6px; padding: 1px 6px; font-size: 12px; }
+.dbg pre, pre.raw { background: var(--code); padding: 8px; border-radius: 6px; overflow: auto; font-size: 11.5px; max-height: 420px; white-space: pre-wrap; word-break: break-word; }
+.bar { height: 6px; background: var(--accent); border-radius: 3px; }
+.verdict-ok, .verdict-pass, .verdict-sent { color: var(--ok); } .verdict-block, .verdict-fail, .verdict-error { color: var(--bad); } .verdict-warn { color: var(--warn); }
+.note { color: var(--warn); font-size: 12px; }
+.muted { color: var(--muted); }
+small.hint { color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Трип-агент · макет</h1>
+  <span class="mode" id="mode">…</span>
+  <span class="muted" id="sid"></span>
+  <label><input type="checkbox" id="debug-toggle" checked> debug</label>
+  <input type="text" id="profile" placeholder="profile_id (необяз.)" size="14">
+  <button id="new-session">Новая сессия</button>
+  <label class="muted">Фикстура: <select id="fixture-select"><option value="">—</option></select></label>
+</header>
+<main>
+  <section id="chat-col">
+    <div id="chat"></div>
+    <div id="composer">
+      <textarea id="text" placeholder="Напишите запрос, например: «к тёплому морю в ноябре с ребёнком, недорого»"></textarea>
+      <div id="preview"><img id="preview-img" alt=""><span id="preview-info"></span><button id="preview-clear" title="Убрать картинку">✕</button></div>
+      <label class="muted"><input type="file" id="image" accept="image/png,image/jpeg,image/webp,image/gif" hidden><button id="image-btn" type="button">📎 Фото</button></label>
+      <button class="primary" id="send">Отправить</button>
+    </div>
+  </section>
+  <aside id="debug-col" class="dbg">
+    <div id="debug"><p class="muted">Debug появится после первого ответа (сессия с debug: true).</p></div>
+    <h2>Сырой JSON</h2>
+    <label><input type="checkbox" id="raw-toggle"> показать ответ и запрос</label>
+    <div id="raw" hidden>
+      <div class="muted">Запрос</div><pre class="raw" id="raw-request"></pre>
+      <div class="muted">Ответ</div><pre class="raw" id="raw-response"></pre>
+    </div>
+  </aside>
+</main>
+<script>
+"use strict";
+const API = new URLSearchParams(location.search).get("api") || "";
+const state = { sessionId: null, config: null, image: null, turns: [], lastRequest: null, lastVariants: [], busy: false };
+const DISTRICT_RU = { lively: "движ", quiet: "спокойно", family: "семейно", walkable: "пешком" };
+const STEP_RU = { taxi: "такси", flight: "перелёт", train: "поезд", transfer: "трансфер", stay: "отель" };
+const KIND_RU = { flight: "перелёт", train: "поезд", hotel: "отель", transfer: "трансфер" };
+const STAGE_RU = { inspiration: "вдохновение", selection: "подбор", cart: "корзина", checkout: "оформление", ordered: "оплачено", aftercare: "после покупки" };
+const ORDER_STATUS_RU = { pending_payment: "ждёт оплаты", paid: "оплачен", changed: "изменён", cancelled: "отменён" };
+const ITEM_STATUS_RU = { pending: "ожидает", confirmed: "подтверждено", on_request: "по запросу", changed: "изменено", cancelled: "отменено" };
+const ORDER_ACTION_RU = { early_checkin: "Ранний заезд", change_dates: "Сменить даты", add_transfer: "Добавить трансфер" };
+
+// ---------------------------------------------------------------- DOM helpers (textContent only: no HTML injection)
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k === "checked" || k === "disabled" || k === "selected" || k === "hidden") el[k] = !!v;
+    else el.setAttribute(k, v);
+  }
+  for (const c of children.flat()) {
+    if (c === null || c === undefined || c === false) continue;
+    el.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  }
+  return el;
+}
+const $ = (id) => document.getElementById(id);
+function rub(n) { return n === null || n === undefined ? "—" : String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202f") + "\u00a0₽"; }
+function hours(x) { return x === null || x === undefined ? "—" : String(Math.round(x * 10) / 10).replace(".", ",") + "\u00a0ч"; }
+function when(iso) {
+  if (!iso) return "—";
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(iso);
+  return m ? `${m[3]}.${m[2]} ${m[4]}:${m[5]}` : iso;
+}
+function section(title, ...children) { return h("div", { class: "section" }, h("div", { class: "title" }, title), ...children); }
+function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+function scrollChat() { const c = $("chat"); c.scrollTop = c.scrollHeight; }
+function systemBubble(text, bad, details) {
+  const b = h("div", { class: "bubble system" + (bad ? " bad" : "") }, text);
+  if (details && details.length) b.append(h("ul", { class: "notes" }, details.map((d) => h("li", {}, d))));
+  $("chat").append(b); scrollChat();
+}
+
+// ---------------------------------------------------------------- transport
+async function api(method, path, body) {
+  const res = await fetch(API + path, { method, headers: body ? { "Content-Type": "application/json" } : {}, body: body ? JSON.stringify(body) : undefined });
+  let data = null;
+  try { data = await res.json(); } catch (e) { data = { error: { code: "bad_json", message: "Сервер ответил не JSON." } }; }
+  return { status: res.status, data };
+}
+
+async function newSession() {
+  const body = { debug: $("debug-toggle").checked };
+  const profile = $("profile").value.trim();
+  if (profile) body.profile_id = profile;
+  const { status, data } = await api("POST", "/api/session", body);
+  if (status !== 200) { systemBubble(data.error ? data.error.message : "Не удалось создать сессию", true); return; }
+  state.sessionId = data.session_id; state.turns = []; state.lastVariants = [];
+  $("sid").textContent = state.sessionId;
+  $("chat").replaceChildren();
+  systemBubble("Новая сессия " + state.sessionId + (body.debug ? " (debug)" : ""));
+}
+
+async function sendTurn(request, userLabel) {
+  if (state.busy) return;
+  if (!state.sessionId) await newSession();
+  const full = Object.assign({ session_id: state.sessionId }, request);
+  state.lastRequest = full;
+  if (userLabel) $("chat").append(userBubble(userLabel, request.image));
+  scrollChat();
+  state.busy = true; $("send").disabled = true;
+  const pending = h("div", { class: "bubble system" }, "думаю…");
+  $("chat").append(pending); scrollChat();
+  try {
+    const { status, data } = await api("POST", "/api/turn", full);
+    pending.remove();
+    showRaw(full, data);
+    if (status !== 200) {
+      const err = data.error || {};
+      systemBubble(`${status}: ${err.message || "ошибка"}`, true, err.details);
+      return;
+    }
+    addAgentTurn(data, full);
+  } catch (e) {
+    pending.remove();
+    systemBubble("Сервер недоступен: " + e, true);
+  } finally {
+    state.busy = false; $("send").disabled = false;
+  }
+}
+
+// The single exit for every contract action (answer_question, set_chip, choose_destination, choose_variant,
+// swap_hotel, compare, add_to_cart, checkout, pay, order_action).
+function sendAction(type, payload, label) {
+  return sendTurn({ action: { type, payload } }, "▸ " + (label || type));
+}
+
+function userBubble(text, image) {
+  const b = h("div", { class: "bubble user" });
+  if (image) b.append(h("img", { src: image, alt: "фото", style: "max-height:120px;border-radius:6px;display:block;margin-bottom:4px" }));
+  if (text) b.append(h("div", { class: "msg" }, text));
+  return b;
+}
+
+function showRaw(request, response) {
+  const req = Object.assign({}, request);
+  if (req.image) req.image = req.image.slice(0, 48) + `… (${req.image.length} символов)`;
+  $("raw-request").textContent = JSON.stringify(req, null, 2);
+  $("raw-response").textContent = JSON.stringify(response, null, 2);
+}
+
+// ---------------------------------------------------------------- one agent turn
+function addAgentTurn(resp, request, note) {
+  const idx = state.turns.push({ resp, request }) - 1;
+  if (resp.cards && resp.cards.variants && resp.cards.variants.length) state.lastVariants = resp.cards.variants.map((v) => v.id);
+  const b = h("div", { class: "bubble agent", "data-turn": idx });
+  b.addEventListener("click", (ev) => { if (ev.target === b || ev.target.classList.contains("meta")) selectTurn(idx); });
+  b.append(h("div", { class: "meta" }, `ход ${resp.turn} · ${STAGE_RU[resp.stage] || resp.stage}` + (note ? " · " + note : "")));
+  b.append(h("div", { class: "msg" }, resp.message || ""));
+  if (resp.error) b.append(renderError(resp.error));
+  if (resp.questions && resp.questions.length) b.append(section("Вопросы", resp.questions.map(renderQuestion)));
+  if (resp.chips && resp.chips.length) b.append(section("Допущения", h("div", { class: "row" }, resp.chips.map(renderChip))));
+  const cards = resp.cards || {};
+  if (cards.destinations && cards.destinations.length) b.append(section("Направления", h("div", { class: "cards" }, cards.destinations.map(renderDestination))));
+  if (cards.variants && cards.variants.length) b.append(section("Варианты", renderVariants(cards.variants)));
+  if (cards.hotels && cards.hotels.length) b.append(section("Отели", h("div", { class: "cards" }, cards.hotels.map(renderHotel))));
+  if (resp.comparison) b.append(section("Сравнение", renderComparison(resp.comparison)));
+  if (resp.cart) b.append(section("Корзина", renderCart(resp.cart)));
+  if (resp.order) b.append(section("Заказ", renderOrder(resp.order)));
+  const actions = renderActions(resp);
+  if (actions) b.append(section("Действия", actions));
+  if (resp.files && (resp.files.ics || resp.files.page)) b.append(section("Файлы", renderFiles(resp.files)));
+  $("chat").append(b);
+  selectTurn(idx);
+  scrollChat();
+}
+
+function renderError(err) {
+  const box = h("div", { class: "error-box" }, `Ошибка: ${err.code}` + (err.retryable ? " (можно повторить)" : ""));
+  if (err.retryable && state.lastRequest) {
+    const again = Object.assign({}, state.lastRequest); delete again.session_id;
+    box.append(" ", h("button", { onclick: () => sendTurn(again, "↻ повтор") }, "Повторить"));
+  }
+  return box;
+}
+
+function renderQuestion(q) {
+  return h("div", { class: "q" }, h("div", { class: "text" }, q.text),
+    h("div", { class: "row" }, q.choices.map((c) => h("button", {
+      class: "choice" + (c.recommended ? " rec" : ""), title: c.recommended ? "рекомендуем" : null,
+      onclick: () => sendAction("answer_question", { question_id: q.id, value: c.value }, q.text + " → " + c.label),
+    }, (c.recommended ? "★ " : "") + c.label))));
+}
+
+function renderChip(chip) {
+  const sel = h("select", { title: chip.field });
+  let current = -1;
+  (chip.options || []).forEach((o, i) => { if (same(o.value, chip.value)) current = i; sel.append(h("option", { value: i, selected: same(o.value, chip.value) }, o.label)); });
+  if (current < 0) sel.prepend(h("option", { value: -1, selected: true }, chip.label));
+  sel.addEventListener("change", () => {
+    const opt = chip.options[Number(sel.value)];
+    if (opt) sendAction("set_chip", { field: chip.field, value: opt.value }, chip.label + " → " + opt.label);
+  });
+  return h("span", { class: "chip" }, sel);
+}
+
+function renderDestination(d) {
+  const w = d.weather;
+  return h("div", { class: "card" },
+    d.image_url ? h("img", { src: d.image_url, alt: d.name, loading: "lazy" }) : null,
+    h("div", { class: "row" }, h("span", { class: "badge" }, d.label), h("h3", {}, `${d.name}, ${d.country}`)),
+    h("div", { class: "big" }, d.price_from_rub === null ? "цены нет" : "от " + rub(d.price_from_rub)),
+    h("div", { class: "facts" },
+      h("span", {}, `${d.nights} ноч. · ${d.party_label}`),
+      h("span", {}, "в пути ", h("b", {}, d.travel_time_h === null ? "нет данных" : hours(d.travel_time_h)))),
+    h("div", { class: "facts" }, w
+      ? [h("span", {}, "воздух ", h("b", {}, `${w.air_max_c}°`)), h("span", {}, "море ", h("b", {}, w.sea_c === null ? "—" : `${w.sea_c}°`)), h("span", {}, "дождь ", h("b", {}, `${w.rain_days} дн.`))]
+      : h("span", {}, "нет данных о погоде")),
+    h("div", {}, d.why),
+    d.watch_out ? h("div", { class: "note" }, "⚠ " + d.watch_out) : null,
+    h("div", { class: "row" }, h("button", { class: "primary", onclick: () => sendAction("choose_destination", { destination_id: d.id }, "Смотреть " + d.name) }, "Смотреть")));
+}
+
+function districtLine(district) {
+  if (!district) return null;
+  const labels = (district.labels || []).map((l) => DISTRICT_RU[l] || l).join(", ") || "без ярлыков";
+  const scores = Object.entries(district.scores || {}).map(([k, v]) => `${DISTRICT_RU[k] || k} ${Math.round(v * 100)}`).join(" · ");
+  return h("div", { class: "facts" }, h("span", {}, "район: ", h("b", {}, labels)), h("span", { class: "muted" }, scores));
+}
+
+function notes(title, list, cls) {
+  if (!list || !list.length) return null;
+  return h("div", {}, h("span", { class: "muted" }, title), h("ul", { class: "notes " + (cls || "") }, list.map((x) => h("li", {}, x))));
+}
+
+function renderVariants(variants) {
+  const compareSet = new Set();
+  const grid = h("div", { class: "cards" }, variants.map((v) => renderVariant(v, compareSet)));
+  const btn = h("button", { onclick: () => {
+    const ids = [...compareSet];
+    if (ids.length < 2) { systemBubble("Отметьте хотя бы два варианта для сравнения."); return; }
+    sendAction("compare", { variant_ids: ids }, "Сравнить " + ids.join(", "));
+  } }, "Сравнить отмеченные");
+  return h("div", {}, grid, h("div", { class: "row section" }, btn));
+}
+
+function renderVariant(v, compareSet) {
+  const extras = new Set();
+  const hotel = v.hotel;
+  return h("div", { class: "card" + (v.recommended ? " rec" : "") },
+    h("div", { class: "row" }, h("span", { class: "badge" }, v.label), h("h3", {}, v.title), v.recommended ? h("span", { class: "badge rec" }, "советуем") : null),
+    h("div", { class: "row" }, h("span", { class: "big" }, rub(v.totals.rub)), h("span", { class: "muted" }, "дверь-дверь " + hours(v.totals.door_to_door_hours))),
+    h("div", { class: "timeline" }, v.steps.map((s) => h("div", { class: "step" + (s.risk && s.risk.risky ? " risky" : "") },
+      h("span", { class: "t" }, when(s.start) + "–" + when(s.end).slice(-5) + " "),
+      h("b", {}, STEP_RU[s.type] || s.type), " ", s.type === "stay" ? s.title : `${s.from} → ${s.to}`,
+      s.carrier ? h("span", { class: "muted" }, " · " + s.carrier) : null,
+      s.price_rub !== null && s.price_rub !== undefined ? h("span", { class: "muted" }, " · " + rub(s.price_rub)) : null,
+      s.risk ? h("span", { class: "muted" }, ` · запас ${s.risk.slack_min} мин`) : null))),
+    hotel ? h("div", {}, h("b", {}, hotel.name), " ", hotel.stars ? "★".repeat(hotel.stars) : "", hotel.rating !== null ? h("span", { class: "muted" }, " · " + hotel.rating) : null) : h("div", { class: "muted" }, "без отеля"),
+    hotel ? districtLine(hotel.district) : null,
+    h("div", {}, v.why),
+    notes("Чем жертвуем", v.sacrifices),
+    notes("Риски", v.risks, "risk"),
+    notes("Кому не подойдёт", v.not_for, "notfor"),
+    v.upsell && v.upsell.length ? h("div", {}, h("span", { class: "muted" }, "Допы"), v.upsell.map((u) => h("div", {},
+      u.offer_id ? h("label", {}, h("input", { type: "checkbox", onchange: (ev) => ev.target.checked ? extras.add(u.offer_id) : extras.delete(u.offer_id) }), " ")
+        : null,
+      h("b", {}, u.label), u.price_rub !== null ? " · " + rub(u.price_rub) : "", h("div", { class: "muted" }, u.reason)))) : null,
+    h("div", { class: "row" },
+      h("button", { class: "primary", onclick: () => sendAction("choose_variant", { variant_id: v.id }, "Беру «" + v.title + "»") }, "Беру"),
+      v.upsell && v.upsell.some((u) => u.offer_id) ? h("button", { onclick: () => sendAction("add_to_cart", { variant_id: v.id, extras: [...extras] }, "В корзину «" + v.title + "» + допы: " + extras.size) }, "В корзину с допами") : null,
+      h("label", { class: "muted" }, h("input", { type: "checkbox", onchange: (ev) => ev.target.checked ? compareSet.add(v.id) : compareSet.delete(v.id) }), " сравнить")));
+}
+
+function renderHotel(ho) {
+  const sel = h("select", {}, (state.lastVariants.length ? state.lastVariants : ["cheapest", "fastest", "comfort"]).map((id) => h("option", { value: id }, id)));
+  return h("div", { class: "card" },
+    h("div", { class: "row" }, h("span", { class: "badge" }, ho.label), h("h3", {}, ho.name)),
+    h("div", { class: "facts" }, h("span", {}, ho.kind), ho.stars ? h("span", {}, "★".repeat(ho.stars)) : null,
+      ho.rating !== null ? h("span", {}, "оценка ", h("b", {}, ho.rating)) : null, ho.reviews !== null ? h("span", {}, `${ho.reviews} отзывов`) : null),
+    h("div", { class: "big" }, rub(ho.price_total_rub)),
+    h("div", { class: "facts" }, h("span", {}, "питание: " + ho.meals),
+      h("span", {}, ho.free_cancellation_until ? "отмена бесплатно до " + when(ho.free_cancellation_until) : "без бесплатной отмены"),
+      ho.distance_beach_m !== null ? h("span", {}, `до пляжа ${ho.distance_beach_m} м`) : null,
+      ho.distance_center_m !== null ? h("span", {}, `до центра ${ho.distance_center_m} м`) : null),
+    districtLine(ho.district), h("div", {}, ho.why), notes("Кому не подойдёт", ho.not_for, "notfor"),
+    h("div", { class: "row" }, "в вариант ", sel,
+      h("button", { onclick: () => sendAction("swap_hotel", { variant_id: sel.value, hotel_offer_id: ho.offer_id }, "Отель " + ho.name + " → " + sel.value) }, "Поставить")));
+}
+
+function renderComparison(c) {
+  return h("table", {},
+    h("thead", {}, h("tr", {}, h("th", {}, ""), c.variant_ids.map((id) => h("th", { class: id === c.recommended_id ? "rec" : null }, id + (id === c.recommended_id ? " ★" : ""))))),
+    h("tbody", {}, c.rows.map((r) => h("tr", {}, h("td", {}, r.label), c.variant_ids.map((id) => h("td", { class: id === r.best_id ? "best" : null }, r.values[id] ?? "—"))))));
+}
+
+function renderIssues(issues) {
+  if (!issues || !issues.length) return null;
+  return h("div", {}, issues.map((i) => h("div", { class: "issue " + i.severity }, i.message, h("span", { class: "muted" }, ` [${i.code}${i.item_ids.length ? " · " + i.item_ids.join(", ") : ""}]`))));
+}
+
+function renderCart(cart) {
+  return h("div", {},
+    h("div", { class: "meta" }, `${cart.cart_id} · ${cart.status}`),
+    h("table", {}, h("tbody", {}, cart.items.map((it) => h("tr", {}, h("td", {}, KIND_RU[it.kind] || it.kind), h("td", {}, it.title), h("td", { class: "muted" }, when(it.start) + " – " + when(it.end)), h("td", {}, rub(it.price_rub)))),
+      h("tr", {}, h("td", {}, ""), h("td", {}, h("b", {}, "Итого")), h("td", {}, ""), h("td", {}, h("b", {}, rub(cart.total_rub)))))),
+    renderIssues(cart.issues));
+}
+
+function renderOrder(o) {
+  return h("div", {},
+    h("div", { class: "meta" }, `${o.order_id} · ${ORDER_STATUS_RU[o.status] || o.status}`),
+    h("table", {}, h("tbody", {}, o.items.map((it) => h("tr", {}, h("td", {}, KIND_RU[it.kind] || it.kind), h("td", {}, it.title), h("td", { class: "muted" }, when(it.start) + " – " + when(it.end)),
+      h("td", {}, it.booking_number || "—"), h("td", {}, ITEM_STATUS_RU[it.status] || it.status), h("td", {}, rub(it.price_rub)))),
+      h("tr", {}, h("td", {}, ""), h("td", {}, h("b", {}, "Итого")), h("td", {}), h("td", {}), h("td", {}), h("td", {}, h("b", {}, rub(o.total_rub)))))),
+    renderIssues(o.issues),
+    o.events && o.events.length ? h("div", { class: "timeline" }, o.events.map((e) => h("div", { class: "step" }, h("span", { class: "t" }, when(e.at) + " "), e.text, h("span", { class: "muted" }, " · " + e.kind)))) : null,
+    o.status === "pending_payment" ? h("div", { class: "row section" }, h("button", { class: "primary", onclick: () => sendAction("pay", { order_id: o.order_id }, "Оплатить " + rub(o.total_rub)) }, "Оплатить " + rub(o.total_rub) + " (демо)")) : null);
+}
+
+// Response.actions: choose_* / compare buttons, the checkout form, pay, post-purchase actions.
+function renderActions(resp) {
+  const list = resp.actions || [];
+  if (!list.length) return null;
+  const row = h("div", { class: "row" });
+  const extra = [];
+  for (const a of list) {
+    const p = a.payload || {};
+    switch (a.type) {
+      case "answer_question": row.append(h("button", { onclick: () => sendAction("answer_question", p, a.label) }, a.label)); break;
+      case "set_chip": row.append(h("button", { onclick: () => sendAction("set_chip", p, a.label) }, a.label)); break;
+      case "choose_destination": row.append(h("button", { onclick: () => sendAction("choose_destination", p, a.label) }, a.label)); break;
+      case "choose_variant": row.append(h("button", { onclick: () => sendAction("choose_variant", p, a.label) }, a.label)); break;
+      case "swap_hotel": row.append(h("button", { onclick: () => sendAction("swap_hotel", p, a.label) }, a.label)); break;
+      case "compare": row.append(h("button", { onclick: () => sendAction("compare", p, a.label) }, a.label)); break;
+      case "add_to_cart": row.append(h("button", { onclick: () => sendAction("add_to_cart", { variant_id: p.variant_id, extras: p.extras || [] }, a.label) }, a.label)); break;
+      case "checkout": extra.push(checkoutForm(a, resp)); break;
+      case "pay": if (!(resp.order && resp.order.status === "pending_payment" && resp.order.order_id === p.order_id)) row.append(h("button", { class: "primary", onclick: () => sendAction("pay", p, a.label) }, a.label)); break;
+      case "order_action": row.append(orderActionControl(a)); break;
+      default: row.append(h("span", { class: "muted" }, `неизвестное действие ${a.type}`));
+    }
+  }
+  return h("div", {}, row.childNodes.length ? row : null, extra);
+}
+
+function orderActionControl(a) {
+  const p = a.payload;
+  const params = Object.assign({}, p.params || {});
+  if (p.kind === "early_checkin") {
+    const t = h("input", { type: "time", value: params.time || "10:00" });
+    return h("span", { class: "chip" }, t, h("button", { onclick: () => sendAction("order_action", { order_id: p.order_id, kind: "early_checkin", params: Object.assign(params, { time: t.value }) }, a.label + " " + t.value) }, a.label));
+  }
+  if (p.kind === "change_dates") {
+    const s = h("input", { type: "date", value: params.start || "" }), e = h("input", { type: "date", value: params.end || "" });
+    return h("span", { class: "chip" }, s, e, h("button", { onclick: () => {
+      if (!s.value || !e.value) { systemBubble("Укажите обе даты."); return; }
+      sendAction("order_action", { order_id: p.order_id, kind: "change_dates", params: Object.assign(params, { new_dates: { start: s.value, end: e.value } }) }, a.label);
+    } }, a.label));
+  }
+  return h("button", { onclick: () => sendAction("order_action", { order_id: p.order_id, kind: p.kind, params }, a.label || ORDER_ACTION_RU[p.kind]) }, a.label || ORDER_ACTION_RU[p.kind]);
+}
+
+function travellerRow(t) {
+  const row = h("div", { class: "row traveller" },
+    h("input", { type: "text", placeholder: "Имя Фамилия", value: (t && t.name) || "", class: "t-name", size: 22 }),
+    h("input", { type: "date", value: (t && t.birth_date) || "", class: "t-birth", title: "дата рождения" }));
+  row.append(h("button", { type: "button", title: "убрать", onclick: () => row.remove() }, "✕"));
+  return row;
+}
+
+function checkoutForm(action, resp) {
+  const p = action.payload || {};
+  const rows = h("div", {});
+  const initial = p.travellers && p.travellers.length ? p.travellers : [null, null];
+  initial.forEach((t) => rows.append(travellerRow(t)));
+  const email = h("input", { type: "email", placeholder: "email", value: (p.contact && p.contact.email) || "" });
+  const phone = h("input", { type: "tel", placeholder: "телефон", value: (p.contact && p.contact.phone) || "" });
+  const form = h("form", { class: "checkout" },
+    h("b", {}, "Путешественники"), rows,
+    h("div", { class: "row" }, h("button", { type: "button", onclick: () => rows.append(travellerRow(null)) }, "+ путешественник"), h("small", { class: "hint" }, "возраст нужен для проверки тарифов и политики отеля")),
+    h("b", {}, "Контакт"), h("div", { class: "row" }, email, phone),
+    h("div", { class: "row" }, h("button", { class: "primary", type: "submit" }, action.label || "Оформить")));
+  form.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    const travellers = [...rows.querySelectorAll(".traveller")].map((r) => ({ name: r.querySelector(".t-name").value.trim(), birth_date: r.querySelector(".t-birth").value }))
+      .filter((t) => t.name || t.birth_date);
+    const contact = {};
+    if (email.value.trim()) contact.email = email.value.trim();
+    if (phone.value.trim()) contact.phone = phone.value.trim();
+    sendAction("checkout", { travellers, contact }, `Оформить: ${travellers.length} путеш.`);
+  });
+  return form;
+}
+
+function renderFiles(files) {
+  return h("div", { class: "files" },
+    files.ics ? h("a", { href: API + files.ics, download: "" }, "📅 Календарь (.ics)") : null,
+    files.page ? h("a", { href: API + files.page, target: "_blank", rel: "noopener" }, "🗺 Страница поездки") : null);
+}
+
+// ---------------------------------------------------------------- debug panel
+function selectTurn(idx) {
+  document.querySelectorAll(".bubble.agent").forEach((b) => b.classList.toggle("selected", Number(b.dataset.turn) === idx));
+  const t = state.turns[idx];
+  if (!t) return;
+  showRaw(t.request || {}, t.resp);
+  renderDebug(t.resp.debug, t.resp);
+}
+
+function num(x, d) { return x === null || x === undefined ? "—" : Number(x).toFixed(d === undefined ? 0 : d); }
+
+function renderDebug(dbg, resp) {
+  const root = $("debug");
+  root.replaceChildren();
+  if (!dbg) { root.append(h("p", { class: "muted" }, "В этом ответе нет debug (сессия без debug: true).")); return; }
+  if (dbg.example) root.append(h("p", { class: "note" }, "⚠ " + (dbg.note || "пример, не настоящий прогон")));
+  if (dbg.fixture) root.append(h("p", { class: "muted" }, "фикстура: " + dbg.fixture));
+  const calls = dbg.calls || [];
+  // engine records: {card, rerun, ok, error?, model, provider, tokens: usage, latency_ms, cost, retries}
+  const usageOf = (c) => c.tokens || c.usage || {};
+  const tok = (c, k) => usageOf(c)[k] ?? c[k] ?? 0;
+  const costOf = (c) => c.cost ?? usageOf(c).cost_usd ?? c.cost_usd ?? null;
+  const totalMs = calls.reduce((s, c) => s + (c.latency_ms || 0), 0);
+  const totalCost = calls.reduce((s, c) => s + (costOf(c) || 0), 0);
+  root.append(h("h2", {}, "Сводка"), h("div", { class: "facts" },
+    h("span", {}, "этап ", h("b", {}, STAGE_RU[resp.stage] || resp.stage)),
+    h("span", {}, "вызовов ", h("b", {}, calls.length)),
+    h("span", {}, "модель ", h("b", {}, totalMs + " мс")),
+    h("span", {}, "стоимость ", h("b", {}, "$" + totalCost.toFixed(5))),
+    dbg.timings_ms && dbg.timings_ms.total !== undefined ? h("span", {}, "всего ", h("b", {}, dbg.timings_ms.total + " мс")) : null));
+  root.append(h("h2", {}, "Путь"), h("div", { class: "path" }, (dbg.stage_path || []).flatMap((s, i) => [i ? h("span", { class: "muted" }, "→") : null, h("span", { class: "step" }, s)])));
+  root.append(h("h2", {}, "Вызовы моделей"), calls.length ? h("table", {},
+    h("thead", {}, h("tr", {}, ["карточка", "модель / провайдер", "ток. in/out/cache/reas", "мс", "$", "повт."].map((x) => h("th", {}, x)))),
+    h("tbody", {}, calls.map((c) => h("tr", { class: c.ok === false ? "verdict-block" : null },
+      h("td", {}, c.card || "—", c.rerun ? h("span", { class: "note" }, " перезапуск") : null,
+        c.thinking ? h("div", { class: "muted" }, "thinking " + c.thinking) : null, c.error ? h("div", { class: "verdict-error" }, c.error) : null),
+      h("td", {}, c.model || "—", h("div", { class: "muted" }, c.provider || "—")),
+      h("td", {}, `${tok(c, "input_tokens")}/${tok(c, "output_tokens")}/${tok(c, "cached_tokens")}/${tok(c, "reasoning_tokens")}`),
+      h("td", {}, num(c.latency_ms)), h("td", {}, num(costOf(c), 5)),
+      h("td", { title: (c.validation_errors || []).join("\n") }, num(c.retries)))))) : h("p", { class: "muted" }, "нет вызовов"));
+  const hooks = dbg.hooks || [];
+  // engine verdicts: ok | warn | block | error
+  root.append(h("h2", {}, "Хуки"), hooks.length ? h("div", {}, hooks.map((k) => h("div", { class: "issue" },
+    h("b", {}, `${k.event || "?"} · ${k.name || k.hook || "?"}`), k.card ? h("span", { class: "muted" }, " · " + k.card) : null,
+    k.kind ? h("span", { class: "muted" }, " (" + k.kind + ")") : null, " ",
+    h("span", { class: "verdict-" + String(k.verdict || "").toLowerCase() }, k.verdict || ""), k.rerun ? h("span", { class: "note" }, " → перезапуск") : null,
+    (k.issues || []).length ? h("ul", { class: "notes" }, k.issues.map((i) => h("li", {}, `${i.severity || ""} ${i.code || ""}: ${i.message || ""}`))) : null))) : h("p", { class: "muted" }, "нет"));
+  const jev = dbg.jev || [];
+  const probBars = (probs) => h("div", {}, Object.entries(probs).map(([k, p]) => h("div", { class: "row" }, h("span", { style: "width:90px" }, k), h("div", { class: "bar", style: `width:${Math.round(p * 200)}px` }), h("span", { class: "muted" }, num(p, 2)))));
+  const answerLine = (name, a) => h("div", { class: "section" }, h("b", {}, name), " → ",
+    h("b", {}, a.type === "noul" ? `p(да) = ${num(a.noul, 2)}` : JSON.stringify(a.choice ?? a.score ?? a.answer ?? null)),
+    a.confidence !== undefined ? h("span", { class: "muted" }, ` · уверенность ${num(a.confidence, 2)}`) : null,
+    a.probabilities ? probBars(a.probabilities) : null);
+  // engine records: {use, ok, questions, latency_ms, cost_usd, model, error?, answers?}
+  root.append(h("h2", {}, "Jev"), jev.length ? h("div", {}, jev.map((j) => h("div", { class: "issue" },
+    h("b", {}, j.use || j.question || j.id || "?"), " ",
+    h("span", { class: j.ok === false ? "verdict-error" : "verdict-ok" }, j.ok === false ? "не ответил (fail-open)" : "ok"),
+    j.latency_ms !== undefined ? h("span", { class: "muted" }, ` · ${j.latency_ms} мс`) : null,
+    j.cost_usd !== undefined && j.cost_usd !== null ? h("span", { class: "muted" }, ` · $${num(j.cost_usd, 5)}`) : null,
+    j.used === false ? h("span", { class: "muted" }, " · не применён") : null,
+    j.questions ? h("div", { class: "muted" }, "вопросы: " + j.questions.join(", ")) : null,
+    j.error ? h("div", { class: "verdict-error" }, j.error) : null,
+    j.answers ? Object.entries(j.answers).map(([name, a]) => answerLine(name, a || {})) : null,
+    !j.answers && (j.answer !== undefined || j.choice !== undefined) ? answerLine(j.question || "ответ", j) : null))) : h("p", { class: "muted" }, "нет"));
+  const timings = Object.entries(dbg.timings_ms || {});
+  const maxT = Math.max(1, ...timings.map(([, v]) => v));
+  root.append(h("h2", {}, "Тайминги"), timings.length ? h("div", {}, timings.map(([k, v]) => h("div", { class: "row" }, h("span", { style: "width:110px" }, k), h("div", { class: "bar", style: `width:${Math.round(v / maxT * 200)}px` }), h("span", { class: "muted" }, v + " мс")))) : h("p", { class: "muted" }, "нет"));
+  const flags = Object.entries(dbg.flags || {});
+  root.append(h("h2", {}, "Флаги"), flags.length ? h("div", { class: "row" }, flags.map(([k, v]) => h("span", { class: "badge " + (v === true ? "ok" : v === false ? "" : "warn") }, `${k}: ${v}`))) : h("p", { class: "muted" }, "нет"));
+  if (dbg.contract_errors) root.append(h("h2", {}, "Нарушения договора ответа"), h("pre", {}, dbg.contract_errors.join("\n")));
+  const known = new Set(["stage_path", "calls", "hooks", "timings_ms", "jev", "flags", "example", "note", "fixture", "contract_errors"]);
+  const rest = Object.fromEntries(Object.entries(dbg).filter(([k]) => !known.has(k)));
+  if (Object.keys(rest).length) root.append(h("h2", {}, "Прочее"), h("pre", {}, JSON.stringify(rest, null, 2)));
+}
+
+// ---------------------------------------------------------------- composer, image upload, fixtures
+function sendText() {
+  const text = $("text").value.trim();
+  if (!text && !state.image) return;
+  const req = {};
+  if (text) req.text = text;
+  if (state.image) req.image = state.image;
+  $("text").value = ""; clearImage();
+  sendTurn(req, text || "(фото)");
+}
+function clearImage() { state.image = null; $("preview").style.display = "none"; $("image").value = ""; }
+
+$("send").addEventListener("click", sendText);
+$("text").addEventListener("keydown", (ev) => { if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); sendText(); } });
+$("image-btn").addEventListener("click", () => $("image").click());
+$("preview-clear").addEventListener("click", clearImage);
+$("image").addEventListener("change", () => {
+  const file = $("image").files[0];
+  if (!file) return;
+  const limit = (state.config && state.config.image_max_bytes) || 6000000;
+  if (file.size > limit) { systemBubble(`Картинка ${Math.round(file.size / 1e5) / 10} МБ — больше лимита ${Math.round(limit / 1e5) / 10} МБ.`, true); clearImage(); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    state.image = reader.result;  // data:image/...;base64,...
+    $("preview-img").src = state.image; $("preview-info").textContent = `${file.name}, ${Math.round(file.size / 1024)} КБ`;
+    $("preview").style.display = "flex";
+  };
+  reader.readAsDataURL(file);
+});
+$("new-session").addEventListener("click", newSession);
+$("raw-toggle").addEventListener("change", () => { $("raw").hidden = !$("raw-toggle").checked; });
+$("fixture-select").addEventListener("change", async () => {
+  const name = $("fixture-select").value;
+  if (!name) return;
+  const { status, data } = await api("GET", "/api/fixtures/" + encodeURIComponent(name));
+  if (status === 200) addAgentTurn(data, null, "просмотр фикстуры «" + name + "», без хода");
+  $("fixture-select").value = "";
+});
+
+(async function init() {
+  try {
+    const cfg = await api("GET", "/api/config");
+    state.config = cfg.data;
+    $("mode").textContent = cfg.data.mode === "fixtures" ? "режим фикстур" : "движок";
+    if (cfg.data.debug) $("debug-toggle").checked = true;
+    const fx = await api("GET", "/api/fixtures");
+    for (const name of fx.data.order || []) $("fixture-select").append(h("option", { value: name }, name));
+  } catch (e) {
+    $("mode").textContent = "сервер недоступен";
+  }
+  await newSession();
+})();
+</script>
+</body>
+</html>

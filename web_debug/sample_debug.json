@@ -1,0 +1,32 @@
+{
+  "example": true,
+  "note": "Пример формы debug для макета в режиме фикстур — числа придуманы, это не настоящий прогон.",
+  "stage_path": ["jev_routing", "understand", "apply_patch", "search", "build_variants", "check", "sensitivity", "upsell", "present.variants"],
+  "calls": [
+    {"card": "understand", "rerun": false, "ok": true, "model": "deepseek/deepseek-v4.1-flash-1017", "provider": "DeepSeek",
+     "tokens": {"input_tokens": 1460, "output_tokens": 118, "cached_tokens": 1024, "reasoning_tokens": 0, "cost_usd": 0.00019},
+     "latency_ms": 940, "cost": 0.00019, "retries": 0},
+    {"card": "present.variants", "rerun": false, "ok": true, "model": "deepseek/deepseek-v4.1-flash-1017", "provider": "DeepSeek",
+     "tokens": {"input_tokens": 3820, "output_tokens": 610, "cached_tokens": 0, "reasoning_tokens": 240, "cost_usd": 0.00071},
+     "latency_ms": 2380, "cost": 0.00071, "retries": 1},
+    {"card": "present.variants", "rerun": true, "ok": true, "model": "deepseek/deepseek-v4.1-flash-1017", "provider": "DeepSeek",
+     "tokens": {"input_tokens": 3900, "output_tokens": 590, "cached_tokens": 3584, "reasoning_tokens": 210, "cost_usd": 0.00052},
+     "latency_ms": 2010, "cost": 0.00052, "retries": 0}
+  ],
+  "hooks": [
+    {"event": "after_variants", "name": "check_variants", "kind": "validate", "verdict": "ok", "issues": []},
+    {"event": "after_present", "name": "card_guard", "kind": "validate", "verdict": "block", "card": "present.variants",
+     "issues": [{"code": "number_not_in_input", "severity": "block", "message": "В тексте 95 000 ₽, во входе такого числа нет", "data": {"number": 95000}}]},
+    {"event": "after_present", "name": "card_guard", "kind": "validate", "verdict": "ok", "card": "present.variants", "issues": []},
+    {"event": "turn_end", "name": "log_event", "kind": "analytics", "verdict": "ok", "issues": []}
+  ],
+  "timings_ms": {"jev": 340, "understand": 940, "search": 210, "build_variants": 35, "check": 4, "present": 4390, "total": 6000},
+  "jev": [
+    {"use": "ask_or_assume", "ok": true, "questions": ["budget_is_precise", "district"], "latency_ms": 340, "cost_usd": 0.00002,
+     "model": "typesafe/jev-1.13",
+     "answers": {"district": {"type": "choice", "choice": "quiet", "probabilities": {"quiet": 0.82, "walkable": 0.11, "lively": 0.07}, "confidence": 0.82},
+                 "budget_is_precise": {"type": "noul", "noul": 0.04}}}
+  ],
+  "flags": {"preset": "stage3", "sensitivity": true, "jev_routing": true, "jev_ask": true, "jev_guard": true,
+            "prefetch": false, "upsell": false, "insights": false}
+}
