@@ -25,7 +25,8 @@ ROUTE_KEYS = {"id", "when", "steps", "present"}
 WHEN_KEYS = {"intent", "has", "missing", "stage", "action"}
 UPSELL_KINDS = ("transfer", "early_checkin", "room_upgrade", "meal_upgrade", "flexible_fare")  # what the mock sells
 UPSELL_CONDITIONS = ("arrival_after", "arrival_before_checkin_min", "children", "variant_has_transfer",
-                     "traits_any", "mood_any", "prefs")
+                     "traits_any", "mood_any", "prefs", "segment_any", "non_refundable", "meals_below",
+                     "nights_min", "stars_below")   # implemented in agent/upsell.py
 RECOMMEND_SOURCES = ("profile", "pattern")
 RULES_REQUIRED = {"max_questions": int, "max_upsell": int, "max_jokes": int, "sensitivity": dict, "jev": dict,
                   "retries": dict, "buffers_min": dict}

@@ -7,7 +7,8 @@
   "max_variants": 3,
   "sensitivity": {
     "price_delta_pct": 10,
-    "top_changes": true
+    "top_changes": true,
+    "max_reruns": 12
   },
   "jev": {
     "routing": 0.8,
@@ -28,18 +29,59 @@
     "numbers_from_input": true,
     "ids_from_input": true,
     "message_chars": {
-      "present.destinations": [120, 900],
-      "present.variants": [150, 1000],
-      "present.update": [60, 900],
-      "present.compare": [120, 900],
-      "present.info": [30, 600],
-      "present.aftercare": [30, 600],
-      "present.fallback": [20, 400]
+      "present.destinations": [
+        120,
+        900
+      ],
+      "present.variants": [
+        150,
+        1000
+      ],
+      "present.update": [
+        60,
+        900
+      ],
+      "present.compare": [
+        120,
+        900
+      ],
+      "present.info": [
+        30,
+        600
+      ],
+      "present.aftercare": [
+        30,
+        600
+      ],
+      "present.fallback": [
+        20,
+        400
+      ]
     },
-    "question_mark_needs_questions": ["present.destinations", "present.variants", "present.update", "present.compare"],
-    "banned_phrases": ["Уважаемый клиент", "Обращаем ваше внимание", "Отличный вопрос", "Конечно!", "С удовольствием!",
-                       "Рад помочь", "В рамках", "Данный", "Осуществ", "я всего лишь ИИ", "языковая модель",
-                       "системный промпт", "по данным Островка", "другие пользователи"]
+    "question_mark_needs_questions": [
+      "present.destinations",
+      "present.variants",
+      "present.update",
+      "present.compare"
+    ],
+    "banned_phrases": [
+      "Уважаемый клиент",
+      "Обращаем ваше внимание",
+      "Отличный вопрос",
+      "Конечно!",
+      "С удовольствием!",
+      "Рад помочь",
+      "В рамках",
+      "Данный",
+      "Осуществ",
+      "я всего лишь ИИ",
+      "языковая модель",
+      "системный промпт",
+      "по данным Островка",
+      "другие пользователи"
+    ],
+    "small_int_max": 10,
+    "length_slack_pct": 20
   },
   "retries": {
     "llm_invalid_output": 1,
@@ -55,10 +97,64 @@
   },
   "taxi_time_factor": 1.2,
   "risk_slack_min": 60,
-  "late_checkin": ["22:00", "05:00"],
+  "late_checkin": [
+    "22:00",
+    "05:00"
+  ],
   "meeting_window_min": 60,
   "history": {
     "user_messages": 6,
     "agent_messages": 3
+  },
+  "ranking": {
+    "max_legs": 6,
+    "max_hotels": 15,
+    "fastest_min_gain_h": 0.25,
+    "comfort_min_gain": 0.03,
+    "comfort_price_cap_ratio": 2.0,
+    "after_train_min": 10,
+    "night_window": [
+      "23:00",
+      "06:00"
+    ],
+    "early_departure_before": "07:00",
+    "tight_layover_min": 60,
+    "long_transfer_min": 90,
+    "wait_before_checkin_min": 180,
+    "wait_after_checkout_min": 240,
+    "max_wait_after_checkout_h": 14,
+    "district_label_min": 0.6,
+    "lively_noisy_min": 0.6,
+    "quiet_min": 0.7,
+    "quiet_lively_max": 0.2,
+    "not_walkable_max": 0.3,
+    "beach_far_m": 1000,
+    "beach_near_m": 300,
+    "beach_zero_m": 2000,
+    "sacrifice_beach_delta_m": 300,
+    "sacrifice_rating_delta": 0.5,
+    "budget_zero_over_pct": 50,
+    "max_notes": 4,
+    "fit_weights": {
+      "budget": 0.25,
+      "time": 0.15,
+      "district": 0.15,
+      "meals": 0.1,
+      "cancellation": 0.07,
+      "stars": 0.08,
+      "beach": 0.1,
+      "constraints": 0.05,
+      "rating": 0.05
+    },
+    "comfort_weights": {
+      "stars": 0.2,
+      "rating": 0.25,
+      "meals": 0.15,
+      "cancellation": 0.1,
+      "direct": 0.1,
+      "fare": 0.05,
+      "transfer": 0.05,
+      "district": 0.1
+    }
   }
 }

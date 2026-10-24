@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS destinations (
     tags            TEXT NOT NULL DEFAULT '[]',      -- JSON array of agent.state.DESTINATION_TRAITS
     airports        TEXT NOT NULL DEFAULT '[]',      -- JSON array of IATA codes serving the place
     stations        TEXT NOT NULL DEFAULT '[]',      -- JSON array of railway station names
+    aliases         TEXT NOT NULL DEFAULT '[]',      -- JSON array of colloquial names: 'Питер', 'СПб', 'Екб'
     timezone        TEXT,                            -- IANA, e.g. 'Europe/Istanbul'
     description_ru  TEXT,
     popularity      REAL NOT NULL DEFAULT 0,         -- 0..1

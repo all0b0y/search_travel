@@ -264,6 +264,7 @@ Budget: ≤ 2 Flash calls per turn (plus at most one rerun per card on a failed 
   check_card_output(card, card_input, output, rules) -> list[Issue]   # numbers ⊂ input numbers, ids ⊂ input ids, ≤ 1 joke heuristic, upsell ⊂ candidates
   ```
   `Issue = {code, severity: "block"|"warn", message, data}`.
+  As built (2026-10-25): `build_variants(..., segments=None)` and `fit(..., segments=None)` take `segments.json` data (else `rules["segments"]`); `results["hotel_upgrades"][hotel_id]` holds `search_hotels(hotel_id=…, all_rooms=True)` / higher-`meals` offers for room and meal upgrades; `recommended_hint(variants)`, `check_variant_set(variants)`, `offers_for_variant(variant, results)`, `OpenData.districts_for(ids)` / `origin_airports(city)`, `render_variant(session_id, variant, brief, rules, out_root=, now=)` exist. Ranking, sensitivity and guard thresholds live in `rules.json` (`ranking`, `sensitivity`, `guard`), code defaults only as fallback.
 
 ## 6. Response contract (engine → UI)
 
