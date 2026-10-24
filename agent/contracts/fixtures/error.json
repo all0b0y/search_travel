@@ -1,0 +1,25 @@
+{
+  "session_id": "s_example_selection",
+  "turn": 2,
+  "stage": "selection",
+  "message": "Поиск отелей сейчас не отвечает, поэтому вариантов не будет — выдумывать их не хочу. Попробуйте ещё раз через минуту, ваш запрос я запомнил.",
+  "chips": [],
+  "questions": [],
+  "cards": {
+    "destinations": [],
+    "variants": [],
+    "hotels": []
+  },
+  "comparison": null,
+  "cart": null,
+  "order": null,
+  "actions": [],
+  "files": {
+    "ics": null,
+    "page": null
+  },
+  "error": {
+    "code": "tool_unavailable",
+    "retryable": true
+  }
+}

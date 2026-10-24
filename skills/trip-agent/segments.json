@@ -1,0 +1,33 @@
+{
+  "format": "segments: {<party.segment>: {label (Russian chip text), party: default {adults, children} when the brief has no counts, prefs: default prefs (source default, shown as chips), district_weights: {lively, quiet, family, walkable} weights for ranking hotels by OSM district scores (sum 1), jev_criteria: English criteria text for Jev segment routing}}. Segments not listed (other) use neutral weights 0.25 each.",
+  "segments": {
+    "solo": {
+      "label": "один",
+      "party": {"adults": 1, "children": 0},
+      "prefs": {"district": "walkable"},
+      "district_weights": {"lively": 0.35, "quiet": 0.1, "family": 0.0, "walkable": 0.55},
+      "jev_criteria": "One adult travelling alone, no partner, children or friends mentioned."
+    },
+    "couple": {
+      "label": "вдвоём",
+      "party": {"adults": 2, "children": 0},
+      "prefs": {"district": "quiet"},
+      "district_weights": {"lively": 0.15, "quiet": 0.45, "family": 0.0, "walkable": 0.4},
+      "jev_criteria": "Two adults travelling together (partner, spouse, 'вдвоём'), no children."
+    },
+    "family": {
+      "label": "с детьми",
+      "party": {"adults": 2, "children": 1},
+      "prefs": {"district": "family"},
+      "district_weights": {"lively": 0.0, "quiet": 0.3, "family": 0.5, "walkable": 0.2},
+      "jev_criteria": "Adults travelling with one or more children (ребёнок, дети, сын, дочь)."
+    },
+    "friends": {
+      "label": "компанией",
+      "party": {"adults": 3, "children": 0},
+      "prefs": {"district": "lively"},
+      "district_weights": {"lively": 0.55, "quiet": 0.0, "family": 0.0, "walkable": 0.45},
+      "jev_criteria": "A group of three or more adult friends or colleagues, no children."
+    }
+  }
+}

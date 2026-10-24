@@ -1,0 +1,85 @@
+{
+  "session_id": "s_example_family",
+  "turn": 7,
+  "stage": "aftercare",
+  "message": "Запросил ранний заезд на 10:00. Отель ответит ближе к дате: сейчас статус «по запросу», если подтвердят — 4 500 ₽ спишут на месте.",
+  "chips": [],
+  "questions": [],
+  "cards": {
+    "destinations": [],
+    "variants": [],
+    "hotels": []
+  },
+  "comparison": null,
+  "cart": null,
+  "order": {
+    "order_id": "o_example_1",
+    "status": "paid",
+    "items": [
+      {
+        "item_id": "oi_1",
+        "kind": "flight",
+        "title": "Перелёт Москва → Анталья",
+        "price_rub": 46800,
+        "booking_number": "PNR-EX7K2Q",
+        "status": "confirmed",
+        "start": "2026-11-14T08:30+03:00",
+        "end": "2026-11-14T12:50+03:00"
+      },
+      {
+        "item_id": "oi_2",
+        "kind": "hotel",
+        "title": "Отель «Лара Бич Фэмили» (пример), 7 ночей, всё включено",
+        "price_rub": 112700,
+        "booking_number": "HTL-EX-48213",
+        "status": "confirmed",
+        "start": "2026-11-14T14:00+03:00",
+        "end": "2026-11-21T12:00+03:00"
+      },
+      {
+        "item_id": "oi_3",
+        "kind": "flight",
+        "title": "Перелёт Анталья → Москва",
+        "price_rub": 44100,
+        "booking_number": "PNR-EX7K2R",
+        "status": "confirmed",
+        "start": "2026-11-21T14:10+03:00",
+        "end": "2026-11-21T18:40+03:00"
+      }
+    ],
+    "total_rub": 203600,
+    "issues": [],
+    "events": [
+      {
+        "at": "2026-10-25T13:05:00+03:00",
+        "kind": "created",
+        "text": "Заказ создан"
+      },
+      {
+        "at": "2026-10-25T13:07:30+03:00",
+        "kind": "paid",
+        "text": "Оплачено картой (демо)"
+      },
+      {
+        "at": "2026-10-26T09:12:00+03:00",
+        "kind": "early_checkin_requested",
+        "text": "Ранний заезд в 10:00: по запросу, 4 500 ₽"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "order_action",
+      "label": "Добавить трансфер",
+      "payload": {
+        "order_id": "o_example_1",
+        "kind": "add_transfer",
+        "params": {}
+      }
+    }
+  ],
+  "files": {
+    "ics": "/files/o_example_1/trip.ics",
+    "page": "/files/o_example_1/index.html"
+  }
+}

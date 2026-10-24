@@ -1,0 +1,420 @@
+{
+  "session_id": "s_example_selection",
+  "turn": 1,
+  "stage": "selection",
+  "message": "Сочи, 12–19 ноября, вдвоём — вот три варианта. Советую «Быстрее»: 90 300 ₽, всего 6,5 часа в дороге за обе стороны и отель с завтраками.",
+  "chips": [
+    {
+      "field": "prefs.district",
+      "label": "тихий район",
+      "value": "quiet",
+      "options": [
+        {
+          "label": "тихий",
+          "value": "quiet"
+        },
+        {
+          "label": "пешком до всего",
+          "value": "walkable"
+        },
+        {
+          "label": "движ",
+          "value": "lively"
+        }
+      ]
+    },
+    {
+      "field": "party.segment",
+      "label": "вдвоём",
+      "value": "couple",
+      "options": [
+        {
+          "label": "один",
+          "value": "solo"
+        },
+        {
+          "label": "вдвоём",
+          "value": "couple"
+        },
+        {
+          "label": "с детьми",
+          "value": "family"
+        },
+        {
+          "label": "компанией",
+          "value": "friends"
+        }
+      ]
+    }
+  ],
+  "questions": [],
+  "cards": {
+    "destinations": [],
+    "variants": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "recommended": false,
+        "totals": {
+          "rub": 56400,
+          "door_to_door_hours": 7.4
+        },
+        "steps": [
+          {
+            "id": "s1",
+            "type": "flight",
+            "from": "SVO",
+            "to": "AER",
+            "start": "2026-11-12T06:40+03:00",
+            "end": "2026-11-12T09:05+03:00",
+            "title": "Перелёт Москва → Сочи",
+            "carrier": "Пример Авиа",
+            "price_rub": 11200,
+            "offer_id": "fl_ex_001",
+            "status": "planned"
+          },
+          {
+            "id": "s2",
+            "type": "transfer",
+            "from": "AER",
+            "to": "Гостевой дом «Лаванда» (пример)",
+            "start": "2026-11-12T09:50+03:00",
+            "end": "2026-11-12T10:40+03:00",
+            "title": "Автобус до отеля",
+            "carrier": null,
+            "price_rub": 600,
+            "offer_id": "tr_ex_001",
+            "status": "planned"
+          },
+          {
+            "id": "s3",
+            "type": "stay",
+            "from": "Гостевой дом «Лаванда» (пример)",
+            "to": "Гостевой дом «Лаванда» (пример)",
+            "start": "2026-11-12T14:00+03:00",
+            "end": "2026-11-19T12:00+03:00",
+            "title": "7 ночей, без питания",
+            "carrier": null,
+            "price_rub": 33600,
+            "offer_id": "ht_ex_001",
+            "status": "planned"
+          },
+          {
+            "id": "s4",
+            "type": "transfer",
+            "from": "Гостевой дом «Лаванда» (пример)",
+            "to": "AER",
+            "start": "2026-11-19T16:00+03:00",
+            "end": "2026-11-19T16:50+03:00",
+            "title": "Автобус в аэропорт",
+            "carrier": null,
+            "price_rub": 600,
+            "offer_id": "tr_ex_002",
+            "status": "planned"
+          },
+          {
+            "id": "s5",
+            "type": "flight",
+            "from": "AER",
+            "to": "SVO",
+            "start": "2026-11-19T19:20+03:00",
+            "end": "2026-11-19T21:50+03:00",
+            "title": "Перелёт Сочи → Москва",
+            "carrier": "Пример Авиа",
+            "price_rub": 10400,
+            "offer_id": "fl_ex_002",
+            "status": "planned"
+          }
+        ],
+        "hotel": {
+          "hotel_id": "h_ex_lavanda",
+          "name": "Гостевой дом «Лаванда» (пример)",
+          "stars": 2,
+          "rating": 8.1,
+          "district": {
+            "labels": [
+              "quiet"
+            ],
+            "scores": {
+              "lively": 0.2,
+              "quiet": 0.8,
+              "family": 0.4,
+              "walkable": 0.3
+            }
+          }
+        },
+        "why": "Самый бюджетный вариант: прямые рейсы и тихий гостевой дом в Адлере.",
+        "sacrifices": [
+          "Рейс туда в 06:40 — вставать рано",
+          "До моря 900 м",
+          "Без завтраков"
+        ],
+        "risks": [],
+        "not_for": [
+          "Тем, кто хочет жить у самого моря"
+        ],
+        "upsell": []
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "Быстрее",
+        "recommended": true,
+        "totals": {
+          "rub": 90300,
+          "door_to_door_hours": 6.5
+        },
+        "steps": [
+          {
+            "id": "s1",
+            "type": "flight",
+            "from": "VKO",
+            "to": "AER",
+            "start": "2026-11-12T10:15+03:00",
+            "end": "2026-11-12T12:35+03:00",
+            "title": "Перелёт Москва → Сочи",
+            "carrier": "Пример Авиа",
+            "price_rub": 14900,
+            "offer_id": "fl_ex_003",
+            "status": "planned"
+          },
+          {
+            "id": "s2",
+            "type": "transfer",
+            "from": "AER",
+            "to": "Отель «Ривьера-Парк» (пример)",
+            "start": "2026-11-12T13:15+03:00",
+            "end": "2026-11-12T13:50+03:00",
+            "title": "Такси до отеля",
+            "carrier": null,
+            "price_rub": 1500,
+            "offer_id": "tr_ex_003",
+            "status": "planned"
+          },
+          {
+            "id": "s3",
+            "type": "stay",
+            "from": "Отель «Ривьера-Парк» (пример)",
+            "to": "Отель «Ривьера-Парк» (пример)",
+            "start": "2026-11-12T14:00+03:00",
+            "end": "2026-11-19T12:00+03:00",
+            "title": "7 ночей, завтраки",
+            "carrier": null,
+            "price_rub": 58800,
+            "offer_id": "ht_ex_002",
+            "status": "planned"
+          },
+          {
+            "id": "s4",
+            "type": "transfer",
+            "from": "Отель «Ривьера-Парк» (пример)",
+            "to": "AER",
+            "start": "2026-11-19T13:00+03:00",
+            "end": "2026-11-19T13:35+03:00",
+            "title": "Такси в аэропорт",
+            "carrier": null,
+            "price_rub": 1500,
+            "offer_id": "tr_ex_004",
+            "status": "planned"
+          },
+          {
+            "id": "s5",
+            "type": "flight",
+            "from": "AER",
+            "to": "VKO",
+            "start": "2026-11-19T15:40+03:00",
+            "end": "2026-11-19T18:05+03:00",
+            "title": "Перелёт Сочи → Москва",
+            "carrier": "Пример Авиа",
+            "price_rub": 13600,
+            "offer_id": "fl_ex_004",
+            "status": "planned"
+          }
+        ],
+        "hotel": {
+          "hotel_id": "h_ex_riviera",
+          "name": "Отель «Ривьера-Парк» (пример)",
+          "stars": 4,
+          "rating": 8.7,
+          "district": {
+            "labels": [
+              "walkable",
+              "quiet"
+            ],
+            "scores": {
+              "lively": 0.4,
+              "quiet": 0.6,
+              "family": 0.5,
+              "walkable": 0.8
+            }
+          }
+        },
+        "why": "Удобное время рейсов и такси без ожидания: меньше всего времени в дороге.",
+        "sacrifices": [
+          "Дороже самого дешёвого на 33 900 ₽"
+        ],
+        "risks": [],
+        "not_for": [
+          "Тем, кто ищет ночную жизнь рядом"
+        ],
+        "upsell": [
+          {
+            "offer_id": null,
+            "label": "Попросить тихий номер",
+            "price_rub": null,
+            "reason": "Хотите тишины — попросим номер повыше и окнами во двор. Бесплатно, но отель не обязан."
+          }
+        ]
+      },
+      {
+        "id": "comfort",
+        "label": "3",
+        "title": "Комфортнее",
+        "recommended": false,
+        "totals": {
+          "rub": 131200,
+          "door_to_door_hours": 7.0
+        },
+        "steps": [
+          {
+            "id": "s1",
+            "type": "flight",
+            "from": "SVO",
+            "to": "AER",
+            "start": "2026-11-12T12:20+03:00",
+            "end": "2026-11-12T14:45+03:00",
+            "title": "Перелёт Москва → Сочи",
+            "carrier": "Пример Авиа",
+            "price_rub": 16800,
+            "offer_id": "fl_ex_005",
+            "status": "planned"
+          },
+          {
+            "id": "s2",
+            "type": "transfer",
+            "from": "AER",
+            "to": "Курортный отель «Морская миля» (пример)",
+            "start": "2026-11-12T15:30+03:00",
+            "end": "2026-11-12T16:20+03:00",
+            "title": "Индивидуальный трансфер",
+            "carrier": null,
+            "price_rub": 3200,
+            "offer_id": "tr_ex_005",
+            "status": "planned"
+          },
+          {
+            "id": "s3",
+            "type": "stay",
+            "from": "Курортный отель «Морская миля» (пример)",
+            "to": "Курортный отель «Морская миля» (пример)",
+            "start": "2026-11-12T16:20+03:00",
+            "end": "2026-11-19T12:00+03:00",
+            "title": "7 ночей, полупансион, бесплатная отмена",
+            "carrier": null,
+            "price_rub": 92400,
+            "offer_id": "ht_ex_003",
+            "status": "planned"
+          },
+          {
+            "id": "s4",
+            "type": "transfer",
+            "from": "Курортный отель «Морская миля» (пример)",
+            "to": "AER",
+            "start": "2026-11-19T13:30+03:00",
+            "end": "2026-11-19T14:20+03:00",
+            "title": "Индивидуальный трансфер",
+            "carrier": null,
+            "price_rub": 3200,
+            "offer_id": "tr_ex_006",
+            "status": "planned"
+          },
+          {
+            "id": "s5",
+            "type": "flight",
+            "from": "AER",
+            "to": "SVO",
+            "start": "2026-11-19T16:50+03:00",
+            "end": "2026-11-19T19:20+03:00",
+            "title": "Перелёт Сочи → Москва",
+            "carrier": "Пример Авиа",
+            "price_rub": 15600,
+            "offer_id": "fl_ex_006",
+            "status": "planned"
+          }
+        ],
+        "hotel": {
+          "hotel_id": "h_ex_milya",
+          "name": "Курортный отель «Морская миля» (пример)",
+          "stars": 5,
+          "rating": 9.1,
+          "district": {
+            "labels": [
+              "quiet",
+              "family"
+            ],
+            "scores": {
+              "lively": 0.1,
+              "quiet": 0.9,
+              "family": 0.7,
+              "walkable": 0.4
+            }
+          }
+        },
+        "why": "Отель на первой линии с полупансионом и бесплатной отменой до 9 ноября.",
+        "sacrifices": [
+          "Самый дорогой: 131 200 ₽"
+        ],
+        "risks": [
+          "Заселение в 16:20, после обеда в день прилёта уже не успеть"
+        ],
+        "not_for": [
+          "Тем, кто хочет гулять по городу пешком"
+        ],
+        "upsell": []
+      }
+    ],
+    "hotels": []
+  },
+  "comparison": null,
+  "cart": null,
+  "order": null,
+  "actions": [
+    {
+      "type": "choose_variant",
+      "label": "Беру «Дешевле»",
+      "payload": {
+        "variant_id": "cheapest"
+      }
+    },
+    {
+      "type": "choose_variant",
+      "label": "Беру «Быстрее»",
+      "payload": {
+        "variant_id": "fastest"
+      }
+    },
+    {
+      "type": "choose_variant",
+      "label": "Беру «Комфортнее»",
+      "payload": {
+        "variant_id": "comfort"
+      }
+    },
+    {
+      "type": "compare",
+      "label": "Сравнить",
+      "payload": {
+        "variant_ids": [
+          "cheapest",
+          "fastest",
+          "comfort"
+        ]
+      }
+    }
+  ],
+  "files": {
+    "ics": null,
+    "page": null
+  }
+}

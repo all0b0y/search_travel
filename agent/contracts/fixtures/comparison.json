@@ -1,0 +1,102 @@
+{
+  "session_id": "s_example_selection",
+  "turn": 2,
+  "stage": "selection",
+  "message": "Коротко: «Дешевле» экономит 33 900 ₽, но рейс в 06:40 и без завтраков. «Комфортнее» — первая линия и бесплатная отмена за 40 900 ₽ сверху. Середина — «Быстрее».",
+  "chips": [],
+  "questions": [],
+  "cards": {
+    "destinations": [],
+    "variants": [],
+    "hotels": []
+  },
+  "comparison": {
+    "variant_ids": [
+      "cheapest",
+      "fastest",
+      "comfort"
+    ],
+    "recommended_id": "fastest",
+    "rows": [
+      {
+        "key": "price",
+        "label": "Цена за двоих",
+        "values": {
+          "cheapest": "56 400 ₽",
+          "fastest": "90 300 ₽",
+          "comfort": "131 200 ₽"
+        },
+        "best_id": "cheapest"
+      },
+      {
+        "key": "door_to_door",
+        "label": "В дороге, туда и обратно",
+        "values": {
+          "cheapest": "7,4 ч",
+          "fastest": "6,5 ч",
+          "comfort": "7,0 ч"
+        },
+        "best_id": "fastest"
+      },
+      {
+        "key": "hotel",
+        "label": "Отель",
+        "values": {
+          "cheapest": "2★, 8,1",
+          "fastest": "4★, 8,7",
+          "comfort": "5★, 9,1"
+        },
+        "best_id": "comfort"
+      },
+      {
+        "key": "meals",
+        "label": "Питание",
+        "values": {
+          "cheapest": "без питания",
+          "fastest": "завтраки",
+          "comfort": "полупансион"
+        },
+        "best_id": "comfort"
+      },
+      {
+        "key": "cancellation",
+        "label": "Отмена",
+        "values": {
+          "cheapest": "невозвратный",
+          "fastest": "штраф 30 %",
+          "comfort": "бесплатно до 9 ноября"
+        },
+        "best_id": "comfort"
+      }
+    ]
+  },
+  "cart": null,
+  "order": null,
+  "actions": [
+    {
+      "type": "choose_variant",
+      "label": "Беру «Дешевле»",
+      "payload": {
+        "variant_id": "cheapest"
+      }
+    },
+    {
+      "type": "choose_variant",
+      "label": "Беру «Быстрее»",
+      "payload": {
+        "variant_id": "fastest"
+      }
+    },
+    {
+      "type": "choose_variant",
+      "label": "Беру «Комфортнее»",
+      "payload": {
+        "variant_id": "comfort"
+      }
+    }
+  ],
+  "files": {
+    "ics": null,
+    "page": null
+  }
+}

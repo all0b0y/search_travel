@@ -1,0 +1,91 @@
+{
+  "session_id": "s_example_family",
+  "turn": 5,
+  "stage": "checkout",
+  "message": "Заказ собран, осталось оплатить 203 600 ₽. Две вещи по ребёнку: младенческий билет уже в цене, а кроватку в номере отель обещает только по запросу.",
+  "chips": [],
+  "questions": [],
+  "cards": {
+    "destinations": [],
+    "variants": [],
+    "hotels": []
+  },
+  "comparison": null,
+  "cart": null,
+  "order": {
+    "order_id": "o_example_1",
+    "status": "pending_payment",
+    "items": [
+      {
+        "item_id": "oi_1",
+        "kind": "flight",
+        "title": "Перелёт Москва → Анталья",
+        "price_rub": 46800,
+        "booking_number": null,
+        "status": "pending",
+        "start": "2026-11-14T08:30+03:00",
+        "end": "2026-11-14T12:50+03:00"
+      },
+      {
+        "item_id": "oi_2",
+        "kind": "hotel",
+        "title": "Отель «Лара Бич Фэмили» (пример), 7 ночей, всё включено",
+        "price_rub": 112700,
+        "booking_number": null,
+        "status": "pending",
+        "start": "2026-11-14T14:00+03:00",
+        "end": "2026-11-21T12:00+03:00"
+      },
+      {
+        "item_id": "oi_3",
+        "kind": "flight",
+        "title": "Перелёт Анталья → Москва",
+        "price_rub": 44100,
+        "booking_number": null,
+        "status": "pending",
+        "start": "2026-11-21T14:10+03:00",
+        "end": "2026-11-21T18:40+03:00"
+      }
+    ],
+    "total_rub": 203600,
+    "issues": [
+      {
+        "code": "infant_fare",
+        "message": "Ребёнку на дату вылета будет 1 год — нужен младенческий билет без места, он уже учтён в цене перелёта.",
+        "severity": "info",
+        "item_ids": [
+          "oi_1",
+          "oi_3"
+        ]
+      },
+      {
+        "code": "child_bed",
+        "message": "Детскую кроватку отель даёт по запросу, гарантии нет. Попросить сейчас?",
+        "severity": "warning",
+        "item_ids": [
+          "oi_2"
+        ]
+      }
+    ],
+    "events": [
+      {
+        "at": "2026-10-25T13:05:00+03:00",
+        "kind": "created",
+        "text": "Заказ создан"
+      }
+    ]
+  },
+  "actions": [
+    {
+      "type": "pay",
+      "label": "Оплатить 203 600 ₽",
+      "payload": {
+        "order_id": "o_example_1"
+      }
+    }
+  ],
+  "files": {
+    "ics": null,
+    "page": null
+  }
+}

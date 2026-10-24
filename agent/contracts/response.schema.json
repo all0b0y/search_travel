@@ -1,0 +1,1826 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Track agent Response (engine -> UI)",
+  "description": "AGENT_PLAN.md section 6. Every number is computed by code. `debug` only for debug sessions; `error` only when the turn failed (message explains it in Russian).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "session_id",
+    "turn",
+    "stage",
+    "message",
+    "chips",
+    "questions",
+    "cards",
+    "comparison",
+    "cart",
+    "order",
+    "actions",
+    "files"
+  ],
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "pattern": "^s_[A-Za-z0-9_]+$"
+    },
+    "turn": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "stage": {
+      "enum": [
+        "inspiration",
+        "selection",
+        "cart",
+        "checkout",
+        "ordered",
+        "aftercare"
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "chips": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/chip"
+      }
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/question"
+      },
+      "maxItems": 2
+    },
+    "cards": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "destinations",
+        "variants",
+        "hotels"
+      ],
+      "properties": {
+        "destinations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/destination_card"
+          },
+          "maxItems": 6
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/variant_card"
+          },
+          "maxItems": 3
+        },
+        "hotels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/hotel_card"
+          }
+        }
+      }
+    },
+    "comparison": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/comparison"
+        }
+      ]
+    },
+    "cart": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/cart"
+        }
+      ]
+    },
+    "order": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/order"
+        }
+      ]
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/action"
+      }
+    },
+    "files": {
+      "$ref": "#/definitions/files"
+    },
+    "error": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/error"
+        }
+      ]
+    },
+    "debug": {
+      "$ref": "#/definitions/debug"
+    }
+  },
+  "definitions": {
+    "choice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "value",
+        "recommended"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {},
+        "recommended": {
+          "type": "boolean"
+        }
+      }
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "text",
+        "field",
+        "choices"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "field": {
+          "enum": [
+            "destination.name",
+            "dates.start",
+            "dates.end",
+            "dates.month",
+            "dates.nights",
+            "dates.shift_days",
+            "dates.flexible_days",
+            "party.segment",
+            "party.adults",
+            "party.children",
+            "party.children_ages",
+            "party.pets",
+            "budget_rub.max",
+            "prefs.meals",
+            "prefs.free_cancellation",
+            "prefs.stars_min",
+            "prefs.direct_only",
+            "prefs.max_travel_hours",
+            "prefs.district",
+            "prefs.beach_max_m",
+            "prefs.transport",
+            "constraints.add",
+            "constraints.remove",
+            "traits.add",
+            "mood.add",
+            "origin.city",
+            "scope"
+          ]
+        },
+        "choices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/choice"
+          },
+          "minItems": 1,
+          "maxItems": 6
+        }
+      }
+    },
+    "chip_option": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "value"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {}
+      }
+    },
+    "chip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "label",
+        "value",
+        "options"
+      ],
+      "properties": {
+        "field": {
+          "enum": [
+            "destination.name",
+            "dates.start",
+            "dates.end",
+            "dates.month",
+            "dates.nights",
+            "dates.shift_days",
+            "dates.flexible_days",
+            "party.segment",
+            "party.adults",
+            "party.children",
+            "party.children_ages",
+            "party.pets",
+            "budget_rub.max",
+            "prefs.meals",
+            "prefs.free_cancellation",
+            "prefs.stars_min",
+            "prefs.direct_only",
+            "prefs.max_travel_hours",
+            "prefs.district",
+            "prefs.beach_max_m",
+            "prefs.transport",
+            "constraints.add",
+            "constraints.remove",
+            "traits.add",
+            "mood.add",
+            "origin.city",
+            "scope"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {},
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/chip_option"
+          }
+        }
+      }
+    },
+    "weather": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "air_max_c",
+        "sea_c",
+        "rain_days"
+      ],
+      "properties": {
+        "air_max_c": {
+          "type": "number"
+        },
+        "sea_c": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "rain_days": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "destination_card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "name",
+        "country",
+        "image_url",
+        "price_from_rub",
+        "nights",
+        "party_label",
+        "weather",
+        "travel_time_h",
+        "why",
+        "watch_out"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "country": {
+          "type": "string",
+          "minLength": 1
+        },
+        "image_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "price_from_rub": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "nights": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "party_label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "weather": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/weather"
+            }
+          ]
+        },
+        "travel_time_h": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "why": {
+          "type": "string",
+          "minLength": 1
+        },
+        "watch_out": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "price_from_rub null = no quote available (said honestly in the message); weather null = no climate data"
+    },
+    "district": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "labels",
+        "scores"
+      ],
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "lively",
+              "quiet",
+              "family",
+              "walkable"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "scores": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "lively",
+            "quiet",
+            "family",
+            "walkable"
+          ],
+          "properties": {
+            "lively": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "quiet": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "family": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "walkable": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        }
+      }
+    },
+    "variant_hotel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hotel_id",
+        "name",
+        "stars",
+        "rating",
+        "district"
+      ],
+      "properties": {
+        "hotel_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stars": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 5
+        },
+        "rating": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "district": {
+          "$ref": "#/definitions/district"
+        }
+      }
+    },
+    "timeline_step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "from",
+        "to",
+        "start",
+        "end",
+        "title",
+        "price_rub",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "taxi",
+            "flight",
+            "train",
+            "transfer",
+            "stay"
+          ]
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?([+-]\\d{2}:\\d{2}|Z)$",
+          "description": "ISO 8601 with UTC offset"
+        },
+        "end": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?([+-]\\d{2}:\\d{2}|Z)$",
+          "description": "ISO 8601 with UTC offset"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "carrier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "price_rub": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "offer_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "planned",
+            "booked",
+            "done",
+            "changed"
+          ]
+        },
+        "risk": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "slack_min",
+                "risky"
+              ],
+              "properties": {
+                "slack_min": {
+                  "type": "number"
+                },
+                "risky": {
+                  "type": "boolean"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "upsell_offer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offer_id",
+        "label",
+        "price_rub",
+        "reason"
+      ],
+      "properties": {
+        "offer_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "price_rub": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "description": "offer_id/price_rub null for free notes (e.g. a room request)"
+    },
+    "variant_card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "title",
+        "recommended",
+        "totals",
+        "steps",
+        "hotel",
+        "why",
+        "sacrifices",
+        "risks",
+        "not_for",
+        "upsell"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(cheapest|fastest|comfort|custom-[0-9]+)$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recommended": {
+          "type": "boolean"
+        },
+        "totals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rub",
+            "door_to_door_hours"
+          ],
+          "properties": {
+            "rub": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "door_to_door_hours": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/timeline_step"
+          }
+        },
+        "hotel": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/variant_hotel"
+            }
+          ]
+        },
+        "why": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sacrifices": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "maxItems": 6
+        },
+        "risks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "maxItems": 6
+        },
+        "not_for": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "maxItems": 6
+        },
+        "upsell": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/upsell_offer"
+          },
+          "maxItems": 2
+        }
+      }
+    },
+    "hotel_card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offer_id",
+        "hotel_id",
+        "label",
+        "name",
+        "kind",
+        "stars",
+        "rating",
+        "reviews",
+        "price_total_rub",
+        "meals",
+        "free_cancellation_until",
+        "distance_beach_m",
+        "distance_center_m",
+        "district",
+        "why",
+        "not_for"
+      ],
+      "properties": {
+        "offer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hotel_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stars": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 5
+        },
+        "rating": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "reviews": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "price_total_rub": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "meals": {
+          "enum": [
+            "none",
+            "breakfast",
+            "half_board",
+            "full_board",
+            "all_inclusive"
+          ]
+        },
+        "free_cancellation_until": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?([+-]\\d{2}:\\d{2}|Z)$",
+              "description": "ISO 8601 with UTC offset"
+            }
+          ]
+        },
+        "distance_beach_m": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "distance_center_m": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "district": {
+          "$ref": "#/definitions/district"
+        },
+        "why": {
+          "type": "string",
+          "minLength": 1
+        },
+        "not_for": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "maxItems": 6
+        }
+      }
+    },
+    "comparison_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "label",
+        "values",
+        "best_id"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "values": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "best_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "variant_ids",
+        "rows",
+        "recommended_id"
+      ],
+      "properties": {
+        "variant_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 2,
+          "maxItems": 4
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/comparison_row"
+          },
+          "minItems": 1
+        },
+        "recommended_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "severity",
+        "item_ids"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "blocking"
+          ]
+        },
+        "item_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "cart_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_id",
+        "offer_id",
+        "kind",
+        "title",
+        "price_rub",
+        "start",
+        "end"
+      ],
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "offer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "flight",
+            "train",
+            "hotel",
+            "transfer"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "price_rub": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "start": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?([+-]\\d{2}:\\d{2}|Z)$",
+              "description": "ISO 8601 with UTC offset"
+            }
+          ]
+        },
+        "end": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?([+-]\\d{2}:\\d{2}|Z)$",
+              "description": "ISO 8601 with UTC offset"
+            }
+          ]
+        }
+      }
+    },
+    "cart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cart_id",
+        "status",
+        "items",
+        "total_rub",
+        "issues"
+      ],
+      "properties": {
+        "cart_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "open",
+            "checked_out"
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cart_item"
+          }
+        },
+        "total_rub": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/issue"
+          }
+        }
+      }
+    },
+    "order_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_id",
+        "kind",
+        "title",
+        "price_rub",
+        "booking_number",
+        "status",
+        "start",
+        "end"
+      ],
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "flight",
+            "train",
+            "hotel",
+            "transfer"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "price_rub": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "booking_number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "confirmed",
+            "on_request",
+            "changed",
+            "cancelled"
+          ]
+        },
+        "start": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?([+-]\\d{2}:\\d{2}|Z)$",
+              "description": "ISO 8601 with UTC offset"
+            }
+          ]
+        },
+        "end": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?([+-]\\d{2}:\\d{2}|Z)$",
+              "description": "ISO 8601 with UTC offset"
+            }
+          ]
+        }
+      }
+    },
+    "order_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "at",
+        "kind",
+        "text"
+      ],
+      "properties": {
+        "at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?([+-]\\d{2}:\\d{2}|Z)$",
+          "description": "ISO 8601 with UTC offset"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "order": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "order_id",
+        "status",
+        "items",
+        "total_rub",
+        "issues",
+        "events"
+      ],
+      "properties": {
+        "order_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "pending_payment",
+            "paid",
+            "changed",
+            "cancelled"
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/order_item"
+          }
+        },
+        "total_rub": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/issue"
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/order_event"
+          }
+        }
+      }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ics",
+        "page"
+      ],
+      "properties": {
+        "ics": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "page": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "retryable"
+      ],
+      "properties": {
+        "code": {
+          "enum": [
+            "model_unavailable",
+            "invalid_model_output",
+            "tool_unavailable",
+            "no_data",
+            "bad_request",
+            "session_not_found",
+            "internal"
+          ]
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "debug": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "stage_path",
+        "calls",
+        "hooks",
+        "timings_ms",
+        "jev",
+        "flags"
+      ],
+      "properties": {
+        "stage_path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "calls": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "hooks": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "timings_ms": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "jev": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "flags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "boolean",
+              "string"
+            ]
+          }
+        }
+      }
+    },
+    "action_answer_question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "label",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "answer_question"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_answer_question"
+        }
+      }
+    },
+    "action_set_chip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "label",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "set_chip"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_set_chip"
+        }
+      }
+    },
+    "action_choose_destination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "label",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "choose_destination"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_choose_destination"
+        }
+      }
+    },
+    "action_choose_variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "label",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "choose_variant"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_choose_variant"
+        }
+      }
+    },
+    "action_swap_hotel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "label",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "swap_hotel"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_swap_hotel"
+        }
+      }
+    },
+    "action_compare": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "label",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "compare"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_compare"
+        }
+      }
+    },
+    "action_add_to_cart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "label",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "add_to_cart"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_add_to_cart"
+        }
+      }
+    },
+    "action_checkout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "label",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "checkout"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_checkout"
+        }
+      }
+    },
+    "action_pay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "label",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "pay"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_pay"
+        }
+      }
+    },
+    "action_order_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "label",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "order_action"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_order_action"
+        }
+      }
+    },
+    "payload_answer_question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "value"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {}
+      }
+    },
+    "payload_set_chip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "value"
+      ],
+      "properties": {
+        "field": {
+          "enum": [
+            "destination.name",
+            "dates.start",
+            "dates.end",
+            "dates.month",
+            "dates.nights",
+            "dates.shift_days",
+            "dates.flexible_days",
+            "party.segment",
+            "party.adults",
+            "party.children",
+            "party.children_ages",
+            "party.pets",
+            "budget_rub.max",
+            "prefs.meals",
+            "prefs.free_cancellation",
+            "prefs.stars_min",
+            "prefs.direct_only",
+            "prefs.max_travel_hours",
+            "prefs.district",
+            "prefs.beach_max_m",
+            "prefs.transport",
+            "constraints.add",
+            "constraints.remove",
+            "traits.add",
+            "mood.add",
+            "origin.city",
+            "scope"
+          ]
+        },
+        "value": {}
+      }
+    },
+    "payload_choose_destination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "destination_id"
+      ],
+      "properties": {
+        "destination_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "payload_choose_variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "variant_id"
+      ],
+      "properties": {
+        "variant_id": {
+          "type": "string",
+          "pattern": "^(cheapest|fastest|comfort|custom-[0-9]+)$"
+        }
+      }
+    },
+    "payload_swap_hotel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "variant_id",
+        "hotel_offer_id"
+      ],
+      "properties": {
+        "variant_id": {
+          "type": "string",
+          "pattern": "^(cheapest|fastest|comfort|custom-[0-9]+)$"
+        },
+        "hotel_offer_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "payload_compare": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "variant_ids"
+      ],
+      "properties": {
+        "variant_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(cheapest|fastest|comfort|custom-[0-9]+)$"
+          },
+          "minItems": 2,
+          "maxItems": 4,
+          "uniqueItems": true
+        }
+      }
+    },
+    "payload_add_to_cart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "variant_id",
+        "extras"
+      ],
+      "properties": {
+        "variant_id": {
+          "type": "string",
+          "pattern": "^(cheapest|fastest|comfort|custom-[0-9]+)$"
+        },
+        "extras": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "payload_pay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "order_id"
+      ],
+      "properties": {
+        "order_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "payload_order_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "order_id",
+        "kind",
+        "params"
+      ],
+      "properties": {
+        "order_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "early_checkin",
+            "change_dates",
+            "add_transfer"
+          ]
+        },
+        "params": {
+          "type": "object"
+        }
+      }
+    },
+    "payload_checkout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "travellers",
+        "contact"
+      ],
+      "properties": {
+        "travellers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "birth_date"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "birth_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            }
+          }
+        },
+        "contact": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "phone": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "anyOf": [
+                {
+                  "required": [
+                    "email"
+                  ]
+                },
+                {
+                  "required": [
+                    "phone"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "traveller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "birth_date"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "birth_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "email"
+          ]
+        },
+        {
+          "required": [
+            "phone"
+          ]
+        }
+      ]
+    },
+    "action": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/action_answer_question"
+        },
+        {
+          "$ref": "#/definitions/action_set_chip"
+        },
+        {
+          "$ref": "#/definitions/action_choose_destination"
+        },
+        {
+          "$ref": "#/definitions/action_choose_variant"
+        },
+        {
+          "$ref": "#/definitions/action_swap_hotel"
+        },
+        {
+          "$ref": "#/definitions/action_compare"
+        },
+        {
+          "$ref": "#/definitions/action_add_to_cart"
+        },
+        {
+          "$ref": "#/definitions/action_checkout"
+        },
+        {
+          "$ref": "#/definitions/action_pay"
+        },
+        {
+          "$ref": "#/definitions/action_order_action"
+        }
+      ]
+    }
+  }
+}

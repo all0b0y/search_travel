@@ -104,6 +104,11 @@ All model calls go through `agent/llm.py` (`Backend` protocol) or `agent/jev.py`
 
 Codex and Claude Code: builders use fakes only (a fake app-server, a fake `claude` script). Only the orchestrator runs the real `codex` and `claude` binaries — `codex` only under the project's isolated profile, `claude` only with the persona flags above and never with a different `HOME`.
 
+Measured 2026-10-25 (live, OpenRouter, provider DeepSeek; the account allows providers that may train on inputs — without that the DeepSeek provider is filtered out with 404 «Paid model training violation»):
+- Text `understand`-like call (100 input tokens): thinking off 0.7–1.3 s, 0 reasoning tokens; `low` 1.3 s; `high` 1.8 s.
+- Image + text (≈ 515 input tokens): thinking off 1.6–1.8 s, ≈ $0.00013; `low` 2.6–5.4 s with up to 750 reasoning tokens. A famous landmark (Hagia Sophia) → confidence 0.99; a landscape (Big Sur coast) → right place at 0.55 off / 0.85 low, traits correct. Free-text trait lists come back unless the schema enforces enums.
+- Jev decision with 2 questions: 347 ms, $0.00002; answers matched expectations (family + «недорого» → district `quiet` 0.98; «budget stated precisely» 0.04).
+
 ## 3. State
 
 `agent/state.py`, pydantic v2. One `Session` per conversation, persisted as JSON in `runtime/sessions.sqlite`.
@@ -195,6 +200,31 @@ Allowed patch paths are an enum in the schema (`destination.name`, `dates.start`
 
 `present.*` input: the brief, the computed items (destinations or variants with all numbers), the questions the engine decided to ask (with their fixed texts), allowed upsell candidates, and `voice.md`. Output: `{"message": "<Russian text>", "items": [{"id", "why", "sacrifices", "risks", "not_for"}], "recommended_id", "upsell": [{"candidate_id", "line"}]}` (exact per-card schemas live in `schema/`). Texts reference items by id; numbers are copied from input.
 
+### Card inputs (binding for the engine, the skill prompts and the eval cases)
+
+Every card gets one JSON object as the user message. Common keys: `today` (ISO date), `stage`, `brief` (values only, `Brief.values()`), `assumed` (brief paths whose source is not `user`, e.g. `["origin.city", "party.segment"]`), `assumptions` (the chips shown with this answer: `[{"field", "label"}]`).
+
+- `understand`: common keys + `shown` (`[{"label": "1", "kind": "destination|variant|hotel", "id", "title"}]`), `pending_questions` (`[{"id", "field", "text", "choices": [label]}]`), `history` (`[{"role": "user|agent", "text"}]`, ≤ 6 user + 3 agent), `message` (the new user text), `has_image` (bool; the image itself goes as an image part).
+- `present.destinations`: common keys + `items` (`[{"id", "label", "name", "country", "price_from_rub"|null, "nights", "party_label", "weather": {"air_max_c", "sea_c"|null, "rain_days"}|null, "travel_time_h"|null, "match": [trait], "facts": {…}}]`), `questions` (`[{"id", "text"}]` the engine will render with buttons), `image` (the understand `image` object or null), `insight` (`{"popular_ids": [...]}` or null — never cited as a source).
+- `present.variants` / `present.update`: common keys + `items` (`[{"id", "label", "title", "totals": {"rub", "door_to_door_hours"}, "steps": [{"type", "from", "to", "start", "end", "carrier"|null, "price_rub"}], "hotel": {"name", "stars", "rating", "district": {"labels", "counts"}}, "facts": {…}, "sacrifices": [Note], "risks": [Note], "not_for": [Note], "fit": {"score", "breakdown"}}]`), `recommended_hint` (the code's pick by fit), `questions`, `upsell_candidates` (`[{"candidate_id", "kind", "label", "price_rub", "reason"}]`); `present.update` also gets `changes` (`[{"field", "before", "after"}]` and what was rebuilt).
+- `present.compare`: common keys + `items` (2–3 variants as above) + `dimensions` (the brief's priorities in order).
+- `present.info`: common keys + `question` (the user's question) + `facts` (the looked-up records; empty when nothing was found).
+- `present.aftercare`: common keys + `order` (order summary) + `result` (the mock's answer to the action).
+- `present.fallback`: common keys + `message` + `reason` (`smalltalk|out_of_scope|unknown`).
+
+Every number a card writes must appear in its input; every id it writes must be one of the input ids.
+
+### Foundation decisions (2026-10-25)
+
+1. Provenance is per sub-field: `Field.sub_sources` / `sub_confidence`, read through `Brief.source_of(path)` / `confidence_of(path)`; engine assumptions go through `agent.state.assume(brief, path, value, source, confidence)`, never through `apply_patch`.
+2. After every patch the engine normalises `party` from `segments.json` defaults (e.g. `couple` → 2 adults) with `assume(..., "default")` for the sub-fields the user did not give.
+3. Photo entry: when a request has an image, the engine runs `image_match` before route matching. `image.place.confidence ≥ rules.image.place_min_conf` (0.8) and the place resolves in the catalog or the geocoder → `assume("destination.name", …, "inferred", conf)` → route B. Between `rules.image.confirm_min_conf` (0.5) and 0.8 → destinations route with the recognised place first plus a confirmation question. Below → traits only.
+4. `choose_variant` puts the variant straight into the cart (one tap); `add_to_cart` is for extras.
+5. Offer ids are deterministic and encode their parameters, so the mock rebuilds an offer from its id alone (a cache is only an optimisation).
+6. `dates.shift_days` with no concrete dates: before `apply_patch` the engine resolves the shift against the dates of the variants currently shown and sends concrete `dates.start/end`; with nothing shown it asks.
+7. Children's age buckets send one representative age; exact ages arrive at checkout and the `after_travellers` hook re-checks the cart.
+8. No placeholder offers: upsell kinds are only what the mock sells — `transfer`, `early_checkin`, `room_upgrade` (incl. high floor), `meal_upgrade`, `flexible_fare`. The insurance rule is dropped.
+
 ## 5. Turn pipeline
 
 1. Input: free text (+ image) or a UI action (button, chip, card choice). Actions map to brief patches or engine commands deterministically, without `understand`.
@@ -207,6 +237,33 @@ Allowed patch paths are an enum in the schema (`destination.name`, `dates.start`
 8. Response assembled by code (section 6); analytics hook logs events; prefetch hooks start background work for the likely next step.
 
 Budget: ≤ 2 Flash calls per turn (plus at most one rerun per card on a failed hook); recorded per turn in `trace`.
+
+### Module interfaces (fixed before the parallel build)
+
+- **Engine facade** `agent/engine.py`:
+  ```python
+  class Engine:
+      def __init__(self, skill=None, backend=None, jev=None, ostrovok=None, opendata=None,
+                   flags=None, store=None, profiles=None, clock=None): ...   # None -> real defaults
+      def new_session(self, profile_id: str | None = None, debug: bool = False, now: datetime | None = None) -> str
+      def handle(self, session_id: str, request: dict) -> dict   # request.schema.json in, response.schema.json out
+      def get_session(self, session_id: str) -> Session
+  ```
+  `handle` never raises for user-caused problems: it answers with an `error` response; programming errors propagate in tests.
+- **Ostrovok client** `agent/mcp_client.py`: `class OstrovokClient(Protocol): def call(self, tool: str, payload: dict) -> dict`, with `StdioOstrovokClient` (spawns `python -m ostrovok_mcp`, MCP over stdio) and `InProcessOstrovokClient` (calls `ostrovok_mcp.service.call(tool, payload)` directly; used by evals for speed). Both validate with `ostrovok_mcp.contract.TOOLS`.
+- **Mock service** `ostrovok_mcp/service.py`: `call(tool: str, payload: dict) -> dict` plus one plain function per tool; `ostrovok_mcp/server.py` only wraps them as MCP tools. Paths come from env `OSTROVOK_CATALOG_DB` (default `data/ostrovok_catalog.sqlite`), `OPENDATA_DB` (default `data/opendata.sqlite`, attached read-only for airports/routes/destinations), `OSTROVOK_STATE_DB` (default `runtime/ostrovok_state.sqlite`) and the overlay `runtime/catalog_extra.sqlite`.
+- **Open data** `agent/opendata.py`: `class OpenData(path="data/opendata.sqlite", overlay="runtime/opendata_extra.sqlite", http=None)` with the methods listed in section 8. Readers always union the committed database and the overlay.
+- **Lazy city** `data_build/lazy.py`: `build_city(query: str, *, timeout_s: float = 60) -> str | None` — one attempt (Nominatim + one batched Overpass query) that writes the destination, its climate, hotels and districts into the overlays `runtime/opendata_extra.sqlite` and `runtime/catalog_extra.sqlite` and returns the new destination id, or None. Only the engine's `find_destinations`/`geocode` path calls it, at most once per unknown name per session.
+- **Ranking and checks** (`agent/ranking.py`, `agent/checks.py`, `agent/upsell.py`, `agent/guards.py`):
+  ```python
+  build_variants(brief, results: dict, districts: dict, rules: dict, today) -> list[Variant]   # cheapest / fastest / comfort (+ custom)
+  fit(brief, variant, rules) -> Fit
+  sensitivity(brief, variants, rerun: Callable[[Brief], list[Variant]], skill) -> list[Question]  # ≤ rules.max_questions
+  check_variant(variant, brief, rules) -> list[Issue]          # chain, buffers, budget, dates, party fit
+  upsell_candidates(brief, variant, offers: dict, upsell_rules) -> list[UpsellCandidate]
+  check_card_output(card, card_input, output, rules) -> list[Issue]   # numbers ⊂ input numbers, ids ⊂ input ids, ≤ 1 joke heuristic, upsell ⊂ candidates
+  ```
+  `Issue = {code, severity: "block"|"warn", message, data}`.
 
 ## 6. Response contract (engine → UI)
 

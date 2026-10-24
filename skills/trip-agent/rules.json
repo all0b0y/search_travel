@@ -1,0 +1,38 @@
+{
+  "max_questions": 2,
+  "max_upsell": 2,
+  "max_jokes": 1,
+  "max_flash_calls_per_turn": 2,
+  "max_destinations": 6,
+  "max_variants": 3,
+  "sensitivity": {
+    "price_delta_pct": 10,
+    "top_changes": true
+  },
+  "jev": {
+    "routing": 0.8,
+    "ask_or_assume": 0.8,
+    "guard_fail": 0.5,
+    "timeout_s": 1.5
+  },
+  "retries": {
+    "llm_invalid_output": 1,
+    "card_rerun_on_hook_fail": 1,
+    "step_rerun_on_check_fail": 1
+  },
+  "buffers_min": {
+    "before_flight_international": 180,
+    "before_flight_domestic": 120,
+    "before_train": 30,
+    "after_flight": 45,
+    "after_flight_with_baggage": 75
+  },
+  "taxi_time_factor": 1.2,
+  "risk_slack_min": 60,
+  "late_checkin": ["22:00", "05:00"],
+  "meeting_window_min": 60,
+  "history": {
+    "user_messages": 6,
+    "agent_messages": 3
+  }
+}

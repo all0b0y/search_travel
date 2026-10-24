@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "present.update card output",
+  "description": "What changed after a refinement (E) and the refreshed variants.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "message",
+    "items",
+    "recommended_id",
+    "upsell"
+  ],
+  "properties": {
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1500,
+      "description": "Russian text for the user. Numbers only copied from the input."
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "why",
+          "sacrifices",
+          "risks",
+          "not_for"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "why": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "sacrifices": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            }
+          },
+          "risks": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            }
+          },
+          "not_for": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            }
+          }
+        }
+      },
+      "minItems": 0,
+      "maxItems": 3
+    },
+    "recommended_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "id of one of items (null when nothing is recommended)"
+    },
+    "upsell": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidate_id",
+          "line"
+        ],
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "id of an allowed upsell candidate from the input"
+          },
+          "line": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        }
+      }
+    }
+  }
+}

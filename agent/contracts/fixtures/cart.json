@@ -1,0 +1,82 @@
+{
+  "session_id": "s_example_selection",
+  "turn": 3,
+  "stage": "cart",
+  "message": "Положил «Быстрее» в корзину: перелёты  такси и 7 ночей в «Ривьера-Парк» — 90 300 ₽ за двоих. Стыковки проверил  запас везде есть. Дальше — данные путешественников.",
+  "chips": [],
+  "questions": [],
+  "cards": {
+    "destinations": [],
+    "variants": [],
+    "hotels": []
+  },
+  "comparison": null,
+  "cart": {
+    "cart_id": "c_example_1",
+    "status": "open",
+    "items": [
+      {
+        "item_id": "ci_1",
+        "offer_id": "fl_ex_003",
+        "kind": "flight",
+        "title": "Перелёт Москва → Сочи",
+        "price_rub": 14900,
+        "start": "2026-11-12T10:15+03:00",
+        "end": "2026-11-12T12:35+03:00"
+      },
+      {
+        "item_id": "ci_2",
+        "offer_id": "tr_ex_003",
+        "kind": "transfer",
+        "title": "Такси до отеля",
+        "price_rub": 1500,
+        "start": "2026-11-12T13:15+03:00",
+        "end": "2026-11-12T13:50+03:00"
+      },
+      {
+        "item_id": "ci_3",
+        "offer_id": "ht_ex_002",
+        "kind": "hotel",
+        "title": "7 ночей, завтраки",
+        "price_rub": 58800,
+        "start": "2026-11-12T14:00+03:00",
+        "end": "2026-11-19T12:00+03:00"
+      },
+      {
+        "item_id": "ci_4",
+        "offer_id": "tr_ex_004",
+        "kind": "transfer",
+        "title": "Такси в аэропорт",
+        "price_rub": 1500,
+        "start": "2026-11-19T13:00+03:00",
+        "end": "2026-11-19T13:35+03:00"
+      },
+      {
+        "item_id": "ci_5",
+        "offer_id": "fl_ex_004",
+        "kind": "flight",
+        "title": "Перелёт Сочи → Москва",
+        "price_rub": 13600,
+        "start": "2026-11-19T15:40+03:00",
+        "end": "2026-11-19T18:05+03:00"
+      }
+    ],
+    "total_rub": 90300,
+    "issues": []
+  },
+  "order": null,
+  "actions": [
+    {
+      "type": "checkout",
+      "label": "Оформить",
+      "payload": {
+        "travellers": [],
+        "contact": null
+      }
+    }
+  ],
+  "files": {
+    "ics": null,
+    "page": null
+  }
+}

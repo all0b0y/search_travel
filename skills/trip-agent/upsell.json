@@ -1,0 +1,41 @@
+{
+  "format": "rules: [{id, kind (transfer|early_checkin|insurance|room_note), label (Russian button text), when: {condition: value} (all must hold), offer: how the engine finds the offer (tool name or null for a free note / placeholder), placeholder: true when the mock has no such product (never shown as an offer), reason: Russian template with {placeholders} filled by code from computed facts}]. Conditions: arrival_after (HH:MM local arrival at destination is at or after), arrival_before_checkin_min (minutes between arrival and hotel check-in >= value), children (brief has children), variant_has_transfer (variant already has a transfer step), traits_any (brief traits intersect), mood_any (brief mood intersects), prefs (brief prefs equal these values). At most rules.json max_upsell candidates reach a reply.",
+  "rules": [
+    {
+      "id": "night_arrival_kids_transfer",
+      "kind": "transfer",
+      "label": "Добавить трансфер",
+      "when": {"arrival_after": "22:00", "children": true, "variant_has_transfer": false},
+      "offer": "search_transfers",
+      "placeholder": false,
+      "reason": "Прилёт в {arrival_time}, а ночью с ребёнком ловить такси — так себе: трансфер встретит у выхода, {price_rub} ₽."
+    },
+    {
+      "id": "early_arrival_checkin",
+      "kind": "early_checkin",
+      "label": "Ранний заезд",
+      "when": {"arrival_before_checkin_min": 180},
+      "offer": "search_hotels",
+      "placeholder": false,
+      "reason": "Вы прилетаете в {arrival_time}, а заселение с {checkin_time}. Ранний заезд — {price_rub} ₽, и не придётся ждать в лобби."
+    },
+    {
+      "id": "sea_kids_insurance",
+      "kind": "insurance",
+      "label": "Страховка",
+      "when": {"traits_any": ["sea", "beach"], "children": true},
+      "offer": null,
+      "placeholder": true,
+      "reason": "Море и дети — стоит подумать о страховке на поездку. В демо её нельзя оформить, это только напоминание."
+    },
+    {
+      "id": "quiet_high_floor",
+      "kind": "room_note",
+      "label": "Попросить тихий номер",
+      "when": {"prefs": {"district": "quiet"}},
+      "offer": null,
+      "placeholder": false,
+      "reason": "Хотите тишины — попросим у отеля номер повыше и окнами во двор. Бесплатно, но отель не обязан."
+    }
+  ]
+}

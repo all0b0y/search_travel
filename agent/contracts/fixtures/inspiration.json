@@ -1,0 +1,184 @@
+{
+  "session_id": "s_example_inspiration",
+  "turn": 1,
+  "stage": "inspiration",
+  "message": "Нашёл три тёплых моря на ноябрь для семьи — от 118 400 ₽ за неделю на троих. Ближе всего Анталья, теплее всего Хургада. Посчитал вылет из Москвы на 7 ночей — поменяйте, если не так.",
+  "chips": [
+    {
+      "field": "origin.city",
+      "label": "из Москвы",
+      "value": "Москва",
+      "options": [
+        {
+          "label": "из Москвы",
+          "value": "Москва"
+        },
+        {
+          "label": "из Санкт-Петербурга",
+          "value": "Санкт-Петербург"
+        }
+      ]
+    },
+    {
+      "field": "dates.nights",
+      "label": "7 ночей",
+      "value": 7,
+      "options": [
+        {
+          "label": "5 ночей",
+          "value": 5
+        },
+        {
+          "label": "7 ночей",
+          "value": 7
+        },
+        {
+          "label": "10 ночей",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "field": "party.adults",
+      "label": "2 взрослых",
+      "value": 2,
+      "options": [
+        {
+          "label": "1 взрослый",
+          "value": 1
+        },
+        {
+          "label": "2 взрослых",
+          "value": 2
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "q_children_ages",
+      "text": "Сколько лет ребёнку?",
+      "field": "party.children_ages",
+      "choices": [
+        {
+          "label": "до 2 лет",
+          "value": [
+            1
+          ],
+          "recommended": false
+        },
+        {
+          "label": "2–6 лет",
+          "value": [
+            4
+          ],
+          "recommended": true
+        },
+        {
+          "label": "7–12 лет",
+          "value": [
+            9
+          ],
+          "recommended": false
+        },
+        {
+          "label": "13–17 лет",
+          "value": [
+            15
+          ],
+          "recommended": false
+        }
+      ]
+    }
+  ],
+  "cards": {
+    "destinations": [
+      {
+        "id": "antalya",
+        "label": "1",
+        "name": "Анталья",
+        "country": "Турция",
+        "image_url": null,
+        "price_from_rub": 118400,
+        "nights": 7,
+        "party_label": "2 взрослых и ребёнок",
+        "weather": {
+          "air_max_c": 21,
+          "sea_c": 21,
+          "rain_days": 7
+        },
+        "travel_time_h": 4.3,
+        "why": "Самое близкое тёплое море в ноябре: прямой рейс около четырёх часов, много семейных отелей.",
+        "watch_out": "К концу ноября вода остывает до 20–21 °C — купаться бодряще."
+      },
+      {
+        "id": "hurghada",
+        "label": "2",
+        "name": "Хургада",
+        "country": "Египет",
+        "image_url": null,
+        "price_from_rub": 131900,
+        "nights": 7,
+        "party_label": "2 взрослых и ребёнок",
+        "weather": {
+          "air_max_c": 27,
+          "sea_c": 25,
+          "rain_days": 0
+        },
+        "travel_time_h": 5.2,
+        "why": "Гарантированно тепло и тёплое море, риф прямо у многих отелей.",
+        "watch_out": "Ветрено бывает часто; для малышей выбирайте отель с бухтой."
+      },
+      {
+        "id": "dubai",
+        "label": "3",
+        "name": "Дубай",
+        "country": "ОАЭ",
+        "image_url": null,
+        "price_from_rub": 176300,
+        "nights": 7,
+        "party_label": "2 взрослых и ребёнок",
+        "weather": {
+          "air_max_c": 30,
+          "sea_c": 27,
+          "rain_days": 1
+        },
+        "travel_time_h": 5.5,
+        "why": "Жарко, но не пекло, море тёплое, и для детей куча развлечений.",
+        "watch_out": null
+      }
+    ],
+    "variants": [],
+    "hotels": []
+  },
+  "comparison": null,
+  "cart": null,
+  "order": null,
+  "actions": [
+    {
+      "type": "choose_destination",
+      "label": "Смотреть Анталья",
+      "payload": {
+        "destination_id": "antalya"
+      }
+    },
+    {
+      "type": "choose_destination",
+      "label": "Смотреть Хургада",
+      "payload": {
+        "destination_id": "hurghada"
+      }
+    },
+    {
+      "type": "choose_destination",
+      "label": "Смотреть Дубай",
+      "payload": {
+        "destination_id": "dubai"
+      }
+    }
+  ],
+  "files": {
+    "ics": null,
+    "page": null
+  }
+}

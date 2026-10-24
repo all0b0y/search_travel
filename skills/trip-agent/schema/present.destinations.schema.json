@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "present.destinations card output",
+  "description": "Destination cards: why each fits, what to watch out for.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "message",
+    "items",
+    "recommended_id",
+    "upsell"
+  ],
+  "properties": {
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1500,
+      "description": "Russian text for the user. Numbers only copied from the input."
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "why",
+          "watch_out"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "why": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "watch_out": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 300
+          }
+        }
+      },
+      "minItems": 1,
+      "maxItems": 6
+    },
+    "recommended_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "id of one of items (null when nothing is recommended)"
+    },
+    "upsell": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidate_id",
+          "line"
+        ],
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "id of an allowed upsell candidate from the input"
+          },
+          "line": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        }
+      }
+    }
+  }
+}

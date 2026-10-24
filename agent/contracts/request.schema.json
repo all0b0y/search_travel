@@ -1,0 +1,524 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "POST /api/turn request",
+  "description": "Free text and/or an image, or one UI action (AGENT_PLAN.md section 6).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "session_id"
+  ],
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "pattern": "^s_[A-Za-z0-9_]+$"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "image": {
+      "type": "string",
+      "pattern": "^data:image/(png|jpeg|webp|gif);base64,",
+      "maxLength": 8000000
+    },
+    "action": {
+      "$ref": "#/definitions/action"
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "text"
+      ]
+    },
+    {
+      "required": [
+        "image"
+      ]
+    },
+    {
+      "required": [
+        "action"
+      ]
+    }
+  ],
+  "definitions": {
+    "action_answer_question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "answer_question"
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_answer_question"
+        }
+      }
+    },
+    "action_set_chip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "set_chip"
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_set_chip"
+        }
+      }
+    },
+    "action_choose_destination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "choose_destination"
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_choose_destination"
+        }
+      }
+    },
+    "action_choose_variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "choose_variant"
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_choose_variant"
+        }
+      }
+    },
+    "action_swap_hotel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "swap_hotel"
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_swap_hotel"
+        }
+      }
+    },
+    "action_compare": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "compare"
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_compare"
+        }
+      }
+    },
+    "action_add_to_cart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "add_to_cart"
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_add_to_cart"
+        }
+      }
+    },
+    "action_checkout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "checkout"
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_checkout"
+        }
+      }
+    },
+    "action_pay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "pay"
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_pay"
+        }
+      }
+    },
+    "action_order_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "const": "order_action"
+        },
+        "payload": {
+          "$ref": "#/definitions/payload_order_action"
+        }
+      }
+    },
+    "payload_answer_question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_id",
+        "value"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {}
+      }
+    },
+    "payload_set_chip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "value"
+      ],
+      "properties": {
+        "field": {
+          "enum": [
+            "destination.name",
+            "dates.start",
+            "dates.end",
+            "dates.month",
+            "dates.nights",
+            "dates.shift_days",
+            "dates.flexible_days",
+            "party.segment",
+            "party.adults",
+            "party.children",
+            "party.children_ages",
+            "party.pets",
+            "budget_rub.max",
+            "prefs.meals",
+            "prefs.free_cancellation",
+            "prefs.stars_min",
+            "prefs.direct_only",
+            "prefs.max_travel_hours",
+            "prefs.district",
+            "prefs.beach_max_m",
+            "prefs.transport",
+            "constraints.add",
+            "constraints.remove",
+            "traits.add",
+            "mood.add",
+            "origin.city",
+            "scope"
+          ]
+        },
+        "value": {}
+      }
+    },
+    "payload_choose_destination": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "destination_id"
+      ],
+      "properties": {
+        "destination_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "payload_choose_variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "variant_id"
+      ],
+      "properties": {
+        "variant_id": {
+          "type": "string",
+          "pattern": "^(cheapest|fastest|comfort|custom-[0-9]+)$"
+        }
+      }
+    },
+    "payload_swap_hotel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "variant_id",
+        "hotel_offer_id"
+      ],
+      "properties": {
+        "variant_id": {
+          "type": "string",
+          "pattern": "^(cheapest|fastest|comfort|custom-[0-9]+)$"
+        },
+        "hotel_offer_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "payload_compare": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "variant_ids"
+      ],
+      "properties": {
+        "variant_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(cheapest|fastest|comfort|custom-[0-9]+)$"
+          },
+          "minItems": 2,
+          "maxItems": 4,
+          "uniqueItems": true
+        }
+      }
+    },
+    "payload_add_to_cart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "variant_id",
+        "extras"
+      ],
+      "properties": {
+        "variant_id": {
+          "type": "string",
+          "pattern": "^(cheapest|fastest|comfort|custom-[0-9]+)$"
+        },
+        "extras": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "payload_pay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "order_id"
+      ],
+      "properties": {
+        "order_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "payload_order_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "order_id",
+        "kind",
+        "params"
+      ],
+      "properties": {
+        "order_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "early_checkin",
+            "change_dates",
+            "add_transfer"
+          ]
+        },
+        "params": {
+          "type": "object"
+        }
+      }
+    },
+    "payload_checkout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "travellers",
+        "contact"
+      ],
+      "properties": {
+        "travellers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "birth_date"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "birth_date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "contact": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "email": {
+              "type": "string",
+              "minLength": 1
+            },
+            "phone": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "anyOf": [
+            {
+              "required": [
+                "email"
+              ]
+            },
+            {
+              "required": [
+                "phone"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "traveller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "birth_date"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "birth_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "email"
+          ]
+        },
+        {
+          "required": [
+            "phone"
+          ]
+        }
+      ]
+    },
+    "action": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/action_answer_question"
+        },
+        {
+          "$ref": "#/definitions/action_set_chip"
+        },
+        {
+          "$ref": "#/definitions/action_choose_destination"
+        },
+        {
+          "$ref": "#/definitions/action_choose_variant"
+        },
+        {
+          "$ref": "#/definitions/action_swap_hotel"
+        },
+        {
+          "$ref": "#/definitions/action_compare"
+        },
+        {
+          "$ref": "#/definitions/action_add_to_cart"
+        },
+        {
+          "$ref": "#/definitions/action_checkout"
+        },
+        {
+          "$ref": "#/definitions/action_pay"
+        },
+        {
+          "$ref": "#/definitions/action_order_action"
+        }
+      ]
+    }
+  }
+}
