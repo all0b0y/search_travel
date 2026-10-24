@@ -609,8 +609,11 @@ def change_dates(order_id: str, check_in: date, check_out: date, confirm: bool, 
             if delta == 0:
                 continue
             if it["kind"] == "flight" and it["details"]["offer"]["fare"]["change_fee_rub"] is None:
+                # moving the hotel while the flight stays would leave nights without a hotel (or paid and
+                # unused): the trip as a whole cannot be moved, so the change is not available
+                available = False
                 issues.append(_issue("flight_change_not_allowed", f"«{it['title']}»: тариф без обмена — "
-                                     "перелёт останется на прежнюю дату", "warning", [it["item_id"]]))
+                                     "перелёт на другую дату не перенести", "blocking", [it["item_id"]]))
                 continue
             res = _rebuild_shifted(it["kind"], it["details"]["params"], delta, today.isoformat())
             if res is None:

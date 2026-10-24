@@ -153,3 +153,13 @@ def test_offer_ids_of_follows_the_step_of_an_issue():
     issues = [{"code": "nights", "severity": "block", "data": {"variant_id": "cheapest", "step": "s3"}},
               {"code": "budget", "severity": "block", "data": {"variant_id": "cheapest", "offer_id": "x"}}]
     assert _offer_ids_of(issues, [v]) == {"ho-9", "x"}
+
+
+def test_attention_skips_info_and_joins_readably():
+    from agent.steps import attention
+    issues = [{"severity": "info", "message": "Отправление в 10:10, до расчётного часа 12:00"},
+              {"severity": "warning", "message": "Между посадкой и трансфером 20 мин — нужно не меньше 45."},
+              {"severity": "blocking", "message": "Трансфер подаётся раньше посадки самолёта"}]
+    assert attention(issues) == ("между посадкой и трансфером 20 мин — нужно не меньше 45; "
+                                 "трансфер подаётся раньше посадки самолёта.")
+    assert attention([issues[0]]) == ""

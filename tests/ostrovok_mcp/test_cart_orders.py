@@ -198,6 +198,12 @@ def test_basic_fare_cannot_change_and_unpaid_orders(mock_env):
     q = s.order_change_dates({"order_id": order["order_id"], "new_dates": {"check_in": "2026-11-16",
                               "check_out": "2026-11-21"}, "confirm": False, "now": NOW})
     assert "flight_change_not_allowed" in codes(q["issues"])
+    # a hotel moved while the flight stays would leave nights without a hotel: the change is not available
+    assert q["available"] is False
+    assert any(i["code"] == "flight_change_not_allowed" and i["severity"] == "blocking" for i in q["issues"])
+    refused = s.order_change_dates({"order_id": order["order_id"], "new_dates": {"check_in": "2026-11-16",
+                                    "check_out": "2026-11-21"}, "confirm": True, "now": NOW})
+    assert refused["applied"] is False
     late = s.order_change_dates({"order_id": order["order_id"], "new_dates": {"check_in": "2026-11-16",
                                  "check_out": "2026-11-21"}, "confirm": False, "now": "2026-11-13T10:00:00+03:00"})
     assert late["quote"]["penalty_rub"] > 0 and "change_penalty" in codes(late["issues"])

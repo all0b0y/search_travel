@@ -1527,8 +1527,15 @@ def step_pay(ctx):
     ctx.order = tool(ctx, "order_get", {"order_id": order_id}, cache=False)
     s.stage = "ordered"
     ctx.files = render_files(ctx, ctx.order)
-    ctx.message = ("Оплачено, всё подтверждено! Если захотите заселиться пораньше, поменять даты или добавить "
-                   "трансфер — пишите.")
+    offers = []
+    arr, checkin = _arrival(ctx), _hotel_checkin(ctx)
+    if arr is not None and (checkin is None or arr < checkin):
+        offers.append("заселиться пораньше")
+    offers.append("поменять даты")
+    if not _order_has_transfers(ctx):
+        offers.append("добавить трансфер")
+    ctx.message = ("Оплачено, всё подтверждено! Если захотите " + (", ".join(offers[:-1]) + " или " + offers[-1]
+                   if len(offers) > 1 else offers[0]) + " — пишите.")
 
 
 def attention(issues) -> str:
@@ -1545,9 +1552,9 @@ def attention(issues) -> str:
     return ("; ".join(texts) + ".") if texts else ""
 
 
-def _hotel_checkin(ctx):
-    """Booked check-in time of the order's hotel (the order item start), else of the variant's stay."""
-    for item in (ctx.order or {}).get("items") or []:
+def _hotel_checkin(ctx, order=None):
+    """Booked check-in time of the order's hotel (the order item start)."""
+    for item in (order or ctx.order or {}).get("items") or []:
         if item.get("kind") == "hotel" and item.get("start"):
             return _dt(item["start"])
     return None
@@ -1585,8 +1592,15 @@ def step_post_purchase(ctx):
         return
     if kind == "early_checkin":
         time_s = params.get("time")
+        arr, checkin = _arrival(ctx), _hotel_checkin(ctx, order)
+        if not params.get("time") and arr is not None and checkin is not None and arr >= checkin.astimezone(arr.tzinfo):
+            # they arrive after the standard check-in: nothing to buy, say so instead of sending a request
+            ctx.present = None
+            ctx.order = order
+            ctx.message = (f"Ранний заезд не понадобится: вы будете в отеле около {arr:%H:%M}, а заселение "
+                           f"с {checkin.astimezone(arr.tzinfo):%H:%M} — номер к вашему приезду уже будет готов.")
+            return
         if not time_s:
-            arr = _arrival(ctx)
             time_s = _hhmm_after(arr) if arr else None
         if not time_s:
             ctx.present = None
