@@ -9,43 +9,43 @@ prices, policies, insights events.
 | item | value |
 |---|---|
 | destinations | 159 |
-| with full climate (12 months, air) | 48 |
+| with full climate (12 months, air) | 95 |
 | coastal destinations | 76 |
-| with sea temperature | 23 |
+| with sea temperature | 45 |
 | with timezone | 159 |
 | with aliases | 55 |
 | airports | 4569 |
 | routes (origin, dest, stops) | 34834 |
-| destinations with hotels | 46 |
-| hotels total | 2678 (by source: {'osm': 2678}) |
-| hotels per destination min / median / max | 37 / 60 / 60 |
-| districts | 2678 (by source: {'overpass': 2678}) |
-| synthetic: hotels with rating / rooms / policies / extras | 2678 / 7889 / 2678 / 2678 |
-| stars from OSM tag (real) | 260 |
+| destinations with hotels | 159 |
+| hotels total | 8354 (by source: {'osm': 8354}) |
+| hotels per destination min / median / max | 3 / 60 / 60 |
+| districts | 8354 (by source: {'overpass': 8354}) |
+| synthetic: hotels with rating / rooms / policies / extras | 8354 / 24581 / 8354 / 8354 |
+| stars from OSM tag (real) | 734 |
 | insights events | 24000 |
 | insights groups origin x segment x month: count, min n, max n | 336, 37, 260 |
-| data/opendata.sqlite | 5.3 MB |
-| data/ostrovok_catalog.sqlite | 9.7 MB |
+| data/opendata.sqlite | 7.9 MB |
+| data/ostrovok_catalog.sqlite | 17.1 MB |
 
 ## Gaps and fallbacks
 
-- Destinations without hotels/districts yet (113): abrau-durso, amsterdam, aqaba, arkhyz, astana, athens, beijing, belgrade, belokurikha, bentota, berlin, budapest, budva, bukhara, cairo, cancun, chiang-mai, da-nang, derbent, dilijan, djerba, doha, dombay, dubrovnik, elbrus, florence, gabala, gudauri, hammamet, hanoi, havana, hikkaduwa, ho-chi-minh, irkutsk, issyk-kul, kamchatka, karlovy-vary, khiva, kirovsk, kislovodsk, kolomna, kostroma, kotor, krabi, krasnodar, kuala-lumpur, kutaisi, kyoto, langkawi, larnaca, lazarevskoe, lisbon, lloret-de-mar, london, madrid, makhachkala, mallorca, marmaris, marrakech, marsa-alam, mauritius, milan, minsk, murmansk, muscat, new-york, nice, nizhny-novgorod, novosibirsk, olkhon, ostashkov, paphos, petrozavodsk, plyos, pskov, punta-cana, pyatigorsk, ras-al-khaimah, rhodes, rimini, rostov-on-don, salalah, samara, samarkand, santorini, seoul, sevan, seychelles, shanghai, sheregesh, singapore, sortavala, sousse, stepantsminda, suzdal, svetlogorsk, tashkent, tenerife, teriberka, tokyo, tuapse, tula, varadero, veliky-novgorod, venice, vienna, vladimir, vladivostok, volgograd, yaroslavl, yekaterinburg, zanzibar, zelenogradsk
-- Destinations without full climate (111): hammamet, hanoi, havana, heraklion, hikkaduwa, ho-chi-minh, hurghada, irkutsk, issyk-kul, istanbul, kaliningrad, kamchatka, karlovy-vary, kazan, kemer, khiva, kirovsk, kislovodsk, koh-samui, kolomna, kostroma, kotor, krabi, krasnaya-polyana, krasnodar, kuala-lumpur, kutaisi, kyoto, langkawi, larnaca, lazarevskoe, limassol, lisbon, listvyanka, lloret-de-mar, london, madrid, makhachkala, maldives-male, mallorca, marmaris, marrakech, marsa-alam, mauritius, milan, minsk, moscow, murmansk, muscat, new-york, nha-trang, nice, nizhny-novgorod, novosibirsk, olkhon, ostashkov, paphos, paris, pattaya, petrozavodsk, phu-quoc, phuket, plyos, prague, pskov, punta-cana, pyatigorsk, ras-al-khaimah, rhodes, rimini, rome, rostov-on-don, saint-petersburg, salalah, samara, samarkand, santorini, sanya, seoul, sevan, seychelles, shanghai, sharm-el-sheikh, sheregesh, side, singapore, sochi, sortavala, sousse, stepantsminda, suzdal, svetlogorsk, tashkent, tbilisi, tenerife, teriberka, tokyo, tuapse, tula, varadero, veliky-novgorod, venice, vienna, vladimir, vladivostok, volgograd, yaroslavl, yekaterinburg, yerevan, zanzibar, zelenogradsk
-- Coastal destinations without sea temperature: baku, derbent, hammamet, havana, heraklion, hikkaduwa, hurghada, istanbul, kamchatka, kemer, koh-samui, kotor, krabi, langkawi, larnaca, lazarevskoe, limassol, lisbon, lloret-de-mar, makhachkala, maldives-male, mallorca, marmaris, marsa-alam, mauritius, murmansk, muscat, nha-trang, nice, paphos, pattaya, phu-quoc, phuket, punta-cana, ras-al-khaimah, rhodes, rimini, salalah, santorini, sanya, seychelles, sharm-el-sheikh, side, sochi, sousse, svetlogorsk, tenerife, teriberka, tuapse, varadero, vladivostok, zanzibar, zelenogradsk
+- Destinations without hotels/districts yet (0): none
+- Destinations without full climate (64): murmansk, muscat, new-york, nha-trang, nice, nizhny-novgorod, novosibirsk, olkhon, ostashkov, paphos, paris, pattaya, petrozavodsk, phu-quoc, phuket, plyos, prague, pskov, punta-cana, pyatigorsk, ras-al-khaimah, rhodes, rimini, rome, rostov-on-don, saint-petersburg, salalah, samara, samarkand, santorini, sanya, seoul, sevan, seychelles, shanghai, sharm-el-sheikh, sheregesh, side, singapore, sochi, sortavala, sousse, stepantsminda, suzdal, svetlogorsk, tashkent, tbilisi, tenerife, teriberka, tokyo, tuapse, tula, varadero, veliky-novgorod, venice, vienna, vladimir, vladivostok, volgograd, yaroslavl, yekaterinburg, yerevan, zanzibar, zelenogradsk
+- Coastal destinations without sea temperature: baku, derbent, makhachkala, murmansk, muscat, nha-trang, nice, paphos, pattaya, phu-quoc, phuket, punta-cana, ras-al-khaimah, rhodes, rimini, salalah, santorini, sanya, seychelles, sharm-el-sheikh, side, sochi, sousse, svetlogorsk, tenerife, teriberka, tuapse, varadero, vladivostok, zanzibar, zelenogradsk
 - Hotels built from the Photon fallback (Overpass down): none
-- Destinations with fewer than 20 named hotels in their area: none
+- Destinations with fewer than 20 named hotels in their area: gabala (3), kirovsk (11), kolomna (10), marsa-alam (8), muscat (11), novosibirsk (12), ostashkov (7), ras-al-khaimah (12), sevan (19), teriberka (12), tuapse (13)
 - Hotels skipped because another destination already holds them (overlapping areas): none
-- Destinations with no served airport within 150 km: olkhon, ostashkov, rostov-on-don, sortavala
+- Destinations with no served airport within 150 km: abrau-durso, anapa, gelendzhik, krasnodar, olkhon, ostashkov, rostov-on-don, sortavala
 - Destination coordinate sources: {'curated+nominatim': 159}
-- Timezone table vs Open-Meteo zone mismatches: none
+- Timezone table vs Open-Meteo zone mismatches: hanoi: table Asia/Ho_Chi_Minh vs open-meteo Asia/Bangkok
 
-Marine probing found no SST grid point for: baku: no marine grid point with data within ~0.4 deg; derbent: no marine grid point with data within ~0.4 deg
+Marine probing found no SST grid point for: baku: no marine grid point with data within ~0.4 deg; derbent: no marine grid point with data within ~0.4 deg; makhachkala: no marine grid point with data within ~0.4 deg
 
 ## Sources
 
 - opendata `source.airports`: {"fetched_at": "2026-10-24T21:48:20Z", "filter": "large/medium airports with IATA", "rows": 4569, "url": "https://davidmegginson.github.io/ourairports-data/airports.csv"}
 - opendata `source.climate`: {"air_period": ["2015-01-01", "2024-12-31"], "archive": "https://archive-api.open-meteo.com/v1/archive", "marine": "https://marine-api.open-meteo.com/v1/marine", "rain_day_mm": 1.0, "sea_period": ["2023-01-01", "2025-12-31"], "sunny_day_h": 6}
-- opendata `source.destinations`: {"aliases": "curated ALIASES in data_build/destinations.py", "coords": "Nominatim (OSM) search, cached; fallback OurAirports city coordinates", "curated": "data_build/destinations.py (names, kind, tags, stations, description, popularity estimate)", "fetched_at": "2026-10-24T22:25:17Z", "popularity": "curated estimate 1..100 stored as 0..1", "timezone": "offline table data_build/timezones.py (country / curated region table / longitude bands)"}
+- opendata `source.destinations`: {"aliases": "curated ALIASES in data_build/destinations.py", "coords": "Nominatim (OSM) search, cached; fallback OurAirports city coordinates", "curated": "data_build/destinations.py (names, kind, tags, stations, description, popularity estimate)", "fetched_at": "2026-10-24T22:49:45Z", "popularity": "curated estimate 1..100 stored as 0..1", "timezone": "offline table data_build/timezones.py (country / curated region table / longitude bands)"}
 - opendata `source.routes`: {"dataset_date": "2014-06 (OpenFlights last update; routes are dated)", "distance": "not stored; compute great-circle from airports lat/lon", "fetched_at": "2026-10-24T21:48:21Z", "rows": 34834, "url": "https://raw.githubusercontent.com/jpatokal/openflights/master/data/routes.dat"}
 - catalog `source.hotels`: {"fallback": "Photon (photon.komoot.io) when Overpass is down", "max_per_destination": 60, "osm": "Overpass API (OSM, ODbL) tourism=* objects with a readable name", "synthetic": "data_build/synthetic.py + data_build/prices.py"}
 - catalog `source.insights`: {"events": 24000, "floor_per_cell": 24, "generated_at": "2026-10-24T22:15:27Z", "generator": "data_build/insights.py (hidden preference model)", "origin_city_format": "Russian city name, e.g. 'Москва'", "seed": 20261025, "synthetic": true}
