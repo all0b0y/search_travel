@@ -1,0 +1,70 @@
+{
+  "id": "s09_kazan_train",
+  "category": "C",
+  "persona": {
+    "start_message": "Казань на поезде, 4–7 декабря, едем вдвоём с подругой",
+    "image": null,
+    "profile": {
+      "name": "Ксения",
+      "age": 24,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Ксения Белова",
+          "birth_date": "2002-01-15"
+        },
+        {
+          "name": "Дарья Фомина",
+          "birth_date": "2001-12-01"
+        }
+      ],
+      "contact": {
+        "email": "ksenia.belova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "transport": "только поезд",
+        "budget_rub_max": 70000,
+        "district": "центр, чтобы гулять пешком"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "train"
+          }
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "kazan",
+              "Казань"
+            ]
+          }
+        },
+        {
+          "name": "stay_starts_on",
+          "args": {
+            "day": "2026-12-04"
+          }
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2
+          }
+        }
+      ],
+      "nice": [
+        "отель в центре"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Весёлая, пишет с восклицательными знаками. На самолёт не соглашается."
+  },
+  "max_turns": 10
+}

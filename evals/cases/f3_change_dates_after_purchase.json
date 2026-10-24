@@ -1,0 +1,81 @@
+{
+  "id": "f3_change_dates_after_purchase",
+  "category": "F",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "ordered",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "antalya",
+        "name": "Анталья",
+        "country": "Турция"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-14",
+        "end": "2026-11-21",
+        "month": 11,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "family",
+        "adults": 2,
+        "children": 1,
+        "children_ages": [
+          4
+        ],
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "all_inclusive",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "а можно всю поездку сдвинуть на день позже?",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "post_purchase"
+    },
+    {
+      "type": "path_equals",
+      "path": "/post_purchase/kind",
+      "value": "change_dates"
+    }
+  ],
+  "runs": 5,
+  "notes": "After purchase a date shift is an order action, not a new search."
+}

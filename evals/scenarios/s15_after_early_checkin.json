@@ -1,0 +1,59 @@
+{
+  "id": "s15_after_early_checkin",
+  "category": "F",
+  "persona": {
+    "start_message": "Анталья, 14–21 ноября, двое взрослых и ребёнок 4 лет, всё включено",
+    "image": null,
+    "profile": {
+      "name": "Наталья",
+      "age": 35,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Наталья Козлова",
+          "birth_date": "1991-02-02"
+        },
+        {
+          "name": "Андрей Козлов",
+          "birth_date": "1989-05-05"
+        },
+        {
+          "name": "Лиза Козлова",
+          "birth_date": "2022-03-03"
+        }
+      ],
+      "contact": {
+        "email": "natalia.kozlova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "after_purchase": "после оплаты спрашивает, можно ли заселиться пораньше — самолёт прилетает утром",
+        "child_age": 4
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "order_action_done",
+          "args": {
+            "kind": "early_checkin"
+          }
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "all_inclusive"
+          }
+        }
+      ],
+      "nice": [
+        "честный статус раннего заезда (по запросу / платно)"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Оплатив, пишет текстом: «а можно заселиться пораньше? мы прилетаем утром». Получив ответ, завершает."
+  },
+  "max_turns": 12,
+  "stop_on_paid": false
+}

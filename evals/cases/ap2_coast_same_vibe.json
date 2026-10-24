@@ -1,0 +1,75 @@
+{
+  "id": "ap2_coast_same_vibe",
+  "category": "A_photo",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "хочу туда, где так же",
+    "has_image": true
+  },
+  "image": "evals/images/coast_lagos_portugal.jpg",
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/image/want",
+      "value": "similar"
+    },
+    {
+      "type": "path_equals",
+      "path": "/image/traits/water",
+      "value": "sea"
+    },
+    {
+      "type": "predicate",
+      "name": "any_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "predicate",
+            "name": "contains",
+            "args": {
+              "path": "/image/traits/landscape",
+              "values": [
+                "coast",
+                "beach"
+              ],
+              "mode": "any"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    }
+  ],
+  "runs": 5,
+  "notes": "«Туда, где так же» asks for similar places (image.want = similar; place may still be filled if recognised): traits matter, no destination in the patch."
+}

@@ -1,0 +1,81 @@
+{
+  "id": "b1_istanbul_may",
+  "category": "B",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "хочу в Стамбул на майские",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/destination.name",
+      "value": "Стамбул",
+      "casefold": true
+    },
+    {
+      "type": "predicate",
+      "name": "any_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "path_equals",
+            "path": "/patch/set/dates.month",
+            "value": 5
+          },
+          {
+            "type": "predicate",
+            "name": "matches",
+            "args": {
+              "path": "/patch/set/dates.start",
+              "pattern": "^2027-0[45]-"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "destination.name",
+          "dates.month",
+          "dates.start",
+          "dates.end",
+          "dates.nights"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Entry B from the plan. «Майские» = early May 2027 (today is 2026-10-25)."
+}

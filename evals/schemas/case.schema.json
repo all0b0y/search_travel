@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Level-2 phase case (evals/cases/<id>.json)",
+  "description": "One card call with an exact card input and assertions on the output (AGENT_PLAN.md section 10). Card input keys are checked separately by evals/card_inputs.py.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "category", "card", "input", "image", "expect", "runs", "notes"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_\\-]*$"},
+    "category": {"enum": ["A", "A_photo", "B", "C", "D", "E", "F", "segments", "edge", "tone"]},
+    "card": {"enum": ["understand", "present.destinations", "present.variants", "present.update", "present.compare", "present.info", "present.aftercare", "present.fallback"]},
+    "input": {"type": "object"},
+    "image": {"type": ["string", "null"], "pattern": "^evals/images/[^/]+\\.(jpg|jpeg|png|webp)$"},
+    "expect": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/assertion"}},
+    "runs": {"type": "integer", "minimum": 1, "maximum": 20},
+    "notes": {"type": "string"},
+    "unsure": {"type": "string", "description": "Why an expectation may be debatable (listed in the builder report)."}
+  },
+  "definitions": {
+    "assertion": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["schema", "path_equals", "path_in", "path_absent", "max_items", "regex_absent", "numbers_subset", "ids_subset", "predicate"]}
+      },
+      "allOf": [
+        {"if": {"properties": {"type": {"const": "path_equals"}}}, "then": {"required": ["path", "value"]}},
+        {"if": {"properties": {"type": {"const": "path_in"}}}, "then": {"required": ["path", "values"]}},
+        {"if": {"properties": {"type": {"const": "path_absent"}}}, "then": {"required": ["path"]}},
+        {"if": {"properties": {"type": {"const": "max_items"}}}, "then": {"required": ["path", "max"]}},
+        {"if": {"properties": {"type": {"const": "regex_absent"}}}, "then": {"required": ["pattern"]}},
+        {"if": {"properties": {"type": {"const": "predicate"}}}, "then": {"required": ["name"]}}
+      ]
+    }
+  }
+}

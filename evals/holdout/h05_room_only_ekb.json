@@ -1,0 +1,60 @@
+{
+  "id": "h05_room_only_ekb",
+  "category": "D",
+  "persona": {
+    "start_message": "Мне только номер в Екатеринбурге 14–16 ноября, командировка, перелёт уже купил",
+    "image": null,
+    "profile": {
+      "name": "Станислав",
+      "age": 42,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Станислав Дьячков",
+          "birth_date": "1984-05-19"
+        }
+      ],
+      "contact": {
+        "email": "stas.dyachkov@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "need": "только проживание",
+        "district": "рядом с Ельцин-центром"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "cart_has_kinds",
+          "args": {
+            "kinds": [
+              "hotel"
+            ],
+            "exactly": true
+          }
+        },
+        {
+          "name": "stay_starts_on",
+          "args": {
+            "day": "2026-11-14"
+          }
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 2,
+            "max": 2
+          }
+        }
+      ],
+      "nice": [
+        "завтрак включён"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Если предлагают перелёт — коротко отказывается."
+  },
+  "max_turns": 10
+}

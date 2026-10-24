@@ -1,0 +1,48 @@
+{
+  "id": "x4_not_about_travel",
+  "category": "edge",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "напиши стих про кота",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_in",
+      "path": "/intent",
+      "values": [
+        "out_of_scope",
+        "smalltalk"
+      ]
+    },
+    {
+      "type": "predicate",
+      "name": "patch_empty"
+    }
+  ],
+  "runs": 5,
+  "notes": "Not about travel: no patch."
+}

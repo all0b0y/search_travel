@@ -1,0 +1,59 @@
+{
+  "id": "h03_tbilisi_dream",
+  "category": "B",
+  "persona": {
+    "start_message": "Давно мечтаю о Тбилиси. Когда там хорошо? Можно в начале декабря",
+    "image": null,
+    "profile": {
+      "name": "Элина",
+      "age": 28,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Элина Гарипова",
+          "birth_date": "1998-04-22"
+        },
+        {
+          "name": "Руслан Гарипов",
+          "birth_date": "1996-08-17"
+        }
+      ],
+      "contact": {
+        "email": "elina.garipova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "party": "вдвоём с мужем",
+        "nights": 5,
+        "meals": "завтраки"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "tbilisi",
+              "Тбилиси"
+            ]
+          }
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 4,
+            "max": 6
+          }
+        }
+      ],
+      "nice": [
+        "старый город пешком"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Мечтательная, задаёт вопросы про погоду."
+  },
+  "max_turns": 10
+}

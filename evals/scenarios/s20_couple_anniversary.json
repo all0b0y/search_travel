@@ -1,0 +1,64 @@
+{
+  "id": "s20_couple_anniversary",
+  "category": "couple",
+  "persona": {
+    "start_message": "Годовщина свадьбы! Хотим куда-то красиво и тепло на 4 ночи в середине декабря",
+    "image": null,
+    "profile": {
+      "name": "Константин",
+      "age": 39,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Константин Лавров",
+          "birth_date": "1987-03-21"
+        },
+        {
+          "name": "Ирина Лаврова",
+          "birth_date": "1988-08-30"
+        }
+      ],
+      "contact": {
+        "email": "konstantin.lavrov@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "stars_min": 4,
+        "budget_rub_max": 300000,
+        "sea": "хочется моря",
+        "nights": 4
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "stars_at_least",
+          "args": {
+            "n": 4
+          }
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 300000
+          }
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 4,
+            "max": 4
+          }
+        }
+      ],
+      "nice": [
+        "номер с видом",
+        "тихий район"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Романтичный, рад шуткам, но про деньги спрашивает серьёзно."
+  },
+  "max_turns": 10
+}

@@ -1,0 +1,87 @@
+{
+  "id": "a1_warm_sea_kid",
+  "category": "A",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "к тёплому морю в ноябре с ребёнком, недорого",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "predicate",
+      "name": "contains",
+      "args": {
+        "path": "/patch/set/traits.add",
+        "values": [
+          "sea",
+          "warm",
+          "beach"
+        ],
+        "mode": "any"
+      }
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.month",
+      "value": 11
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.segment",
+      "value": "family"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/budget_rub.max"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "traits.add",
+          "dates.month",
+          "party.segment",
+          "party.children",
+          "party.adults",
+          "mood.add",
+          "prefs.district"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Entry A from the plan. «Недорого» is not a number: budget_rub.max must stay unset."
+}

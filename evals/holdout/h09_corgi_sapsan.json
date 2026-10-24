@@ -1,0 +1,48 @@
+{
+  "id": "h09_corgi_sapsan",
+  "category": "pets",
+  "persona": {
+    "start_message": "С корги на выходные в Петербург на Сапсане — реально?",
+    "image": null,
+    "profile": {
+      "name": "Мирон",
+      "age": 34,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Мирон Белоусов",
+          "birth_date": "1992-12-02"
+        }
+      ],
+      "contact": {
+        "email": "miron.belousov@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "pet": "корги",
+        "dates": "ближайшие выходные после 1 ноября",
+        "transport": "только поезд"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "hotel_allows_pets"
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "train"
+          }
+        }
+      ],
+      "nice": [
+        "честно про правила провоза собак"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Скептичный, переспрашивает, точно ли с собакой пустят."
+  },
+  "max_turns": 10
+}

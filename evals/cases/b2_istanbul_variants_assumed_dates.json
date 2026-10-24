@@ -1,0 +1,462 @@
+{
+  "id": "b2_istanbul_variants_assumed_dates",
+  "category": "B",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "istanbul",
+        "name": "Стамбул",
+        "country": "Турция"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2027-05-01",
+        "end": "2027-05-05",
+        "month": 5,
+        "window": null,
+        "nights": 4,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "origin.city",
+      "dates.start",
+      "dates.end",
+      "party.segment"
+    ],
+    "assumptions": [
+      {
+        "field": "dates.start",
+        "label": "1–5 мая"
+      },
+      {
+        "field": "party.segment",
+        "label": "вдвоём"
+      },
+      {
+        "field": "origin.city",
+        "label": "из Москвы"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 85900,
+          "door_to_door_hours": 9.8
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "IST",
+            "start": "2027-05-01T05:50+03:00",
+            "end": "2027-05-01T09:40+03:00",
+            "carrier": "Пример Эйр",
+            "price_rub": 21800
+          },
+          {
+            "type": "transfer",
+            "from": "IST",
+            "to": "Отель «Сиркеджи Хан» (пример)",
+            "start": "2027-05-01T10:30+03:00",
+            "end": "2027-05-01T11:30+03:00",
+            "carrier": null,
+            "price_rub": 2400
+          },
+          {
+            "type": "stay",
+            "from": "Отель «Сиркеджи Хан» (пример)",
+            "to": "Отель «Сиркеджи Хан» (пример)",
+            "start": "2027-05-01T14:00+03:00",
+            "end": "2027-05-05T12:00+03:00",
+            "carrier": null,
+            "price_rub": 38400
+          },
+          {
+            "type": "transfer",
+            "from": "Отель «Сиркеджи Хан» (пример)",
+            "to": "IST",
+            "start": "2027-05-05T18:30+03:00",
+            "end": "2027-05-05T19:30+03:00",
+            "carrier": null,
+            "price_rub": 2400
+          },
+          {
+            "type": "flight",
+            "from": "IST",
+            "to": "SVO",
+            "start": "2027-05-05T22:30+03:00",
+            "end": "2027-05-06T02:20+03:00",
+            "carrier": "Пример Эйр",
+            "price_rub": 20900
+          }
+        ],
+        "hotel": {
+          "name": "Отель «Сиркеджи Хан» (пример)",
+          "stars": 3,
+          "rating": 8.0,
+          "district": {
+            "labels": [
+              "walkable",
+              "lively"
+            ],
+            "counts": {
+              "bars": 3,
+              "cafes": 9,
+              "playgrounds": 1,
+              "parks": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 85900,
+          "nights": 4,
+          "meals": "breakfast",
+          "direct": true
+        },
+        "sacrifices": [
+          {
+            "code": "night_return",
+            "text": "Обратный рейс прилетает в 02:20",
+            "data": {
+              "time": "02:20"
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "night_arrival",
+            "text": "Прилёт в Москву ночью, в 02:20 — метро уже закрыто",
+            "data": {
+              "time": "02:20"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "light_sleepers",
+            "text": "Тем, кто плохо спит при шуме с улицы",
+            "data": {}
+          }
+        ],
+        "fit": {
+          "score": 0.64,
+          "breakdown": {
+            "price": 0.64,
+            "time": 0.64
+          }
+        }
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "Быстрее",
+        "totals": {
+          "rub": 109100,
+          "door_to_door_hours": 8.9
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "IST",
+            "start": "2027-05-01T10:10+03:00",
+            "end": "2027-05-01T14:00+03:00",
+            "carrier": "Пример Эйр",
+            "price_rub": 26400
+          },
+          {
+            "type": "transfer",
+            "from": "IST",
+            "to": "Отель «Галата Вью» (пример)",
+            "start": "2027-05-01T14:50+03:00",
+            "end": "2027-05-01T15:50+03:00",
+            "carrier": null,
+            "price_rub": 2400
+          },
+          {
+            "type": "stay",
+            "from": "Отель «Галата Вью» (пример)",
+            "to": "Отель «Галата Вью» (пример)",
+            "start": "2027-05-01T14:00+03:00",
+            "end": "2027-05-05T12:00+03:00",
+            "carrier": null,
+            "price_rub": 52800
+          },
+          {
+            "type": "transfer",
+            "from": "Отель «Галата Вью» (пример)",
+            "to": "IST",
+            "start": "2027-05-05T12:20+03:00",
+            "end": "2027-05-05T13:20+03:00",
+            "carrier": null,
+            "price_rub": 2400
+          },
+          {
+            "type": "flight",
+            "from": "IST",
+            "to": "SVO",
+            "start": "2027-05-05T16:20+03:00",
+            "end": "2027-05-05T20:10+03:00",
+            "carrier": "Пример Эйр",
+            "price_rub": 25100
+          }
+        ],
+        "hotel": {
+          "name": "Отель «Галата Вью» (пример)",
+          "stars": 4,
+          "rating": 8.6,
+          "district": {
+            "labels": [
+              "walkable"
+            ],
+            "counts": {
+              "bars": 3,
+              "cafes": 9,
+              "playgrounds": 1,
+              "parks": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 109100,
+          "nights": 4,
+          "meals": "breakfast",
+          "direct": true
+        },
+        "sacrifices": [
+          {
+            "code": "pricier",
+            "text": "Дороже самого дешёвого на 22 600 ₽",
+            "data": {
+              "delta_rub": 22600
+            }
+          }
+        ],
+        "risks": [],
+        "not_for": [],
+        "fit": {
+          "score": 0.83,
+          "breakdown": {
+            "price": 0.83,
+            "time": 0.83
+          }
+        }
+      },
+      {
+        "id": "comfort",
+        "label": "3",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 157400,
+          "door_to_door_hours": 9.1
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "IST",
+            "start": "2027-05-01T12:30+03:00",
+            "end": "2027-05-01T16:20+03:00",
+            "carrier": "Пример Эйр",
+            "price_rub": 28900
+          },
+          {
+            "type": "transfer",
+            "from": "IST",
+            "to": "Отель «Босфор Палас» (пример)",
+            "start": "2027-05-01T17:10+03:00",
+            "end": "2027-05-01T18:10+03:00",
+            "carrier": null,
+            "price_rub": 2400
+          },
+          {
+            "type": "stay",
+            "from": "Отель «Босфор Палас» (пример)",
+            "to": "Отель «Босфор Палас» (пример)",
+            "start": "2027-05-01T14:00+03:00",
+            "end": "2027-05-05T12:00+03:00",
+            "carrier": null,
+            "price_rub": 96000
+          },
+          {
+            "type": "transfer",
+            "from": "Отель «Босфор Палас» (пример)",
+            "to": "IST",
+            "start": "2027-05-05T14:00+03:00",
+            "end": "2027-05-05T15:00+03:00",
+            "carrier": null,
+            "price_rub": 2400
+          },
+          {
+            "type": "flight",
+            "from": "IST",
+            "to": "SVO",
+            "start": "2027-05-05T18:00+03:00",
+            "end": "2027-05-05T21:50+03:00",
+            "carrier": "Пример Эйр",
+            "price_rub": 27700
+          }
+        ],
+        "hotel": {
+          "name": "Отель «Босфор Палас» (пример)",
+          "stars": 5,
+          "rating": 9.2,
+          "district": {
+            "labels": [
+              "quiet"
+            ],
+            "counts": {
+              "bars": 3,
+              "cafes": 9,
+              "playgrounds": 1,
+              "parks": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 157400,
+          "nights": 4,
+          "meals": "breakfast",
+          "direct": true,
+          "free_cancellation": true
+        },
+        "sacrifices": [
+          {
+            "code": "most_expensive",
+            "text": "Самый дорогой вариант: 188 400 ₽",
+            "data": {
+              "total_rub": 188400
+            }
+          }
+        ],
+        "risks": [],
+        "not_for": [
+          {
+            "code": "far_center",
+            "text": "Тем, кто хочет жить в самом центре: до Султанахмета 7 км",
+            "data": {
+              "km": 7
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.71,
+          "breakdown": {
+            "price": 0.71,
+            "time": 0.71
+          }
+        }
+      }
+    ],
+    "recommended_hint": "fastest",
+    "questions": [],
+    "upsell_candidates": []
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "вдвое|втрое|вчетверо|в полтора раза|в (два|три|четыре|\\d+) раза"
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "(?<![\\w-])(ты|тебе|тебя|тобой|твой|твоя|твоё|твои|твоих|твоим)(?![\\w-])"
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_risk"
+    },
+    {
+      "type": "predicate",
+      "name": "keeps_notes",
+      "args": {
+        "field": "not_for"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 1
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Dates were assumed (chips). The cheapest has a night arrival risk that must be kept."
+}

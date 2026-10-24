@@ -1,0 +1,51 @@
+{
+  "id": "s21_pets_cat_nature",
+  "category": "pets",
+  "persona": {
+    "start_message": "С котом можно куда-нибудь на природу недалеко от Питера на 3 дня?",
+    "image": null,
+    "profile": {
+      "name": "Полина",
+      "age": 32,
+      "home_city": "Санкт-Петербург",
+      "travellers": [
+        {
+          "name": "Полина Ершова",
+          "birth_date": "1994-10-04"
+        }
+      ],
+      "contact": {
+        "email": "polina.ershova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "pet": "кот, переноска",
+        "transport": "без самолёта",
+        "nights": 3,
+        "budget_rub_max": 40000
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "hotel_allows_pets"
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 2,
+            "max": 4
+          }
+        }
+      ],
+      "nice": [
+        "поезд или электричка",
+        "озеро или лес рядом"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Спокойная. Если вариант без указания, что с животными можно, — переспрашивает."
+  },
+  "max_turns": 10
+}

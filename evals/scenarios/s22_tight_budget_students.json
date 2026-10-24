@@ -1,0 +1,55 @@
+{
+  "id": "s22_tight_budget_students",
+  "category": "budget",
+  "persona": {
+    "start_message": "Студенты, нас двое, 35 тысяч на всё, хотим куда-нибудь на 2–3 дня из Москвы в ноябре",
+    "image": null,
+    "profile": {
+      "name": "Егор",
+      "age": 20,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Егор Кузнецов",
+          "birth_date": "2006-02-02"
+        },
+        {
+          "name": "Аня Кузнецова",
+          "birth_date": "2006-05-05"
+        }
+      ],
+      "contact": {
+        "email": "egor.kuznetsov@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "budget_rub_max": 35000,
+        "flexible": "даты любые в ноябре",
+        "transport": "поезд или автобус ок"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 35000
+          }
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2
+          }
+        }
+      ],
+      "nice": [
+        "честно сказать, если в бюджет не уложиться"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Экономный, спрашивает «а дешевле можно?» один раз, если цена близко к 35 000 ₽."
+  },
+  "max_turns": 10
+}

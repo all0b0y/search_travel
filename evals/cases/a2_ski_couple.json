@@ -1,0 +1,89 @@
+{
+  "id": "a2_ski_couple",
+  "category": "A",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "хочется в горы покататься на лыжах этой зимой, нас двое",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "predicate",
+      "name": "contains",
+      "args": {
+        "path": "/patch/set/traits.add",
+        "values": [
+          "ski",
+          "mountains",
+          "snow"
+        ],
+        "mode": "any"
+      }
+    },
+    {
+      "type": "path_in",
+      "path": "/patch/set/party.segment",
+      "values": [
+        "couple"
+      ],
+      "allow_absent": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.adults",
+      "value": 2
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/dates.start"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "traits.add",
+          "party.segment",
+          "party.adults",
+          "mood.add",
+          "dates.month"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«Этой зимой» may map to a month or stay open; a concrete start date would be invented.",
+  "unsure": "dates.month is allowed but not required for «этой зимой»; Dec/Jan/Feb are all acceptable."
+}

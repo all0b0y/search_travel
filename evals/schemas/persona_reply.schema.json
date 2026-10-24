@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Persona reply (what the persona model returns each turn)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type"],
+  "properties": {
+    "type": {"enum": ["text", "click", "stop"]},
+    "text": {"type": "string", "description": "type=text: the message typed by the traveller (Russian)."},
+    "ref": {"type": "string", "pattern": "^(Q\\d+\\.\\d+|C\\d+\\.\\d+|D\\d+|V\\d+|A\\d+)$", "description": "type=click: the reference of the button / chip / card, e.g. A2, Q1.3."},
+    "outcome": {"enum": ["done", "failed"], "description": "type=stop: done = trip bought and nothing else to do; failed = the agent clearly cannot help."},
+    "reason": {"type": "string", "description": "type=stop: one sentence why (Russian)."}
+  }
+}

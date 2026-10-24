@@ -1,0 +1,56 @@
+{
+  "id": "h02_photo_mountains",
+  "category": "A_photo",
+  "persona": {
+    "start_message": "Где можно так отдохнуть? Думаю дней на пять в феврале",
+    "image": "evals/images/mountains_dombay.jpg",
+    "profile": {
+      "name": "Тимур",
+      "age": 35,
+      "home_city": "Казань",
+      "travellers": [
+        {
+          "name": "Тимур Галиев",
+          "birth_date": "1991-10-05"
+        }
+      ],
+      "contact": {
+        "email": "timur.galiev@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "party": "один",
+        "activity": "сноуборд",
+        "budget_rub_max": 110000
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "brief_traits_any",
+          "args": {
+            "traits": [
+              "mountains",
+              "ski",
+              "snow"
+            ]
+          }
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 4,
+            "max": 6
+          }
+        }
+      ],
+      "nice": [
+        "Кавказ (Домбай, Архыз, Эльбрус) или похожее"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Прислал фото заснеженных гор. Немногословен."
+  },
+  "max_turns": 10
+}

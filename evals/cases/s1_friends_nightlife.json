@@ -1,0 +1,384 @@
+{
+  "id": "s1_friends_nightlife",
+  "category": "segments",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "saint-petersburg",
+        "name": "Санкт-Петербург",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-27",
+        "end": "2026-11-29",
+        "month": 11,
+        "window": null,
+        "nights": 2,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "friends",
+        "adults": 4,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "trains",
+        "stay"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "lively",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": [
+        "party"
+      ]
+    },
+    "assumed": [
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "prefs.district",
+        "label": "движ"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 64000,
+          "door_to_door_hours": 9.0
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Москва",
+            "to": "Санкт-Петербург",
+            "start": "2026-11-27T19:00+03:00",
+            "end": "2026-11-27T22:55+03:00",
+            "carrier": "Сапсан",
+            "price_rub": 24800
+          },
+          {
+            "type": "stay",
+            "from": "Хостел «Лиговский» (пример)",
+            "to": "Хостел «Лиговский» (пример)",
+            "start": "2026-11-27T23:30+03:00",
+            "end": "2026-11-29T12:00+03:00",
+            "carrier": null,
+            "price_rub": 14400
+          },
+          {
+            "type": "train",
+            "from": "Санкт-Петербург",
+            "to": "Москва",
+            "start": "2026-11-29T18:00+03:00",
+            "end": "2026-11-29T21:55+03:00",
+            "carrier": "Сапсан",
+            "price_rub": 24800
+          }
+        ],
+        "hotel": {
+          "name": "Хостел «Лиговский» (пример)",
+          "stars": null,
+          "rating": 8.0,
+          "district": {
+            "labels": [
+              "quiet"
+            ],
+            "counts": {
+              "bars": 2,
+              "cafes": 5,
+              "playgrounds": 2,
+              "parks": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 64000,
+          "nights": 2,
+          "kind": "hostel"
+        },
+        "sacrifices": [],
+        "risks": [],
+        "not_for": [
+          {
+            "code": "far_bars",
+            "text": "Тем, кто хочет выйти из отеля прямо в бары: до Рубинштейна 3 км",
+            "data": {
+              "km": 3
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.55,
+          "breakdown": {
+            "price": 0.55,
+            "time": 0.55
+          }
+        }
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "В самом движе",
+        "totals": {
+          "rub": 81600,
+          "door_to_door_hours": 9.0
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Москва",
+            "to": "Санкт-Петербург",
+            "start": "2026-11-27T19:00+03:00",
+            "end": "2026-11-27T22:55+03:00",
+            "carrier": "Сапсан",
+            "price_rub": 24800
+          },
+          {
+            "type": "stay",
+            "from": "Апарт-отель «Рубинштейна 20» (пример)",
+            "to": "Апарт-отель «Рубинштейна 20» (пример)",
+            "start": "2026-11-27T23:30+03:00",
+            "end": "2026-11-29T12:00+03:00",
+            "carrier": null,
+            "price_rub": 32000
+          },
+          {
+            "type": "train",
+            "from": "Санкт-Петербург",
+            "to": "Москва",
+            "start": "2026-11-29T18:00+03:00",
+            "end": "2026-11-29T21:55+03:00",
+            "carrier": "Сапсан",
+            "price_rub": 24800
+          }
+        ],
+        "hotel": {
+          "name": "Апарт-отель «Рубинштейна 20» (пример)",
+          "stars": 3,
+          "rating": 8.6,
+          "district": {
+            "labels": [
+              "lively",
+              "walkable"
+            ],
+            "counts": {
+              "bars": 41,
+              "cafes": 63,
+              "playgrounds": 0,
+              "parks": 0
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 81600,
+          "nights": 2
+        },
+        "sacrifices": [
+          {
+            "code": "pricier",
+            "text": "Дороже самого дешёвого на 17 600 ₽",
+            "data": {
+              "delta_rub": 17600
+            }
+          }
+        ],
+        "risks": [],
+        "not_for": [
+          {
+            "code": "noise",
+            "text": "Тем, кто хочет выспаться: под окнами бары до утра",
+            "data": {}
+          }
+        ],
+        "fit": {
+          "score": 0.88,
+          "breakdown": {
+            "price": 0.88,
+            "time": 0.88
+          }
+        }
+      },
+      {
+        "id": "comfort",
+        "label": "3",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 100800,
+          "door_to_door_hours": 9.0
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Москва",
+            "to": "Санкт-Петербург",
+            "start": "2026-11-27T19:00+03:00",
+            "end": "2026-11-27T22:55+03:00",
+            "carrier": "Сапсан",
+            "price_rub": 24800
+          },
+          {
+            "type": "stay",
+            "from": "Отель «Мойка 5» (пример)",
+            "to": "Отель «Мойка 5» (пример)",
+            "start": "2026-11-27T23:30+03:00",
+            "end": "2026-11-29T12:00+03:00",
+            "carrier": null,
+            "price_rub": 51200
+          },
+          {
+            "type": "train",
+            "from": "Санкт-Петербург",
+            "to": "Москва",
+            "start": "2026-11-29T18:00+03:00",
+            "end": "2026-11-29T21:55+03:00",
+            "carrier": "Сапсан",
+            "price_rub": 24800
+          }
+        ],
+        "hotel": {
+          "name": "Отель «Мойка 5» (пример)",
+          "stars": 4,
+          "rating": 9.0,
+          "district": {
+            "labels": [
+              "walkable",
+              "quiet"
+            ],
+            "counts": {
+              "bars": 9,
+              "cafes": 30,
+              "playgrounds": 1,
+              "parks": 2
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 100800,
+          "nights": 2
+        },
+        "sacrifices": [
+          {
+            "code": "most_expensive",
+            "text": "Самый дорогой: 100 800 ₽",
+            "data": {
+              "total_rub": 100800
+            }
+          }
+        ],
+        "risks": [],
+        "not_for": [],
+        "fit": {
+          "score": 0.7,
+          "breakdown": {
+            "price": 0.7,
+            "time": 0.7
+          }
+        }
+      }
+    ],
+    "recommended_hint": "fastest",
+    "questions": [],
+    "upsell_candidates": []
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "вдвое|втрое|вчетверо|в полтора раза|в (два|три|четыре|\\d+) раза"
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "(?<![\\w-])(ты|тебе|тебя|тобой|твой|твоя|твоё|твои|твоих|твоим)(?![\\w-])"
+    },
+    {
+      "type": "path_equals",
+      "path": "/recommended_id",
+      "value": "fastest"
+    },
+    {
+      "type": "predicate",
+      "name": "keeps_notes",
+      "args": {
+        "field": "not_for"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "path": "$text",
+        "words": [
+          "бар",
+          "движ",
+          "ночн",
+          "тусов"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Friends wanting nightlife: the lively district wins; the hostel's distance from bars is honest."
+}

@@ -1,0 +1,74 @@
+{
+  "id": "s25_changes_mind_nights",
+  "category": "B",
+  "persona": {
+    "start_message": "Три подруги, хотим в Питер на 3 ночи в начале декабря, жить в центре и с завтраками",
+    "image": null,
+    "profile": {
+      "name": "Алёна",
+      "age": 29,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Алёна Громова",
+          "birth_date": "1997-07-07"
+        },
+        {
+          "name": "Катя Лосева",
+          "birth_date": "1997-03-12"
+        },
+        {
+          "name": "Ира Белкина",
+          "birth_date": "1996-09-01"
+        }
+      ],
+      "contact": {
+        "email": "alena.gromova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "change": "на втором ходу передумывает: «давайте всё-таки 2 ночи»",
+        "meals": "завтраки обязательно"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 3
+          }
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 2,
+            "max": 2
+          }
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "breakfast"
+          }
+        },
+        {
+          "name": "district_label_in",
+          "args": {
+            "labels": [
+              "walkable",
+              "lively"
+            ]
+          }
+        }
+      ],
+      "nice": [
+        "номер на троих или два номера рядом"
+      ]
+    },
+    "behaviour": "На втором ходу пишет: «давайте всё-таки 2 ночи». Дальше когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. "
+  },
+  "max_turns": 10
+}

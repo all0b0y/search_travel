@@ -1,0 +1,328 @@
+{
+  "id": "d2_kazan_stay_variants",
+  "category": "D",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "kazan",
+        "name": "Казань",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-20",
+        "end": "2026-11-23",
+        "month": 11,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "solo",
+        "adults": 1,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "stay"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.start",
+      "party.segment"
+    ],
+    "assumptions": [
+      {
+        "field": "dates.start",
+        "label": "20–23 ноября"
+      },
+      {
+        "field": "party.segment",
+        "label": "один"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 10800,
+          "door_to_door_hours": 0.0
+        },
+        "steps": [
+          {
+            "type": "stay",
+            "from": "Мини-отель «Волжский двор» (пример)",
+            "to": "Мини-отель «Волжский двор» (пример)",
+            "start": "2026-11-20T14:00+03:00",
+            "end": "2026-11-23T12:00+03:00",
+            "carrier": null,
+            "price_rub": 10800
+          }
+        ],
+        "hotel": {
+          "name": "Мини-отель «Волжский двор» (пример)",
+          "stars": 2,
+          "rating": 8.2,
+          "district": {
+            "labels": [
+              "quiet"
+            ],
+            "counts": {
+              "bars": 3,
+              "cafes": 9,
+              "playgrounds": 1,
+              "parks": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 10800,
+          "nights": 3,
+          "meals": "none",
+          "distance_center_m": 3200
+        },
+        "sacrifices": [
+          {
+            "code": "far_center",
+            "text": "До Кремля 3,2 км",
+            "data": {
+              "km": 3.2
+            }
+          }
+        ],
+        "risks": [],
+        "not_for": [],
+        "fit": {
+          "score": 0.6,
+          "breakdown": {
+            "price": 0.6,
+            "time": 0.6
+          }
+        }
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "В центре",
+        "totals": {
+          "rub": 19500,
+          "door_to_door_hours": 0.0
+        },
+        "steps": [
+          {
+            "type": "stay",
+            "from": "Отель «Баумана 9» (пример)",
+            "to": "Отель «Баумана 9» (пример)",
+            "start": "2026-11-20T14:00+03:00",
+            "end": "2026-11-23T12:00+03:00",
+            "carrier": null,
+            "price_rub": 19500
+          }
+        ],
+        "hotel": {
+          "name": "Отель «Баумана 9» (пример)",
+          "stars": 4,
+          "rating": 8.8,
+          "district": {
+            "labels": [
+              "walkable",
+              "lively"
+            ],
+            "counts": {
+              "bars": 3,
+              "cafes": 9,
+              "playgrounds": 1,
+              "parks": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 19500,
+          "nights": 3,
+          "meals": "breakfast",
+          "distance_center_m": 400
+        },
+        "sacrifices": [
+          {
+            "code": "pricier",
+            "text": "Дороже самого дешёвого на 8 700 ₽",
+            "data": {
+              "delta_rub": 8700
+            }
+          }
+        ],
+        "risks": [],
+        "not_for": [
+          {
+            "code": "noise",
+            "text": "Тем, кому нужна тишина: рядом пешеходная улица с барами",
+            "data": {}
+          }
+        ],
+        "fit": {
+          "score": 0.82,
+          "breakdown": {
+            "price": 0.82,
+            "time": 0.82
+          }
+        }
+      },
+      {
+        "id": "comfort",
+        "label": "3",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 31200,
+          "door_to_door_hours": 0.0
+        },
+        "steps": [
+          {
+            "type": "stay",
+            "from": "Отель «Кремлёвская набережная» (пример)",
+            "to": "Отель «Кремлёвская набережная» (пример)",
+            "start": "2026-11-20T14:00+03:00",
+            "end": "2026-11-23T12:00+03:00",
+            "carrier": null,
+            "price_rub": 31200
+          }
+        ],
+        "hotel": {
+          "name": "Отель «Кремлёвская набережная» (пример)",
+          "stars": 5,
+          "rating": 9.3,
+          "district": {
+            "labels": [
+              "walkable",
+              "quiet"
+            ],
+            "counts": {
+              "bars": 3,
+              "cafes": 9,
+              "playgrounds": 1,
+              "parks": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 31200,
+          "nights": 3,
+          "meals": "breakfast",
+          "free_cancellation": true
+        },
+        "sacrifices": [
+          {
+            "code": "most_expensive",
+            "text": "Самый дорогой: 31 200 ₽",
+            "data": {
+              "total_rub": 31200
+            }
+          }
+        ],
+        "risks": [],
+        "not_for": [],
+        "fit": {
+          "score": 0.77,
+          "breakdown": {
+            "price": 0.77,
+            "time": 0.77
+          }
+        }
+      }
+    ],
+    "recommended_hint": "fastest",
+    "questions": [],
+    "upsell_candidates": []
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "вдвое|втрое|вчетверо|в полтора раза|в (два|три|четыре|\\d+) раза"
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "(?<![\\w-])(ты|тебе|тебя|тобой|твой|твоя|твоё|твои|твоих|твоим)(?![\\w-])"
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "перел[её]т|рейс|самол[её]т|авиа|аэропорт|поезд"
+    },
+    {
+      "type": "predicate",
+      "name": "keeps_notes",
+      "args": {
+        "field": "not_for"
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Hotels only: the text must not talk about flights or trains that are not in the variants."
+}

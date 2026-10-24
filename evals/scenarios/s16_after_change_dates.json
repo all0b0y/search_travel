@@ -1,0 +1,45 @@
+{
+  "id": "s16_after_change_dates",
+  "category": "F",
+  "persona": {
+    "start_message": "Калининград, 20–23 ноября, я один",
+    "image": null,
+    "profile": {
+      "name": "Евгений",
+      "age": 44,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Евгений Тихонов",
+          "birth_date": "1982-07-07"
+        }
+      ],
+      "contact": {
+        "email": "evgeny.tikhonov@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "after_purchase": "после оплаты просит сдвинуть всю поездку на день позже",
+        "accepts_surcharge_up_to_rub": 5000
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "order_action_done",
+          "args": {
+            "kind": "change_dates"
+          }
+        }
+      ],
+      "nice": [
+        "агент называет доплату до подтверждения"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Оплатив, пишет: «слушай, а можно всё сдвинуть на день позже?». Соглашается, если доплата до 5 000 ₽."
+  },
+  "max_turns": 12,
+  "stop_on_paid": false
+}

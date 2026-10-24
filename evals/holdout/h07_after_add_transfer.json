@@ -1,0 +1,48 @@
+{
+  "id": "h07_after_add_transfer",
+  "category": "F",
+  "persona": {
+    "start_message": "Ереван, 10–14 декабря, вдвоём",
+    "image": null,
+    "profile": {
+      "name": "Карина",
+      "age": 31,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Карина Арутюнян",
+          "birth_date": "1995-05-25"
+        },
+        {
+          "name": "Давид Арутюнян",
+          "birth_date": "1994-02-28"
+        }
+      ],
+      "contact": {
+        "email": "karina.arutyunyan@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "after_purchase": "после оплаты просит добавить трансфер из аэропорта"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "order_action_done",
+          "args": {
+            "kind": "add_transfer"
+          }
+        }
+      ],
+      "nice": [
+        "цена трансфера до подтверждения"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Оплатив, пишет: «добавьте, пожалуйста, трансфер из аэропорта». Получив ответ, завершает."
+  },
+  "max_turns": 12,
+  "stop_on_paid": false
+}

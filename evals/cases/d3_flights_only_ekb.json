@@ -1,0 +1,86 @@
+{
+  "id": "d3_flights_only_ekb",
+  "category": "D",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "только билеты Москва — Екатеринбург на 20 ноября, обратно 23-го",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/destination.name",
+      "value": "Екатеринбург",
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/origin.city",
+      "value": "Москва"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.start",
+      "value": "2026-11-20"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.end",
+      "value": "2026-11-23"
+    },
+    {
+      "type": "predicate",
+      "name": "any_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "path_equals",
+            "path": "/patch/set/scope",
+            "value": [
+              "flights"
+            ]
+          },
+          {
+            "type": "path_equals",
+            "path": "/patch/set/scope",
+            "value": [
+              "flights",
+              "trains"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Tickets only: scope flights (trains tolerated: «билеты» is ambiguous in Russian).",
+  "unsure": "«Билеты» can mean train tickets too; scope [flights, trains] is accepted."
+}

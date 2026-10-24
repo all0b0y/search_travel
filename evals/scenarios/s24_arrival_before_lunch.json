@@ -1,0 +1,59 @@
+{
+  "id": "s24_arrival_before_lunch",
+  "category": "C",
+  "persona": {
+    "start_message": "Минск, 13–16 декабря, лечу с мамой (ей 68), прилететь до обеда, ночные рейсы не предлагать",
+    "image": null,
+    "profile": {
+      "name": "Анастасия",
+      "age": 40,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Анастасия Рябова",
+          "birth_date": "1986-06-13"
+        },
+        {
+          "name": "Людмила Рябова",
+          "birth_date": "1958-04-27"
+        }
+      ],
+      "contact": {
+        "email": "anastasia.ryabova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "arrival": "до 14:00",
+        "no_night": "без ночных рейсов",
+        "accessibility": "маме тяжело с лестницами"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "arrival_before",
+          "args": {
+            "hour": 14
+          }
+        },
+        {
+          "name": "no_night_arrival"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2
+          }
+        }
+      ],
+      "nice": [
+        "отель с лифтом",
+        "трансфер от аэропорта"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Вежливая, обстоятельная. Про лестницы говорит, если спросят про отель."
+  },
+  "max_turns": 10
+}

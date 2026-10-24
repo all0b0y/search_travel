@@ -1,0 +1,62 @@
+{
+  "id": "s06_istanbul_may",
+  "category": "B",
+  "persona": {
+    "start_message": "хочу в Стамбул на майские",
+    "image": null,
+    "profile": {
+      "name": "Алексей",
+      "age": 41,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Алексей Ким",
+          "birth_date": "1985-08-08"
+        },
+        {
+          "name": "Елена Ким",
+          "birth_date": "1987-10-10"
+        }
+      ],
+      "contact": {
+        "email": "alexey.kim@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "direct_only": "только прямые рейсы — жена боится пересадок",
+        "budget_rub_max": 150000,
+        "district": "хочется гулять пешком по старому городу",
+        "party": "вдвоём с женой"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "istanbul",
+              "Стамбул"
+            ]
+          }
+        },
+        {
+          "name": "direct_flights_only"
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 150000
+          }
+        }
+      ],
+      "nice": [
+        "пешая доступность до старого города"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Про прямые рейсы говорит сразу, как увидит пересадку или если спросят про перелёт."
+  },
+  "max_turns": 10
+}

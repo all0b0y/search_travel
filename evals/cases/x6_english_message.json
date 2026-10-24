@@ -1,0 +1,72 @@
+{
+  "id": "x6_english_message",
+  "category": "edge",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Hi! Looking for a beach holiday in December for two of us, flying from Moscow",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "predicate",
+      "name": "contains",
+      "args": {
+        "path": "/patch/set/traits.add",
+        "values": [
+          "beach",
+          "sea"
+        ],
+        "mode": "any"
+      }
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.month",
+      "value": 12
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/origin.city",
+      "value": "Москва"
+    },
+    {
+      "type": "path_in",
+      "path": "/patch/set/party.adults",
+      "values": [
+        2
+      ],
+      "allow_absent": true
+    }
+  ],
+  "runs": 5,
+  "notes": "An English message is understood; origin normalised to the Russian city name the catalog uses.",
+  "unsure": "origin.city «Moscow» (English) would fail; the catalog/geocoder may accept it, but the plan's names are Russian."
+}

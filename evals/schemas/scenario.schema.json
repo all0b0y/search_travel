@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Level-3 scenario (evals/scenarios/<id>.json, evals/holdout/<id>.json)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "category", "persona", "max_turns"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_\\-]*$"},
+    "category": {"enum": ["A", "A_photo", "B", "C", "D", "E", "F", "family", "friends", "solo", "couple", "pets", "budget", "out_of_catalog"]},
+    "tags": {"type": "array", "items": {"type": "string"}},
+    "now": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?([+-]\\d{2}:\\d{2}|Z)$", "description": "Pinned session clock; default evals.run.DEFAULT_NOW."},
+    "stop_on_paid": {"type": "boolean", "description": "Stop as soon as the order is paid (default true; F scenarios continue)."},
+    "persona": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_message", "image", "profile", "hidden", "behaviour"],
+      "properties": {
+        "start_message": {"type": "string", "minLength": 1},
+        "image": {"type": ["string", "null"], "pattern": "^evals/images/[^/]+\\.(jpg|jpeg|png|webp)$"},
+        "profile": {
+          "type": "object",
+          "required": ["home_city", "age", "name", "travellers", "contact"],
+          "properties": {
+            "home_city": {"type": "string", "minLength": 1},
+            "age": {"type": "integer", "minimum": 16, "maximum": 99},
+            "name": {"type": "string", "minLength": 1},
+            "travellers": {"type": "array", "minItems": 1, "items": {
+              "type": "object", "additionalProperties": false, "required": ["name", "birth_date"],
+              "properties": {"name": {"type": "string", "minLength": 1}, "birth_date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"}}}},
+            "contact": {"type": "object", "additionalProperties": false, "properties": {"email": {"type": "string"}, "phone": {"type": "string"}},
+                        "anyOf": [{"required": ["email"]}, {"required": ["phone"]}]}
+          }
+        },
+        "hidden": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["facts", "must", "nice"],
+          "properties": {
+            "facts": {"type": "object", "minProperties": 1},
+            "must": {"type": "array", "minItems": 1, "items": {
+              "type": "object", "additionalProperties": false, "required": ["name"],
+              "properties": {"name": {"type": "string"}, "args": {"type": "object"}}}},
+            "nice": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "behaviour": {"type": "string", "minLength": 1}
+      }
+    },
+    "max_turns": {"type": "integer", "minimum": 2, "maximum": 30},
+    "notes": {"type": "string"}
+  }
+}

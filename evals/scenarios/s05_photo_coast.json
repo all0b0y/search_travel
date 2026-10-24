@@ -1,0 +1,67 @@
+{
+  "id": "s05_photo_coast",
+  "category": "A_photo",
+  "persona": {
+    "start_message": "Хочу туда, где вот так же. Только лететь не больше пяти часов",
+    "image": "evals/images/coast_lagos_portugal.jpg",
+    "profile": {
+      "name": "Светлана",
+      "age": 38,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Светлана Миронова",
+          "birth_date": "1988-06-25"
+        },
+        {
+          "name": "Павел Миронов",
+          "birth_date": "1986-12-12"
+        }
+      ],
+      "contact": {
+        "email": "svetlana.mironova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "when": "в мае",
+        "nights": 7,
+        "party": "вдвоём с мужем",
+        "budget_rub_max": 200000,
+        "max_flight_hours": 5
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "brief_traits_any",
+          "args": {
+            "traits": [
+              "sea",
+              "beach"
+            ]
+          }
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2
+          }
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 200000
+          }
+        }
+      ],
+      "nice": [
+        "скалы и песчаный пляж",
+        "без пересадок"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Прислала фото скалистого побережья. На вопросы отвечает спокойно, бюджет называет, если спросят."
+  },
+  "max_turns": 10
+}

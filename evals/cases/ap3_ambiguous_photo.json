@@ -1,0 +1,76 @@
+{
+  "id": "ap3_ambiguous_photo",
+  "category": "A_photo",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "вот такое настроение хочу",
+    "has_image": true
+  },
+  "image": "evals/images/ambiguous_foggy_lake.jpg",
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_in",
+      "path": "/intent",
+      "values": [
+        "new_trip",
+        "refine"
+      ]
+    },
+    {
+      "type": "path_in",
+      "path": "/image/want",
+      "values": [
+        "similar",
+        "here"
+      ]
+    },
+    {
+      "type": "predicate",
+      "name": "any_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "path_absent",
+            "path": "/image/place"
+          },
+          {
+            "type": "predicate",
+            "name": "number_between",
+            "args": {
+              "path": "/image/place/confidence",
+              "max": 0.5
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    }
+  ],
+  "runs": 5,
+  "notes": "A foggy lake with no landmark: no confident place, no destination invented."
+}

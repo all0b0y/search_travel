@@ -1,0 +1,82 @@
+{
+  "id": "a5_weekend_food_spb",
+  "category": "A",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "куда-нибудь на выходные из Питера, недалеко, чтобы вкусно поесть",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/origin.city",
+      "value": "Санкт-Петербург"
+    },
+    {
+      "type": "predicate",
+      "name": "contains",
+      "args": {
+        "path": "/patch/set/traits.add",
+        "values": [
+          "food"
+        ]
+      }
+    },
+    {
+      "type": "path_in",
+      "path": "/patch/set/dates.nights",
+      "values": [
+        1,
+        2
+      ],
+      "allow_absent": true
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "origin.city",
+          "traits.add",
+          "dates.nights",
+          "mood.add",
+          "prefs.max_travel_hours"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Origin from «из Питера» normalised to the full city name; «недалеко» may become max_travel_hours."
+}

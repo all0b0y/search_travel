@@ -1,0 +1,60 @@
+{
+  "id": "s04_photo_landmark",
+  "category": "A_photo",
+  "persona": {
+    "start_message": "Хочу сюда! Когда лучше поехать?",
+    "image": "evals/images/landmark_hagia_sophia.jpg",
+    "profile": {
+      "name": "Марина",
+      "age": 27,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Марина Орлова",
+          "birth_date": "1999-04-18"
+        },
+        {
+          "name": "Артём Орлов",
+          "birth_date": "1998-02-03"
+        }
+      ],
+      "contact": {
+        "email": "marina.orlova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "when": "в начале декабря",
+        "nights": "4–5",
+        "party": "вдвоём с мужем",
+        "budget_rub_max": 150000
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "istanbul",
+              "Стамбул"
+            ]
+          }
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 4,
+            "max": 5
+          }
+        }
+      ],
+      "nice": [
+        "отель недалеко от исторического центра"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Прислала фото Айя-Софии и не знает, как место называется. Если агент угадал Стамбул — радуется."
+  },
+  "max_turns": 10
+}

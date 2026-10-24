@@ -1,0 +1,51 @@
+{
+  "id": "s13_replan_dog",
+  "category": "E",
+  "persona": {
+    "start_message": "Калининград, 5–8 декабря, вдвоём",
+    "image": null,
+    "profile": {
+      "name": "Вера",
+      "age": 37,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Вера Савина",
+          "birth_date": "1989-09-19"
+        },
+        {
+          "name": "Глеб Савин",
+          "birth_date": "1988-01-01"
+        }
+      ],
+      "contact": {
+        "email": "vera.savina@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "pet": "корги, 12 кг, едет с нами",
+        "pet_reveal": "вспоминает про собаку на втором ходу"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "hotel_allows_pets"
+        },
+        {
+          "name": "brief_has_constraint",
+          "args": {
+            "token": "pet:dog"
+          }
+        }
+      ],
+      "nice": [
+        "рядом парк для прогулок с собакой"
+      ]
+    },
+    "behaviour": "На втором ходу пишет: «ой, кстати, мы с собакой, корги». Дальше когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. "
+  },
+  "max_turns": 10
+}

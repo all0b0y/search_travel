@@ -1,0 +1,90 @@
+{
+  "id": "s4_friends_party_spb",
+  "category": "segments",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "едем компанией из пяти друзей в Питер на выходные, хотим потусить",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/destination.name",
+      "value": "Санкт-Петербург",
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.segment",
+      "value": "friends"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.adults",
+      "value": 5
+    },
+    {
+      "type": "predicate",
+      "name": "any_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "predicate",
+            "name": "contains",
+            "args": {
+              "path": "/patch/set/mood.add",
+              "values": [
+                "party"
+              ]
+            }
+          },
+          {
+            "type": "path_equals",
+            "path": "/patch/set/prefs.district",
+            "value": "lively"
+          },
+          {
+            "type": "predicate",
+            "name": "contains",
+            "args": {
+              "path": "/patch/set/traits.add",
+              "values": [
+                "nightlife"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Segment friends, 5 adults, party mood (any of mood/district/trait)."
+}

@@ -1,0 +1,59 @@
+{
+  "id": "s19_solo_business",
+  "category": "solo",
+  "persona": {
+    "start_message": "Командировка в Нижний Новгород 9–11 декабря, нужен отель в центре и дорога туда-обратно",
+    "image": null,
+    "profile": {
+      "name": "Галина",
+      "age": 48,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Галина Широкова",
+          "birth_date": "1978-12-08"
+        }
+      ],
+      "contact": {
+        "email": "galina.shirokova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "district": "центр, пешком до офиса на Большой Покровской",
+        "meals": "завтрак обязателен",
+        "transport": "любой, лишь бы утром быть на месте"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "district_label_in",
+          "args": {
+            "labels": [
+              "walkable"
+            ]
+          }
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "breakfast"
+          }
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 1
+          }
+        }
+      ],
+      "nice": [
+        "утренний приезд 9 декабря"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Деловая, без эмоций. Про завтрак говорит, если в варианте его нет."
+  },
+  "max_turns": 10
+}

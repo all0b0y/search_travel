@@ -1,0 +1,228 @@
+{
+  "id": "a3_destinations_family_sea",
+  "category": "A",
+  "card": "present.destinations",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": null,
+      "traits": [
+        "sea",
+        "warm"
+      ],
+      "dates": {
+        "start": null,
+        "end": null,
+        "month": 11,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "family",
+        "adults": 2,
+        "children": 1,
+        "children_ages": [
+          4
+        ],
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "origin.city",
+      "dates.nights",
+      "party.adults"
+    ],
+    "assumptions": [
+      {
+        "field": "origin.city",
+        "label": "из Москвы"
+      },
+      {
+        "field": "dates.nights",
+        "label": "7 ночей"
+      },
+      {
+        "field": "party.adults",
+        "label": "2 взрослых"
+      }
+    ],
+    "items": [
+      {
+        "id": "antalya",
+        "label": "1",
+        "name": "Анталья",
+        "country": "Турция",
+        "price_from_rub": 118400,
+        "nights": 7,
+        "party_label": "2 взрослых и ребёнок",
+        "weather": {
+          "air_max_c": 21,
+          "sea_c": 21,
+          "rain_days": 7
+        },
+        "travel_time_h": 4.3,
+        "match": [
+          "sea",
+          "warm",
+          "beach"
+        ],
+        "facts": {
+          "direct_flights": true
+        }
+      },
+      {
+        "id": "hurghada",
+        "label": "2",
+        "name": "Хургада",
+        "country": "Египет",
+        "price_from_rub": 131900,
+        "nights": 7,
+        "party_label": "2 взрослых и ребёнок",
+        "weather": {
+          "air_max_c": 27,
+          "sea_c": 25,
+          "rain_days": 0
+        },
+        "travel_time_h": 5.2,
+        "match": [
+          "sea",
+          "warm",
+          "beach"
+        ],
+        "facts": {
+          "direct_flights": true,
+          "windy": true
+        }
+      },
+      {
+        "id": "dubai",
+        "label": "3",
+        "name": "Дубай",
+        "country": "ОАЭ",
+        "price_from_rub": 176300,
+        "nights": 7,
+        "party_label": "2 взрослых и ребёнок",
+        "weather": {
+          "air_max_c": 30,
+          "sea_c": 27,
+          "rain_days": 1
+        },
+        "travel_time_h": 5.5,
+        "match": [
+          "sea",
+          "hot",
+          "city"
+        ],
+        "facts": {
+          "direct_flights": true
+        }
+      }
+    ],
+    "questions": [
+      {
+        "id": "q_children_ages",
+        "text": "Сколько лет ребёнку?"
+      }
+    ],
+    "image": null,
+    "insight": {
+      "popular_ids": [
+        "antalya"
+      ]
+    }
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "вдвое|втрое|вчетверо|в полтора раза|в (два|три|четыре|\\d+) раза"
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "(?<![\\w-])(ты|тебе|тебя|тобой|твой|твоя|твоё|твои|твоих|твоим)(?![\\w-])"
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 1
+      }
+    },
+    {
+      "type": "max_items",
+      "path": "/items",
+      "max": 3
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "популярн\\w* (у|среди) (пользовател|клиент)|по статистике|по данным островка"
+    }
+  ],
+  "runs": 5,
+  "notes": "Three warm-sea destinations for a family in November. The insight is a ranking hint only: it must never be cited."
+}

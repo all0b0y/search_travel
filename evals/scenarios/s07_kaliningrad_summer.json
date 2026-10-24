@@ -1,0 +1,62 @@
+{
+  "id": "s07_kaliningrad_summer",
+  "category": "B",
+  "persona": {
+    "start_message": "Калининград, недельку летом, с мужем",
+    "image": null,
+    "profile": {
+      "name": "Татьяна",
+      "age": 45,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Татьяна Егорова",
+          "birth_date": "1981-05-05"
+        },
+        {
+          "name": "Сергей Егоров",
+          "birth_date": "1979-03-03"
+        }
+      ],
+      "contact": {
+        "email": "tatiana.egorova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "when": "начало июля",
+        "free_cancellation": "обязательно бесплатная отмена — могут не отпустить с работы",
+        "nights": 7
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "kaliningrad",
+              "Калининград"
+            ]
+          }
+        },
+        {
+          "name": "free_cancellation"
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 6,
+            "max": 8
+          }
+        }
+      ],
+      "nice": [
+        "рядом с морем (Светлогорск или Зеленоградск тоже подойдут)"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Аккуратная, переспрашивает условия отмены перед оплатой."
+  },
+  "max_turns": 10
+}

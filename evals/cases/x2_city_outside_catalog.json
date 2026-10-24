@@ -1,0 +1,223 @@
+{
+  "id": "x2_city_outside_catalog",
+  "category": "edge",
+  "card": "present.destinations",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": null,
+        "name": "Тромсё",
+        "country": "Норвегия"
+      },
+      "traits": [
+        "snow",
+        "nature"
+      ],
+      "dates": {
+        "start": null,
+        "end": null,
+        "month": 1,
+        "window": null,
+        "nights": 5,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "origin.city",
+      "dates.nights"
+    ],
+    "assumptions": [
+      {
+        "field": "origin.city",
+        "label": "из Москвы"
+      },
+      {
+        "field": "dates.nights",
+        "label": "5 ночей"
+      }
+    ],
+    "items": [
+      {
+        "id": "murmansk",
+        "label": "1",
+        "name": "Мурманск",
+        "country": "Россия",
+        "price_from_rub": 67300,
+        "nights": 5,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": -7,
+          "sea_c": null,
+          "rain_days": 14
+        },
+        "travel_time_h": 2.6,
+        "match": [
+          "snow",
+          "nature"
+        ],
+        "facts": {
+          "aurora_season": true
+        }
+      },
+      {
+        "id": "kirovsk",
+        "label": "2",
+        "name": "Кировск",
+        "country": "Россия",
+        "price_from_rub": 74800,
+        "nights": 5,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": -9,
+          "sea_c": null,
+          "rain_days": 15
+        },
+        "travel_time_h": 4.4,
+        "match": [
+          "snow",
+          "mountains",
+          "ski"
+        ],
+        "facts": {
+          "aurora_season": true
+        }
+      },
+      {
+        "id": "petrozavodsk",
+        "label": "3",
+        "name": "Петрозаводск",
+        "country": "Россия",
+        "price_from_rub": 41200,
+        "nights": 5,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": -6,
+          "sea_c": null,
+          "rain_days": 13
+        },
+        "travel_time_h": 1.4,
+        "match": [
+          "snow",
+          "nature",
+          "lake"
+        ],
+        "facts": {}
+      }
+    ],
+    "questions": [],
+    "image": null,
+    "insight": null
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "вдвое|втрое|вчетверо|в полтора раза|в (два|три|четыре|\\d+) раза"
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "(?<![\\w-])(ты|тебе|тебя|тобой|твой|твоя|твоё|твои|твоих|твоим)(?![\\w-])"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "Тромс"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "нет в демо",
+          "в демо нет",
+          "не нашл",
+          "нет в каталоге",
+          "пока нет",
+          "не могу",
+          "нет "
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items",
+      "args": {
+        "allow_null": true
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "The user asked for Tromsø (not in the catalog; brief.destination has id null): say so honestly and offer the similar northern places.",
+  "unsure": "How the engine flags «not in catalog» to the destinations card is not fixed in the contract (here: destination id null in the brief)."
+}

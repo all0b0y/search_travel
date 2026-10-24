@@ -1,0 +1,67 @@
+{
+  "id": "s17_family_toddler_ai",
+  "category": "family",
+  "persona": {
+    "start_message": "Летим в Анталью в ноябре: мы с женой и малыш полтора года, хотим всё включено",
+    "image": null,
+    "profile": {
+      "name": "Илья",
+      "age": 33,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Илья Смирнов",
+          "birth_date": "1993-01-11"
+        },
+        {
+          "name": "Мария Смирнова",
+          "birth_date": "1994-04-14"
+        },
+        {
+          "name": "Тимофей Смирнов",
+          "birth_date": "2025-05-01"
+        }
+      ],
+      "contact": {
+        "email": "ilya.smirnov@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "child_age": 1,
+        "nights": 7,
+        "no_night_flights": "никаких ночных прилётов с малышом",
+        "budget_rub_max": 260000
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2,
+            "children_ages": [
+              1
+            ]
+          }
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "all_inclusive"
+          }
+        },
+        {
+          "name": "no_night_arrival"
+        }
+      ],
+      "nice": [
+        "детская кроватка в номере",
+        "трансфер от аэропорта"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Переживает за малыша, спрашивает про кроватку. Про ночные рейсы говорит, когда видит прилёт ночью."
+  },
+  "max_turns": 10
+}

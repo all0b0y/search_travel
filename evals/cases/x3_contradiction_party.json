@@ -1,0 +1,84 @@
+{
+  "id": "x3_contradiction_party",
+  "category": "edge",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "поедем вдвоём: я и двое моих детей, на море в июле",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_in",
+      "path": "/patch/set/party.segment",
+      "values": [
+        "family"
+      ],
+      "allow_absent": true
+    },
+    {
+      "type": "path_in",
+      "path": "/patch/set/party.children",
+      "values": [
+        2
+      ],
+      "allow_absent": true
+    },
+    {
+      "type": "path_in",
+      "path": "/patch/set/party.adults",
+      "values": [
+        1
+      ],
+      "allow_absent": true
+    },
+    {
+      "type": "predicate",
+      "name": "none_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "path_equals",
+            "path": "/patch/set/party.segment",
+            "value": "couple"
+          },
+          {
+            "type": "path_equals",
+            "path": "/patch/set/party.adults",
+            "value": 2
+          }
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«Вдвоём» contradicts «я и двое детей»: the explicit list wins (1 adult + 2 children) or the party is left for a question.",
+  "unsure": "Leaving party unset (to ask) is accepted; setting couple / 2 adults is the failure."
+}

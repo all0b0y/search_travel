@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""Fake `claude` executable for tests: never contacts anything.
+
+Reads the prompt from stdin and prints a Claude Code `--output-format json` style result.
+Environment:
+  FAKE_CLAUDE_REPLY   JSON text of the persona reply (default: a click on A1)
+  FAKE_CLAUDE_MODE    structured (default) | result | fenced | events | malformed | error | empty
+  FAKE_CLAUDE_MODEL   model id to report in modelUsage (default claude-sonnet-5-5)
+  FAKE_CLAUDE_LOG     if set, append {"argv", "cwd", "stdin"} as one JSON line to this file
+Exits 2 when called with --bare (the persona must never use it).
+"""
+import json
+import os
+import sys
+
+argv = sys.argv[1:]
+stdin = sys.stdin.read()
+log = os.environ.get("FAKE_CLAUDE_LOG")
+if log:
+    with open(log, "a", encoding="utf-8") as fh:
+        fh.write(json.dumps({"argv": argv, "cwd": os.getcwd(), "stdin": stdin}, ensure_ascii=False) + "\n")
+if "--bare" in argv:
+    print("--bare is forbidden", file=sys.stderr)
+    sys.exit(2)
+reply_text = os.environ.get("FAKE_CLAUDE_REPLY") or '{"type": "click", "ref": "A1"}'
+mode = os.environ.get("FAKE_CLAUDE_MODE", "structured")
+model = os.environ.get("FAKE_CLAUDE_MODEL", "claude-sonnet-5-5")
+base = {"type": "result", "subtype": "success", "is_error": False, "duration_ms": 1234, "num_turns": 1,
+        "session_id": "fake-session", "total_cost_usd": 0.0012,
+        "modelUsage": {model: {"inputTokens": 100, "outputTokens": 20}}}
+if mode == "structured":
+    out = dict(base, result="", structured_output=json.loads(reply_text))
+elif mode == "result":
+    out = dict(base, result=reply_text)
+elif mode == "fenced":
+    out = dict(base, result="```json\n" + reply_text + "\n```")
+elif mode == "events":
+    out = [{"type": "system", "subtype": "init"}, dict(base, result=reply_text)]
+elif mode == "malformed":
+    print("this is not json {")
+    sys.exit(0)
+elif mode == "error":
+    out = dict(base, subtype="error_during_execution", is_error=True, result="boom")
+elif mode == "empty":
+    out = dict(base, result="")
+else:
+    print(f"unknown FAKE_CLAUDE_MODE {mode}", file=sys.stderr)
+    sys.exit(3)
+print(json.dumps(out, ensure_ascii=False))

@@ -1,0 +1,56 @@
+{
+  "id": "h10_student_25k",
+  "category": "budget",
+  "persona": {
+    "start_message": "Студент, 25 тысяч на всё, куда можно смотаться на 3 дня из Екатеринбурга?",
+    "image": null,
+    "profile": {
+      "name": "Арсений",
+      "age": 19,
+      "home_city": "Екатеринбург",
+      "travellers": [
+        {
+          "name": "Арсений Пахомов",
+          "birth_date": "2007-03-09"
+        }
+      ],
+      "contact": {
+        "email": "arseny.pakhomov@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "budget_rub_max": 25000,
+        "when": "в ноябре, даты гибкие"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 25000
+          }
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 1
+          }
+        },
+        {
+          "name": "origin_is",
+          "args": {
+            "city": "Екатеринбург"
+          }
+        }
+      ],
+      "nice": [
+        "честно, что входит в 25 тысяч"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Пишет с маленькой буквы, без знаков препинания."
+  },
+  "max_turns": 10
+}

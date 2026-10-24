@@ -1,0 +1,57 @@
+{
+  "id": "h04_minsk_solo_exact",
+  "category": "C",
+  "persona": {
+    "start_message": "Минск, с 5 по 8 декабря, я один",
+    "image": null,
+    "profile": {
+      "name": "Григорий",
+      "age": 57,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Григорий Осипов",
+          "birth_date": "1969-11-03"
+        }
+      ],
+      "contact": {
+        "email": "grigory.osipov@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "meals": "без разницы",
+        "district": "поближе к вокзалу"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "stay_starts_on",
+          "args": {
+            "day": "2026-12-05"
+          }
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 3,
+            "max": 3
+          }
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 1
+          }
+        }
+      ],
+      "nice": [
+        "недорогой отель у центра"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Пожилой, пишет без смайликов, ценит краткость."
+  },
+  "max_turns": 10
+}

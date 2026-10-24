@@ -1,0 +1,77 @@
+{
+  "id": "b3_kaliningrad_summer",
+  "category": "B",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Калининград, недельку летом, вдвоём с женой",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/destination.name",
+      "value": "Калининград",
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.nights",
+      "value": 7
+    },
+    {
+      "type": "path_in",
+      "path": "/patch/set/party.segment",
+      "values": [
+        "couple"
+      ]
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/dates.start"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "destination.name",
+          "dates.nights",
+          "party.segment",
+          "party.adults",
+          "dates.month"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«Летом» has no single month; a month is tolerated, a concrete start date is not.",
+  "unsure": "If the model picks dates.month 6/7/8 for «летом» that still passes; a strict reading would forbid it."
+}

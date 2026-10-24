@@ -1,0 +1,61 @@
+{
+  "id": "s08_sochi_exact",
+  "category": "C",
+  "persona": {
+    "start_message": "Сочи, 12–19 ноября, двое взрослых",
+    "image": null,
+    "profile": {
+      "name": "Роман",
+      "age": 36,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Роман Зайцев",
+          "birth_date": "1990-02-14"
+        },
+        {
+          "name": "Юлия Зайцева",
+          "birth_date": "1991-07-19"
+        }
+      ],
+      "contact": {
+        "email": "roman.zaitsev@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "meals": "нужен завтрак",
+        "cancellation": "хорошо бы бесплатная отмена, но не обязательно"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "stay_starts_on",
+          "args": {
+            "day": "2026-11-12"
+          }
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 7,
+            "max": 7
+          }
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "breakfast"
+          }
+        }
+      ],
+      "nice": [
+        "бесплатная отмена"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Знает, чего хочет, отвечает быстро. Про завтрак говорит, если в варианте его нет."
+  },
+  "max_turns": 10
+}

@@ -1,0 +1,59 @@
+{
+  "id": "h06_grandma_joins",
+  "category": "E",
+  "persona": {
+    "start_message": "Сочи 2–9 января, двое взрослых и сын 9 лет",
+    "image": null,
+    "profile": {
+      "name": "Артём",
+      "age": 38,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Артём Баранов",
+          "birth_date": "1988-12-24"
+        },
+        {
+          "name": "Ольга Баранова",
+          "birth_date": "1989-06-06"
+        },
+        {
+          "name": "Саша Баранов",
+          "birth_date": "2017-03-15"
+        },
+        {
+          "name": "Нина Баранова",
+          "birth_date": "1960-01-30"
+        }
+      ],
+      "contact": {
+        "email": "artem.baranov@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "change": "на третьем ходу: «ой, с нами ещё бабушка поедет»",
+        "child_age": 9
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 3,
+            "children_ages": [
+              9
+            ]
+          }
+        }
+      ],
+      "nice": [
+        "номер на четверых или два смежных"
+      ]
+    },
+    "behaviour": "На третьем ходу пишет: «ой, с нами ещё бабушка поедет». Дальше когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. "
+  },
+  "max_turns": 10
+}

@@ -1,0 +1,72 @@
+{
+  "id": "s01_family_warm_sea",
+  "category": "A",
+  "persona": {
+    "start_message": "Хотим к тёплому морю в ноябре с ребёнком, недорого",
+    "image": null,
+    "profile": {
+      "name": "Анна",
+      "age": 34,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Анна Соколова",
+          "birth_date": "1992-03-14"
+        },
+        {
+          "name": "Дмитрий Соколов",
+          "birth_date": "1990-07-02"
+        },
+        {
+          "name": "Миша Соколов",
+          "birth_date": "2022-05-10"
+        }
+      ],
+      "contact": {
+        "email": "anna.sokolova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "child_age": 4,
+        "budget_rub_max": 250000,
+        "nights": 7,
+        "meals": "хотя бы завтраки",
+        "flight_limit": "ребёнок плохо переносит перелёты дольше 5 часов",
+        "adults": 2
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2,
+            "children_ages": [
+              4
+            ]
+          }
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 250000
+          }
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "breakfast"
+          }
+        }
+      ],
+      "nice": [
+        "перелёт не дольше 5 часов",
+        "спокойный или семейный район"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Пишет коротко. Возраст ребёнка и бюджет называет, только когда спросят или когда видит цены выше бюджета."
+  },
+  "max_turns": 10
+}

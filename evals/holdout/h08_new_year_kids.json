@@ -1,0 +1,76 @@
+{
+  "id": "h08_new_year_kids",
+  "category": "family",
+  "persona": {
+    "start_message": "На новогодние в тепло с детьми 7 и 11 лет, полупансион, вылетаем из Петербурга",
+    "image": null,
+    "profile": {
+      "name": "Ярослава",
+      "age": 39,
+      "home_city": "Санкт-Петербург",
+      "travellers": [
+        {
+          "name": "Ярослава Котова",
+          "birth_date": "1987-08-12"
+        },
+        {
+          "name": "Пётр Котов",
+          "birth_date": "1985-04-01"
+        },
+        {
+          "name": "Вика Котова",
+          "birth_date": "2019-06-10"
+        },
+        {
+          "name": "Ваня Котов",
+          "birth_date": "2015-02-20"
+        }
+      ],
+      "contact": {
+        "email": "yaroslava.kotova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "children_ages": [
+          7,
+          11
+        ],
+        "nights": 9,
+        "budget_rub_max": 400000
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2,
+            "children_ages": [
+              7,
+              11
+            ]
+          }
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "half_board"
+          }
+        },
+        {
+          "name": "origin_is",
+          "args": {
+            "city": "Санкт-Петербург"
+          }
+        }
+      ],
+      "nice": [
+        "анимация для детей"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Многодетная мама, практичная, считает деньги."
+  },
+  "max_turns": 10
+}

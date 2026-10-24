@@ -1,0 +1,63 @@
+{
+  "id": "s02_solo_mountains",
+  "category": "A",
+  "persona": {
+    "start_message": "хочу в горы на недельку в декабре, один, покататься",
+    "image": null,
+    "profile": {
+      "name": "Игорь",
+      "age": 29,
+      "home_city": "Екатеринбург",
+      "travellers": [
+        {
+          "name": "Игорь Лебедев",
+          "birth_date": "1997-01-21"
+        }
+      ],
+      "contact": {
+        "email": "igor.lebedev@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "budget_rub_max": 120000,
+        "start_after": "2026-12-10",
+        "skill": "катается уверенно, нужен подъёмник",
+        "nights": 7
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 1
+          }
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 120000
+          }
+        },
+        {
+          "name": "brief_traits_any",
+          "args": {
+            "traits": [
+              "mountains",
+              "ski",
+              "snow"
+            ]
+          }
+        }
+      ],
+      "nice": [
+        "подъёмники рядом с отелем",
+        "даты после 10 декабря"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Отвечает односложно, без приветствий. Если спрашивают даты — «после 10-го»."
+  },
+  "max_turns": 10
+}

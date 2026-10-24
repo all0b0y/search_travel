@@ -1,0 +1,61 @@
+{
+  "id": "h01_sun_from_novosibirsk",
+  "category": "A",
+  "persona": {
+    "start_message": "Устали от слякоти. Солнца бы в декабре, мы с мужем, бюджет скромный",
+    "image": null,
+    "profile": {
+      "name": "Людмила",
+      "age": 52,
+      "home_city": "Новосибирск",
+      "travellers": [
+        {
+          "name": "Людмила Карпова",
+          "birth_date": "1974-02-11"
+        },
+        {
+          "name": "Виктор Карпов",
+          "birth_date": "1972-09-23"
+        }
+      ],
+      "contact": {
+        "email": "lyudmila.karpova@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "budget_rub_max": 180000,
+        "nights": 8,
+        "heat": "не жарче 30 градусов"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 180000
+          }
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2
+          }
+        },
+        {
+          "name": "origin_is",
+          "args": {
+            "city": "Новосибирск"
+          }
+        }
+      ],
+      "nice": [
+        "вылет из Новосибирска без лишних пересадок"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Пишет длинно и обстоятельно, просит объяснить простыми словами."
+  },
+  "max_turns": 10
+}

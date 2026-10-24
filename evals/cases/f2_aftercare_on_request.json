@@ -1,0 +1,166 @@
+{
+  "id": "f2_aftercare_on_request",
+  "category": "F",
+  "card": "present.aftercare",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "aftercare",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "antalya",
+        "name": "Анталья",
+        "country": "Турция"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-14",
+        "end": "2026-11-21",
+        "month": 11,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "family",
+        "adults": 2,
+        "children": 1,
+        "children_ages": [
+          4
+        ],
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "all_inclusive",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "order": {
+      "order_id": "o_example_1",
+      "status": "paid",
+      "total_rub": 203600,
+      "destination": "Анталья",
+      "items": [
+        {
+          "item_id": "oi_2",
+          "kind": "hotel",
+          "title": "Отель «Лара Бич Фэмили» (пример), 7 ночей, всё включено",
+          "start": "2026-11-14T14:00+03:00",
+          "end": "2026-11-21T12:00+03:00",
+          "price_rub": 112700
+        },
+        {
+          "item_id": "oi_1",
+          "kind": "flight",
+          "title": "Перелёт Москва → Анталья",
+          "start": "2026-11-14T08:30+03:00",
+          "end": "2026-11-14T12:50+03:00",
+          "price_rub": 46800
+        }
+      ]
+    },
+    "result": {
+      "action": "early_checkin",
+      "status": "on_request",
+      "time": "10:00",
+      "price_rub": 4500,
+      "pay_at": "hotel"
+    }
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "вдвое|втрое|вчетверо|в полтора раза|в (два|три|четыре|\\d+) раза"
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "(?<![\\w-])(ты|тебе|тебя|тобой|твой|твоя|твоё|твои|твоих|твоим)(?![\\w-])"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "по запросу",
+          "подтверд",
+          "не гарант",
+          "ответит"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "path": "$text",
+        "words": [
+          "4 500",
+          "4500"
+        ]
+      }
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 0
+    }
+  ],
+  "runs": 5,
+  "notes": "The hotel only promises early check-in on request: say so plainly with the price, no promise."
+}

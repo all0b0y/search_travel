@@ -1,0 +1,114 @@
+{
+  "id": "s3_quiet_please",
+  "category": "segments",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "sochi",
+        "name": "Сочи",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-12",
+        "end": "2026-11-19",
+        "month": 11,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [
+      {
+        "label": "1",
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле"
+      },
+      {
+        "label": "2",
+        "kind": "variant",
+        "id": "fastest",
+        "title": "Быстрее"
+      },
+      {
+        "label": "3",
+        "kind": "variant",
+        "id": "comfort",
+        "title": "Комфортнее"
+      }
+    ],
+    "pending_questions": [],
+    "history": [
+      {
+        "role": "user",
+        "text": "Сочи, 12–19 ноября, двое взрослых"
+      },
+      {
+        "role": "agent",
+        "text": "Сочи, 12–19 ноября, вдвоём — вот три варианта. Советую «Быстрее»: 90 300 ₽."
+      }
+    ],
+    "message": "нам бы потише, без тусовок под окнами, хотим выспаться",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_in",
+      "path": "/intent",
+      "values": [
+        "refine",
+        "answer"
+      ]
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/prefs.district",
+      "value": "quiet"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    }
+  ],
+  "runs": 5,
+  "notes": "District preference «спокойно» from free text."
+}

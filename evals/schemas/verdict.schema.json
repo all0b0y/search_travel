@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Judge verdict for one scenario (<run>/judge/<scenario_id>.verdict.json)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scenario_id", "pass", "scores", "failures", "notes"],
+  "properties": {
+    "scenario_id": {"type": "string", "minLength": 1},
+    "pass": {"type": "boolean"},
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["understanding", "questions_economy", "recommendation_quality", "explanation_honesty", "tone", "upsell_relevance", "hidden_requirements"],
+      "properties": {
+        "understanding": {"$ref": "#/definitions/score"},
+        "questions_economy": {"$ref": "#/definitions/score"},
+        "recommendation_quality": {"$ref": "#/definitions/score"},
+        "explanation_honesty": {"$ref": "#/definitions/score"},
+        "tone": {"$ref": "#/definitions/score"},
+        "upsell_relevance": {"$ref": "#/definitions/score"},
+        "hidden_requirements": {"$ref": "#/definitions/score"}
+      }
+    },
+    "failures": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false, "required": ["turn", "kind", "evidence", "fix_hint"],
+      "properties": {
+        "turn": {"type": "integer", "minimum": 0},
+        "kind": {"enum": ["invented_fact", "invented_number", "misunderstood", "needless_question", "too_many_questions", "bad_recommendation", "dishonest_explanation", "missing_risk", "tone", "irrelevant_upsell", "hidden_requirement_missed", "flow_broken", "language", "other"]},
+        "evidence": {"type": "string", "minLength": 1},
+        "fix_hint": {"type": "string", "minLength": 1}
+      }}},
+    "notes": {"type": "string"}
+  },
+  "definitions": {"score": {"type": "integer", "minimum": 1, "maximum": 5}}
+}

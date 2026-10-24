@@ -1,0 +1,70 @@
+{
+  "id": "d1_kazan_hotel_only",
+  "category": "D",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "отель в Казани на 3 ночи",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/destination.name",
+      "value": "Казань",
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.nights",
+      "value": 3
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/scope",
+      "value": [
+        "stay"
+      ]
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "destination.name",
+          "dates.nights",
+          "scope"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Entry D from the plan: scope narrows to stay only."
+}

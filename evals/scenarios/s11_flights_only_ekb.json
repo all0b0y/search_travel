@@ -1,0 +1,53 @@
+{
+  "id": "s11_flights_only_ekb",
+  "category": "D",
+  "persona": {
+    "start_message": "только билеты Москва — Екатеринбург на 20 ноября, обратно 23-го, я один",
+    "image": null,
+    "profile": {
+      "name": "Вадим",
+      "age": 33,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Вадим Никитин",
+          "birth_date": "1993-06-06"
+        }
+      ],
+      "contact": {
+        "email": "vadim.nikitin@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "need": "только перелёт",
+        "meeting": "встреча в Екатеринбурге в 16:00 — прилететь до 14:00"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "cart_has_kinds",
+          "args": {
+            "kinds": [
+              "flight"
+            ],
+            "exactly": true
+          }
+        },
+        {
+          "name": "arrival_before",
+          "args": {
+            "hour": 14
+          }
+        }
+      ],
+      "nice": [
+        "багаж не нужен"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Про встречу в 16:00 говорит, если рейс прилетает позже 14:00 или если спросят про время."
+  },
+  "max_turns": 10
+}

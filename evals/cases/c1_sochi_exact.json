@@ -1,0 +1,77 @@
+{
+  "id": "c1_sochi_exact",
+  "category": "C",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Сочи, 12–19 ноября, двое взрослых",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/destination.name",
+      "value": "Сочи",
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.start",
+      "value": "2026-11-12"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.end",
+      "value": "2026-11-19"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.adults",
+      "value": 2
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "destination.name",
+          "dates.start",
+          "dates.end",
+          "party.adults",
+          "party.segment",
+          "dates.nights",
+          "dates.month"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Entry C from the plan."
+}

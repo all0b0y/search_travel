@@ -1,0 +1,72 @@
+{
+  "id": "s18_friends_nightlife",
+  "category": "friends",
+  "persona": {
+    "start_message": "Едем вчетвером с друзьями в Питер на выходные 27–29 ноября, хотим потусить",
+    "image": null,
+    "profile": {
+      "name": "Денис",
+      "age": 26,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Денис Яковлев",
+          "birth_date": "2000-02-20"
+        },
+        {
+          "name": "Артур Гусев",
+          "birth_date": "2000-06-16"
+        },
+        {
+          "name": "Лёша Федоров",
+          "birth_date": "1999-09-29"
+        },
+        {
+          "name": "Влад Титов",
+          "birth_date": "2001-03-13"
+        }
+      ],
+      "contact": {
+        "email": "denis.yakovlev@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "party": "4 парня",
+        "district": "центр, бары рядом",
+        "budget_per_person_rub": 20000,
+        "transport": "Сапсан ок"
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 4
+          }
+        },
+        {
+          "name": "district_label_in",
+          "args": {
+            "labels": [
+              "lively"
+            ]
+          }
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 80000
+          }
+        }
+      ],
+      "nice": [
+        "рядом с Рубинштейна или Думской"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Пишет сленгом («го», «норм»), бюджет называет на человека, если спросят."
+  },
+  "max_turns": 10
+}

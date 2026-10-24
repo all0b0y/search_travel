@@ -1,0 +1,61 @@
+{
+  "id": "s10_hotel_only_kazan",
+  "category": "D",
+  "persona": {
+    "start_message": "Нужен отель в Казани на 3 ночи с 20 ноября, билеты уже есть",
+    "image": null,
+    "profile": {
+      "name": "Олег",
+      "age": 50,
+      "home_city": "Самара",
+      "travellers": [
+        {
+          "name": "Олег Морозов",
+          "birth_date": "1976-04-04"
+        }
+      ],
+      "contact": {
+        "email": "oleg.morozov@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "party": "один",
+        "need": "только отель",
+        "budget_rub_max": 25000
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "cart_has_kinds",
+          "args": {
+            "kinds": [
+              "hotel"
+            ],
+            "exactly": true
+          }
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 3,
+            "max": 3
+          }
+        },
+        {
+          "name": "stay_starts_on",
+          "args": {
+            "day": "2026-11-20"
+          }
+        }
+      ],
+      "nice": [
+        "тихо, чтобы выспаться"
+      ]
+    },
+    "behaviour": "Когда на экране есть подходящая кнопка, чип или карточка — нажимает её, а не пишет текстом. Раздражается, если предлагают перелёт: «билеты есть, сказал же»."
+  },
+  "max_turns": 10
+}

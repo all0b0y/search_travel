@@ -1,0 +1,479 @@
+{
+  "id": "t3_upsell_cap_two",
+  "category": "tone",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "sochi",
+        "name": "Сочи",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-12",
+        "end": "2026-11-19",
+        "month": 11,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 56400,
+          "door_to_door_hours": 7.4
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "AER",
+            "start": "2026-11-12T06:40+03:00",
+            "end": "2026-11-12T09:05+03:00",
+            "carrier": "Пример Авиа",
+            "price_rub": 11200
+          },
+          {
+            "type": "transfer",
+            "from": "AER",
+            "to": "Гостевой дом «Лаванда» (пример)",
+            "start": "2026-11-12T09:50+03:00",
+            "end": "2026-11-12T10:40+03:00",
+            "carrier": null,
+            "price_rub": 600
+          },
+          {
+            "type": "stay",
+            "from": "Гостевой дом «Лаванда» (пример)",
+            "to": "Гостевой дом «Лаванда» (пример)",
+            "start": "2026-11-12T14:00+03:00",
+            "end": "2026-11-19T12:00+03:00",
+            "carrier": null,
+            "price_rub": 33600
+          },
+          {
+            "type": "transfer",
+            "from": "Гостевой дом «Лаванда» (пример)",
+            "to": "AER",
+            "start": "2026-11-19T16:00+03:00",
+            "end": "2026-11-19T16:50+03:00",
+            "carrier": null,
+            "price_rub": 600
+          },
+          {
+            "type": "flight",
+            "from": "AER",
+            "to": "SVO",
+            "start": "2026-11-19T19:20+03:00",
+            "end": "2026-11-19T21:50+03:00",
+            "carrier": "Пример Авиа",
+            "price_rub": 10400
+          }
+        ],
+        "hotel": {
+          "name": "Гостевой дом «Лаванда» (пример)",
+          "stars": 2,
+          "rating": 8.1,
+          "district": {
+            "labels": [
+              "quiet"
+            ],
+            "counts": {
+              "bars": 1,
+              "cafes": 4,
+              "playgrounds": 1,
+              "parks": 2
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 56400,
+          "nights": 7,
+          "meals": "none",
+          "free_cancellation": false,
+          "distance_beach_m": 900
+        },
+        "sacrifices": [
+          {
+            "code": "early_departure",
+            "text": "Рейс туда в 06:40 — вставать рано",
+            "data": {
+              "time": "06:40"
+            }
+          },
+          {
+            "code": "beach_far",
+            "text": "До моря 900 м",
+            "data": {
+              "meters": 900
+            }
+          },
+          {
+            "code": "no_meals",
+            "text": "Без завтраков",
+            "data": {}
+          }
+        ],
+        "risks": [],
+        "not_for": [
+          {
+            "code": "beach_first_line",
+            "text": "Тем, кто хочет жить у самого моря",
+            "data": {}
+          }
+        ],
+        "fit": {
+          "score": 0.62,
+          "breakdown": {
+            "price": 0.62,
+            "time": 0.62
+          }
+        }
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "Быстрее",
+        "totals": {
+          "rub": 90300,
+          "door_to_door_hours": 6.5
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "VKO",
+            "to": "AER",
+            "start": "2026-11-12T10:15+03:00",
+            "end": "2026-11-12T12:35+03:00",
+            "carrier": "Пример Авиа",
+            "price_rub": 14900
+          },
+          {
+            "type": "transfer",
+            "from": "AER",
+            "to": "Отель «Ривьера-Парк» (пример)",
+            "start": "2026-11-12T13:25+03:00",
+            "end": "2026-11-12T14:00+03:00",
+            "carrier": null,
+            "price_rub": 1500
+          },
+          {
+            "type": "stay",
+            "from": "Отель «Ривьера-Парк» (пример)",
+            "to": "Отель «Ривьера-Парк» (пример)",
+            "start": "2026-11-12T14:00+03:00",
+            "end": "2026-11-19T12:00+03:00",
+            "carrier": null,
+            "price_rub": 58800
+          },
+          {
+            "type": "transfer",
+            "from": "Отель «Ривьера-Парк» (пример)",
+            "to": "AER",
+            "start": "2026-11-19T13:00+03:00",
+            "end": "2026-11-19T13:35+03:00",
+            "carrier": null,
+            "price_rub": 1500
+          },
+          {
+            "type": "flight",
+            "from": "AER",
+            "to": "VKO",
+            "start": "2026-11-19T15:40+03:00",
+            "end": "2026-11-19T18:05+03:00",
+            "carrier": "Пример Авиа",
+            "price_rub": 13600
+          }
+        ],
+        "hotel": {
+          "name": "Отель «Ривьера-Парк» (пример)",
+          "stars": 4,
+          "rating": 8.7,
+          "district": {
+            "labels": [
+              "walkable",
+              "quiet"
+            ],
+            "counts": {
+              "bars": 3,
+              "cafes": 9,
+              "playgrounds": 1,
+              "parks": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 90300,
+          "nights": 7,
+          "meals": "breakfast",
+          "free_cancellation": false,
+          "penalty_pct": 30
+        },
+        "sacrifices": [
+          {
+            "code": "pricier",
+            "text": "Дороже самого дешёвого на 33 900 ₽",
+            "data": {
+              "delta_rub": 33900
+            }
+          }
+        ],
+        "risks": [],
+        "not_for": [
+          {
+            "code": "nightlife",
+            "text": "Тем, кто ищет ночную жизнь рядом",
+            "data": {}
+          }
+        ],
+        "fit": {
+          "score": 0.81,
+          "breakdown": {
+            "price": 0.81,
+            "time": 0.81
+          }
+        }
+      },
+      {
+        "id": "comfort",
+        "label": "3",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 131200,
+          "door_to_door_hours": 7.0
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "AER",
+            "start": "2026-11-12T12:20+03:00",
+            "end": "2026-11-12T14:45+03:00",
+            "carrier": "Пример Авиа",
+            "price_rub": 16800
+          },
+          {
+            "type": "transfer",
+            "from": "AER",
+            "to": "Курортный отель «Морская миля» (пример)",
+            "start": "2026-11-12T15:30+03:00",
+            "end": "2026-11-12T16:20+03:00",
+            "carrier": null,
+            "price_rub": 3200
+          },
+          {
+            "type": "stay",
+            "from": "Курортный отель «Морская миля» (пример)",
+            "to": "Курортный отель «Морская миля» (пример)",
+            "start": "2026-11-12T16:20+03:00",
+            "end": "2026-11-19T12:00+03:00",
+            "carrier": null,
+            "price_rub": 92400
+          },
+          {
+            "type": "transfer",
+            "from": "Курортный отель «Морская миля» (пример)",
+            "to": "AER",
+            "start": "2026-11-19T13:30+03:00",
+            "end": "2026-11-19T14:20+03:00",
+            "carrier": null,
+            "price_rub": 3200
+          },
+          {
+            "type": "flight",
+            "from": "AER",
+            "to": "SVO",
+            "start": "2026-11-19T16:50+03:00",
+            "end": "2026-11-19T19:20+03:00",
+            "carrier": "Пример Авиа",
+            "price_rub": 15600
+          }
+        ],
+        "hotel": {
+          "name": "Курортный отель «Морская миля» (пример)",
+          "stars": 5,
+          "rating": 9.1,
+          "district": {
+            "labels": [
+              "quiet",
+              "family"
+            ],
+            "counts": {
+              "bars": 3,
+              "cafes": 9,
+              "playgrounds": 1,
+              "parks": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 131200,
+          "nights": 7,
+          "meals": "half_board",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-09"
+        },
+        "sacrifices": [
+          {
+            "code": "most_expensive",
+            "text": "Самый дорогой: 131 200 ₽",
+            "data": {
+              "total_rub": 131200
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "late_checkin",
+            "text": "Заселение в 16:20, после обеда в день прилёта уже не успеть",
+            "data": {
+              "time": "16:20"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "not_walkable",
+            "text": "Тем, кто хочет гулять по городу пешком",
+            "data": {}
+          }
+        ],
+        "fit": {
+          "score": 0.74,
+          "breakdown": {
+            "price": 0.74,
+            "time": 0.74
+          }
+        }
+      }
+    ],
+    "recommended_hint": "fastest",
+    "questions": [],
+    "upsell_candidates": [
+      {
+        "candidate_id": "u1",
+        "variant_id": "fastest",
+        "kind": "early_checkin",
+        "label": "Ранний заезд",
+        "price_rub": 3500,
+        "reason": "Прилёт в 09:05, а заселение с 14:00 — ранний заезд за 3 500 ₽."
+      },
+      {
+        "candidate_id": "u2",
+        "variant_id": "fastest",
+        "kind": "transfer",
+        "label": "Трансфер",
+        "price_rub": 2900,
+        "reason": "Трансфер встретит у выхода, 2 900 ₽."
+      },
+      {
+        "candidate_id": "u3",
+        "variant_id": "fastest",
+        "kind": "meal_upgrade",
+        "label": "Завтраки",
+        "price_rub": 7000,
+        "reason": "Завтраки за 7 000 ₽ на двоих на всю неделю."
+      },
+      {
+        "candidate_id": "u4",
+        "variant_id": "fastest",
+        "kind": "flexible_fare",
+        "label": "Гибкий тариф",
+        "price_rub": 4200,
+        "reason": "Гибкий тариф: смена даты без штрафа за 4 200 ₽."
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "вдвое|втрое|вчетверо|в полтора раза|в (два|три|четыре|\\d+) раза"
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "(?<![\\w-])(ты|тебе|тебя|тобой|твой|твоя|твоё|твои|твоих|твоим)(?![\\w-])"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    }
+  ],
+  "runs": 5,
+  "notes": "Four candidates: at most two upsell lines, ids only from the candidates."
+}
