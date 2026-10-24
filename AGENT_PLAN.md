@@ -223,8 +223,8 @@ Every number a card writes must appear in its input; every id it writes must be 
 5. Offer ids are deterministic and encode their parameters, so the mock rebuilds an offer from its id alone (a cache is only an optimisation).
 6. `dates.shift_days` with no concrete dates: before `apply_patch` the engine resolves the shift against the dates of the variants currently shown and sends concrete `dates.start/end`; with nothing shown it asks.
 7. Children's age buckets send one representative age; exact ages arrive at checkout and the `after_travellers` hook re-checks the cart.
-9. Early check-in is not a cart item (the mock sells it as an order action): when the user accepts the early check-in add-on before paying, the engine remembers it and calls `order_request_early_checkin` right after `pay`, then reports the result in the same answer.
 8. No placeholder offers: upsell kinds are only what the mock sells — `transfer`, `early_checkin`, `room_upgrade` (incl. high floor), `meal_upgrade`, `flexible_fare`. The insurance rule is dropped.
+9. Early check-in is not a cart item (the mock sells it as an order action): when the user accepts the early check-in add-on before paying, the engine remembers it and calls `order_request_early_checkin` right after `pay`, then reports the result in the same answer.
 
 ## 5. Turn pipeline
 
