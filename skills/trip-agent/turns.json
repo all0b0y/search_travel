@@ -2,9 +2,9 @@
   "cards": {
     "understand":           {"prompt": "understand.md", "schema": "schema/understand.schema.json", "thinking": "off", "max_tokens": 900},
     "present.destinations": {"prompt": "present/destinations.md", "schema": "schema/present.destinations.schema.json", "thinking": "off", "max_tokens": 1400, "voice": true},
-    "present.variants":     {"prompt": "present/variants.md", "schema": "schema/present.variants.schema.json", "thinking": "low", "max_tokens": 2000, "voice": true},
-    "present.compare":      {"prompt": "present/compare.md", "schema": "schema/present.compare.schema.json", "thinking": "low", "max_tokens": 1600, "voice": true},
-    "present.update":       {"prompt": "present/update.md", "schema": "schema/present.update.schema.json", "thinking": "low", "max_tokens": 1600, "voice": true},
+    "present.variants":     {"prompt": "present/variants.md", "schema": "schema/present.variants.schema.json", "thinking": "off", "max_tokens": 2000, "voice": true},
+    "present.compare":      {"prompt": "present/compare.md", "schema": "schema/present.compare.schema.json", "thinking": "off", "max_tokens": 1600, "voice": true},
+    "present.update":       {"prompt": "present/update.md", "schema": "schema/present.update.schema.json", "thinking": "off", "max_tokens": 1600, "voice": true},
     "present.info":         {"prompt": "present/info.md", "schema": "schema/present.info.schema.json", "thinking": "off", "max_tokens": 900, "voice": true},
     "present.aftercare":    {"prompt": "present/aftercare.md", "schema": "schema/present.aftercare.schema.json", "thinking": "off", "max_tokens": 900, "voice": true},
     "present.fallback":     {"prompt": "present/fallback.md", "schema": "schema/present.fallback.schema.json", "thinking": "off", "max_tokens": 600, "voice": true}

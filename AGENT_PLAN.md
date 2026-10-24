@@ -106,6 +106,7 @@ Codex and Claude Code: builders use fakes only (a fake app-server, a fake `claud
 
 Measured 2026-10-25 (live, OpenRouter, provider DeepSeek; the account allows providers that may train on inputs — without that the DeepSeek provider is filtered out with 404 «Paid model training violation»):
 - Text `understand`-like call (100 input tokens): thinking off 0.7–1.3 s, 0 reasoning tokens; `low` 1.3 s; `high` 1.8 s.
+- Rich present cards on level-2 cases (13 cases × 5 runs, 2026-10-25): `present.variants/compare/update` with thinking `low` → 11–12/13 cases fully passing, per-case p50 ≈ 6.3 s (400–1100 reasoning tokens); with `off` → 12/13, p50 ≈ 2.9 s, cost ÷2. Decision: all present cards run with thinking off; the code guards catch what thinking was meant to prevent.
 - Image + text (≈ 515 input tokens): thinking off 1.6–1.8 s, ≈ $0.00013; `low` 2.6–5.4 s with up to 750 reasoning tokens. A famous landmark (Hagia Sophia) → confidence 0.99; a landscape (Big Sur coast) → right place at 0.55 off / 0.85 low, traits correct. Free-text trait lists come back unless the schema enforces enums.
 - Jev decision with 2 questions: 347 ms, $0.00002; answers matched expectations (family + «недорого» → district `quiet` 0.98; «budget stated precisely» 0.04).
 
@@ -173,7 +174,7 @@ skills/trip-agent/
   "cards": {
     "understand":            {"prompt": "understand.md", "schema": "schema/understand.schema.json", "thinking": "off", "max_tokens": 900},
     "present.destinations":  {"prompt": "present/destinations.md", "schema": "schema/present.destinations.schema.json", "thinking": "off", "max_tokens": 1400, "voice": true},
-    "present.variants":      {"prompt": "present/variants.md", "schema": "schema/present.variants.schema.json", "thinking": "low", "max_tokens": 2000, "voice": true}
+    "present.variants":      {"prompt": "present/variants.md", "schema": "schema/present.variants.schema.json", "thinking": "off", "max_tokens": 2000, "voice": true}
   },
   "routes": [
     {"when": {"intent": ["new_trip", "refine", "answer"], "has": ["destination"]}, "steps": ["apply_patch", "search", "build_variants", "check", "sensitivity", "upsell"], "present": "present.variants"},

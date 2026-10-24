@@ -1,0 +1,217 @@
+{
+  "run_id": "20261025-015100-L2-cases",
+  "level": 2,
+  "set": "cases",
+  "model": "flash",
+  "flags": "stage1",
+  "flags_enabled": [],
+  "dry_run": false,
+  "persona": null,
+  "started_at": "2026-10-25T01:51:00+03:00",
+  "run_dir": "/Users/all0b0y/VSCodeProjects/search_travel/evals/runs/20261025-015100-L2-cases",
+  "argv": [
+    "--level",
+    "2",
+    "--model",
+    "flash",
+    "--parallel",
+    "6",
+    "--only",
+    "b2_istanbul_variants_assumed_dates,c2_sochi_variants,c3_sochi_compare,d2_kazan_stay_variants,e3_update_after_shift,e4_update_pet_friendly,s1_friends_nightlife,s2_family_lively_warning,t1_upsell_night_transfer,t2_no_candidates_no_upsell,t3_upsell_cap_two,t5_money_risks_plain,x1_impossible_budget"
+  ],
+  "cases": [
+    {
+      "id": "b2_istanbul_variants_assumed_dates",
+      "category": "B",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 3502,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "c2_sochi_variants",
+      "category": "C",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2764,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "c3_sochi_compare",
+      "category": "C",
+      "card": "present.compare",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2922,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "d2_kazan_stay_variants",
+      "category": "D",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2618,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "e3_update_after_shift",
+      "category": "E",
+      "card": "present.update",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2534,
+      "failures": [],
+      "unsure": "The model may describe the change without the delta; the second mentions_any then fails."
+    },
+    {
+      "id": "e4_update_pet_friendly",
+      "category": "E",
+      "card": "present.update",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2869,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "s1_friends_nightlife",
+      "category": "segments",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2839,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "s2_family_lively_warning",
+      "category": "segments",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 4,
+      "full_pass": false,
+      "latency_p50_ms": 3213,
+      "failures": [
+        "run 3: predicate russian_only: Latin words not from input: ['brief']"
+      ],
+      "unsure": "recommended_id cheapest would also be defensible; only fastest is forbidden."
+    },
+    {
+      "id": "t1_upsell_night_transfer",
+      "category": "tone",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 3030,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "t2_no_candidates_no_upsell",
+      "category": "tone",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2756,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "t3_upsell_cap_two",
+      "category": "tone",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 3167,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "t5_money_risks_plain",
+      "category": "tone",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 3060,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "x1_impossible_budget",
+      "category": "edge",
+      "card": "present.variants",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 2284,
+      "failures": [],
+      "unsure": null
+    }
+  ],
+  "metrics": {
+    "cases_total": 13,
+    "cases_full_pass": 12,
+    "cases_full_pass_rate": 0.9230769230769231,
+    "runs_total": 65,
+    "runs_passed": 64,
+    "runs_pass_rate": 0.9846153846153847,
+    "llm_errors": 0,
+    "input_errors": 0,
+    "retries_total": 0,
+    "latency_p50_ms": 2922,
+    "latency_p95_ms": 3509.2,
+    "input_tokens": 338960,
+    "output_tokens": 33110,
+    "cost_usd_total": 0.03206281799999998,
+    "served_models": {
+      "deepseek/deepseek-v4.1-flash-1017": 65
+    },
+    "served_providers": {
+      "DeepSeek": 65
+    },
+    "by_category": {
+      "B": "1/1",
+      "C": "2/2",
+      "D": "1/1",
+      "E": "2/2",
+      "edge": "1/1",
+      "segments": "1/2",
+      "tone": "4/4"
+    }
+  },
+  "finished_at": "2026-10-25T01:51:34+03:00",
+  "notes": [],
+  "thresholds": [
+    {
+      "metric": "cases_full_pass_rate",
+      "label": "фазовые кейсы 5/5 (каждый кейс прошёл все прогоны)",
+      "value": 0.9230769230769231,
+      "op": ">=",
+      "threshold": 1.0,
+      "pass": false
+    }
+  ],
+  "green": false,
+  "report_paths": {
+    "json": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-015100-L2-cases.json",
+    "md": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-015100-L2-cases.md"
+  }
+}
