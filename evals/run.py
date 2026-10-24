@@ -145,8 +145,10 @@ def run_case_once(case, run_index, backend, skill):
         rec.update(error=f"LLMError: {exc}", latency_ms=exc.latency_ms or int((time.monotonic() - started) * 1000),
                    usage=exc.usage, retries=exc.retries)
         return rec
-    ok, results = evaluate_all(case["expect"], res.data, case["input"], card.schema)
-    rec.update(ok=ok, results=results, output=res.data, latency_ms=res.latency_ms, usage=res.usage, model=res.model,
+    from agent.respond import polish_output   # the user sees the card output after the code-side polish
+    data = polish_output(res.data)
+    ok, results = evaluate_all(case["expect"], data, case["input"], card.schema)
+    rec.update(ok=ok, results=results, output=data, latency_ms=res.latency_ms, usage=res.usage, model=res.model,
                provider=res.provider, retries=res.retries, validation_errors=res.validation_errors)
     return rec
 

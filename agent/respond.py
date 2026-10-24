@@ -212,6 +212,22 @@ RISK_RE = re.compile(r"штраф|невозврат|риск|пересадк|�
 FREE_CANCEL_RE = re.compile(r"бесплатн\w*\s+отмен\w*|отмен\w*\s+бесплатн\w*", re.I)
 
 
+POLISH_KEYS = {"message", "why", "watch_out", "text", "reason", "summary", "sacrifices", "risks", "not_for"}
+
+
+def polish_output(output):
+    """Code-side text polish of a card output (what the user sees): calm_risks on every user-visible string."""
+    def walk(x, key=None):
+        if isinstance(x, str):
+            return calm_risks(x) if key in POLISH_KEYS else x
+        if isinstance(x, list):
+            return [walk(v, key) for v in x]
+        if isinstance(x, dict):
+            return {k: walk(v, k) for k, v in x.items()}
+        return x
+    return walk(output) if isinstance(output, dict) else output
+
+
 def calm_risks(text: str) -> str:
     """Risks are said plainly: drop emoji from any sentence that states a risk (voice rule 5).
 
@@ -245,6 +261,7 @@ def debug_out(ctx):
 
 def build_response(ctx):
     s = ctx.session
+    ctx.card_output = polish_output(ctx.card_output)
     output = ctx.card_output
     cards = {"destinations": [], "variants": [], "hotels": []}
     comparison = None
