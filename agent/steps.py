@@ -1531,11 +1531,14 @@ def step_pay(ctx):
     arr, checkin = _arrival(ctx), _hotel_checkin(ctx)
     if arr is not None and (checkin is None or arr < checkin):
         offers.append("заселиться пораньше")
-    offers.append("поменять даты")
+    if _dates_changeable(ctx):
+        offers.append("поменять даты")
     if not _order_has_transfers(ctx):
         offers.append("добавить трансфер")
-    ctx.message = ("Оплачено, всё подтверждено! Если захотите " + (", ".join(offers[:-1]) + " или " + offers[-1]
-                   if len(offers) > 1 else offers[0]) + " — пишите.")
+    ctx.message = "Оплачено, всё подтверждено!"
+    if offers:
+        ctx.message += (" Если захотите " + (", ".join(offers[:-1]) + " или " + offers[-1] if len(offers) > 1
+                                             else offers[0]) + " — пишите.")
 
 
 def attention(issues) -> str:
@@ -1558,6 +1561,16 @@ def _hotel_checkin(ctx, order=None):
         if item.get("kind") == "hotel" and item.get("start"):
             return _dt(item["start"])
     return None
+
+
+def _dates_changeable(ctx) -> bool:
+    """Dates can move only if every flight of the order can be exchanged (a fare without exchange stays put)."""
+    for item in (ctx.order or {}).get("items") or []:
+        if item.get("kind") == "flight" and item.get("status") != "cancelled":
+            fare = (((item.get("details") or {}).get("offer") or {}).get("fare") or {})
+            if fare and fare.get("change_fee_rub") is None:
+                return False
+    return True
 
 
 def _order_has_transfers(ctx) -> bool:

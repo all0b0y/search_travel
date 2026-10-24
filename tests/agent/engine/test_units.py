@@ -173,3 +173,14 @@ def test_calm_risks_drops_emoji_only_from_risk_sentences():
                                 "Хорошей поездки! ☀️")
     assert calm_risks("Обратный вылет ночью, в 05:10 😴.") == "Обратный вылет ночью, в 05:10."
     assert calm_risks("Без эмодзи.") == "Без эмодзи."
+
+
+def test_dates_changeable_only_with_exchangeable_flights():
+    from types import SimpleNamespace
+    from agent.steps import _dates_changeable
+    fixed = {"kind": "flight", "status": "confirmed", "details": {"offer": {"fare": {"change_fee_rub": None}}}}
+    flex = {"kind": "flight", "status": "confirmed", "details": {"offer": {"fare": {"change_fee_rub": 2500}}}}
+    hotel = {"kind": "hotel", "status": "confirmed", "details": {}}
+    assert not _dates_changeable(SimpleNamespace(order={"items": [fixed, hotel]}))
+    assert _dates_changeable(SimpleNamespace(order={"items": [flex, hotel]}))
+    assert _dates_changeable(SimpleNamespace(order={"items": [hotel]}))
