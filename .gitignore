@@ -3,3 +3,17 @@ __pycache__/
 runtime/
 .claude/skills/
 skills-lock.json
+
+# Secrets: keys live only in .env (see .env.example)
+.env
+.env.*
+!.env.example
+
+# Python environment
+.venv/
+
+# Eval run artefacts (raw transcripts); summaries are committed under evals/reports/
+evals/runs/
+
+# Isolated Codex profile for the strong-model check
+.codex-profile/
