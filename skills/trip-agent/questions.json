@@ -1,61 +1,75 @@
 {
-  "format": "questions: {<allowed patch path>: {id, text (Russian), choices: [{label, value}], recommend: {from: [profile|pattern], default}}}. Answering patches the field with the chosen value (source user). The recommended choice is the first available of: the profile value, the insights pattern value (stage 5), then `default` (may be null: no recommendation). Choice values must be valid for the field's patch schema. For party.children_ages a choice value is a representative age per bucket; exact ages arrive at checkout.",
+  "format": "questions: {<allowed patch path>: {id, text (Russian, rendered as the question above the buttons), hint (English: when the engine should ask it), choices: [{label (button), value (patch value), chip (Russian chip text when the engine assumes this value instead of asking)}], recommend: {from: [profile|pattern], default}}}. Answering patches the field with the chosen value (source user). The recommended choice is the first available of: the profile value, the insights pattern value (stage 5), then `default` (null: no recommendation). Choice values are valid for the field's patch schema. For party.children_ages a value is one representative age per bucket; exact ages arrive at checkout. place_confirm: the photo confirmation question (AGENT_PLAN Foundation decision 3) for 0.5 <= image.place.confidence < 0.8; {place} is the recognised place name, the yes-choice patches destination.name with it, the no-choice patches nothing (traits only).",
   "questions": {
     "party.segment": {
       "id": "q_party",
       "text": "Кто едет?",
+      "hint": "Ask when the segment is unknown and the variants differ by segment (hotel kind, district, rooms). Otherwise assume from the profile and show a chip.",
       "choices": [
-        {"label": "один", "value": "solo"},
-        {"label": "вдвоём", "value": "couple"},
-        {"label": "с детьми", "value": "family"},
-        {"label": "компанией", "value": "friends"}
+        {"label": "один", "value": "solo", "chip": "один"},
+        {"label": "вдвоём", "value": "couple", "chip": "вдвоём"},
+        {"label": "с детьми", "value": "family", "chip": "с детьми"},
+        {"label": "компанией", "value": "friends", "chip": "компанией"}
       ],
       "recommend": {"from": ["profile", "pattern"], "default": "couple"}
     },
     "origin.city": {
       "id": "q_origin",
       "text": "Откуда летим?",
+      "hint": "Ask only when the profile has no home city; the default changes every price.",
       "choices": [
-        {"label": "Москва", "value": "Москва"},
-        {"label": "Санкт-Петербург", "value": "Санкт-Петербург"},
-        {"label": "Екатеринбург", "value": "Екатеринбург"},
-        {"label": "Казань", "value": "Казань"},
-        {"label": "Новосибирск", "value": "Новосибирск"}
+        {"label": "Москва", "value": "Москва", "chip": "из Москвы"},
+        {"label": "Санкт-Петербург", "value": "Санкт-Петербург", "chip": "из Петербурга"},
+        {"label": "Екатеринбург", "value": "Екатеринбург", "chip": "из Екатеринбурга"},
+        {"label": "Казань", "value": "Казань", "chip": "из Казани"},
+        {"label": "Новосибирск", "value": "Новосибирск", "chip": "из Новосибирска"}
       ],
       "recommend": {"from": ["profile"], "default": "Москва"}
     },
     "party.children_ages": {
       "id": "q_children_ages",
       "text": "Сколько лет ребёнку?",
+      "hint": "Ask when children > 0 and ages are unknown and the price or hotel policy depends on age (infant fare, child bed, kids club).",
       "choices": [
-        {"label": "до 2 лет", "value": [1]},
-        {"label": "2–6 лет", "value": [4]},
-        {"label": "7–12 лет", "value": [9]},
-        {"label": "13–17 лет", "value": [15]}
+        {"label": "до 2 лет", "value": [1], "chip": "ребёнку до 2 лет"},
+        {"label": "2–6 лет", "value": [4], "chip": "ребёнку 2–6 лет"},
+        {"label": "7–12 лет", "value": [9], "chip": "ребёнку 7–12 лет"},
+        {"label": "13–17 лет", "value": [15], "chip": "ребёнку 13–17 лет"}
       ],
       "recommend": {"from": ["profile"], "default": null}
     },
     "dates.nights": {
       "id": "q_nights",
       "text": "На сколько ночей?",
+      "hint": "Ask when only a month is known and the total changes by more than sensitivity.price_delta_pct between 5 and 10 nights.",
       "choices": [
-        {"label": "3 ночи", "value": 3},
-        {"label": "5 ночей", "value": 5},
-        {"label": "7 ночей", "value": 7},
-        {"label": "10 ночей", "value": 10}
+        {"label": "3 ночи", "value": 3, "chip": "3 ночи"},
+        {"label": "5 ночей", "value": 5, "chip": "5 ночей"},
+        {"label": "7 ночей", "value": 7, "chip": "7 ночей"},
+        {"label": "10 ночей", "value": 10, "chip": "10 ночей"}
       ],
       "recommend": {"from": ["profile", "pattern"], "default": 7}
     },
     "budget_rub.max": {
       "id": "q_budget",
       "text": "Какой бюджет на всех, примерно?",
+      "hint": "Ask when the user said «недорого» or nothing fits, and the cheapest and comfort variants differ a lot. Never ask on the first turn when a result can be shown.",
       "choices": [
-        {"label": "до 80 000 ₽", "value": 80000},
-        {"label": "до 150 000 ₽", "value": 150000},
-        {"label": "до 250 000 ₽", "value": 250000},
-        {"label": "без ограничений", "value": null}
+        {"label": "до 80 000 ₽", "value": 80000, "chip": "до 80 000 ₽"},
+        {"label": "до 150 000 ₽", "value": 150000, "chip": "до 150 000 ₽"},
+        {"label": "до 250 000 ₽", "value": 250000, "chip": "до 250 000 ₽"},
+        {"label": "без ограничений", "value": null, "chip": "бюджет любой"}
       ],
       "recommend": {"from": ["profile", "pattern"], "default": null}
     }
+  },
+  "place_confirm": {
+    "id": "q_place",
+    "field": "destination.name",
+    "text": "На фото {place}?",
+    "choices": [
+      {"label": "да, туда", "value": "{place}", "recommended": true},
+      {"label": "нет, просто похоже", "value": null}
+    ]
   }
 }

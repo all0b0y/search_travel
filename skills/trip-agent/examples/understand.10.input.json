@@ -1,0 +1,54 @@
+{
+  "today": "2026-10-25",
+  "stage": "inspiration",
+  "brief": {
+    "origin": null,
+    "destination": null,
+    "traits": [
+      "sea",
+      "warm"
+    ],
+    "dates": {
+      "start": null,
+      "end": null,
+      "month": 11,
+      "window": null,
+      "nights": null,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "family",
+      "adults": 1,
+      "children": 1,
+      "children_ages": null,
+      "pets": []
+    },
+    "budget_rub": null,
+    "scope": null,
+    "prefs": null,
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [
+    "party.adults"
+  ],
+  "assumptions": [],
+  "shown": [
+    {
+      "label": "1",
+      "kind": "destination",
+      "id": "hurghada",
+      "title": "Хургада"
+    },
+    {
+      "label": "2",
+      "kind": "destination",
+      "id": "antalya",
+      "title": "Анталья"
+    }
+  ],
+  "pending_questions": [],
+  "history": [],
+  "message": "а какое море в Анталье в ноябре, купаться можно?",
+  "has_image": false
+}

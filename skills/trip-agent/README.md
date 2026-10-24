@@ -1,7 +1,7 @@
 # trip-agent skill package
 
 Data only: the engine (`agent/`) loads it with `agent.skill_loader.load_skill("skills/trip-agent")`
-at startup and never rewrites it while running. Contract: `AGENT_PLAN.md`, section 4.
+at startup and never rewrites it while running. Contract: `AGENT_PLAN.md`, section 4 and "Card inputs".
 
 - `turns.json` — `cards`: per card the prompt file, output schema, `thinking` (`off|low|high`),
   `max_tokens`, `voice` (append `voice.md`). `routes`: matched top-down; the first route whose
@@ -12,16 +12,30 @@ at startup and never rewrites it while running. Contract: `AGENT_PLAN.md`, secti
   `intent` — understand intents (route matches only text turns);
   `stage` — session stages; `has` / `missing` — brief paths with / without a value
   (`destination`, `dates.start`, ...), evaluated after the turn's patch is applied.
-- `understand.md`, `present/*.md` — card instructions (English). `voice.md` — tone guide (Russian examples).
+- `understand.md`, `present/*.md` — card instructions (English, for DeepSeek V4.1 Flash: short
+  imperative rules, decision tables, compact few-shot). `voice.md` — tone guide (Russian do/don't pairs).
   The system prompt of a card = prompt + `voice.md` (when `voice: true`) + the output schema.
 - `schema/` — draft-07 JSON Schemas of card outputs. The patch path enum in
   `understand.schema.json` equals `agent.state.ALLOWED_PATCH_PATHS` (tested).
-- `questions.json` — askable fields with Russian texts, choices and the recommendation rule.
-- `segments.json` — segment defaults: party counts, prefs, district weights, Jev criteria.
-- `upsell.json` — add-on rules: conditions on brief/variant, kind, reason template.
-- `rules.json` — limits (questions, upsell, jokes), sensitivity and Jev thresholds,
-  connection buffers (copied from trip-planner), retry limits.
-- `lessons.md` — lessons from the improvement loop (rule + why).
+- `questions.json` — askable fields: Russian question text, `hint` (when to ask), choices with
+  `chip` labels (text of the chip when the engine assumes the value), recommendation rule.
+  `place_confirm` — the photo confirmation question (`{place}` template) for
+  `rules.image.confirm_min_conf ≤ confidence < rules.image.place_min_conf`.
+- `segments.json` — segment defaults: party counts, prefs, district weights, `jev_criteria`
+  (segment routing), `jev_district` (district inference prior); `district` — chip labels and Jev
+  choice texts of the four OSM district labels.
+- `upsell.json` — add-on rules (kinds = what the mock sells: transfer, early_checkin, room_upgrade,
+  meal_upgrade, flexible_fare). `rules_pending` holds the room_upgrade / meal_upgrade / flexible_fare
+  rules until `agent/skill_loader.py` accepts those kinds; then move them into `rules`.
+  When several rules of one kind hit one variant, the first one in file order wins.
+- `rules.json` — limits (questions, upsell, jokes), sensitivity and Jev thresholds, `image`
+  thresholds, `guard` (emoji, exclamations, message length per card, banned phrases, cards where a
+  «?» needs engine questions), connection buffers (copied from trip-planner), retry limits.
+- `examples/<card>.<n>.input.json` / `.output.json` — card inputs exactly per "Card inputs" and
+  reference outputs (`understand.<n>.image.txt` describes the photo of image cases). They are the
+  few-shot sources and seed eval cases; all outputs pass the number/id/voice checks.
+- `lessons.md` — decisions and lessons from the improvement loop (rule + why).
 
-Any loading problem raises `SkillLoadError` naming the file; run
-`.venv/bin/python -m pytest tests -q` after editing anything here.
+Any loading problem raises `SkillLoadError` naming the file. Content checks:
+`.venv/bin/python -m pytest tests/skill -q`; after editing anything here run
+`.venv/bin/python -m pytest tests -q`.

@@ -1,0 +1,16 @@
+{
+  "intent": "new_trip",
+  "patch": {
+    "set": {
+      "destination.name": "Сочи",
+      "dates.start": "2026-11-12",
+      "dates.end": "2026-11-19",
+      "party.adults": 2
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

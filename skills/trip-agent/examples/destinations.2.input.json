@@ -1,0 +1,159 @@
+{
+  "today": "2026-10-25",
+  "stage": "inspiration",
+  "brief": {
+    "origin": {
+      "city": "Москва",
+      "iata": [
+        "SVO",
+        "VKO",
+        "DME"
+      ]
+    },
+    "destination": null,
+    "traits": [
+      "beach",
+      "island",
+      "tropical",
+      "sea"
+    ],
+    "dates": {
+      "start": null,
+      "end": null,
+      "month": 11,
+      "window": null,
+      "nights": 10,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "couple",
+      "adults": 2,
+      "children": 0,
+      "children_ages": null,
+      "pets": []
+    },
+    "budget_rub": null,
+    "scope": null,
+    "prefs": null,
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [
+    "origin.city",
+    "origin.iata",
+    "traits",
+    "dates.month",
+    "dates.nights",
+    "party.segment",
+    "party.adults"
+  ],
+  "assumptions": [
+    {
+      "field": "dates.month",
+      "label": "в ноябре"
+    },
+    {
+      "field": "party.segment",
+      "label": "вдвоём"
+    },
+    {
+      "field": "dates.nights",
+      "label": "10 ночей"
+    }
+  ],
+  "items": [
+    {
+      "id": "bali",
+      "label": "1",
+      "name": "Бали",
+      "country": "Индонезия",
+      "price_from_rub": 189000,
+      "nights": 10,
+      "party_label": "2 взрослых",
+      "weather": {
+        "air_max_c": 31,
+        "sea_c": 29,
+        "rain_days": 14
+      },
+      "travel_time_h": 16.5,
+      "match": [
+        "beach",
+        "island",
+        "tropical",
+        "sea"
+      ],
+      "facts": {}
+    },
+    {
+      "id": "phuket",
+      "label": "2",
+      "name": "Пхукет",
+      "country": "Таиланд",
+      "price_from_rub": 162000,
+      "nights": 10,
+      "party_label": "2 взрослых",
+      "weather": {
+        "air_max_c": 32,
+        "sea_c": 28,
+        "rain_days": 9
+      },
+      "travel_time_h": 11.0,
+      "match": [
+        "beach",
+        "island",
+        "tropical",
+        "sea"
+      ],
+      "facts": {}
+    },
+    {
+      "id": "nha_trang",
+      "label": "3",
+      "name": "Нячанг",
+      "country": "Вьетнам",
+      "price_from_rub": 141000,
+      "nights": 10,
+      "party_label": "2 взрослых",
+      "weather": {
+        "air_max_c": 29,
+        "sea_c": 27,
+        "rain_days": 15
+      },
+      "travel_time_h": 10.0,
+      "match": [
+        "beach",
+        "tropical",
+        "sea"
+      ],
+      "facts": {}
+    }
+  ],
+  "questions": [
+    {
+      "id": "q_place",
+      "text": "На фото Бали?"
+    }
+  ],
+  "image": {
+    "want": "here",
+    "place": {
+      "name": "Бали",
+      "country": "Индонезия",
+      "confidence": 0.65
+    },
+    "traits": {
+      "landscape": [
+        "beach",
+        "island"
+      ],
+      "water": "sea",
+      "climate": "tropical",
+      "setting": "resort",
+      "vibe": [
+        "relax",
+        "exotic"
+      ]
+    }
+  },
+  "insight": null
+}

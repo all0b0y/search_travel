@@ -1,0 +1,16 @@
+{
+  "intent": "info",
+  "patch": {
+    "set": {},
+    "unset": []
+  },
+  "refs": [
+    {
+      "kind": "destination",
+      "ref": "2"
+    }
+  ],
+  "image": null,
+  "info_question": "Какое море в Анталье в ноябре, можно ли купаться?",
+  "post_purchase": null
+}

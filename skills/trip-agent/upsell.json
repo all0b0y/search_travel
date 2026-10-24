@@ -1,41 +1,89 @@
 {
-  "format": "rules: [{id, kind (transfer|early_checkin|insurance|room_note), label (Russian button text), when: {condition: value} (all must hold), offer: how the engine finds the offer (tool name or null for a free note / placeholder), placeholder: true when the mock has no such product (never shown as an offer), reason: Russian template with {placeholders} filled by code from computed facts}]. Conditions: arrival_after (HH:MM local arrival at destination is at or after), arrival_before_checkin_min (minutes between arrival and hotel check-in >= value), children (brief has children), variant_has_transfer (variant already has a transfer step), traits_any (brief traits intersect), mood_any (brief mood intersects), prefs (brief prefs equal these values). At most rules.json max_upsell candidates reach a reply.",
+  "format": "rules: [{id, kind, label (Russian button text), when: {condition: value} (all must hold), offer: the mock tool that finds the priced offer, reason: Russian template with {placeholders} filled by code from computed facts and the offer}]. kind is one of what the mock sells (AGENT_PLAN Foundation decision 8): transfer, early_checkin, room_upgrade (incl. high floor), meal_upgrade, flexible_fare. No placeholders: a candidate without a priced offer is dropped. Conditions: arrival_after (HH:MM local arrival at the destination is at or after), arrival_before_checkin_min (minutes between arrival at the hotel and regular check-in >= value), children (brief has children), variant_has_transfer (variant already has a transfer step), traits_any (brief traits intersect), mood_any (brief mood intersects), prefs (brief prefs equal these values). At most rules.json max_upsell candidates reach a reply. rules_pending: rules of kinds room_upgrade, meal_upgrade, flexible_fare, kept outside `rules` only because agent/skill_loader.py UPSELL_KINDS does not list these kinds yet (contract question); move them into `rules` when the loader accepts them.",
   "rules": [
     {
       "id": "night_arrival_kids_transfer",
       "kind": "transfer",
       "label": "Добавить трансфер",
-      "when": {"arrival_after": "22:00", "children": true, "variant_has_transfer": false},
+      "when": {
+        "arrival_after": "22:00",
+        "children": true,
+        "variant_has_transfer": false
+      },
       "offer": "search_transfers",
-      "placeholder": false,
       "reason": "Прилёт в {arrival_time}, а ночью с ребёнком ловить такси — так себе: трансфер встретит у выхода, {price_rub} ₽."
+    },
+    {
+      "id": "late_arrival_transfer",
+      "kind": "transfer",
+      "label": "Добавить трансфер",
+      "when": {
+        "arrival_after": "23:00",
+        "variant_has_transfer": false
+      },
+      "offer": "search_transfers",
+      "reason": "Прилёт в {arrival_time}: трансфер встретит у выхода и довезёт до отеля, {price_rub} ₽."
     },
     {
       "id": "early_arrival_checkin",
       "kind": "early_checkin",
       "label": "Ранний заезд",
-      "when": {"arrival_before_checkin_min": 180},
+      "when": {
+        "arrival_before_checkin_min": 180
+      },
       "offer": "search_hotels",
-      "placeholder": false,
       "reason": "Вы прилетаете в {arrival_time}, а заселение с {checkin_time}. Ранний заезд — {price_rub} ₽, и не придётся ждать в лобби."
     },
     {
-      "id": "sea_kids_insurance",
-      "kind": "insurance",
-      "label": "Страховка",
-      "when": {"traits_any": ["sea", "beach"], "children": true},
-      "offer": null,
-      "placeholder": true,
-      "reason": "Море и дети — стоит подумать о страховке на поездку. В демо её нельзя оформить, это только напоминание."
+      "id": "quiet_high_floor",
+      "kind": "room_upgrade",
+      "label": "Номер повыше",
+      "when": {
+        "prefs": {
+          "district": "quiet"
+        }
+      },
+      "offer": "search_hotels",
+      "reason": "Вы хотели тишины — номер на верхнем этаже, подальше от улицы: доплата {price_rub} ₽."
     },
     {
-      "id": "quiet_high_floor",
-      "kind": "room_note",
-      "label": "Попросить тихий номер",
-      "when": {"prefs": {"district": "quiet"}},
-      "offer": null,
-      "placeholder": false,
-      "reason": "Хотите тишины — попросим у отеля номер повыше и окнами во двор. Бесплатно, но отель не обязан."
+      "id": "romantic_room_upgrade",
+      "kind": "room_upgrade",
+      "label": "Номер получше",
+      "when": {
+        "mood_any": [
+          "romantic"
+        ]
+      },
+      "offer": "search_hotels",
+      "reason": "Для романтической поездки — {room_label}: доплата {price_rub} ₽ за всё время."
+    },
+    {
+      "id": "family_sea_meal_upgrade",
+      "kind": "meal_upgrade",
+      "label": "Добавить питание",
+      "when": {
+        "children": true,
+        "traits_any": [
+          "sea",
+          "beach",
+          "resort"
+        ]
+      },
+      "offer": "search_hotels",
+      "reason": "С ребёнком на море проще, когда еда в отеле: {meal_label} — доплата {price_rub} ₽ на всех."
+    },
+    {
+      "id": "flexible_fare_cancellation",
+      "kind": "flexible_fare",
+      "label": "Гибкий тариф",
+      "when": {
+        "prefs": {
+          "free_cancellation": true
+        }
+      },
+      "offer": "search_flights",
+      "reason": "Вы хотели возможность отмены — гибкий тариф на перелёт позволит поменять или сдать билет: доплата {price_rub} ₽."
     }
   ]
 }

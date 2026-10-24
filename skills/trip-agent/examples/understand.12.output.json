@@ -1,0 +1,29 @@
+{
+  "intent": "new_trip",
+  "patch": {
+    "set": {},
+    "unset": []
+  },
+  "refs": [],
+  "image": {
+    "want": "here",
+    "place": {
+      "name": "Стамбул",
+      "country": "Турция",
+      "confidence": 0.95
+    },
+    "traits": {
+      "landscape": [
+        "old_town"
+      ],
+      "water": "sea",
+      "climate": "temperate",
+      "setting": "city",
+      "vibe": [
+        "culture"
+      ]
+    }
+  },
+  "info_question": null,
+  "post_purchase": null
+}

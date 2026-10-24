@@ -1,0 +1,28 @@
+{
+  "intent": "new_trip",
+  "patch": {
+    "set": {
+      "dates.nights": 7
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": {
+    "want": "similar",
+    "place": null,
+    "traits": {
+      "landscape": [
+        "beach"
+      ],
+      "water": "sea",
+      "climate": "tropical",
+      "setting": "resort",
+      "vibe": [
+        "relax",
+        "exotic"
+      ]
+    }
+  },
+  "info_question": null,
+  "post_purchase": null
+}

@@ -1,0 +1,58 @@
+{
+  "today": "2026-10-25",
+  "stage": "inspiration",
+  "brief": {
+    "origin": null,
+    "destination": null,
+    "traits": [
+      "sea",
+      "warm"
+    ],
+    "dates": {
+      "start": null,
+      "end": null,
+      "month": 11,
+      "window": null,
+      "nights": null,
+      "flexible_days": 0
+    },
+    "party": null,
+    "budget_rub": null,
+    "scope": null,
+    "prefs": null,
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [],
+  "assumptions": [],
+  "shown": [
+    {
+      "label": "1",
+      "kind": "destination",
+      "id": "hurghada",
+      "title": "Хургада"
+    },
+    {
+      "label": "2",
+      "kind": "destination",
+      "id": "antalya",
+      "title": "Анталья"
+    }
+  ],
+  "pending_questions": [
+    {
+      "id": "q_party",
+      "field": "party.segment",
+      "text": "Кто едет?",
+      "choices": [
+        "один",
+        "вдвоём",
+        "с детьми",
+        "компанией"
+      ]
+    }
+  ],
+  "history": [],
+  "message": "вдвоём, из Питера",
+  "has_image": false
+}

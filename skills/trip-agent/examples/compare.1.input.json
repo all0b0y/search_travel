@@ -1,0 +1,301 @@
+{
+  "today": "2026-10-25",
+  "stage": "selection",
+  "brief": {
+    "origin": {
+      "city": "Москва",
+      "iata": [
+        "SVO",
+        "VKO",
+        "DME"
+      ]
+    },
+    "destination": {
+      "id": "sochi",
+      "name": "Сочи",
+      "country": "Россия"
+    },
+    "traits": null,
+    "dates": {
+      "start": "2026-11-12",
+      "end": "2026-11-19",
+      "month": 11,
+      "window": null,
+      "nights": 7,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "couple",
+      "adults": 2,
+      "children": 0,
+      "children_ages": null,
+      "pets": []
+    },
+    "budget_rub": null,
+    "scope": null,
+    "prefs": {
+      "meals": "any",
+      "free_cancellation": null,
+      "stars_min": null,
+      "direct_only": null,
+      "max_travel_hours": null,
+      "district": "quiet",
+      "beach_max_m": null,
+      "transport": "any"
+    },
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [
+    "origin.city",
+    "origin.iata",
+    "destination.id",
+    "destination.country",
+    "dates.nights",
+    "party.segment",
+    "prefs.district"
+  ],
+  "assumptions": [
+    {
+      "field": "origin.city",
+      "label": "из Москвы"
+    },
+    {
+      "field": "prefs.district",
+      "label": "тихий район"
+    }
+  ],
+  "items": [
+    {
+      "id": "cheapest",
+      "label": "1",
+      "title": "Дешевле",
+      "totals": {
+        "rub": 56400,
+        "door_to_door_hours": 7.4
+      },
+      "steps": [
+        {
+          "type": "flight",
+          "from": "SVO",
+          "to": "AER",
+          "start": "2026-11-12T06:40+03:00",
+          "end": "2026-11-12T09:05+03:00",
+          "carrier": "Пример Авиа",
+          "price_rub": 11200
+        },
+        {
+          "type": "transfer",
+          "from": "AER",
+          "to": "Гостевой дом «Лаванда» (пример)",
+          "start": "2026-11-12T09:50+03:00",
+          "end": "2026-11-12T10:40+03:00",
+          "carrier": null,
+          "price_rub": 600
+        },
+        {
+          "type": "stay",
+          "from": "Гостевой дом «Лаванда» (пример)",
+          "to": "Гостевой дом «Лаванда» (пример)",
+          "start": "2026-11-12T14:00+03:00",
+          "end": "2026-11-19T12:00+03:00",
+          "carrier": null,
+          "price_rub": 33600
+        },
+        {
+          "type": "transfer",
+          "from": "Гостевой дом «Лаванда» (пример)",
+          "to": "AER",
+          "start": "2026-11-19T16:00+03:00",
+          "end": "2026-11-19T16:50+03:00",
+          "carrier": null,
+          "price_rub": 600
+        },
+        {
+          "type": "flight",
+          "from": "AER",
+          "to": "SVO",
+          "start": "2026-11-19T19:20+03:00",
+          "end": "2026-11-19T21:50+03:00",
+          "carrier": "Пример Авиа",
+          "price_rub": 10400
+        }
+      ],
+      "hotel": {
+        "name": "Гостевой дом «Лаванда» (пример)",
+        "stars": 2,
+        "rating": 8.1,
+        "district": {
+          "labels": [
+            "quiet"
+          ],
+          "counts": {
+            "cafes": 4,
+            "bars": 1,
+            "playgrounds": 2
+          }
+        }
+      },
+      "facts": {
+        "nights": 7,
+        "meals": "none",
+        "free_cancellation": false,
+        "beach_m": 900
+      },
+      "sacrifices": [
+        {
+          "code": "early_flight",
+          "text": "Рейс туда в 06:40 — вставать рано",
+          "data": {
+            "time": "06:40"
+          }
+        },
+        {
+          "code": "beach_far",
+          "text": "До моря 900 м",
+          "data": {
+            "beach_m": 900
+          }
+        },
+        {
+          "code": "no_meals",
+          "text": "Без питания",
+          "data": {}
+        }
+      ],
+      "risks": [
+        {
+          "code": "non_refundable",
+          "text": "Отель без бесплатной отмены",
+          "data": {}
+        }
+      ],
+      "not_for": [],
+      "fit": {
+        "score": 0.71,
+        "breakdown": {
+          "price": 1.0,
+          "time": 0.6,
+          "comfort": 0.4,
+          "district": 0.8
+        }
+      }
+    },
+    {
+      "id": "comfort",
+      "label": "3",
+      "title": "Комфортнее",
+      "totals": {
+        "rub": 128900,
+        "door_to_door_hours": 6.9
+      },
+      "steps": [
+        {
+          "type": "flight",
+          "from": "SVO",
+          "to": "AER",
+          "start": "2026-11-12T08:15+03:00",
+          "end": "2026-11-12T10:40+03:00",
+          "carrier": "Пример Авиа",
+          "price_rub": 14800
+        },
+        {
+          "type": "transfer",
+          "from": "AER",
+          "to": "Курорт «Сосновая роща» (пример)",
+          "start": "2026-11-12T11:20+03:00",
+          "end": "2026-11-12T12:15+03:00",
+          "carrier": null,
+          "price_rub": 3200
+        },
+        {
+          "type": "stay",
+          "from": "Курорт «Сосновая роща» (пример)",
+          "to": "Курорт «Сосновая роща» (пример)",
+          "start": "2026-11-12T14:00+03:00",
+          "end": "2026-11-19T12:00+03:00",
+          "carrier": null,
+          "price_rub": 88700
+        },
+        {
+          "type": "transfer",
+          "from": "Курорт «Сосновая роща» (пример)",
+          "to": "AER",
+          "start": "2026-11-19T13:00+03:00",
+          "end": "2026-11-19T13:55+03:00",
+          "carrier": null,
+          "price_rub": 3200
+        },
+        {
+          "type": "flight",
+          "from": "AER",
+          "to": "SVO",
+          "start": "2026-11-19T15:30+03:00",
+          "end": "2026-11-19T18:00+03:00",
+          "carrier": "Пример Авиа",
+          "price_rub": 19000
+        }
+      ],
+      "hotel": {
+        "name": "Курорт «Сосновая роща» (пример)",
+        "stars": 5,
+        "rating": 9.2,
+        "district": {
+          "labels": [
+            "quiet"
+          ],
+          "counts": {
+            "cafes": 2,
+            "bars": 0,
+            "playgrounds": 3
+          }
+        }
+      },
+      "facts": {
+        "nights": 7,
+        "meals": "half_board",
+        "free_cancellation": true,
+        "free_cancellation_until": "2026-11-05",
+        "beach_m": 120
+      },
+      "sacrifices": [
+        {
+          "code": "price_more",
+          "text": "Дороже «Быстрее» на 38 600 ₽",
+          "data": {
+            "diff_rub": 38600
+          }
+        }
+      ],
+      "risks": [
+        {
+          "code": "long_transfer",
+          "text": "Трансфер от аэропорта 55 минут",
+          "data": {
+            "minutes": 55
+          }
+        }
+      ],
+      "not_for": [
+        {
+          "code": "walkers",
+          "text": "Не для тех, кто любит гулять по городу: до центра далеко",
+          "data": {}
+        }
+      ],
+      "fit": {
+        "score": 0.78,
+        "breakdown": {
+          "price": 0.3,
+          "time": 0.9,
+          "comfort": 1.0,
+          "district": 0.8
+        }
+      }
+    }
+  ],
+  "dimensions": [
+    "price",
+    "comfort"
+  ]
+}

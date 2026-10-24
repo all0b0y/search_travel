@@ -98,7 +98,7 @@ def test_understand_schema_accepts_example_and_patch_applies(pkg):
     bad = dict(out, patch={"set": {"hotel.name": "x"}, "unset": []})
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(bad, pkg.card("understand").schema)
-    image = dict(out, image={"place": None, "traits": {"landscape": ["beach"], "water": "sea", "climate": "warm",
+    image = dict(out, image={"want": "similar", "place": None, "traits": {"landscape": ["beach"], "water": "sea", "climate": "warm",
                                                        "setting": "resort", "vibe": ["relax"]}})
     jsonschema.validate(image, pkg.card("understand").schema)
 
@@ -227,9 +227,11 @@ def test_broken_json_names_file(skill_copy):
         load_skill(skill_copy)
 
 
-def test_placeholder_prompts_are_placeholders(skill_dir):
+def test_prompts_are_written(skill_dir):
+    """The skill-content builder replaced the foundation placeholders (content is checked in tests/skill)."""
     files = [skill_dir / "understand.md", skill_dir / "voice.md", *sorted((skill_dir / "present").glob("*.md"))]
     assert len(files) == 9
     for f in files:
-        lines = [l for l in f.read_text(encoding="utf-8").splitlines() if l.strip()]
-        assert lines[0].startswith("# ") and lines[1:] == ["TODO: written by the skill-content builder"], f
+        text = f.read_text(encoding="utf-8")
+        assert "TODO: written by the skill-content builder" not in text, f
+        assert len([l for l in text.splitlines() if l.strip()]) > 5, f

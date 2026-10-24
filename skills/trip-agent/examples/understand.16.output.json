@@ -1,0 +1,23 @@
+{
+  "intent": "new_trip",
+  "patch": {
+    "set": {
+      "dates.start": "2026-11-08",
+      "party.segment": "friends",
+      "budget_rub.max": 100000,
+      "prefs.direct_only": true,
+      "prefs.district": "lively",
+      "mood.add": [
+        "party"
+      ],
+      "traits.add": [
+        "nightlife"
+      ]
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

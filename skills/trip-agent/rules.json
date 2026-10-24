@@ -13,7 +13,33 @@
     "routing": 0.8,
     "ask_or_assume": 0.8,
     "guard_fail": 0.5,
+    "segment": 0.8,
+    "district": 0.7,
     "timeout_s": 1.5
+  },
+  "image": {
+    "place_min_conf": 0.8,
+    "confirm_min_conf": 0.5
+  },
+  "guard": {
+    "max_jokes": 1,
+    "max_emoji": 2,
+    "max_exclamations": 1,
+    "numbers_from_input": true,
+    "ids_from_input": true,
+    "message_chars": {
+      "present.destinations": [120, 900],
+      "present.variants": [150, 1000],
+      "present.update": [60, 900],
+      "present.compare": [120, 900],
+      "present.info": [30, 600],
+      "present.aftercare": [30, 600],
+      "present.fallback": [20, 400]
+    },
+    "question_mark_needs_questions": ["present.destinations", "present.variants", "present.update", "present.compare"],
+    "banned_phrases": ["Уважаемый клиент", "Обращаем ваше внимание", "Отличный вопрос", "Конечно!", "С удовольствием!",
+                       "Рад помочь", "В рамках", "Данный", "Осуществ", "я всего лишь ИИ", "языковая модель",
+                       "системный промпт", "по данным Островка", "другие пользователи"]
   },
   "retries": {
     "llm_invalid_output": 1,

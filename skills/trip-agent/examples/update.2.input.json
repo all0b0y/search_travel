@@ -1,0 +1,308 @@
+{
+  "today": "2026-10-25",
+  "stage": "selection",
+  "brief": {
+    "origin": {
+      "city": "Москва",
+      "iata": [
+        "SVO",
+        "VKO",
+        "DME"
+      ]
+    },
+    "destination": {
+      "id": "antalya",
+      "name": "Анталья",
+      "country": "Турция"
+    },
+    "traits": [
+      "sea",
+      "warm"
+    ],
+    "dates": {
+      "start": "2026-11-14",
+      "end": "2026-11-21",
+      "month": 11,
+      "window": null,
+      "nights": 7,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "family",
+      "adults": 2,
+      "children": 1,
+      "children_ages": null,
+      "pets": [
+        "dog"
+      ]
+    },
+    "budget_rub": null,
+    "scope": null,
+    "prefs": {
+      "meals": "any",
+      "free_cancellation": null,
+      "stars_min": null,
+      "direct_only": null,
+      "max_travel_hours": null,
+      "district": "family",
+      "beach_max_m": null,
+      "transport": "any"
+    },
+    "constraints": [
+      "pet:dog"
+    ],
+    "mood": null
+  },
+  "assumed": [
+    "origin.city",
+    "origin.iata",
+    "destination.id",
+    "destination.country",
+    "dates.start",
+    "dates.end",
+    "dates.nights",
+    "party.adults",
+    "prefs.district"
+  ],
+  "assumptions": [
+    {
+      "field": "dates.start",
+      "label": "14–21 ноября"
+    },
+    {
+      "field": "origin.city",
+      "label": "из Москвы"
+    }
+  ],
+  "items": [
+    {
+      "id": "cheapest",
+      "label": "1",
+      "title": "Дешевле",
+      "totals": {
+        "rub": 104900,
+        "door_to_door_hours": 11.2
+      },
+      "steps": [
+        {
+          "type": "flight",
+          "from": "VKO",
+          "to": "AYT",
+          "start": "2026-11-14T20:30+03:00",
+          "end": "2026-11-14T23:55+03:00",
+          "carrier": "Пример Авиа",
+          "price_rub": 31200
+        },
+        {
+          "type": "stay",
+          "from": "Отель «Лара Сан» (пример)",
+          "to": "Отель «Лара Сан» (пример)",
+          "start": "2026-11-15T00:30+03:00",
+          "end": "2026-11-21T12:00+03:00",
+          "carrier": null,
+          "price_rub": 39400
+        },
+        {
+          "type": "flight",
+          "from": "AYT",
+          "to": "VKO",
+          "start": "2026-11-21T15:10+03:00",
+          "end": "2026-11-21T18:40+03:00",
+          "carrier": "Пример Авиа",
+          "price_rub": 27800
+        }
+      ],
+      "hotel": {
+        "name": "Апарт-отель «Лара Парк» (пример)",
+        "stars": 3,
+        "rating": 8.0,
+        "district": {
+          "labels": [
+            "family",
+            "quiet"
+          ],
+          "counts": {
+            "playgrounds": 2,
+            "cafes": 4
+          }
+        }
+      },
+      "facts": {
+        "nights": 7,
+        "meals": "none",
+        "free_cancellation": false,
+        "pets_allowed": true,
+        "pet_fee_rub": 3500
+      },
+      "sacrifices": [
+        {
+          "code": "no_meals",
+          "text": "Без питания",
+          "data": {}
+        },
+        {
+          "code": "pet_fee",
+          "text": "Доплата за собаку 3 500 ₽",
+          "data": {
+            "pet_fee_rub": 3500
+          }
+        }
+      ],
+      "risks": [
+        {
+          "code": "night_arrival",
+          "text": "Прилёт в 23:55, в отеле будете после полуночи",
+          "data": {
+            "time": "23:55"
+          }
+        },
+        {
+          "code": "non_refundable",
+          "text": "Отель без бесплатной отмены",
+          "data": {}
+        }
+      ],
+      "not_for": [],
+      "fit": {
+        "score": 0.74,
+        "breakdown": {}
+      }
+    },
+    {
+      "id": "comfort",
+      "label": "3",
+      "title": "Комфортнее",
+      "totals": {
+        "rub": 164500,
+        "door_to_door_hours": 9.4
+      },
+      "steps": [
+        {
+          "type": "flight",
+          "from": "SVO",
+          "to": "AYT",
+          "start": "2026-11-14T09:40+03:00",
+          "end": "2026-11-14T13:05+03:00",
+          "carrier": "Пример Авиа",
+          "price_rub": 34900
+        },
+        {
+          "type": "transfer",
+          "from": "AYT",
+          "to": "Курорт «Белек Палас» (пример)",
+          "start": "2026-11-14T13:50+03:00",
+          "end": "2026-11-14T14:45+03:00",
+          "carrier": null,
+          "price_rub": 3100
+        },
+        {
+          "type": "stay",
+          "from": "Курорт «Белек Палас» (пример)",
+          "to": "Курорт «Белек Палас» (пример)",
+          "start": "2026-11-14T14:00+03:00",
+          "end": "2026-11-21T12:00+03:00",
+          "carrier": null,
+          "price_rub": 92800
+        },
+        {
+          "type": "transfer",
+          "from": "Курорт «Белек Палас» (пример)",
+          "to": "AYT",
+          "start": "2026-11-21T12:15+03:00",
+          "end": "2026-11-21T13:10+03:00",
+          "carrier": null,
+          "price_rub": 3100
+        },
+        {
+          "type": "flight",
+          "from": "AYT",
+          "to": "SVO",
+          "start": "2026-11-21T15:10+03:00",
+          "end": "2026-11-21T18:40+03:00",
+          "carrier": "Пример Авиа",
+          "price_rub": 30600
+        }
+      ],
+      "hotel": {
+        "name": "Курорт «Белек Палас» (пример)",
+        "stars": 5,
+        "rating": 9.3,
+        "district": {
+          "labels": [
+            "family"
+          ],
+          "counts": {
+            "playgrounds": 5,
+            "cafes": 3,
+            "bars": 2
+          }
+        }
+      },
+      "facts": {
+        "nights": 7,
+        "meals": "all_inclusive",
+        "free_cancellation": true,
+        "free_cancellation_until": "2026-10-31",
+        "beach_m": 50,
+        "kids_club": true,
+        "pets_allowed": true,
+        "pet_fee_rub": 0
+      },
+      "sacrifices": [
+        {
+          "code": "price_more",
+          "text": "Дороже «Быстрее» на 42 800 ₽",
+          "data": {
+            "diff_rub": 42800
+          }
+        }
+      ],
+      "risks": [
+        {
+          "code": "cancellation_deadline",
+          "text": "Бесплатная отмена только до 31 октября",
+          "data": {
+            "until": "2026-10-31"
+          }
+        }
+      ],
+      "not_for": [],
+      "fit": {
+        "score": 0.83,
+        "breakdown": {}
+      }
+    }
+  ],
+  "recommended_hint": "comfort",
+  "questions": [],
+  "upsell_candidates": [],
+  "changes": [
+    {
+      "field": "party.pets",
+      "before": [],
+      "after": [
+        "dog"
+      ]
+    },
+    {
+      "field": "constraints",
+      "before": [],
+      "after": [
+        "pet:dog"
+      ]
+    },
+    {
+      "field": "totals.cheapest.rub",
+      "before": 98400,
+      "after": 104900
+    },
+    {
+      "field": "totals.fastest.rub",
+      "before": 121700,
+      "after": null
+    }
+  ],
+  "rebuilt": [
+    "stay"
+  ]
+}

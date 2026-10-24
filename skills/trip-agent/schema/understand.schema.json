@@ -366,10 +366,18 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
+        "want",
         "place",
         "traits"
       ],
       "properties": {
+        "want": {
+          "enum": [
+            "here",
+            "similar"
+          ],
+          "description": "here: the user wants this very place («хочу сюда», no text). similar: places like it («туда, где так же»)."
+        },
         "place": {
           "oneOf": [
             {

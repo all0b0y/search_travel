@@ -1,0 +1,15 @@
+{
+  "intent": "new_trip",
+  "patch": {
+    "set": {
+      "destination.name": "Стамбул",
+      "dates.start": "2027-05-01",
+      "dates.end": "2027-05-04"
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

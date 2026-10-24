@@ -1,0 +1,92 @@
+{
+  "today": "2026-10-25",
+  "stage": "selection",
+  "brief": {
+    "origin": {
+      "city": "Москва",
+      "iata": [
+        "SVO",
+        "VKO",
+        "DME"
+      ]
+    },
+    "destination": {
+      "id": "sochi",
+      "name": "Сочи",
+      "country": "Россия"
+    },
+    "traits": null,
+    "dates": {
+      "start": "2026-11-12",
+      "end": "2026-11-19",
+      "month": 11,
+      "window": null,
+      "nights": 7,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "couple",
+      "adults": 2,
+      "children": 0,
+      "children_ages": null,
+      "pets": []
+    },
+    "budget_rub": null,
+    "scope": null,
+    "prefs": {
+      "meals": "any",
+      "free_cancellation": null,
+      "stars_min": null,
+      "direct_only": null,
+      "max_travel_hours": null,
+      "district": "quiet",
+      "beach_max_m": null,
+      "transport": "any"
+    },
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [
+    "origin.city",
+    "origin.iata",
+    "destination.id",
+    "destination.country",
+    "dates.nights",
+    "party.segment",
+    "prefs.district"
+  ],
+  "assumptions": [
+    {
+      "field": "origin.city",
+      "label": "из Москвы"
+    },
+    {
+      "field": "prefs.district",
+      "label": "тихий район"
+    }
+  ],
+  "shown": [
+    {
+      "label": "1",
+      "kind": "variant",
+      "id": "cheapest",
+      "title": "Дешевле"
+    },
+    {
+      "label": "2",
+      "kind": "variant",
+      "id": "fastest",
+      "title": "Быстрее"
+    },
+    {
+      "label": "3",
+      "kind": "variant",
+      "id": "comfort",
+      "title": "Комфортнее"
+    }
+  ],
+  "pending_questions": [],
+  "history": [],
+  "message": "бюджет не важен, но хочу всё включено и от 4 звёзд",
+  "has_image": false
+}

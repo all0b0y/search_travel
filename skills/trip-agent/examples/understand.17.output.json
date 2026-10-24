@@ -1,0 +1,16 @@
+{
+  "intent": "refine",
+  "patch": {
+    "set": {
+      "prefs.meals": "all_inclusive",
+      "prefs.stars_min": 4
+    },
+    "unset": [
+      "budget_rub.max"
+    ]
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

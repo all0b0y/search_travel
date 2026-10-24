@@ -23,7 +23,7 @@ THINKING = ("off", "low", "high")
 CARD_KEYS = {"prompt", "schema", "thinking", "max_tokens", "voice"}
 ROUTE_KEYS = {"id", "when", "steps", "present"}
 WHEN_KEYS = {"intent", "has", "missing", "stage", "action"}
-UPSELL_KINDS = ("transfer", "early_checkin", "insurance", "room_note")
+UPSELL_KINDS = ("transfer", "early_checkin", "room_upgrade", "meal_upgrade", "flexible_fare")  # what the mock sells
 UPSELL_CONDITIONS = ("arrival_after", "arrival_before_checkin_min", "children", "variant_has_transfer",
                      "traits_any", "mood_any", "prefs")
 RECOMMEND_SOURCES = ("profile", "pattern")
@@ -86,6 +86,7 @@ class SkillPackage:
     rules: dict
     lessons: str = ""
     readme: str = field(default="", repr=False)
+    place_confirm: dict = field(default_factory=dict)   # questions.json "place_confirm" (photo place question)
 
     def card(self, name) -> Card:
         if name not in self.cards:
@@ -361,4 +362,5 @@ def load_skill(path="skills/trip-agent", step_names=STEP_NAMES) -> SkillPackage:
     lessons = (root / "lessons.md").read_text(encoding="utf-8") if (root / "lessons.md").is_file() else ""
     readme = (root / "README.md").read_text(encoding="utf-8") if (root / "README.md").is_file() else ""
     return SkillPackage(root=root, cards=cards, routes=routes, voice=voice, questions=questions["questions"],
-                        segments=segments["segments"], upsell=upsell, rules=rules, lessons=lessons, readme=readme)
+                        segments=segments["segments"], upsell=upsell, rules=rules, lessons=lessons, readme=readme,
+                        place_confirm=questions.get("place_confirm") or {})

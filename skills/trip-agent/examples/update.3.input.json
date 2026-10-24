@@ -1,0 +1,94 @@
+{
+  "today": "2026-10-25",
+  "stage": "selection",
+  "brief": {
+    "origin": null,
+    "destination": {
+      "id": "kazan",
+      "name": "Казань",
+      "country": "Россия"
+    },
+    "traits": null,
+    "dates": {
+      "start": "2026-10-30",
+      "end": "2026-11-02",
+      "month": null,
+      "window": null,
+      "nights": 3,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "couple",
+      "adults": 2,
+      "children": 0,
+      "children_ages": null,
+      "pets": [
+        "dog"
+      ]
+    },
+    "budget_rub": {
+      "max": 15000
+    },
+    "scope": [
+      "stay"
+    ],
+    "prefs": null,
+    "constraints": [
+      "pet:dog",
+      "kitchen"
+    ],
+    "mood": null
+  },
+  "assumed": [
+    "destination.id",
+    "destination.country",
+    "dates.start",
+    "dates.end",
+    "party.segment",
+    "party.adults"
+  ],
+  "assumptions": [
+    {
+      "field": "dates.start",
+      "label": "30 октября – 2 ноября"
+    },
+    {
+      "field": "party.segment",
+      "label": "вдвоём"
+    }
+  ],
+  "items": [],
+  "recommended_hint": null,
+  "questions": [
+    {
+      "id": "q_budget",
+      "text": "Какой бюджет на всех, примерно?"
+    }
+  ],
+  "upsell_candidates": [],
+  "changes": [
+    {
+      "field": "party.pets",
+      "before": [],
+      "after": [
+        "dog"
+      ]
+    },
+    {
+      "field": "constraints",
+      "before": [],
+      "after": [
+        "pet:dog",
+        "kitchen"
+      ]
+    },
+    {
+      "field": "budget_rub.max",
+      "before": 30000,
+      "after": 15000
+    }
+  ],
+  "rebuilt": [
+    "stay"
+  ]
+}

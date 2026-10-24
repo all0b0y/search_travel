@@ -1,33 +1,43 @@
 {
-  "format": "segments: {<party.segment>: {label (Russian chip text), party: default {adults, children} when the brief has no counts, prefs: default prefs (source default, shown as chips), district_weights: {lively, quiet, family, walkable} weights for ranking hotels by OSM district scores (sum 1), jev_criteria: English criteria text for Jev segment routing}}. Segments not listed (other) use neutral weights 0.25 each.",
+  "format": "segments: {<party.segment>: {label (Russian chip text), party: default {adults, children} applied with source default for the sub-fields the user did not give (Foundation decision 2), prefs: default prefs (source default, shown as chips), district_weights: {lively, quiet, family, walkable} weights for ranking hotels by OSM district scores (sum 1), jev_criteria: English criterion for Jev segment routing (is this message this segment?), jev_district: English prior for Jev district inference for this segment}}. Segments not listed (other) use neutral weights 0.25 each and party {adults: 2, children: 0}. district: Russian chip labels and English Jev choice descriptions of the four OSM district labels.",
+  "district": {
+    "lively": {"label": "движ", "jev": "Bars, clubs, events and late cafes nearby; noise at night is acceptable."},
+    "quiet": {"label": "тихо", "jev": "Few bars and little traffic; calm evenings, good sleep."},
+    "family": {"label": "семейно", "jev": "Playgrounds, parks, pharmacies and family cafes nearby; safe and calm."},
+    "walkable": {"label": "всё пешком", "jev": "Sights, cafes and shops within a short walk; no car or taxi needed."}
+  },
   "segments": {
     "solo": {
       "label": "один",
       "party": {"adults": 1, "children": 0},
       "prefs": {"district": "walkable"},
       "district_weights": {"lively": 0.35, "quiet": 0.1, "family": 0.0, "walkable": 0.55},
-      "jev_criteria": "One adult travelling alone, no partner, children or friends mentioned."
+      "jev_criteria": "One adult travelling alone: 'один', 'одна', 'сам', 'в одиночку'; no partner, children or friends mentioned.",
+      "jev_district": "A solo traveller usually wants to walk everywhere; choose lively only when the messages mention bars, clubs or parties, quiet when they mention rest or sleep."
     },
     "couple": {
       "label": "вдвоём",
       "party": {"adults": 2, "children": 0},
       "prefs": {"district": "quiet"},
       "district_weights": {"lively": 0.15, "quiet": 0.45, "family": 0.0, "walkable": 0.4},
-      "jev_criteria": "Two adults travelling together (partner, spouse, 'вдвоём'), no children."
+      "jev_criteria": "Two adults travelling together as a pair: 'вдвоём', 'с женой', 'с мужем', 'с девушкой', 'с парнем', a honeymoon or anniversary; no children.",
+      "jev_district": "A couple usually wants a quiet area or one where everything is in walking distance; choose lively only when the messages mention nightlife or parties."
     },
     "family": {
       "label": "с детьми",
       "party": {"adults": 2, "children": 1},
       "prefs": {"district": "family"},
       "district_weights": {"lively": 0.0, "quiet": 0.3, "family": 0.5, "walkable": 0.2},
-      "jev_criteria": "Adults travelling with one or more children (ребёнок, дети, сын, дочь)."
+      "jev_criteria": "Adults travelling with one or more children: 'с ребёнком', 'с детьми', 'с сыном', 'с дочкой', a child's age.",
+      "jev_district": "A family with children needs a family or quiet area (playgrounds, parks, calm nights); never lively unless the parents ask for it explicitly."
     },
     "friends": {
       "label": "компанией",
       "party": {"adults": 3, "children": 0},
       "prefs": {"district": "lively"},
       "district_weights": {"lively": 0.55, "quiet": 0.0, "family": 0.0, "walkable": 0.45},
-      "jev_criteria": "A group of three or more adult friends or colleagues, no children."
+      "jev_criteria": "Three or more adults travelling as a group of friends or colleagues: 'с друзьями', 'компанией', 'с коллегами', 'нас трое'; no children.",
+      "jev_district": "A group of friends usually wants a lively or walkable area; choose quiet only when the messages mention rest, sleep or nature."
     }
   }
 }

@@ -628,6 +628,7 @@ class UpsellCandidate(Model):
     reason: str
     offer_id: Optional[str] = None
     price_rub: Optional[int] = None
+    variant_id: Optional[str] = None   # the variant this add-on belongs to
 
 
 class DistrictProfile(Model):

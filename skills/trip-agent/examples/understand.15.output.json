@@ -1,0 +1,11 @@
+{
+  "intent": "smalltalk",
+  "patch": {
+    "set": {},
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

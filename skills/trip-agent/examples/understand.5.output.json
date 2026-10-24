@@ -1,0 +1,13 @@
+{
+  "intent": "refine",
+  "patch": {
+    "set": {
+      "dates.shift_days": 2
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

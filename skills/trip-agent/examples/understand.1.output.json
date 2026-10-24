@@ -1,0 +1,19 @@
+{
+  "intent": "new_trip",
+  "patch": {
+    "set": {
+      "dates.month": 11,
+      "party.segment": "family",
+      "party.children": 1,
+      "traits.add": [
+        "sea",
+        "warm"
+      ]
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

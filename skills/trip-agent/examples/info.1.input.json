@@ -1,0 +1,71 @@
+{
+  "today": "2026-10-25",
+  "stage": "inspiration",
+  "brief": {
+    "origin": {
+      "city": "Москва",
+      "iata": [
+        "SVO",
+        "VKO",
+        "DME"
+      ]
+    },
+    "destination": null,
+    "traits": [
+      "sea",
+      "warm"
+    ],
+    "dates": {
+      "start": null,
+      "end": null,
+      "month": 11,
+      "window": null,
+      "nights": 7,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "family",
+      "adults": 2,
+      "children": 1,
+      "children_ages": null,
+      "pets": []
+    },
+    "budget_rub": null,
+    "scope": null,
+    "prefs": {
+      "meals": "any",
+      "free_cancellation": null,
+      "stars_min": null,
+      "direct_only": null,
+      "max_travel_hours": null,
+      "district": "family",
+      "beach_max_m": null,
+      "transport": "any"
+    },
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [
+    "origin.city",
+    "origin.iata",
+    "dates.nights",
+    "party.adults",
+    "prefs.district"
+  ],
+  "assumptions": [],
+  "question": "Какое море в Анталье в ноябре, можно ли купаться?",
+  "facts": [
+    {
+      "kind": "climate",
+      "destination_id": "antalya",
+      "destination": "Анталья",
+      "month": 11,
+      "air_max_c": 22,
+      "air_min_c": 13,
+      "sea_c": 22,
+      "rain_days": 6,
+      "sunny_days": 20,
+      "source": "Open-Meteo"
+    }
+  ]
+}

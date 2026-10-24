@@ -1,0 +1,16 @@
+{
+  "intent": "choose",
+  "patch": {
+    "set": {},
+    "unset": []
+  },
+  "refs": [
+    {
+      "kind": "variant",
+      "ref": "2"
+    }
+  ],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

@@ -1,0 +1,19 @@
+{
+  "intent": "answer",
+  "patch": {
+    "set": {
+      "party.segment": "couple",
+      "origin.city": "Санкт-Петербург"
+    },
+    "unset": []
+  },
+  "refs": [
+    {
+      "kind": "question",
+      "ref": "q_party"
+    }
+  ],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

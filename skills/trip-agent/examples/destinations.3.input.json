@@ -1,0 +1,133 @@
+{
+  "today": "2026-10-25",
+  "stage": "inspiration",
+  "brief": {
+    "origin": {
+      "city": "Москва",
+      "iata": [
+        "SVO",
+        "VKO",
+        "DME"
+      ]
+    },
+    "destination": null,
+    "traits": [
+      "mountains",
+      "ski",
+      "snow"
+    ],
+    "dates": {
+      "start": null,
+      "end": null,
+      "month": 1,
+      "window": null,
+      "nights": 5,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "solo",
+      "adults": 1,
+      "children": 0,
+      "children_ages": null,
+      "pets": []
+    },
+    "budget_rub": null,
+    "scope": null,
+    "prefs": {
+      "meals": "any",
+      "free_cancellation": null,
+      "stars_min": null,
+      "direct_only": null,
+      "max_travel_hours": null,
+      "district": "walkable",
+      "beach_max_m": null,
+      "transport": "any"
+    },
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [
+    "origin.city",
+    "origin.iata",
+    "dates.nights",
+    "party.adults",
+    "prefs.district"
+  ],
+  "assumptions": [
+    {
+      "field": "origin.city",
+      "label": "из Москвы"
+    },
+    {
+      "field": "dates.nights",
+      "label": "5 ночей"
+    }
+  ],
+  "items": [
+    {
+      "id": "sheregesh",
+      "label": "1",
+      "name": "Шерегеш",
+      "country": "Россия",
+      "price_from_rub": 62000,
+      "nights": 5,
+      "party_label": "1 взрослый",
+      "weather": {
+        "air_max_c": -12,
+        "sea_c": null,
+        "rain_days": 12
+      },
+      "travel_time_h": 6.0,
+      "match": [
+        "mountains",
+        "ski",
+        "snow"
+      ],
+      "facts": {}
+    },
+    {
+      "id": "krasnaya_polyana",
+      "label": "2",
+      "name": "Красная Поляна",
+      "country": "Россия",
+      "price_from_rub": 78000,
+      "nights": 5,
+      "party_label": "1 взрослый",
+      "weather": {
+        "air_max_c": 4,
+        "sea_c": null,
+        "rain_days": 11
+      },
+      "travel_time_h": 2.5,
+      "match": [
+        "mountains",
+        "ski"
+      ],
+      "facts": {}
+    },
+    {
+      "id": "gudauri",
+      "label": "3",
+      "name": "Гудаури",
+      "country": "Грузия",
+      "price_from_rub": null,
+      "nights": 5,
+      "party_label": "1 взрослый",
+      "weather": {
+        "air_max_c": -3,
+        "sea_c": null,
+        "rain_days": 8
+      },
+      "travel_time_h": null,
+      "match": [
+        "mountains",
+        "ski",
+        "snow"
+      ],
+      "facts": {}
+    }
+  ],
+  "questions": [],
+  "image": null,
+  "insight": null
+}

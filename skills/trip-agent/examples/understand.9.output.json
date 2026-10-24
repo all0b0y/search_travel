@@ -1,0 +1,20 @@
+{
+  "intent": "compare",
+  "patch": {
+    "set": {},
+    "unset": []
+  },
+  "refs": [
+    {
+      "kind": "variant",
+      "ref": "1"
+    },
+    {
+      "kind": "variant",
+      "ref": "3"
+    }
+  ],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

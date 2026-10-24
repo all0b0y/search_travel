@@ -1,0 +1,19 @@
+{
+  "intent": "refine",
+  "patch": {
+    "set": {
+      "party.pets": [
+        "dog"
+      ],
+      "constraints.add": [
+        "pet:dog",
+        "no_night_flights"
+      ]
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}
