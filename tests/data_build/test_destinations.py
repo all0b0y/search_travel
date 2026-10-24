@@ -122,3 +122,16 @@ def test_built_db_airports_follow_the_rule():
     got = {i: json.loads(a) for i, a in con.execute("SELECT id, airports FROM destinations")}
     assert got["antalya"] == ["AYT"] and got["alanya"] == ["GZP", "AYT"] and got["kazan"] == ["KZN"]
     assert sorted(got["istanbul"]) == ["IST", "SAW"] and got["sochi"] == ["AER"] and "AUH" not in got["dubai"]
+
+
+def test_closed_airports_are_never_scheduled():
+    from data_build.airports import CLOSED_AIRPORTS, parse_airports_csv
+    header = ('"id","ident","type","name","latitude_deg","longitude_deg","elevation_ft","continent","iso_country",'
+              '"iso_region","municipality","scheduled_service","icao_code","iata_code","gps_code","local_code",'
+              '"home_link","wikipedia_link","keywords"')
+    rows = [header,
+            '1,"URKK","large_airport","Krasnodar Pashkovsky",45.03,39.17,,"EU","RU","RU-KDA","Krasnodar","yes","URKK","KRR",,,,,',
+            '2,"URSS","large_airport","Sochi",43.45,39.95,,"EU","RU","RU-KDA","Sochi","yes","URSS","AER",,,,,']
+    got = {r["iata"]: r["scheduled"] for r in parse_airports_csv("\n".join(rows) + "\n")}
+    assert got == {"KRR": False, "AER": True}
+    assert {"KRR", "GDZ", "AAQ", "ROV", "SIP"} <= CLOSED_AIRPORTS

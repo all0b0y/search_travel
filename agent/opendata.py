@@ -252,11 +252,22 @@ class OpenData:
         out.sort(key=lambda a: (a["type"] != "large_airport", a["distance_km"]))
         return out[:limit]
 
+    def closed_airports(self) -> set:
+        """Airports closed to civil flights (data_build meta `airports.closed_iata`): never offered."""
+        if getattr(self, "_closed_cache", None) is None:
+            try:
+                rows = self._query("SELECT value FROM meta WHERE key = ?", ("airports.closed_iata",))
+                self._closed_cache = set(json.loads(rows[0]["value"])) if rows else set()
+            except Exception:
+                self._closed_cache = set()
+        return self._closed_cache
+
     def _place_airports(self, dest):
-        codes = [c for c in dest.get("airports") or [] if self.airport(c)]
+        closed = self.closed_airports()
+        codes = [c for c in dest.get("airports") or [] if self.airport(c) and c not in closed]
         if codes:
             return codes
-        return [a["iata"] for a in self.airports_near(dest["lat"], dest["lon"], 150, 3)]
+        return [a["iata"] for a in self.airports_near(dest["lat"], dest["lon"], 150, 3) if a["iata"] not in closed]
 
     def origin_airports(self, origin_city):
         """IATA codes for an origin city: an IATA code itself, the catalog row, airports.city, then coordinates."""
@@ -271,11 +282,12 @@ class OpenData:
         key = norm_name(text)
         rows = [r for r in self._query("SELECT * FROM airports WHERE iata IS NOT NULL AND type IN ('large_airport','medium_airport')")
                 if r.get("city") and norm_name(r["city"]) == key]
-        if rows:
-            return [r["iata"] for r in self._dedupe(rows, "iata")]
+        closed = self.closed_airports()
+        if rows:   # a city whose airports are all closed has no airport: trains or a car
+            return [r["iata"] for r in self._dedupe(rows, "iata") if r["iata"] not in closed]
         if key in ORIGIN_FALLBACK:
             lat, lon = ORIGIN_FALLBACK[key]
-            return [a["iata"] for a in self.airports_near(lat, lon, 80, 4)]
+            return [a["iata"] for a in self.airports_near(lat, lon, 80, 4) if a["iata"] not in closed]
         return []
 
     def _routes_from(self, origins):

@@ -283,3 +283,21 @@ def test_month_climate_replaces_static_tags(tmp_path):
     assert res["b"]["match"] == ["sea", "warm"] and res["b"]["climate_known"] is False   # hot implies warm
     assert res["c"]["match"] == ["sea", "warm"] and res["c"]["climate_known"] is True
     assert [r["id"] for r in od.find_destinations(["sea", "warm"], 11, None)] == ["c", "b", "a"]
+
+
+def test_closed_airports_are_never_origins(tmp_path):
+    import sqlite3
+    from agent.opendata import OpenData
+    from tests.agent.domain.factory import make_opendata
+    db = tmp_path / "od.sqlite"
+    make_opendata(db, [])
+    con = sqlite3.connect(db)
+    for iata, city, lat, lon in (("KRR", "Krasnodar", 45.03, 39.17), ("AER", "Sochi", 43.45, 39.95)):
+        con.execute("INSERT INTO airports(ident, iata, name, city, country_code, lat, lon, type, source, fetched_at)"
+                    " VALUES (?, ?, ?, ?, 'RU', ?, ?, 'large_airport', 'test', '2026-10-25')",
+                    ("X" + iata, iata, iata, city, lat, lon))
+    con.execute("INSERT INTO meta(key, value) VALUES ('airports.closed_iata', '[\"KRR\"]')")
+    con.commit()
+    od = OpenData(path=str(db), overlay=None)
+    assert od.origin_airports("Krasnodar") == []
+    assert od.origin_airports("Sochi") == ["AER"]

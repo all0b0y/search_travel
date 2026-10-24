@@ -175,7 +175,32 @@ def number_pool(data):
             pool.add(n)
         for run in re.findall(r"\d+", s):
             pool.add(int(run))
+    pool |= _unit_forms(data)
     return pool
+
+
+def _unit_forms(obj, key=""):
+    """Exact unit conversions the production guard (agent/guards.Allowed.walk) also accepts:
+    metres -> km (1100 -> 1.1), minutes -> hours and h/min parts, hours -> minutes."""
+    out = set()
+    if isinstance(obj, bool) or obj is None:
+        return out
+    if isinstance(obj, (int, float)):
+        k = key.lower()
+        if k.endswith("_min") or k == "minutes":
+            out |= {round(obj / 60, 1), obj % 60, obj // 60}
+        if "hours" in k:
+            out |= {round((obj % 1) * 60), round(obj * 60)}
+        if k.endswith("_m") and obj >= 100:
+            out.add(round(obj / 1000, 1))
+        return out
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            out |= _unit_forms(v, str(k))
+    elif isinstance(obj, list):
+        for v in obj:
+            out |= _unit_forms(v, key)
+    return out
 
 
 def same_number(a, b):
