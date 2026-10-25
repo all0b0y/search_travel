@@ -1,11 +1,16 @@
-"""Train generator: Russian domestic pairs only, great-circle distance <= 1000 km, both cities
-with stations. Rail distance = great circle x 1.25.
+"""Train generator: Russian domestic pairs only, great-circle distance 30..2500 km (ostrovok_mcp/rail.py, the rule
+the engine's opendata.train_reachable shares), both cities with stations.
 
-Per pair and date 2-5 trains (seeded). A train is either
+Pairs up to rail.DAY_TRAIN_MAX_KM (1000 km): rail distance = great circle x 1.25; per pair and date 2-5 trains
+(seeded). A train is either
 - `fast` (day train, <= 750 km rail, 120 km/h, class `seat`) or
 - `regular` (70 km/h incl. stops; classes platzkart / coupe / sv).
 High-speed corridors (HIGH_SPEED, e.g. Москва — Санкт-Петербург «Сапсан»): 4-7 trains a day, every
 even-numbered one a high-speed day train (class `seat`), the others regular overnight trains.
+Long-distance pairs (over 1000 km, up to 2500 km): 1-2 FPK trains a day, sleepers only (platzkart / coupe / sv),
+rail distance = great circle x 1.3 at 60-70 km/h incl. stops (Москва — Анапа ~1570 km, about a day; up to ~two
+days), departures 06:00-23:55, each train's number / time / speed fixed per pair (the same timetable every day);
+the offer's `dep` / `arr` carry the real days (arrival one or two days after departure).
 Fare per passenger (RUB): seat 500 + 3.2/km, platzkart 400 + 1.6/km, coupe 700 + 2.8/km,
 sv 1500 + 5.5/km, x season x lead time (flight table, softened by half) x noise 0.92-1.12.
 
@@ -22,11 +27,14 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from . import geo, pricing, rng
+from . import geo, pricing, rail, rng
 from .offer_ids import encode
 
-MAX_KM = 1000
+MAX_KM = rail.TRAIN_MAX_KM
+DAY_MAX_KM = rail.DAY_TRAIN_MAX_KM      # beyond it: long-distance sleepers only
 RAIL_FACTOR = 1.25
+LONG_RAIL_FACTOR = 1.3
+LONG_SPEED_KMH = (60, 70)
 # pair -> (train name, km/h): the real rail line is shorter than great circle x 1.25, so these trains
 # would otherwise never count as `fast` (Москва — Санкт-Петербург: 793 km by the formula)
 HIGH_SPEED = {frozenset({"Москва", "Санкт-Петербург"}): ("Сапсан", 200)}
@@ -44,12 +52,31 @@ def pair_note(a: geo.City | None, b: geo.City | None) -> str | None:
     km = geo.haversine_km(a.lat, a.lon, b.lat, b.lon)
     if km > MAX_KM:
         return f"Поезда в демо — только до ~{MAX_KM} км, здесь около {int(round(km, -1))} км"
-    if km < 30:
+    if km < rail.TRAIN_MIN_KM:
         return "Города слишком близко для поезда дальнего следования"
     return None
 
 
+def _gc_km(a: geo.City, b: geo.City) -> float:
+    return geo.haversine_km(a.lat, a.lon, b.lat, b.lon)
+
+
+def _long_train(a: geo.City, b: geo.City, i: int) -> dict:
+    """A long-distance FPK sleeper of a pair over DAY_MAX_KM: number, departure and speed fixed per pair and
+    train index (the same timetable every day); 1.3 x great circle at 60-70 km/h incl. stops."""
+    pair = f"{a.name_ru}>{b.name_ru}"
+    km = _gc_km(a, b) * LONG_RAIL_FACTOR
+    speed = rng.between(*LONG_SPEED_KMH, "train", pair, "long_speed", i)
+    dep_min = rng.rint(72, 287, "train", pair, "long_dep", i) * 5                 # 06:00 .. 23:55
+    number = rng.rint(1, 199, "train", pair, "long_number", i)
+    letter = rng.pick("АВГЕЖИМНСУЧЯ", "train", pair, "long_letter", i)
+    return {"fast": False, "km": km, "duration": int(round(km / speed * 60)), "dep_min": dep_min,
+            "train_no": f"{number:03d}{letter}", "carrier": "ФПК", "kind": "long_distance"}
+
+
 def _train(a: geo.City, b: geo.City, day: date, i: int) -> dict:
+    if _gc_km(a, b) > DAY_MAX_KM:
+        return _long_train(a, b, i)
     km = geo.haversine_km(a.lat, a.lon, b.lat, b.lon) * RAIL_FACTOR
     pair = f"{a.name_ru}>{b.name_ru}"
     hsr = HIGH_SPEED.get(frozenset({a.name_ru, b.name_ru}))
@@ -109,7 +136,10 @@ def pet_terms(tr: dict, cls: str, pax: int, per_pax_fare: float, pets: int, *see
 
 def active(a: geo.City, b: geo.City, day: date) -> list[int]:
     pair = f"{a.name_ru}>{b.name_ru}"
-    lo, hi = (4, 7) if frozenset({a.name_ru, b.name_ru}) in HIGH_SPEED else (2, 5)
+    if _gc_km(a, b) > DAY_MAX_KM:
+        lo, hi = 1, 2                     # long-distance pairs: one or two sleepers a day
+    else:
+        lo, hi = (4, 7) if frozenset({a.name_ru, b.name_ru}) in HIGH_SPEED else (2, 5)
     n = rng.rint(lo, hi, "train", pair, "count", day.isoformat())
     return list(range(n))
 

@@ -33,7 +33,8 @@ from datetime import date, datetime, timedelta
 from typing import Any, Callable, Optional
 
 from .checks import (DEFAULT_BUFFERS, DEFAULT_LATE_CHECKIN, DEFAULT_TAXI_FACTOR, check_party, connection_risks,
-                     fmt_hours, fmt_int, fmt_rub, in_clock_window, nights_text, ts, wants_pet)
+                     fmt_hours, fmt_int, fmt_rub, in_clock_window, nights_text, plural, ts, wants_pet)
+from .payloads import MONTHS_GEN
 
 # ---------------------------------------------------------------- tunables
 
@@ -1060,6 +1061,7 @@ def _facts(c: Combo, brief, districts, segments, rr):
         "lift": lift(h),
     }
     _leg_facts(f, c, rr)
+    _long_leg_facts(f, c, check_in, check_out)
     for direction, tr in (("out", c.tr_out), ("back", c.tr_back)):
         if tr is not None:
             f[f"transfer_{direction}_min"] = int(tr["duration_min"])
@@ -1142,10 +1144,63 @@ def _leg_facts(f, c: Combo, rr=None):
         f["price_pets_rub"] = sum(fees)
 
 
+# A train this long is a long-distance sleeper of a pair over 1000 km (ostrovok_mcp/rail.py: 1.3 x great circle at
+# 60-70 km/h, at least ~18.6 h); the mock's trains of pairs up to 1000 km stay under ~17.9 h.
+LONG_LEG_MIN = 18 * 60
+
+
+def road_time_ru(minutes) -> str:
+    """Time on board as people say it: «23 ч», «1 сутки 3 ч», «2 суток» (rounded to the hour)."""
+    total = int(round(int(minutes) / 60))
+    days, hours = divmod(total, 24)
+    if not days:
+        return f"{hours} ч"
+    text = f"{days} {plural(days, 'сутки', 'суток', 'суток')}"
+    return f"{text} {hours} ч" if hours else text
+
+
+def day_month_ru(dt) -> str:
+    return f"{dt.day} {MONTHS_GEN[dt.month - 1]}"
+
+
+def _days_word(n) -> str:
+    return "день" if n == 1 else f"{n} {plural(n, 'день', 'дня', 'дней')}"
+
+
+def is_long_leg(leg) -> bool:
+    return leg is not None and leg.kind == "train" and leg.duration_min >= LONG_LEG_MIN
+
+
+def _long_leg_facts(f, c: Combo, check_in=None, check_out=None):
+    """Ready Russian facts of a long-distance train leg (the card says them as written, never computes them):
+    `{dir}_long_train`, `{dir}_on_road_ru` («1 сутки 3 ч»), `{dir}_road_ru` (departure and arrival days and
+    times, the time on board and — with a stay — how many days before check-in the trip starts /
+    after check-out it ends), `out_days_before_checkin`, `back_days_after_checkout`."""
+    for direction, leg in (("out", c.out), ("back", c.back)):
+        if not is_long_leg(leg):
+            continue
+        road = road_time_ru(leg.duration_min)
+        line = (f"{'туда' if direction == 'out' else 'обратно'} поездом: отправление {day_month_ru(leg.dep)} в "
+                f"{leg.dep:%H:%M}, прибытие {day_month_ru(leg.arr)} в {leg.arr:%H:%M}, в пути {road}")
+        if direction == "out" and check_in is not None and leg.dep.date() < check_in.date():
+            n = (check_in.date() - leg.dep.date()).days
+            f["out_days_before_checkin"] = n
+            line += f" — выезжаете за {_days_word(n)} до заезда в отель"
+        if direction == "back" and check_out is not None and leg.arr.date() > check_out.date():
+            n = (leg.arr.date() - check_out.date()).days
+            f["back_days_after_checkout"] = n
+            line += (" — дома на следующий день после выезда из отеля" if n == 1
+                     else f" — дома через {_days_word(n)} после выезда из отеля")
+        f[f"{direction}_long_train"] = True
+        f[f"{direction}_on_road_ru"] = road
+        f[f"{direction}_road_ru"] = line
+
+
 def _transport_facts(c: Combo, rr=None):
     """Facts of a tickets-only variant (no stay, no transfers)."""
     f: dict[str, Any] = {"total_rub": c.rub, "door_to_door_hours": c.hours, "transport_only": True}
     _leg_facts(f, c, rr)
+    _long_leg_facts(f, c)
     f["price_transport_rub"] = c.rub
     if c.out is not None and c.back is not None:
         f["days_at_destination"] = (c.back.dep.date() - c.out.arr.date()).days

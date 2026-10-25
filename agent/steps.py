@@ -29,7 +29,8 @@ from typing import Any, Optional
 from . import payloads as P
 from .hooks import as_issue, blocking, issue
 from .mcp_client import ToolError
-from .opendata import train_reachable, wish_traits
+from .opendata import LONG_TRAIN_LEAD_DAYS, train_km, train_reachable, wish_traits
+from .opendata import long_train_pair as long_train_pair_rule
 from .profiles import apply_profile, profile_value
 from .state import (Brief, CachedResult, PatchError, Question, UpsellCandidate, Variant, apply_patch, assume,
                     changed_paths)
@@ -856,7 +857,8 @@ def _month(brief):
 
 # Destination suggestions honour the brief (entry A):
 # - prefs.transport == "train": only places the mock sells trains to from the origin (opendata.train_reachable:
-#   Russia, stations on both ends, 30..1000 km), then confirmed by search_trains there and back on the quoted
+#   Russia, stations on both ends, 30..2500 km; over 1000 km long-distance sleepers, priced by the trains of the
+#   two days before check-in that arrive on it, with facts long_train / on_road_ru / leave_date / road_ru), then confirmed by search_trains there and back on the quoted
 #   dates; price = cheapest train there + back + the quoted stay, travel_time_h = the fastest train there.
 # - prefs.domestic: only places in the origin's country (Russia when the origin is unknown).
 # - budget_rub.max: after quoting, items within budget come first (in rank order, facts.within_budget true);
@@ -898,12 +900,13 @@ def _origin_place(ctx, brief):
     return destination_record(ctx, name=city) if city else None
 
 
-def _passes_dest_prefs(rec, origin, train, domestic):
+def _passes_dest_prefs(rec, origin, train, domestic, ctx=None, nights=7):
     if domestic and (rec.get("country_code") or "") != ((origin or {}).get("country_code") or "RU"):
         return False
     if train:
         if origin and origin.get("country_code") and origin.get("lat") is not None and origin.get("stations"):
-            return train_reachable(origin, rec)
+            return train_reachable(origin, rec) and (ctx is None or not long_train_pair_rule(origin, rec)
+                                                     or _long_train_may_fit(ctx, origin, rec, nights))
         return rec.get("country_code") == "RU" and bool(rec.get("stations"))   # the mock decides on pricing
     return True
 
@@ -931,19 +934,20 @@ def step_find_destinations(ctx):
     ctx.destination_rank = {r["id"]: i for i, r in enumerate(recs)}
     origin_t = None if train else _mixed_trains_origin(ctx, ctx.brief)
     if origin_t is not None:
-        by_train = [r for r in recs if r["id"] != origin_t.get("id") and train_reachable(origin_t, r)]
-        ctx.destination_train_recs = by_train[:min(limit * DEST_TRAIN_POOL_X, DEST_POOL)]
+        ctx.destination_train_recs = _train_pool(origin_t, recs, limit, b.get("traits") or [], ctx,
+                                                 _trip_nights(ctx.brief))
         ctx.trace["notes"].append(f"destinations: budget, any transport -> {len(ctx.destination_train_recs)} "
                                   f"train candidates")
     if narrowed:
         origin = _origin_place(ctx, ctx.brief)
-        recs = [r for r in recs if _passes_dest_prefs(r, origin, train, domestic)]
+        nights = _trip_nights(ctx.brief)
+        recs = [r for r in recs if _passes_dest_prefs(r, origin, train, domestic, ctx, nights)]
         ctx.trace["notes"].append(f"destinations: train={train} domestic={domestic} -> {len(recs)} candidates")
     if not recs:
         city = (b.get("origin") or {}).get("city") or ""
         if train:
             ctx.fail("no_data", f"Поездом из «{city}» под такой запрос в демо-каталоге направлений не нашлось: "
-                                "поезда здесь ходят только по России и примерно до 1000 км. Можно ослабить "
+                                "поезда здесь ходят только по России и примерно до 2500 км. Можно ослабить "
                                 "пожелания или рассмотреть самолёт.")
         if domestic:
             ctx.fail("no_data", "По России под такой запрос в демо-каталоге направлений не нашлось. Попробуйте "
@@ -960,6 +964,44 @@ def step_find_destinations(ctx):
             ids = {r["id"] for r in ctx.destination_recs}
             ctx.insight = {"popular_ids": [i["destination_id"] for i in out.get("items") or []
                                            if i.get("destination_id") in ids]}
+
+
+LONG_MAX_HOURS_PER_NIGHT = 6   # rules.json trains.long_max_hours_per_night
+
+
+def _trip_nights(brief):
+    d = brief.values().get("dates") or {}
+    if d.get("nights"):
+        return int(d["nights"])
+    if d.get("start") and d.get("end"):
+        return max(1, (_date(str(d["end"])[:10]) - _date(str(d["start"])[:10])).days)
+    return 7   # quote_destinations' default
+
+
+def long_train_fits_trip(ctx, hours, nights):
+    """A day or more on board is offered as a destination only when the trip is long enough for it: one way at most
+    rules.json trains.long_max_hours_per_night x nights (6 h: none for a 3-night trip, up to 42 h for 7 nights)."""
+    per_night = float(((ctx.rules or {}).get("trains") or {}).get("long_max_hours_per_night", LONG_MAX_HOURS_PER_NIGHT))
+    return hours is not None and hours <= per_night * max(1, int(nights or 1))
+
+
+def _long_train_may_fit(ctx, origin, rec, nights):
+    """Before quoting: the fastest a long-distance train could be (1.3 x great circle at 70 km/h) fits the trip."""
+    km = train_km(origin, rec)
+    return km is not None and long_train_fits_trip(ctx, km * 1.3 / 70, nights)
+
+
+def _train_pool(origin, recs, limit, traits, ctx=None, nights=7):
+    """Train candidates of a budget-led inspiration, in rank order: the places up to 1000 km as before
+    (DEST_TRAIN_POOL_X x limit), then up to `limit` long-distance places (a day or more on board) that match the
+    wish (any trait, when there are wishes) — they are kept only where they fit the budget."""
+    reach = [r for r in recs if r["id"] != origin.get("id") and train_reachable(origin, r)]
+    short = [r for r in reach if not long_train_pair_rule(origin, r)][:min(limit * DEST_TRAIN_POOL_X, DEST_POOL)]
+    wish = set(traits or [])
+    far = [r for r in reach if long_train_pair_rule(origin, r)
+           and (not wish or set(r.get("match") or []) & wish or set(r.get("tags") or []) & wish)
+           and (ctx is None or _long_train_may_fit(ctx, origin, r, nights))][:limit]
+    return short + far
 
 
 def _party_payload(brief):
@@ -1003,20 +1045,42 @@ def quote_payload(ctx, brief, ids, dates_override=None):
 
 
 def _train_round_trip(ctx, brief, rec, check_in, check_out):
-    """Cheapest train there + back for the party on the quoted dates -> (price_rub, hours there) or (None, None)."""
+    """Cheapest train there + back for the party on the quoted dates -> (price_rub, hours there, extra facts) or
+    (None, None, {}). A long-distance pair (over 1000 km) prices the trains of the two days before check-in that
+    arrive on the check-in day (the trip the variants build) and returns its ready facts: `long_train`,
+    `on_road_ru` («1 сутки 3 ч»), `leave_date` / `leave_days_before` and `road_ru` of the priced train."""
     b = brief.values()
     party = _party_payload(brief)
     origin = (b.get("origin") or {}).get("city") or ""
     base = {"passengers": min(9, party["adults"] + len(party["children_ages"])), "today": ctx.session.today().isoformat()}
-    there = tool_safe(ctx, "search_trains", {**base, "origin_city": origin, "dest_city": rec["name"],
-                                             "date": str(check_in)[:10]}, cache=False)
+    ci = _date(str(check_in)[:10])
+    long_pair = bool(long_train_pair_rule(_origin_place(ctx, brief), rec))
+    if long_pair:
+        days = [ci - timedelta(days=k) for k in range(LONG_TRAIN_LEAD_DAYS, 0, -1) if ci - timedelta(days=k) >= ctx.session.today()]
+        out_offers = _arriving_on([tool_safe(ctx, "search_trains", {**base, "origin_city": origin, "dest_city": rec["name"],
+                                                                     "date": d.isoformat()}, cache=False)
+                                   for d in days], ci)
+    else:
+        there = tool_safe(ctx, "search_trains", {**base, "origin_city": origin, "dest_city": rec["name"],
+                                                 "date": str(check_in)[:10]}, cache=False)
+        out_offers = (there or {}).get("offers") or []
     back = tool_safe(ctx, "search_trains", {**base, "origin_city": rec["name"], "dest_city": origin,
                                             "date": str(check_out)[:10]}, cache=False)
-    out_offers, back_offers = (there or {}).get("offers") or [], (back or {}).get("offers") or []
+    back_offers = (back or {}).get("offers") or []
     if not out_offers or not back_offers:
-        return None, None
+        return None, None, {}
     price = min(o["price_rub"] for o in out_offers) + min(o["price_rub"] for o in back_offers)
-    return int(price), round(min(o["duration_min"] for o in out_offers) / 60, 1)
+    if not long_pair:
+        return int(price), round(min(o["duration_min"] for o in out_offers) / 60, 1), {}
+    from .ranking import day_month_ru, road_time_ru
+    o = min(out_offers, key=lambda x: (x["price_rub"], x["duration_min"]))   # the priced train
+    dep = _dt(o["dep"])
+    n = (ci - dep.date()).days
+    road = road_time_ru(o["duration_min"])
+    extra = {"long_train": True, "on_road_ru": road, "leave_date": dep.date().isoformat(), "leave_days_before": n,
+             "road_ru": f"поездом, в пути {road}; выезд {day_month_ru(dep)} — "
+                        + ("за день до заезда" if n == 1 else f"за {n} {P.plural(n, 'день', 'дня', 'дней')} до заезда")}
+    return int(price), round(o["duration_min"] / 60, 1), extra
 
 
 TRANSPORT_RU = {"train": "поездом", "plane": "самолётом"}
@@ -1060,8 +1124,8 @@ def destination_prices(ctx, brief, recs, train=None, dates_override=None):
         mid = not any(MID_STARS_NOTE in str(n) for n in q.get("notes") or [])
         if train:
             stay = q.get("stay_price_rub")
-            fare, hours = (_train_round_trip(ctx, brief, rec, q["check_in"], q["check_out"])
-                           if q.get("check_in") and q.get("check_out") else (None, None))
+            fare, hours, extra = (_train_round_trip(ctx, brief, rec, q["check_in"], q["check_out"])
+                                  if q.get("check_in") and q.get("check_out") else (None, None, {}))
             entry["reachable"], entry["travel_h"] = fare is not None, hours
             if fare is not None and stay is not None:
                 entry["price"] = fare + int(stay)
@@ -1069,6 +1133,7 @@ def destination_prices(ctx, brief, recs, train=None, dates_override=None):
             entry["facts"].update({k: v for k, v in (("train_price_rub", fare), ("stay_price_rub", stay),
                                                      ("check_in", q.get("check_in")), ("check_out", q.get("check_out")))
                                    if v is not None and fare is not None})
+            entry["facts"].update(extra)
             if entry["price"] is not None:
                 entry["facts"]["price_includes"] = price_includes_ru(brief, "train", entry["nights"], mid)
         else:
@@ -1119,8 +1184,18 @@ def step_quote_destinations(ctx):
     plabel = P.party_label(b.get("party"))
     traits = set(b.get("traits") or [])
     items = []
+    budget = (b.get("budget_rub") or {}).get("max")
     for rec in recs:
-        e = _cheaper_quote(prices.get(rec["id"]), by_train.get(rec["id"]))
+        match = rec.get("match") or [t for t in rec.get("tags") or [] if t in traits]
+        e = _cheaper_quote(prices.get(rec["id"]), by_train.get(rec["id"]), budget)
+        if e is not None and e["facts"].get("long_train") and not long_train_fits_trip(ctx, e["travel_h"], e["nights"]):
+            if train:
+                continue   # a day or more on board for a short trip: not a train destination for it
+            e = prices.get(rec["id"])
+        elif e is not None and e["facts"].get("long_train") and not train and (
+                not budget or e["price"] is None or e["price"] > budget or (traits and not match)):
+            # a day or more on board is offered unasked only where it fits the budget and the wish
+            e = prices.get(rec["id"])
         if e is None or (e["facts"].get("transport") == "train" and not e["reachable"]):
             continue   # no train there or back on these dates: not a train destination
         facts = dict(e["facts"])
@@ -1128,7 +1203,6 @@ def step_quote_destinations(ctx):
             facts["kind"] = rec["kind"]
         if rec.get("description"):
             facts["description"] = rec["description"]
-        match = rec.get("match") or [t for t in rec.get("tags") or [] if t in traits]
         if facts.get("transport") == "train":
             travel = e["travel_h"]
         elif rec.get("travel_time_h") is not None:
@@ -1144,7 +1218,7 @@ def step_quote_destinations(ctx):
     if not items:
         ctx.fail("no_data", f"Поездом из «{origin}» на эти даты билетов не нашлось ни в одно из подходящих "
                             "направлений. Попробуйте другие даты.")
-    items = order_by_budget(items, (b.get("budget_rub") or {}).get("max"), limit)
+    items = order_by_budget(items, budget, limit)
     if ctx.insight and ctx.insight.get("popular_ids") is not None:
         shown = {i["id"] for i in items}
         ctx.insight = {**ctx.insight, "popular_ids": [i for i in ctx.insight["popular_ids"] if i in shown]}
@@ -1155,9 +1229,13 @@ def step_quote_destinations(ctx):
     remember_destinations(ctx.session, items, replace=True)
 
 
-def _cheaper_quote(flight, train):
-    """Per place, the quote to show: the train one when it is priced and not dearer than the flight one."""
+def _cheaper_quote(flight, train, budget=None):
+    """Per place, the quote to show: the train one when it is priced and not dearer than the flight one. A
+    long-distance train (a day or more on board) only when it fits the budget: no new noise where it does not."""
     t_ok = bool(train) and train["reachable"] and train["price"] is not None
+    if t_ok and train["facts"].get("long_train") and flight and flight["price"] is not None \
+            and not (budget and train["price"] <= budget):
+        t_ok = False   # flights exist and the sleeper does not fit a budget: the flight quote, as before
     if t_ok and (not flight or flight["price"] is None or train["price"] <= flight["price"]):
         return train
     return flight
@@ -1674,6 +1752,26 @@ def _overnight_before(value, check_in):
     return out
 
 
+def _arriving_on(values, check_in):
+    """Long-distance trains (a pair over 1000 km) of the days before check-in that arrive on the check-in day,
+    whatever hour they leave (a berth is a bed: the nights on board are no nights without one)."""
+    out = []
+    for value in values:
+        for o in (value or {}).get("offers", []):
+            arr = _dt(o.get("arr"))
+            if arr and arr.date() == check_in:
+                out.append(o)
+    return out
+
+
+def long_train_pair(ctx, brief, dest):
+    """True when origin -> dest is a long-distance train pair (opendata.long_train_pair: Russia, stations at both
+    ends, 1000..2500 km): the mock sells only sleepers there, up to ~two days on the road."""
+    origin = _origin_place(ctx, brief)
+    rec = destination_record(ctx, dest_id=dest.get("id")) if dest.get("id") else dest
+    return bool(long_train_pair_rule(origin, rec or dest))
+
+
 def _flex_days(brief):
     return max(0, min(3, int((brief.values().get("dates") or {}).get("flexible_days") or 0)))
 
@@ -1785,18 +1883,23 @@ def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None, hotel_ca
     jobs = {}
     if "flights" in scope and transport != "train":
         jobs.update(_flight_jobs(ctx, brief, dest, check_in, check_out))
+    long_pair = False
     if "trains" in scope or transport == "train":
         base = {"passengers": pax, "today": today, **_pets_payload(brief)}
         jobs["trains.out"] = ("search_trains", {**base, "origin_city": origin.get("city") or "",
                                                 "dest_city": dest["name"], "date": check_in.isoformat()})
         jobs["trains.back"] = ("search_trains", {**base, "origin_city": dest["name"],
                                                  "dest_city": origin.get("city") or "", "date": check_out.isoformat()})
+        long_pair = long_train_pair(ctx, brief, dest)
         if "stay" in scope:
             # an overnight train the evening before check-in arrives in the morning of the first day
-            # (a same-day night train loses the first night): ranking may pick either
-            jobs["trains.out.prev"] = ("search_trains", {**base, "origin_city": origin.get("city") or "",
-                                                         "dest_city": dest["name"],
-                                                         "date": (check_in - timedelta(days=1)).isoformat()})
+            # (a same-day night train loses the first night): ranking may pick either. A long-distance pair
+            # (over 1000 km, up to ~two days on board) also searches two days before: the trains that arrive on
+            # the check-in day are the trip (the return leaves on check-out and may arrive a day or two later).
+            for k in range(1, (LONG_TRAIN_LEAD_DAYS if long_pair else 1) + 1):
+                jobs["trains.out.prev" + (str(k) if k > 1 else "")] = (
+                    "search_trains", {**base, "origin_city": origin.get("city") or "", "dest_city": dest["name"],
+                                      "date": (check_in - timedelta(days=k)).isoformat()})
     if "stay" in scope:
         filters = _hotel_filters(brief)
         if hotel_cap is not None:
@@ -1867,10 +1970,19 @@ def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None, hotel_ca
                "check_out": check_out.isoformat(), "party": party, "scope": list(scope),
                "flights_out": (out.get("flights.out") or {}).get("offers", []),
                "flights_back": (out.get("flights.back") or {}).get("offers", []),
-               "trains_out": _overnight_before(out.get("trains.out.prev"), check_in)
+               "trains_out": (_arriving_on([out.get("trains.out.prev" + (str(k) if k > 1 else ""))
+                                            for k in range(LONG_TRAIN_LEAD_DAYS, 0, -1)], check_in) if long_pair
+                              else _overnight_before(out.get("trains.out.prev"), check_in))
                              + (out.get("trains.out") or {}).get("offers", []),
                "trains_back": (out.get("trains.back") or {}).get("offers", []),
                "hotels": (out.get("hotels") or {}).get("offers", []), "transfers_out": {}, "transfers_back": {}}
+    if long_pair and transport != "train" and results["flights_out"] and results["flights_back"]:
+        # no new noise where flights exist: a day-long sleeper shows up only when the user wants a train
+        # (prefs.transport train, also when code assumed it for a place without flights), when the pair has no
+        # flight on these dates, or in a budget-led inspiration where it fits the budget
+        if results["trains_out"] or results["trains_back"]:
+            ctx.trace["notes"].append("trains: long-distance sleepers left out (flights exist, no train wish)")
+        results["trains_out"], results["trains_back"] = [], []
     if near is not None and "stay" in scope:
         results["near"] = {"name": near["name"], "query": near.get("query"), "lat": near["lat"], "lon": near["lon"],
                            "kind": near.get("kind"), "dist_center_m": near.get("dist_center_m"), "radius_m": near_m}
@@ -2370,7 +2482,7 @@ def offer_other_places(ctx):
 
 
 def other_places(ctx, budget, keep_over=False, traits=None, fresh=False, country=None):
-    """[{id, name, price_from_rub, nights, transport_ru, within_budget, price_includes}]: other places priced
+    """[{id, name, price_from_rub, nights, transport_ru, within_budget, price_includes, road_ru?}]: other places priced
     for this trip's dates and party (the shown ones, else a fresh search), the ones within the budget first by
     price; places above it only when the user asked for another place (the two cheapest)."""
     s = ctx.session
@@ -2395,7 +2507,7 @@ def other_places(ctx, budget, keep_over=False, traits=None, fresh=False, country
                    segment=(b.get("party") or {}).get("segment"), limit=DEST_ALL)
         recs = [r for r in (norm_destination(x) for x in found or []) if r and r.get("id") and r["id"] != current]
         origin = _origin_place(ctx, brief)
-        recs = [r for r in recs if _passes_dest_prefs(r, origin, train_only, domestic)]
+        recs = [r for r in recs if _passes_dest_prefs(r, origin, train_only, domestic, ctx, _trip_nights(brief))]
         if country:   # a place without transport: its country's places are the closest alternatives
             recs.sort(key=lambda r: r.get("country_code") != country)
         plane = [] if train_only else recs[:limit * DEST_BUDGET_POOL_X]
@@ -2403,20 +2515,27 @@ def other_places(ctx, budget, keep_over=False, traits=None, fresh=False, country
         if origin_t is None and fresh and not train_only and origin and origin.get("stations") \
                 and origin.get("lat") is not None:
             origin_t = origin   # alternatives for a place without transport are priced by train too
-        trains = recs[:limit * DEST_TRAIN_POOL_X] if train_only else [
-            r for r in recs if origin_t is not None and r["id"] != origin_t.get("id")
-            and train_reachable(origin_t, r)][:limit * DEST_TRAIN_POOL_X]
+        trains = recs[:limit * DEST_TRAIN_POOL_X] if train_only else (
+            _train_pool(origin_t, recs, limit, traits if traits is not None else (b.get("traits") or []), ctx,
+                        _trip_nights(brief))
+            if origin_t is not None else [])
     p_prices = destination_prices(ctx, brief, plane, train=False, dates_override=dates)
     t_prices = destination_prices(ctx, brief, trains, train=True, dates_override=dates)
     out = []
     for rec in {r["id"]: r for r in plane + trains}.values():
-        e = _cheaper_quote(p_prices.get(rec["id"]), t_prices.get(rec["id"]))
+        e = _cheaper_quote(p_prices.get(rec["id"]), t_prices.get(rec["id"]), budget)
+        if e is not None and e["facts"].get("long_train") and (
+                not long_train_fits_trip(ctx, e["travel_h"], e["nights"])
+                or not train_only and rec.get("airports") and (not budget or e["price"] is None or e["price"] > budget)):
+            # a day or more on board unasked: only within the budget (or without flights) and for a long enough trip
+            e = p_prices.get(rec["id"])
         if e is None or e["price"] is None:
             continue
         f = e["facts"]
         out.append({"id": rec["id"], "name": rec["name"], "price_from_rub": int(e["price"]), "nights": e["nights"],
                     "transport_ru": f.get("transport_ru"), "within_budget": (e["price"] <= budget) if budget else None,
-                    "price_includes": f.get("price_includes"), "transport": f.get("transport")})
+                    "price_includes": f.get("price_includes"), "transport": f.get("transport"),
+                    **({"road_ru": f["road_ru"]} if f.get("road_ru") else {})})
     out.sort(key=lambda p: p["price_from_rub"])
     if country:   # alternatives to a place without transport: its country first, then by likeness (the rank)
         rank = {r["id"]: i for i, r in enumerate(dict((r["id"], r) for r in plane + trains).values())}
@@ -2433,8 +2552,9 @@ def other_places(ctx, budget, keep_over=False, traits=None, fresh=False, country
             if p["id"] not in have:
                 s.shown.destinations.append(ShownItem(label=str(len(s.shown.destinations) + 1), kind="destination",
                                                       id=p["id"], title=p["name"]))
-    return [{k: p[k] for k in ("id", "name", "price_from_rub", "nights", "transport_ru", "within_budget",
-                               "price_includes")} for p in picked]
+    return [{**{k: p[k] for k in ("id", "name", "price_from_rub", "nights", "transport_ru", "within_budget",
+                                  "price_includes")}, **({"road_ru": p["road_ru"]} if p.get("road_ru") else {})}
+            for p in picked]
 
 
 def other_destination_actions(ctx):
@@ -3015,6 +3135,9 @@ def _leg_fact(step, offer, pets=False):
     elif step.type == "train":
         out.update(train_no=o.get("train_no"), car_class=o.get("car_class"), duration_min=o.get("duration_min"),
                    high_speed=True if o.get("train_kind") == "high_speed" else None)
+        from .ranking import LONG_LEG_MIN, road_time_ru
+        if (o.get("duration_min") or 0) >= LONG_LEG_MIN:   # a long-distance sleeper: the time on board, ready
+            out["on_road_ru"] = road_time_ru(o["duration_min"])
     elif step.type == "transfer":
         out.update(kind=o.get("kind"), duration_min=o.get("duration_min"), meeting_point=o.get("meeting_point"))
     if pets and step.type in ("flight", "train"):

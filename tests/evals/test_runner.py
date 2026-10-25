@@ -14,11 +14,11 @@ from evals.testing.fakes import FakeEngine
 def test_level2_dry_run(tmp_path):
     out = tmp_path / "run2"
     rep = run_mod.main(["--level", "2", "--dry-run", "--runs", "1", "--out", str(out), "--parallel", "4"], log=lambda *a: None)
-    assert rep["metrics"]["cases_total"] == 79 and rep["metrics"]["runs_total"] == 79
+    assert rep["metrics"]["cases_total"] == 81 and rep["metrics"]["runs_total"] == 81
     assert rep["metrics"]["input_errors"] == 0 and rep["metrics"]["llm_errors"] == 0
-    assert rep["metrics"]["served_models"] == {"fake/model": 79}
+    assert rep["metrics"]["served_models"] == {"fake/model": 81}
     recs = read_jsonl(out / "level2.jsonl")
-    assert len(recs) == 79 and all(r["results"] for r in recs)
+    assert len(recs) == 81 and all(r["results"] for r in recs)
     assert Path(rep["report_paths"]["json"]).is_file() and Path(rep["report_paths"]["md"]).is_file()
     assert Path(rep["report_paths"]["json"]).parent == out / "reports"
     assert read_json(out / "summary.json")["run_id"] == "run2"

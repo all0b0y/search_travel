@@ -34,6 +34,7 @@ DEFAULT_TAXI_FACTOR = 1.2
 DEFAULT_RISK_SLACK_MIN = 60
 DEFAULT_LATE_CHECKIN = ("22:00", "05:00")
 OVERNIGHT_FROM_HOUR = 18   # an outbound night train/flight may leave the evening before the start date
+LONG_TRAIN_LEAD_DAYS = 2   # a long-distance train may leave up to two days before (ostrovok_mcp/rail.py)
 
 
 # ---------------------------------------------------------------- small helpers
@@ -506,12 +507,19 @@ def check_dates(steps, brief, vid=None, rules=None) -> list[dict]:
         overnight = (key == "start" and step["type"] in TRANSPORT and window is not None
                      and day == window[0] - timedelta(days=1) and ts(step["start"]).hour >= OVERNIGHT_FROM_HOUR
                      and window[0] <= ts(step["end"]).date() <= window[1])
+        # a long-distance train (up to ~two days on board, a berth is a bed) may leave up to
+        # LONG_TRAIN_LEAD_DAYS before the start date when it arrives within the dates
+        overnight = overnight or (key == "start" and step["type"] == "train" and window is not None
+                                  and window[0] - timedelta(days=LONG_TRAIN_LEAD_DAYS) <= day < window[0]
+                                  and window[0] <= ts(step["end"]).date() <= window[1])
         if window and not window[0] <= day <= window[1] and not overnight:
             label = "Вылет" if key == "start" else "Обратно"
             found.append(issue("dates", sev, f"{label} {day:%d.%m} — вне дат поездки",
                                variant=vid, step=step["id"], day=day.isoformat(),
                                **{"from": window[0].isoformat(), "to": window[1].isoformat()}))
-        elif key == "start" and window is None and dates.month and day.month != dates.month:
+        elif key == "start" and window is None and dates.month and day.month != dates.month and not (
+                step["type"] == "train" and ts(step["end"]).date().month == dates.month
+                and (ts(step["end"]).date() - day).days <= LONG_TRAIN_LEAD_DAYS):
             found.append(issue("dates", "block" if brief.source_of("dates.month") == "user" else "warn",
                                f"Вылет {day:%d.%m} — не в выбранном месяце", variant=vid, step=step["id"],
                                day=day.isoformat(), month=dates.month))

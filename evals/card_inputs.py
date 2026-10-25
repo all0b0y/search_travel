@@ -102,7 +102,8 @@ OTHER_PLACES = {"type": "array", "maxItems": 3, "items": _obj(
         "id": {"type": "string"}, "name": {"type": "string", "minLength": 1},
         "price_from_rub": {"type": "integer", "minimum": 1}, "nights": {"type": "integer", "minimum": 1},
         "transport_ru": {"enum": ["поездом", "самолётом", None]}, "within_budget": {"type": ["boolean", "null"]},
-        "price_includes": {"type": ["string", "null"]}})}
+        "price_includes": {"type": ["string", "null"]},
+        "road_ru": {"type": "string", "minLength": 1}})}   # optional: a long-distance train («поездом, в пути …»)
 OFFERS = {"type": "array", "minItems": 1, "items": _obj(["kind", "label"], {
     "kind": {"enum": ["add_road", "connecting", "train", "plane", "place"]}, "label": {"type": "string", "minLength": 1}})}
 OPTIONAL_PROPS = {"question": SEARCH_QUESTION, "other_places": OTHER_PLACES, "offers": OFFERS}

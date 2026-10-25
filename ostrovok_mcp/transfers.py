@@ -1,7 +1,8 @@
 """Transfer offers between an airport / station / point and a hotel (or back with `reverse`).
 
 Road distance = straight line x 1.3. Stations have no coordinates in the schema: a station is
-placed at its city's centre (catalog destination or geo.KNOWN_CITIES) — an approximation.
+placed at its city's centre (catalog destination or geo.KNOWN_CITIES) — an approximation; STATION_POINTS
+places the few stations that lie in another town than the place they serve (Новороссийск for Геленджик).
 
 Kinds (duration = road km / speed + fixed overhead):
   taxi     45 km/h + 10 min, up to 4 pax per car,   price = cars x (base + per_km x km)
@@ -53,6 +54,11 @@ MEETING = {
 }
 
 
+# Stations that serve a catalog place from another town: the station's own coordinates (real, rounded), so the
+# transfer is the real ride (Геленджик is reached from the Новороссийск station, ~30 km by road).
+STATION_POINTS = {"Новороссийск": (44.7235, 37.7680)}
+
+
 def resolve_point(point: dict) -> dict:
     """{'form', 'lat', 'lon', 'place', 'country_code'} for an airport, a station or coordinates."""
     if point.get("iata"):
@@ -63,6 +69,9 @@ def resolve_point(point: dict) -> dict:
                 "country_code": ap["country_code"]}
     if point.get("station"):
         name = point["station"]
+        if name in STATION_POINTS:   # a station in another town than the place it serves
+            lat, lon = STATION_POINTS[name]
+            return {"form": "station", "lat": lat, "lon": lon, "place": name, "country_code": "RU"}
         city = geo.station_city(name) or geo.resolve_city(name)
         if city is None:  # "Москва Казанская" -> "Москва", "Казань-Пассажирская" -> "Казань"
             for sep in (" ", "-"):

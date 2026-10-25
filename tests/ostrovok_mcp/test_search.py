@@ -157,9 +157,14 @@ def test_trains_domestic_short_route(mock_env):
     assert trains() == out
 
 
-def test_trains_only_domestic_and_short(mock_env):
-    far = trains(dest_city="Сочи")
-    assert far["offers"] == [] and "1000" in far["note"]
+def test_trains_only_domestic_and_up_to_2500_km(mock_env):
+    far = trains(dest_city="Владивосток")                    # ~6400 km
+    assert far["offers"] == [] and "2500" in far["note"]
+    long = trains(dest_city="Сочи")                          # ~1360 km: long-distance sleepers only
+    assert long["offers"] and long["note"] is None
+    assert {o["car_class"] for o in long["offers"]} == {"platzkart", "coupe", "sv"}
+    assert {o["train_kind"] for o in long["offers"]} == {"long_distance"} and len({o["train_no"] for o in long["offers"]}) <= 2
+    assert all(20 * 60 <= o["duration_min"] <= 30 * 60 for o in long["offers"])
     abroad = trains(dest_city="Анталья")
     assert abroad["offers"] == [] and "России" in abroad["note"]
     unknown = trains(dest_city="Атлантида")

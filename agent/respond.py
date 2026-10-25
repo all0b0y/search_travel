@@ -5,6 +5,7 @@ Prices, times and totals come from code data (variants, mock carts and orders); 
 by id. When the card failed (degraded turn) the code-written Note texts are used instead.
 """
 import re
+from datetime import date
 
 from . import payloads as P
 from .steps import (_arrival, _hhmm_after, _hotel_checkin, _order_has_transfers, pay_label, pending_order,
@@ -58,7 +59,9 @@ def code_why(variant):
     title = variant.title or P.VARIANT_TITLES.get(variant.id, variant.id)
     t = variant.totals
     out_h, back_h = getattr(t, "out_hours", None), getattr(t, "back_hours", None)
-    if out_h is not None and back_h is not None:
+    if _long_road(variant):
+        road = _long_road(variant)
+    elif out_h is not None and back_h is not None:
         road = f"туда {P.fmt_hours(out_h)}, обратно {P.fmt_hours(back_h)}"
     elif out_h is not None or back_h is not None:
         road = f"в пути {P.fmt_hours(out_h if out_h is not None else back_h)} в одну сторону"
@@ -221,9 +224,36 @@ def _title(v):
     return v.title or P.VARIANT_TITLES.get(v.id, v.id)
 
 
+def _long_road(v):
+    """A long-distance train (ranking._long_leg_facts): the time on board as code wrote it («туда в пути 1 сутки
+    3 ч, выезд 19 ноября»), never hours the reader would take for a flight."""
+    f = v.facts or {}
+    if not (f.get("out_long_train") or f.get("back_long_train")):
+        return None
+    parts = []
+    for d, word in (("out", "туда"), ("back", "обратно")):
+        if f.get(f"{d}_on_road_ru"):
+            part = f"{word} поездом в пути {f[f'{d}_on_road_ru']}"
+            if d == "out" and f.get("out_days_before_checkin") and f.get("out_date"):
+                part += f", выезд {_day_month(f['out_date'])}"
+            if d == "back" and f.get("back_days_after_checkout") and f.get("back_arr_date"):
+                part += f", дома {_day_month(f['back_arr_date'])}"
+            parts.append(part)
+        elif getattr(v.totals, f"{d}_hours", None) is not None:
+            parts.append(f"{word} {P.fmt_hours(getattr(v.totals, f'{d}_hours'))}")
+    return "; ".join(parts)
+
+
+def _day_month(iso):
+    d = date.fromisoformat(str(iso)[:10])
+    return f"{d.day} {P.MONTHS_GEN[d.month - 1]}"
+
+
 def _road(v):
     t = v.totals
     out_h, back_h = getattr(t, "out_hours", None), getattr(t, "back_hours", None)
+    if _long_road(v):
+        return ", " + _long_road(v)
     if out_h is not None and back_h is not None:
         return f", туда {P.fmt_hours(out_h)}, обратно {P.fmt_hours(back_h)}"
     if out_h is not None or back_h is not None:

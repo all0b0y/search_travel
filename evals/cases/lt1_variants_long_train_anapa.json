@@ -1,0 +1,1070 @@
+{
+  "id": "lt1_variants_long_train_anapa",
+  "category": "C",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "VKO",
+          "SVO",
+          "ZIA",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "anapa",
+        "name": "Анапа",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2027-07-10",
+        "end": "2027-07-17",
+        "month": 7,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "family",
+        "adults": 2,
+        "children": 1,
+        "children_ages": [
+          7
+        ],
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "trains",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "family",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "train",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.nights",
+      "scope",
+      "prefs.district",
+      "prefs.transport"
+    ],
+    "assumptions": [
+      {
+        "field": "prefs.district",
+        "label": "семейный район"
+      },
+      {
+        "field": "scope",
+        "label": "поезд + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 44420,
+          "door_to_door_hours": 47.1,
+          "out_hours": 23.0,
+          "back_hours": 24.1
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Курский вокзал",
+            "to": "Анапа",
+            "start": "2027-07-09T06:05:00+03:00",
+            "end": "2027-07-10T04:51:00+03:00",
+            "carrier": "ФПК",
+            "price_rub": 11750
+          },
+          {
+            "type": "transfer",
+            "from": "Анапа",
+            "to": "Пирамида",
+            "start": "2027-07-10T05:01:00+03:00",
+            "end": "2027-07-10T05:16:00+03:00",
+            "carrier": null,
+            "price_rub": 350
+          },
+          {
+            "type": "stay",
+            "from": "Пирамида",
+            "to": "Пирамида",
+            "start": "2027-07-10T14:00:00+03:00",
+            "end": "2027-07-17T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 21100
+          },
+          {
+            "type": "transfer",
+            "from": "Пирамида",
+            "to": "Анапа",
+            "start": "2027-07-17T21:25:00+03:00",
+            "end": "2027-07-17T21:55:00+03:00",
+            "carrier": null,
+            "price_rub": 180
+          },
+          {
+            "type": "train",
+            "from": "Анапа",
+            "to": "Курский вокзал",
+            "start": "2027-07-17T22:25:00+03:00",
+            "end": "2027-07-18T21:58:00+03:00",
+            "carrier": "ФПК",
+            "price_rub": 11040
+          }
+        ],
+        "hotel": {
+          "name": "Пирамида",
+          "stars": 1,
+          "rating": 8.4,
+          "district": {
+            "labels": [
+              "тихий район",
+              "семейный район"
+            ],
+            "counts": {
+              "bar": 0,
+              "beach": 0,
+              "cafe": 1,
+              "convenience": 5,
+              "fast_food": 0,
+              "nightclub": 0,
+              "park": 4,
+              "pedestrian": 0,
+              "pharmacy": 4,
+              "playground": 0,
+              "pub": 1,
+              "restaurant": 1,
+              "station": 0,
+              "stop": 1,
+              "supermarket": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 44420,
+          "door_to_door_hours": 47.1,
+          "price_stay_rub": 21100,
+          "nights": 7,
+          "check_in_date": "2027-07-10",
+          "check_out_date": "2027-07-17",
+          "check_in_time": "14:00",
+          "check_out_time": "11:00",
+          "hotel_name": "Пирамида",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 1,
+          "hotel_rating": 8.4,
+          "hotel_reviews": 107,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2027-07-09",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 21100,
+          "distance_beach_m": 514,
+          "distance_center_m": 1100,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "out_night": true,
+          "out_kind": "train",
+          "out_price_rub": 11750,
+          "out_from": "Курский вокзал",
+          "out_to": "Анапа",
+          "out_date": "2027-07-09",
+          "out_dep_time": "06:05",
+          "out_arr_time": "04:51",
+          "out_arr_date": "2027-07-10",
+          "out_duration_min": 1366,
+          "out_duration_hours": 22.8,
+          "out_stops": 0,
+          "out_carrier": "ФПК",
+          "out_number": "024И",
+          "out_baggage": true,
+          "out_car_class": "platzkart",
+          "out_door_hours": 23.0,
+          "back_night": true,
+          "back_kind": "train",
+          "back_price_rub": 11040,
+          "back_from": "Анапа",
+          "back_to": "Курский вокзал",
+          "back_date": "2027-07-17",
+          "back_dep_time": "22:25",
+          "back_arr_time": "21:58",
+          "back_arr_date": "2027-07-18",
+          "back_duration_min": 1413,
+          "back_duration_hours": 23.6,
+          "back_stops": 0,
+          "back_carrier": "ФПК",
+          "back_number": "084В",
+          "back_baggage": true,
+          "back_car_class": "platzkart",
+          "back_door_hours": 24.1,
+          "out_days_before_checkin": 1,
+          "out_long_train": true,
+          "out_on_road_ru": "23 ч",
+          "out_road_ru": "туда поездом: отправление 9 июля в 06:05, прибытие 10 июля в 04:51, в пути 23 ч — выезжаете за день до заезда в отель",
+          "back_days_after_checkout": 1,
+          "back_long_train": true,
+          "back_on_road_ru": "1 сутки",
+          "back_road_ru": "обратно поездом: отправление 17 июля в 22:25, прибытие 18 июля в 21:58, в пути 1 сутки — дома на следующий день после выезда из отеля",
+          "transfer_out_min": 12,
+          "transfer_out_price_rub": 350,
+          "transfer_out_kind": "taxi",
+          "transfer_back_min": 23,
+          "transfer_back_price_rub": 180,
+          "transfer_back_kind": "public",
+          "price_transfers_rub": 530,
+          "price_transport_rub": 22790,
+          "arrival_at_hotel_time": "05:16",
+          "wait_before_checkin_min": 524,
+          "leave_hotel_time": "21:25",
+          "wait_after_checkout_min": 625,
+          "district_lively": 0.07,
+          "district_quiet": 0.93,
+          "district_family": 0.6,
+          "district_walkable": 0.33,
+          "poi_bar": 0,
+          "poi_beach": 0,
+          "poi_cafe": 1,
+          "poi_convenience": 5,
+          "poi_fast_food": 0,
+          "poi_nightclub": 0,
+          "poi_park": 4,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 4,
+          "poi_playground": 0,
+          "poi_pub": 1,
+          "poi_restaurant": 1,
+          "poi_station": 0,
+          "poi_stop": 1,
+          "poi_supermarket": 1,
+          "nearest_beach_m": 514,
+          "nearest_centre_m": 1100,
+          "nearest_major_road_m": 2781,
+          "nearest_stop_m": 492,
+          "district_fit": 0.624,
+          "comfort_score": 0.5272,
+          "ref_min_rub": 44420,
+          "delta_rub_vs_cheapest": 0,
+          "ref_min_hours": 46.6,
+          "delta_hours_vs_fastest": 0.5,
+          "transport_gap": "train_instead",
+          "transport_gap_ru": "Самолётов по маршруту Москва — Анапа в данных нет — собрал поездом",
+          "dest_airports": false
+        },
+        "sacrifices": [
+          {
+            "code": "slower",
+            "text": "+0,5 ч в пути",
+            "data": {
+              "delta_hours": 0.5
+            }
+          },
+          {
+            "code": "meals_less",
+            "text": "Без питания",
+            "data": {
+              "meals": "none"
+            }
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 1★",
+            "data": {
+              "stars": 1
+            }
+          },
+          {
+            "code": "lower_rating",
+            "text": "Рейтинг 8,4 — ниже остальных",
+            "data": {
+              "rating": 8.4
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "transport_switched",
+            "text": "Самолётов по маршруту Москва — Анапа в данных нет — собрал поездом",
+            "data": {
+              "mode": "train"
+            }
+          },
+          {
+            "code": "early_departure",
+            "text": "Ранний поезд — в 06:05",
+            "data": {
+              "time": "06:05",
+              "direction": "out"
+            }
+          },
+          {
+            "code": "night_arrival",
+            "text": "Прибытие ночью, в 04:51",
+            "data": {
+              "time": "04:51"
+            }
+          },
+          {
+            "code": "wait_before_checkin",
+            "text": "Приезд в 05:16, а заселение с 14:00 — ждать 8,7 ч",
+            "data": {
+              "minutes": 524,
+              "arrival": "05:16",
+              "check_in": "14:00"
+            }
+          },
+          {
+            "code": "wait_after_checkout",
+            "text": "После выезда из отеля 10,4 ч до отправления",
+            "data": {
+              "minutes": 625
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "no_playground",
+            "text": "Нет детской площадки рядом — с маленькими детьми неудобно",
+            "data": {}
+          }
+        ],
+        "fit": {
+          "score": 0.837,
+          "breakdown": {
+            "budget": 1.0,
+            "time": 0.989,
+            "district": 0.622,
+            "cancellation": 1.0,
+            "stars": 0.2,
+            "constraints": 1.0,
+            "rating": 0.84
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "Быстрее",
+        "totals": {
+          "rub": 46740,
+          "door_to_door_hours": 46.7,
+          "out_hours": 23.0,
+          "back_hours": 23.7
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Курский вокзал",
+            "to": "Анапа",
+            "start": "2027-07-09T06:05:00+03:00",
+            "end": "2027-07-10T04:51:00+03:00",
+            "carrier": "ФПК",
+            "price_rub": 11750
+          },
+          {
+            "type": "transfer",
+            "from": "Анапа",
+            "to": "Пирамида",
+            "start": "2027-07-10T05:01:00+03:00",
+            "end": "2027-07-10T05:16:00+03:00",
+            "carrier": null,
+            "price_rub": 350
+          },
+          {
+            "type": "stay",
+            "from": "Пирамида",
+            "to": "Пирамида",
+            "start": "2027-07-10T14:00:00+03:00",
+            "end": "2027-07-17T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 21100
+          },
+          {
+            "type": "transfer",
+            "from": "Пирамида",
+            "to": "Анапа",
+            "start": "2027-07-17T21:45:00+03:00",
+            "end": "2027-07-17T21:55:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "train",
+            "from": "Анапа",
+            "to": "Курский вокзал",
+            "start": "2027-07-17T22:25:00+03:00",
+            "end": "2027-07-18T21:58:00+03:00",
+            "carrier": "ФПК",
+            "price_rub": 11040
+          }
+        ],
+        "hotel": {
+          "name": "Пирамида",
+          "stars": 1,
+          "rating": 8.4,
+          "district": {
+            "labels": [
+              "тихий район",
+              "семейный район"
+            ],
+            "counts": {
+              "bar": 0,
+              "beach": 0,
+              "cafe": 1,
+              "convenience": 5,
+              "fast_food": 0,
+              "nightclub": 0,
+              "park": 4,
+              "pedestrian": 0,
+              "pharmacy": 4,
+              "playground": 0,
+              "pub": 1,
+              "restaurant": 1,
+              "station": 0,
+              "stop": 1,
+              "supermarket": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 46740,
+          "door_to_door_hours": 46.7,
+          "price_stay_rub": 21100,
+          "nights": 7,
+          "check_in_date": "2027-07-10",
+          "check_out_date": "2027-07-17",
+          "check_in_time": "14:00",
+          "check_out_time": "11:00",
+          "hotel_name": "Пирамида",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 1,
+          "hotel_rating": 8.4,
+          "hotel_reviews": 107,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2027-07-09",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 21100,
+          "distance_beach_m": 514,
+          "distance_center_m": 1100,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "out_night": true,
+          "out_kind": "train",
+          "out_price_rub": 11750,
+          "out_from": "Курский вокзал",
+          "out_to": "Анапа",
+          "out_date": "2027-07-09",
+          "out_dep_time": "06:05",
+          "out_arr_time": "04:51",
+          "out_arr_date": "2027-07-10",
+          "out_duration_min": 1366,
+          "out_duration_hours": 22.8,
+          "out_stops": 0,
+          "out_carrier": "ФПК",
+          "out_number": "024И",
+          "out_baggage": true,
+          "out_car_class": "platzkart",
+          "out_door_hours": 23.0,
+          "back_night": true,
+          "back_kind": "train",
+          "back_price_rub": 11040,
+          "back_from": "Анапа",
+          "back_to": "Курский вокзал",
+          "back_date": "2027-07-17",
+          "back_dep_time": "22:25",
+          "back_arr_time": "21:58",
+          "back_arr_date": "2027-07-18",
+          "back_duration_min": 1413,
+          "back_duration_hours": 23.6,
+          "back_stops": 0,
+          "back_carrier": "ФПК",
+          "back_number": "084В",
+          "back_baggage": true,
+          "back_car_class": "platzkart",
+          "back_door_hours": 23.7,
+          "out_days_before_checkin": 1,
+          "out_long_train": true,
+          "out_on_road_ru": "23 ч",
+          "out_road_ru": "туда поездом: отправление 9 июля в 06:05, прибытие 10 июля в 04:51, в пути 23 ч — выезжаете за день до заезда в отель",
+          "back_days_after_checkout": 1,
+          "back_long_train": true,
+          "back_on_road_ru": "1 сутки",
+          "back_road_ru": "обратно поездом: отправление 17 июля в 22:25, прибытие 18 июля в 21:58, в пути 1 сутки — дома на следующий день после выезда из отеля",
+          "transfer_out_min": 12,
+          "transfer_out_price_rub": 350,
+          "transfer_out_kind": "taxi",
+          "transfer_back_min": 7,
+          "transfer_back_price_rub": 2500,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 2850,
+          "price_transport_rub": 22790,
+          "arrival_at_hotel_time": "05:16",
+          "wait_before_checkin_min": 524,
+          "leave_hotel_time": "21:45",
+          "wait_after_checkout_min": 645,
+          "district_lively": 0.07,
+          "district_quiet": 0.93,
+          "district_family": 0.6,
+          "district_walkable": 0.33,
+          "poi_bar": 0,
+          "poi_beach": 0,
+          "poi_cafe": 1,
+          "poi_convenience": 5,
+          "poi_fast_food": 0,
+          "poi_nightclub": 0,
+          "poi_park": 4,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 4,
+          "poi_playground": 0,
+          "poi_pub": 1,
+          "poi_restaurant": 1,
+          "poi_station": 0,
+          "poi_stop": 1,
+          "poi_supermarket": 1,
+          "nearest_beach_m": 514,
+          "nearest_centre_m": 1100,
+          "nearest_major_road_m": 2781,
+          "nearest_stop_m": 492,
+          "district_fit": 0.624,
+          "comfort_score": 0.5476,
+          "ref_min_rub": 44420,
+          "delta_rub_vs_cheapest": 2320,
+          "ref_min_hours": 46.6,
+          "delta_hours_vs_fastest": 0.1,
+          "transport_gap": "train_instead",
+          "transport_gap_ru": "Самолётов по маршруту Москва — Анапа в данных нет — собрал поездом",
+          "dest_airports": false
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+2 320 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 2320
+            }
+          },
+          {
+            "code": "meals_less",
+            "text": "Без питания",
+            "data": {
+              "meals": "none"
+            }
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 1★",
+            "data": {
+              "stars": 1
+            }
+          },
+          {
+            "code": "lower_rating",
+            "text": "Рейтинг 8,4 — ниже остальных",
+            "data": {
+              "rating": 8.4
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "transport_switched",
+            "text": "Самолётов по маршруту Москва — Анапа в данных нет — собрал поездом",
+            "data": {
+              "mode": "train"
+            }
+          },
+          {
+            "code": "early_departure",
+            "text": "Ранний поезд — в 06:05",
+            "data": {
+              "time": "06:05",
+              "direction": "out"
+            }
+          },
+          {
+            "code": "night_arrival",
+            "text": "Прибытие ночью, в 04:51",
+            "data": {
+              "time": "04:51"
+            }
+          },
+          {
+            "code": "wait_before_checkin",
+            "text": "Приезд в 05:16, а заселение с 14:00 — ждать 8,7 ч",
+            "data": {
+              "minutes": 524,
+              "arrival": "05:16",
+              "check_in": "14:00"
+            }
+          },
+          {
+            "code": "wait_after_checkout",
+            "text": "После выезда из отеля 10,8 ч до отправления",
+            "data": {
+              "minutes": 645
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "no_playground",
+            "text": "Нет детской площадки рядом — с маленькими детьми неудобно",
+            "data": {}
+          }
+        ],
+        "fit": {
+          "score": 0.823,
+          "breakdown": {
+            "budget": 0.95,
+            "time": 0.998,
+            "district": 0.622,
+            "cancellation": 1.0,
+            "stars": 0.2,
+            "constraints": 1.0,
+            "rating": 0.84
+          }
+        },
+        "diff_rub": 2320,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      },
+      {
+        "id": "comfort",
+        "label": "3",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 77640,
+          "door_to_door_hours": 46.6,
+          "out_hours": 22.9,
+          "back_hours": 23.7
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Курский вокзал",
+            "to": "Анапа",
+            "start": "2027-07-09T06:05:00+03:00",
+            "end": "2027-07-10T04:51:00+03:00",
+            "carrier": "ФПК",
+            "price_rub": 19760
+          },
+          {
+            "type": "transfer",
+            "from": "Анапа",
+            "to": "Нина",
+            "start": "2027-07-10T05:01:00+03:00",
+            "end": "2027-07-10T05:11:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "stay",
+            "from": "Нина",
+            "to": "Нина",
+            "start": "2027-07-10T14:00:00+03:00",
+            "end": "2027-07-17T12:00:00+03:00",
+            "carrier": null,
+            "price_rub": 34620
+          },
+          {
+            "type": "transfer",
+            "from": "Нина",
+            "to": "Анапа",
+            "start": "2027-07-17T21:45:00+03:00",
+            "end": "2027-07-17T21:55:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "train",
+            "from": "Анапа",
+            "to": "Курский вокзал",
+            "start": "2027-07-17T22:25:00+03:00",
+            "end": "2027-07-18T21:58:00+03:00",
+            "carrier": "ФПК",
+            "price_rub": 18260
+          }
+        ],
+        "hotel": {
+          "name": "Нина",
+          "stars": 2,
+          "rating": 8.9,
+          "district": {
+            "labels": [
+              "движ",
+              "семейный район",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 3,
+              "beach": 1,
+              "cafe": 28,
+              "convenience": 7,
+              "fast_food": 6,
+              "nightclub": 0,
+              "park": 6,
+              "pedestrian": 11,
+              "pharmacy": 9,
+              "playground": 4,
+              "pub": 2,
+              "restaurant": 12,
+              "station": 0,
+              "stop": 2,
+              "supermarket": 2
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 77640,
+          "door_to_door_hours": 46.6,
+          "price_stay_rub": 34620,
+          "nights": 7,
+          "check_in_date": "2027-07-10",
+          "check_out_date": "2027-07-17",
+          "check_in_time": "14:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Нина",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 2,
+          "hotel_rating": 8.9,
+          "hotel_reviews": 977,
+          "meals": "breakfast",
+          "meals_ru": "завтраки",
+          "free_cancellation": true,
+          "free_cancellation_until": "2027-07-07",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 34620,
+          "distance_beach_m": 462,
+          "distance_center_m": 670,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "min_child_age": 6,
+          "infant_cot": "on_request",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 1300,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "out_night": true,
+          "out_kind": "train",
+          "out_price_rub": 19760,
+          "out_from": "Курский вокзал",
+          "out_to": "Анапа",
+          "out_date": "2027-07-09",
+          "out_dep_time": "06:05",
+          "out_arr_time": "04:51",
+          "out_arr_date": "2027-07-10",
+          "out_duration_min": 1366,
+          "out_duration_hours": 22.8,
+          "out_stops": 0,
+          "out_carrier": "ФПК",
+          "out_number": "024И",
+          "out_baggage": true,
+          "out_car_class": "coupe",
+          "out_door_hours": 22.9,
+          "back_night": true,
+          "back_kind": "train",
+          "back_price_rub": 18260,
+          "back_from": "Анапа",
+          "back_to": "Курский вокзал",
+          "back_date": "2027-07-17",
+          "back_dep_time": "22:25",
+          "back_arr_time": "21:58",
+          "back_arr_date": "2027-07-18",
+          "back_duration_min": 1413,
+          "back_duration_hours": 23.6,
+          "back_stops": 0,
+          "back_carrier": "ФПК",
+          "back_number": "084В",
+          "back_baggage": true,
+          "back_car_class": "coupe",
+          "back_door_hours": 23.7,
+          "out_days_before_checkin": 1,
+          "out_long_train": true,
+          "out_on_road_ru": "23 ч",
+          "out_road_ru": "туда поездом: отправление 9 июля в 06:05, прибытие 10 июля в 04:51, в пути 23 ч — выезжаете за день до заезда в отель",
+          "back_days_after_checkout": 1,
+          "back_long_train": true,
+          "back_on_road_ru": "1 сутки",
+          "back_road_ru": "обратно поездом: отправление 17 июля в 22:25, прибытие 18 июля в 21:58, в пути 1 сутки — дома на следующий день после выезда из отеля",
+          "transfer_out_min": 6,
+          "transfer_out_price_rub": 2500,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 6,
+          "transfer_back_price_rub": 2500,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 5000,
+          "price_transport_rub": 38020,
+          "arrival_at_hotel_time": "05:11",
+          "wait_before_checkin_min": 529,
+          "leave_hotel_time": "21:45",
+          "wait_after_checkout_min": 585,
+          "district_lively": 0.65,
+          "district_quiet": 0.54,
+          "district_family": 0.77,
+          "district_walkable": 0.81,
+          "poi_bar": 3,
+          "poi_beach": 1,
+          "poi_cafe": 28,
+          "poi_convenience": 7,
+          "poi_fast_food": 6,
+          "poi_nightclub": 0,
+          "poi_park": 6,
+          "poi_pedestrian": 11,
+          "poi_pharmacy": 9,
+          "poi_playground": 4,
+          "poi_pub": 2,
+          "poi_restaurant": 12,
+          "poi_station": 0,
+          "poi_stop": 2,
+          "poi_supermarket": 2,
+          "nearest_beach_m": 462,
+          "nearest_centre_m": 670,
+          "nearest_major_road_m": 2317,
+          "nearest_stop_m": 451,
+          "district_fit": 0.738,
+          "comfort_score": 0.6807,
+          "ref_min_rub": 44420,
+          "delta_rub_vs_cheapest": 33220,
+          "ref_min_hours": 46.6,
+          "delta_hours_vs_fastest": 0.0,
+          "transport_gap": "train_instead",
+          "transport_gap_ru": "Самолётов по маршруту Москва — Анапа в данных нет — собрал поездом",
+          "dest_airports": false
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+33 220 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 33220
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "transport_switched",
+            "text": "Самолётов по маршруту Москва — Анапа в данных нет — собрал поездом",
+            "data": {
+              "mode": "train"
+            }
+          },
+          {
+            "code": "early_departure",
+            "text": "Ранний поезд — в 06:05",
+            "data": {
+              "time": "06:05",
+              "direction": "out"
+            }
+          },
+          {
+            "code": "night_arrival",
+            "text": "Прибытие ночью, в 04:51",
+            "data": {
+              "time": "04:51"
+            }
+          },
+          {
+            "code": "wait_before_checkin",
+            "text": "Приезд в 05:11, а заселение с 14:00 — ждать 8,8 ч",
+            "data": {
+              "minutes": 529,
+              "arrival": "05:11",
+              "check_in": "14:00"
+            }
+          },
+          {
+            "code": "wait_after_checkout",
+            "text": "После выезда из отеля 9,8 ч до отправления",
+            "data": {
+              "minutes": 585
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.65
+            }
+          },
+          {
+            "code": "min_child_age",
+            "text": "Детям младше 6 лет нельзя",
+            "data": {
+              "age": 6
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.751,
+          "breakdown": {
+            "budget": 0.572,
+            "time": 1.0,
+            "district": 0.74,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "constraints": 1.0,
+            "rating": 0.89
+          }
+        },
+        "diff_rub": 33220,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      }
+    ],
+    "recommended_hint": "cheapest",
+    "questions": [
+      {
+        "id": "q_budget",
+        "text": "Какой бюджет на всех, примерно?"
+      },
+      {
+        "id": "q_nights",
+        "text": "На сколько ночей?"
+      }
+    ],
+    "upsell_candidates": []
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "поезд"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "в\\s+пути\\s+(23\\s+ч|1\\s+сутки)"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "(?<!\\d)9\\s+июля",
+          "за\\s+день\\s+до\\s+заезда"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "(туда|обратно|поездом|в\\s+пути)\\s+\\d+,\\d\\s*ч"
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "перел[её]т|\\bлететь|\\bвылет"
+    },
+    {
+      "type": "predicate",
+      "name": "no_unbacked_claims"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 2
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Moscow → Anapa, 10–17 July, a family: no plane flies to Anapa in the data, so code built the trip by train (risk transport_switched). The recommended «Дешевле» leaves 2027-07-09 and arrives on the check-in day; the card says it goes by train, the time on board from out_on_road_ru / back_on_road_ru («в пути 23 ч») and the leave day from out_road_ru — never decimal hours for these legs and never a flight."
+}

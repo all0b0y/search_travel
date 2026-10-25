@@ -1,0 +1,352 @@
+{
+  "id": "lt2_destinations_south_by_train_in_budget",
+  "category": "A",
+  "card": "present.destinations",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": []
+      },
+      "destination": null,
+      "traits": [
+        "sea"
+      ],
+      "dates": {
+        "start": null,
+        "end": null,
+        "month": 7,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": {
+        "max": 120000
+      },
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "prefs.district",
+        "label": "тихий район"
+      },
+      {
+        "field": "scope",
+        "label": "перелёт + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "hurghada",
+        "label": "1",
+        "name": "Хургада",
+        "country": "Египет",
+        "price_from_rub": 93260,
+        "nights": 7,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 34.7,
+          "sea_c": 29.0,
+          "rain_days": 0.0
+        },
+        "travel_time_h": 4.7,
+        "match": [
+          "sea"
+        ],
+        "facts": {
+          "transport": "plane",
+          "transport_ru": "самолётом",
+          "flight_price_rub": 66530,
+          "stay_price_rub": 26730,
+          "check_in": "2027-07-03",
+          "check_out": "2027-07-10",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "resort",
+          "description": "Курорт на Красном море, известный коралловыми рифами и дайвингом.",
+          "within_budget": true
+        }
+      },
+      {
+        "id": "sharm-el-sheikh",
+        "label": "2",
+        "name": "Шарм-эш-Шейх",
+        "country": "Египет",
+        "price_from_rub": 87500,
+        "nights": 7,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 39.7,
+          "sea_c": 29.6,
+          "rain_days": 0.0
+        },
+        "travel_time_h": 4.6,
+        "match": [
+          "sea"
+        ],
+        "facts": {
+          "transport": "plane",
+          "transport_ru": "самолётом",
+          "flight_price_rub": 66980,
+          "stay_price_rub": 20520,
+          "check_in": "2027-07-03",
+          "check_out": "2027-07-10",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "resort",
+          "description": "Курорт на юге Синайского полуострова рядом с национальным парком Рас-Мохаммед.",
+          "within_budget": true
+        }
+      },
+      {
+        "id": "belek",
+        "label": "3",
+        "name": "Белек",
+        "country": "Турция",
+        "price_from_rub": 106770,
+        "nights": 7,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 35.7,
+          "sea_c": 29.6,
+          "rain_days": 1.2
+        },
+        "travel_time_h": 3.3,
+        "match": [
+          "sea"
+        ],
+        "facts": {
+          "transport": "plane",
+          "transport_ru": "самолётом",
+          "flight_price_rub": 66330,
+          "stay_price_rub": 40440,
+          "check_in": "2027-07-03",
+          "check_out": "2027-07-10",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "resort",
+          "description": "Курортная зона с крупными отелями, песчаными пляжами и полями для гольфа.",
+          "within_budget": true
+        }
+      },
+      {
+        "id": "istanbul",
+        "label": "4",
+        "name": "Стамбул",
+        "country": "Турция",
+        "price_from_rub": 110020,
+        "nights": 7,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 28.8,
+          "sea_c": 24.9,
+          "rain_days": 4.8
+        },
+        "travel_time_h": 2.8,
+        "match": [
+          "sea"
+        ],
+        "facts": {
+          "transport": "plane",
+          "transport_ru": "самолётом",
+          "flight_price_rub": 56710,
+          "stay_price_rub": 53310,
+          "check_in": "2027-07-03",
+          "check_out": "2027-07-10",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "city",
+          "description": "Крупнейший город Турции на берегах Босфора с собором Святой Софии и Гранд-базаром.",
+          "within_budget": true
+        }
+      },
+      {
+        "id": "sochi",
+        "label": "5",
+        "name": "Сочи",
+        "country": "Россия",
+        "price_from_rub": 75660,
+        "nights": 7,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 26.8,
+          "sea_c": 26.3,
+          "rain_days": 11.2
+        },
+        "travel_time_h": 27.9,
+        "match": [
+          "sea"
+        ],
+        "facts": {
+          "transport": "train",
+          "transport_ru": "поездом",
+          "train_price_rub": 15550,
+          "stay_price_rub": 60110,
+          "check_in": "2027-07-03",
+          "check_out": "2027-07-10",
+          "long_train": true,
+          "on_road_ru": "1 сутки 4 ч",
+          "leave_date": "2027-07-02",
+          "leave_days_before": 1,
+          "road_ru": "поездом, в пути 1 сутки 4 ч; выезд 2 июля — за день до заезда",
+          "price_includes": "поезд туда и обратно на двоих по самым дешёвым билетам и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "resort",
+          "description": "Город-курорт на Черноморском побережье Краснодарского края.",
+          "within_budget": true
+        }
+      },
+      {
+        "id": "adler",
+        "label": "6",
+        "name": "Адлер (Сириус)",
+        "country": "Россия",
+        "price_from_rub": 80870,
+        "nights": 7,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 27.1,
+          "sea_c": 26.6,
+          "rain_days": 12.1
+        },
+        "travel_time_h": 25.9,
+        "match": [
+          "sea"
+        ],
+        "facts": {
+          "transport": "train",
+          "transport_ru": "поездом",
+          "train_price_rub": 17650,
+          "stay_price_rub": 63220,
+          "check_in": "2027-07-03",
+          "check_out": "2027-07-10",
+          "long_train": true,
+          "on_road_ru": "1 сутки 2 ч",
+          "leave_date": "2027-07-02",
+          "leave_days_before": 1,
+          "road_ru": "поездом, в пути 1 сутки 2 ч; выезд 2 июля — за день до заезда",
+          "price_includes": "поезд туда и обратно на двоих по самым дешёвым билетам и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "resort",
+          "description": "Курортный район Сочи рядом с аэропортом и федеральной территорией Сириус с Олимпийским парком.",
+          "within_budget": true
+        }
+      }
+    ],
+    "questions": [],
+    "image": null,
+    "insight": null
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 0
+    },
+    {
+      "type": "path_equals",
+      "path": "/recommended_id",
+      "value": "hurghada"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "поезд"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "Сочи|Адле"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "в\\s+пути\\s+(1\\s+сутки\\s+4\\s+ч|1\\s+сутки\\s+2\\s+ч)"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "(туда|обратно|поездом|в\\s+пути)\\s+\\d+,\\d\\s*ч"
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "ничего не укладывается"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 0
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "A budget-led inspiration from Moscow (sea, July, 7 nights, 120 000 ₽): the south fits by long-distance train (facts.long_train, on_road_ru, road_ru «поездом, в пути … ; выезд … — за день до заезда»). The card names each train place with its transport and its time on board as written, never decimal hours, and never «ничего не укладывается»."
+}

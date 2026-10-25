@@ -43,6 +43,9 @@ import sqlite3
 from datetime import date, datetime, timezone
 from pathlib import Path
 
+from ostrovok_mcp.rail import (DAY_TRAIN_MAX_KM, LONG_TRAIN_LEAD_DAYS, TRAIN_COUNTRY,  # noqa: F401
+                               TRAIN_MAX_KM, TRAIN_MIN_KM)
+
 REPO = Path(__file__).resolve().parent.parent
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 CBR_URL = "https://www.cbr.ru/scripts/XML_daily.asp"
@@ -135,12 +138,10 @@ def _wish_forms():
 
 
 WISH_FORMS = _wish_forms()
-# Train rule mirrored from ostrovok_mcp/trains.py (pair_note): Russian domestic pairs only, both places
-# with a station in the catalog, great circle 30..1000 km. tests/agent/domain/test_opendata.py keeps the
-# constants in sync with the mock.
-TRAIN_COUNTRY = "RU"
-TRAIN_MAX_KM = 1000
-TRAIN_MIN_KM = 30
+# Train rule shared with the mock (ostrovok_mcp/rail.py, used by ostrovok_mcp/trains.py pair_note): Russian
+# domestic pairs only, both places with a station in the catalog, great circle 30..2500 km; over 1000 km
+# (DAY_TRAIN_MAX_KM) the mock sells only long-distance sleepers (up to ~two days on the road).
+# (DAY_TRAIN_MAX_KM, LONG_TRAIN_LEAD_DAYS, TRAIN_COUNTRY, TRAIN_MAX_KM, TRAIN_MIN_KM are imported above.)
 
 
 def _resolve(path):
@@ -245,18 +246,31 @@ def name_score(query, name):
     return round(ratio * 0.95, 3) if ratio >= 0.86 else 0.0
 
 
-def train_reachable(origin, dest):
-    """True when the mock sells trains between two place records (country_code, stations, lat, lon):
-    the rule of ostrovok_mcp/trains.py — both in Russia, both with a station, great circle 30..1000 km."""
+def train_km(origin, dest):
+    """Great-circle km between two place records that both have a station in Russia, else None."""
     if not origin or not dest:
-        return False
+        return None
     for p in (origin, dest):
         if p.get("country_code") != TRAIN_COUNTRY or not p.get("stations"):
-            return False
+            return None
         if p.get("lat") is None or p.get("lon") is None:
-            return False
-    km = gc_km(origin["lat"], origin["lon"], dest["lat"], dest["lon"])
-    return TRAIN_MIN_KM <= km <= TRAIN_MAX_KM
+            return None
+    return gc_km(origin["lat"], origin["lon"], dest["lat"], dest["lon"])
+
+
+def train_reachable(origin, dest):
+    """True when the mock sells trains between two place records (country_code, stations, lat, lon):
+    the rule of ostrovok_mcp/rail.py — both in Russia, both with a station, great circle 30..2500 km."""
+    km = train_km(origin, dest)
+    return km is not None and TRAIN_MIN_KM <= km <= TRAIN_MAX_KM
+
+
+def long_train_pair(origin, dest):
+    """A train-reachable pair over DAY_TRAIN_MAX_KM (1000 km): the mock sells only long-distance sleepers there
+    (about a day or more on the road), shown only when the user wants a train, the pair has no flight, or a
+    budget-led inspiration where they fit the budget."""
+    km = train_km(origin, dest)
+    return km is not None and DAY_TRAIN_MAX_KM < km <= TRAIN_MAX_KM
 
 
 def _json(text, default):

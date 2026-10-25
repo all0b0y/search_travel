@@ -228,7 +228,9 @@
     "format": "Code rules on the user's message (steps.train_cues, after the rooms cues). any_train_cues first: a match drops the constraints train:sapsan / train:high_speed. Else sapsan_cues add train:sapsan, high_speed_cues add train:high_speed; either also sets prefs.transport = train. Ranking keeps only high-speed trains (the mock's train_kind high_speed) in each direction that has one, else relaxes it with a relaxed_pref risk.",
     "any_train_cues": ["не сапсан", "без сапсан", "не обязательно сапсан", "необязательно сапсан", "не обязательно на сапсан", "необязательно на сапсан", "не обязательно скоростн", "необязательно скоростн", "не скоростн", "любой поезд", "любым поездом", "любом поезде", "обычный поезд", "обычным поездом", "обычном поезде", "ночной поезд", "ночным поездом", "ночном поезде"],
     "sapsan_cues": ["на сапсан", "сапсаном", "в сапсане"],
-    "high_speed_cues": ["скоростном поезде", "скоростным поездом", "скоростной поезд", "на скоростном"]
+    "high_speed_cues": ["скоростном поезде", "скоростным поездом", "скоростной поезд", "на скоростном"],
+    "long_format": "Long-distance trains (the mock: Russian pairs 1000..2500 km, sleepers only, up to ~two days on board) are offered as a destination (budget-led inspiration, a train wish, other places) only when one way takes at most long_max_hours_per_night x the trip's nights (steps.long_train_fits_trip).",
+    "long_max_hours_per_night": 6
   },
   "pets": {
     "format": "Code rules (steps.step_info_lookup): with a pet in the brief, or a question with one of question_cues, the transport legs of the info facts carry pets_rule lines (from the offer's pets terms) and a pet_rules record carries general_ru. general_ru: RZD rules since 01.01.2025, cautious wording, no fees (fees are per offer and synthetic).",

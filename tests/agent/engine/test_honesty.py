@@ -284,7 +284,7 @@ def test_yaroslavl_by_plane_says_so_and_offers_the_train(live):
     assert min(v.totals.rub for v in h.session().variants) == vs[0].facts["transport_gap_from_rub"]
 
 
-@pytest.mark.parametrize("origin,dest,dest_id", [("Санкт-Петербург", "Геленджик", "gelendzhik"),
+@pytest.mark.parametrize("origin,dest,dest_id", [("Новосибирск", "Анапа", "anapa"),        # ~3400 km: no train
                                                  ("Москва", "Суздаль", "suzdal")])
 def test_nothing_reachable_offers_places_that_are(live, origin, dest, dest_id):
     h = live

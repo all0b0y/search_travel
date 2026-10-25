@@ -101,10 +101,10 @@ def build_present_inputs():
         _turn(engine, backend, sid, "Анталья из Екатеринбурга 20–23 ноября, только прямые рейсы", **{
             "origin.city": "Екатеринбург", "destination.name": "Анталья", "prefs.direct_only": True, **DATES})
         out["direct_only"] = _last_input(backend, "present.variants")
-        # nothing reachable: Saint Petersburg -> Gelendzhik
+        # nothing reachable: Samara -> Bodrum (Saint Petersburg -> Gelendzhik has long-distance trains now)
         sid = engine.new_session(profile_id="demo", now=NOW)
-        _turn(engine, backend, sid, "Геленджик из Питера 20–23 ноября", **{
-            "origin.city": "Санкт-Петербург", "destination.name": "Геленджик", **DATES})
+        _turn(engine, backend, sid, "Бодрум из Самары 20–23 ноября", **{
+            "origin.city": "Самара", "destination.name": "Бодрум", **DATES})
         out["nothing"] = _last_input(backend, "present.variants")
         # no plane: Moscow -> Yaroslavl, built by train
         sid = engine.new_session(profile_id="demo", now=NOW)
@@ -180,7 +180,7 @@ def present_cases():
                  a("regex_absent", path="/message", pattern=NEVER + r"|одной\s+кнопк"),
                  pred("no_unbacked_claims"),
                  pred("asks_at_most", n=len(no.get("questions") or []))],
-             f"Saint Petersburg → Gelendzhik: no flight and no train in the data (Gelendzhik has an airport, so "
+             f"Samara → Bodrum: no flight and no train in the data (Bodrum has an airport, so "
              f"never «нет аэропорта»); the stays are what they are, and the places with transport ({', '.join(places)}) "
              f"are named with their price — buttons below."),
         case("h9_variants_train_instead", "C", "present.variants", ti,

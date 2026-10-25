@@ -28,9 +28,10 @@ def test_counts_and_categories():
     # + 12 location / best-time / named-place cases (evals/authoring/cases_location.py)
     # + 5 held-out-2 cases: no_hostel, trains in a budget, price_includes, other places (cases_holdout2.py)
     # + 10 honesty cases: open dates, unsold services, night trains, transport gaps, kitchen (cases_honesty.py)
-    assert len(CASES) == 79
+    # + 2 long-distance train cases: a variants card and a budget inspiration (cases_long_trains.py)
+    assert len(CASES) == 81
     cats = Counter(load(p)["category"] for p in CASES)
-    assert cats == {"A": 9, "A_photo": 5, "B": 11, "C": 5, "D": 4, "E": 16, "F": 10, "segments": 4, "edge": 10,
+    assert cats == {"A": 10, "A_photo": 5, "B": 11, "C": 6, "D": 4, "E": 16, "F": 10, "segments": 4, "edge": 10,
                     "tone": 5}
     assert len(SCENARIOS) == 25
     assert len(HOLDOUT) == 10

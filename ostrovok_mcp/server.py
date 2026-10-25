@@ -23,7 +23,7 @@ DESCRIPTIONS = {
     "search_hotels": "Hotel offers in a destination for the stay and party, with filters; up to 40, best first.",
     "get_hotel": "Hotel details: policies, room types, real photo links only.",
     "search_flights": "Flight offers (direct or 1 stop) for the date +- flex_days and the party (RUB).",
-    "search_trains": "Train offers for Russian domestic routes up to ~1000 km; empty with a note otherwise.",
+    "search_trains": "Train offers for Russian domestic routes up to ~2500 km (over 1000 km: 1-2 long-distance sleepers a day, up to two days on the road); empty with a note otherwise.",
     "search_transfers": "Transfer offers between an airport/station/point and a hotel (reverse=true: back).",
     "cart_create": "Get or create the open cart of a session.",
     "cart_add": "Add an offer to the session's cart by offer id (same slot is replaced); returns the cart.",

@@ -354,15 +354,18 @@ def test_strict_name_score(query, name, ok):
 # ---------------------------------------------------------------- train rule (L3 s03)
 
 def test_train_reachable_mirrors_the_mock_rule():
-    from agent.opendata import TRAIN_MAX_KM, TRAIN_MIN_KM, train_reachable
+    from agent.opendata import TRAIN_MAX_KM, TRAIN_MIN_KM, long_train_pair, train_reachable
     from ostrovok_mcp import trains
-    assert TRAIN_MAX_KM == trains.MAX_KM and TRAIN_MIN_KM == 30
+    assert TRAIN_MAX_KM == trains.MAX_KM == 2500 and TRAIN_MIN_KM == 30 and trains.DAY_MAX_KM == 1000
     spb = {"country_code": "RU", "stations": ["Московский вокзал"], "lat": 59.94, "lon": 30.31}
     msk = {"country_code": "RU", "stations": ["Ленинградский вокзал"], "lat": 55.76, "lon": 37.62}
     sochi = {"country_code": "RU", "stations": ["Сочи"], "lat": 43.59, "lon": 39.72}
     istanbul = {"country_code": "TR", "stations": ["Sirkeci"], "lat": 41.0, "lon": 28.97}
     no_station = {"country_code": "RU", "stations": [], "lat": 56.42, "lon": 40.45}
-    assert train_reachable(spb, msk) and not train_reachable(spb, sochi)        # 630 km vs ~1950 km
+    vladivostok = {"country_code": "RU", "stations": ["Владивосток"], "lat": 43.12, "lon": 131.89}
+    assert train_reachable(spb, msk) and train_reachable(spb, sochi)            # 630 km, ~1950 km (sleepers)
+    assert not long_train_pair(spb, msk) and long_train_pair(spb, sochi)
+    assert not train_reachable(msk, vladivostok) and not long_train_pair(msk, vladivostok)   # ~6400 km
     assert not train_reachable(spb, istanbul) and not train_reachable(msk, no_station)
     assert not train_reachable(None, msk)
 

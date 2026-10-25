@@ -7,15 +7,15 @@
     "stage": "inspiration",
     "brief": {
       "origin": {
-        "city": "Санкт-Петербург",
+        "city": "Самара",
         "iata": [
-          "LED"
+          "KUF"
         ]
       },
       "destination": {
-        "id": "gelendzhik",
-        "name": "Геленджик",
-        "country": "Россия"
+        "id": "bodrum",
+        "name": "Бодрум",
+        "country": "Турция"
       },
       "traits": null,
       "dates": {
@@ -82,7 +82,7 @@
         "label": "1",
         "title": "Дешевле",
         "totals": {
-          "rub": 8110,
+          "rub": 11690,
           "door_to_door_hours": 0.0,
           "out_hours": null,
           "back_hours": null
@@ -90,124 +90,296 @@
         "steps": [
           {
             "type": "stay",
-            "from": "У Нины Николаевны",
-            "to": "У Нины Николаевны",
-            "start": "2026-11-20T15:00:00+03:00",
-            "end": "2026-11-23T11:00:00+03:00",
+            "from": "Denizati Pension",
+            "to": "Denizati Pension",
+            "start": "2026-11-20T14:00:00+03:00",
+            "end": "2026-11-23T12:00:00+03:00",
             "carrier": null,
-            "price_rub": 8110
+            "price_rub": 11690
           }
         ],
         "hotel": {
-          "name": "У Нины Николаевны",
+          "name": "Denizati Pension",
           "stars": 2,
-          "rating": 8.9,
+          "rating": 8.3,
           "district": {
             "labels": [
-              "тихий район",
-              "семейный район",
+              "движ",
               "пешком до всего"
             ],
             "counts": {
-              "bar": 0,
+              "bar": 13,
               "beach": 1,
-              "cafe": 14,
-              "convenience": 11,
-              "fast_food": 4,
-              "nightclub": 0,
-              "park": 0,
-              "pedestrian": 2,
-              "pharmacy": 4,
-              "playground": 5,
-              "pub": 0,
-              "restaurant": 3,
+              "cafe": 22,
+              "convenience": 4,
+              "fast_food": 11,
+              "nightclub": 5,
+              "park": 1,
+              "pedestrian": 4,
+              "pharmacy": 3,
+              "playground": 4,
+              "pub": 3,
+              "restaurant": 30,
               "station": 0,
-              "stop": 22,
-              "supermarket": 6
+              "stop": 0,
+              "supermarket": 4
             }
           }
         },
         "facts": {
-          "total_rub": 8110,
+          "total_rub": 11690,
           "door_to_door_hours": 0.0,
-          "price_stay_rub": 8110,
+          "price_stay_rub": 11690,
           "nights": 3,
           "check_in_date": "2026-11-20",
           "check_out_date": "2026-11-23",
-          "check_in_time": "15:00",
-          "check_out_time": "11:00",
-          "hotel_name": "У Нины Николаевны",
+          "check_in_time": "14:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Denizati Pension",
           "hotel_kind": "guest_house",
           "hotel_stars": 2,
-          "hotel_rating": 8.9,
-          "hotel_reviews": 94,
+          "hotel_rating": 8.3,
+          "hotel_reviews": 68,
           "meals": "none",
           "meals_ru": "без питания",
           "free_cancellation": true,
-          "free_cancellation_until": "2026-11-17",
+          "free_cancellation_until": "2026-11-13",
           "cancellation_penalty_pct": 100,
-          "cancellation_penalty_rub": 8110,
-          "distance_beach_m": 494,
-          "distance_center_m": 1199,
+          "cancellation_penalty_rub": 11690,
+          "distance_beach_m": 49,
+          "distance_center_m": 314,
           "room_name": "Двухместный номер",
           "room_capacity_adults": 2,
           "room_capacity_children": 1,
           "pets_allowed": false,
           "children_allowed": true,
-          "infant_cot": "paid",
+          "infant_cot": "on_request",
           "early_checkin_available": true,
-          "early_checkin_price_rub": 1800,
+          "early_checkin_price_rub": 1600,
           "kitchen": false,
           "step_free": false,
           "lift": false,
-          "district_lively": 0.21,
-          "district_quiet": 0.95,
-          "district_family": 0.7,
-          "district_walkable": 0.89,
-          "poi_bar": 0,
+          "district_lively": 1.0,
+          "district_quiet": 0.3,
+          "district_family": 0.38,
+          "district_walkable": 0.75,
+          "poi_bar": 13,
           "poi_beach": 1,
-          "poi_cafe": 14,
-          "poi_convenience": 11,
-          "poi_fast_food": 4,
-          "poi_nightclub": 0,
-          "poi_park": 0,
-          "poi_pedestrian": 2,
-          "poi_pharmacy": 4,
-          "poi_playground": 5,
-          "poi_pub": 0,
-          "poi_restaurant": 3,
+          "poi_cafe": 22,
+          "poi_convenience": 4,
+          "poi_fast_food": 11,
+          "poi_nightclub": 5,
+          "poi_park": 1,
+          "poi_pedestrian": 4,
+          "poi_pharmacy": 3,
+          "poi_playground": 4,
+          "poi_pub": 3,
+          "poi_restaurant": 30,
           "poi_station": 0,
-          "poi_stop": 22,
-          "poi_supermarket": 6,
-          "nearest_beach_m": 494,
-          "nearest_centre_m": 1199,
-          "nearest_major_road_m": 1883,
-          "nearest_stop_m": 95,
-          "district_fit": 0.881,
-          "comfort_score": 0.6133,
+          "poi_stop": 0,
+          "poi_supermarket": 4,
+          "nearest_beach_m": 49,
+          "nearest_centre_m": 314,
+          "nearest_major_road_m": 822,
+          "nearest_stop_m": 1093,
+          "district_fit": 0.443,
+          "comfort_score": 0.5398,
           "no_transport": true,
-          "ref_min_rub": 8110,
+          "ref_min_rub": 11690,
           "delta_rub_vs_cheapest": 0,
-          "also_comfort": true,
-          "coincide_note": "Самый дешёвый вариант оказался и самым комфортным — отдельной карточки нет.",
           "transport_gap": "none",
-          "transport_gap_ru": "По маршруту Санкт-Петербург — Геленджик в данных нет ни рейсов, ни поездов — показываю только проживание",
-          "dest_airports": false
+          "transport_gap_ru": "По маршруту Самара — Бодрум в данных нет ни рейсов, ни поездов — показываю только проживание",
+          "dest_airports": true
         },
-        "sacrifices": [],
+        "sacrifices": [
+          {
+            "code": "meals_less",
+            "text": "Без питания",
+            "data": {
+              "meals": "none"
+            }
+          },
+          {
+            "code": "lower_rating",
+            "text": "Рейтинг 8,3 — ниже остальных",
+            "data": {
+              "rating": 8.3
+            }
+          }
+        ],
         "risks": [
           {
             "code": "no_transport",
-            "text": "По маршруту Санкт-Петербург — Геленджик в данных нет ни рейсов, ни поездов — показываю только проживание",
+            "text": "По маршруту Самара — Бодрум в данных нет ни рейсов, ни поездов — показываю только проживание",
             "data": {}
           }
         ],
-        "not_for": [],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 1.0
+            }
+          }
+        ],
         "fit": {
-          "score": 0.882,
+          "score": 0.767,
           "breakdown": {
             "budget": 1.0,
-            "district": 0.883,
+            "district": 0.443,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "rating": 0.83
+          }
+        },
+        "diff_rub": 2120,
+        "diff_word": "дешевле",
+        "over_budget_rub": null
+      },
+      {
+        "id": "comfort",
+        "label": "2",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 13810,
+          "door_to_door_hours": 0.0,
+          "out_hours": null,
+          "back_hours": null
+        },
+        "steps": [
+          {
+            "type": "stay",
+            "from": "Leila Villa",
+            "to": "Leila Villa",
+            "start": "2026-11-20T15:00:00+03:00",
+            "end": "2026-11-23T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 13810
+          }
+        ],
+        "hotel": {
+          "name": "Leila Villa",
+          "stars": 2,
+          "rating": 8.9,
+          "district": {
+            "labels": [
+              "тихий район"
+            ],
+            "counts": {
+              "bar": 0,
+              "beach": 2,
+              "cafe": 0,
+              "convenience": 2,
+              "fast_food": 1,
+              "nightclub": 0,
+              "park": 0,
+              "pedestrian": 1,
+              "pharmacy": 1,
+              "playground": 0,
+              "pub": 0,
+              "restaurant": 5,
+              "station": 0,
+              "stop": 0,
+              "supermarket": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 13810,
+          "door_to_door_hours": 0.0,
+          "price_stay_rub": 13810,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "15:00",
+          "check_out_time": "11:00",
+          "hotel_name": "Leila Villa",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 2,
+          "hotel_rating": 8.9,
+          "hotel_reviews": 536,
+          "meals": "breakfast",
+          "meals_ru": "завтраки",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-18",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 13810,
+          "distance_beach_m": 442,
+          "distance_center_m": 1355,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": true,
+          "children_allowed": true,
+          "infant_cot": "paid",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 1400,
+          "kitchen": false,
+          "step_free": true,
+          "lift": true,
+          "district_lively": 0.06,
+          "district_quiet": 0.98,
+          "district_family": 0.37,
+          "district_walkable": 0.32,
+          "poi_bar": 0,
+          "poi_beach": 2,
+          "poi_cafe": 0,
+          "poi_convenience": 2,
+          "poi_fast_food": 1,
+          "poi_nightclub": 0,
+          "poi_park": 0,
+          "poi_pedestrian": 1,
+          "poi_pharmacy": 1,
+          "poi_playground": 0,
+          "poi_pub": 0,
+          "poi_restaurant": 5,
+          "poi_station": 0,
+          "poi_stop": 0,
+          "poi_supermarket": 1,
+          "nearest_beach_m": 442,
+          "nearest_centre_m": 1355,
+          "nearest_major_road_m": 1072,
+          "nearest_stop_m": 2109,
+          "district_fit": 0.783,
+          "comfort_score": 0.6479,
+          "no_transport": true,
+          "ref_min_rub": 11690,
+          "delta_rub_vs_cheapest": 2120,
+          "transport_gap": "none",
+          "transport_gap_ru": "По маршруту Самара — Бодрум в данных нет ни рейсов, ни поездов — показываю только проживание",
+          "dest_airports": true
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+2 120 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 2120
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "no_transport",
+            "text": "По маршруту Самара — Бодрум в данных нет ни рейсов, ни поездов — показываю только проживание",
+            "data": {}
+          }
+        ],
+        "not_for": [
+          {
+            "code": "quiet_no_nightlife",
+            "text": "Тихо и почти нет баров — не для тех, кто хочет вечерней движухи",
+            "data": {
+              "quiet": 0.985
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.791,
+          "breakdown": {
+            "budget": 0.846,
+            "district": 0.779,
             "cancellation": 1.0,
             "stars": 0.4,
             "rating": 0.89
@@ -218,7 +390,7 @@
         "over_budget_rub": null
       }
     ],
-    "recommended_hint": "cheapest",
+    "recommended_hint": "comfort",
     "questions": [
       {
         "id": "q_budget",
@@ -228,45 +400,45 @@
     "upsell_candidates": [],
     "other_places": [
       {
-        "id": "sochi",
-        "name": "Сочи",
-        "price_from_rub": 55760,
+        "id": "antalya",
+        "name": "Анталья",
+        "price_from_rub": 74230,
         "nights": 3,
         "transport_ru": "самолётом",
         "within_budget": null,
         "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
       },
       {
-        "id": "adler",
-        "name": "Адлер (Сириус)",
-        "price_from_rub": 55190,
+        "id": "alanya",
+        "name": "Аланья",
+        "price_from_rub": 74190,
         "nights": 3,
         "transport_ru": "самолётом",
         "within_budget": null,
         "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
       },
       {
-        "id": "svetlogorsk",
-        "name": "Светлогорск",
-        "price_from_rub": 20540,
+        "id": "side",
+        "name": "Сиде",
+        "price_from_rub": 73340,
         "nights": 3,
-        "transport_ru": "поездом",
+        "transport_ru": "самолётом",
         "within_budget": null,
-        "price_includes": "поезд туда и обратно на двоих по самым дешёвым билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+        "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
       }
     ],
     "offers": [
       {
         "kind": "place",
-        "label": "Смотреть Сочи"
+        "label": "Смотреть Анталья"
       },
       {
         "kind": "place",
-        "label": "Смотреть Адлер (Сириус)"
+        "label": "Смотреть Аланья"
       },
       {
         "kind": "place",
-        "label": "Смотреть Светлогорск"
+        "label": "Смотреть Сиде"
       }
     ]
   },
@@ -324,7 +496,7 @@
       "name": "mentions_any",
       "args": {
         "words": [
-          "Сочи|Адлер|Светл"
+          "Антал|Алань|Сиде"
         ]
       }
     },
@@ -346,5 +518,5 @@
     }
   ],
   "runs": 5,
-  "notes": "Saint Petersburg → Gelendzhik: no flight and no train in the data (Gelendzhik has an airport, so never «нет аэропорта»); the stays are what they are, and the places with transport (Сочи, Адлер (Сириус), Светлогорск) are named with their price — buttons below."
+  "notes": "Samara → Bodrum: no flight and no train in the data (Bodrum has an airport, so never «нет аэропорта»); the stays are what they are, and the places with transport (Анталья, Аланья, Сиде) are named with their price — buttons below."
 }

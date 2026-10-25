@@ -374,7 +374,7 @@ class TrainOffer(Model):
 
 
 class SearchTrainsOut(Model):
-    offers: list[TrainOffer]    # empty outside domestic RU routes <= ~1000 km
+    offers: list[TrainOffer]    # empty outside domestic RU routes of 30..~2500 km (rail.py; > 1000 km: sleepers)
     note: Optional[str] = None  # why it is empty, if it is
     synthetic: bool = True
 
