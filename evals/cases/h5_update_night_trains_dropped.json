@@ -1,0 +1,932 @@
+{
+  "id": "h5_update_night_trains_dropped",
+  "category": "E",
+  "card": "present.update",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Санкт-Петербург",
+        "iata": []
+      },
+      "destination": {
+        "id": "petrozavodsk",
+        "name": "Карелия (Петрозаводск)",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-20",
+        "end": "2026-11-23",
+        "month": 11,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "trains",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "train",
+        "arrive_before": null,
+        "no_night_flights": true,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.nights",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "prefs.district",
+        "label": "тихий район"
+      },
+      {
+        "field": "scope",
+        "label": "поезд + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 18230,
+          "door_to_door_hours": 7.1,
+          "out_hours": 3.6,
+          "back_hours": 3.5
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Московский вокзал",
+            "to": "Петрозаводск",
+            "start": "2026-11-20T07:50:00+03:00",
+            "end": "2026-11-20T10:58:00+03:00",
+            "carrier": "РЖД",
+            "price_rub": 2970
+          },
+          {
+            "type": "transfer",
+            "from": "Петрозаводск",
+            "to": "В Карелии - Отдыхать",
+            "start": "2026-11-20T11:08:00+03:00",
+            "end": "2026-11-20T11:38:00+03:00",
+            "carrier": null,
+            "price_rub": 120
+          },
+          {
+            "type": "stay",
+            "from": "В Карелии - Отдыхать",
+            "to": "В Карелии - Отдыхать",
+            "start": "2026-11-20T15:00:00+03:00",
+            "end": "2026-11-23T05:25:00+03:00",
+            "carrier": null,
+            "price_rub": 11720
+          },
+          {
+            "type": "transfer",
+            "from": "В Карелии - Отдыхать",
+            "to": "Петрозаводск",
+            "start": "2026-11-23T05:25:00+03:00",
+            "end": "2026-11-23T05:45:00+03:00",
+            "carrier": null,
+            "price_rub": 360
+          },
+          {
+            "type": "train",
+            "from": "Петрозаводск",
+            "to": "Московский вокзал",
+            "start": "2026-11-23T06:15:00+03:00",
+            "end": "2026-11-23T09:23:00+03:00",
+            "carrier": "РЖД",
+            "price_rub": 3060
+          }
+        ],
+        "hotel": {
+          "name": "В Карелии - Отдыхать",
+          "stars": 2,
+          "rating": 8.8,
+          "district": {
+            "labels": [
+              "тихий район"
+            ],
+            "counts": {
+              "bar": 1,
+              "beach": 5,
+              "cafe": 1,
+              "convenience": 0,
+              "fast_food": 0,
+              "nightclub": 0,
+              "park": 0,
+              "pedestrian": 0,
+              "pharmacy": 2,
+              "playground": 0,
+              "pub": 0,
+              "restaurant": 1,
+              "station": 0,
+              "stop": 4,
+              "supermarket": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 18230,
+          "door_to_door_hours": 7.1,
+          "price_stay_rub": 11720,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "15:00",
+          "check_out_time": "12:00",
+          "hotel_name": "В Карелии - Отдыхать",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 2,
+          "hotel_rating": 8.8,
+          "hotel_reviews": 2,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-18",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 11720,
+          "distance_center_m": 1516,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": false,
+          "lift": true,
+          "out_kind": "train",
+          "out_price_rub": 2970,
+          "out_from": "Московский вокзал",
+          "out_to": "Петрозаводск",
+          "out_date": "2026-11-20",
+          "out_dep_time": "07:50",
+          "out_arr_time": "10:58",
+          "out_arr_date": "2026-11-20",
+          "out_duration_min": 188,
+          "out_duration_hours": 3.1,
+          "out_stops": 0,
+          "out_carrier": "РЖД",
+          "out_number": "737В",
+          "out_baggage": true,
+          "out_car_class": "seat",
+          "out_door_hours": 3.6,
+          "back_kind": "train",
+          "back_price_rub": 3060,
+          "back_from": "Петрозаводск",
+          "back_to": "Московский вокзал",
+          "back_date": "2026-11-23",
+          "back_dep_time": "06:15",
+          "back_arr_time": "09:23",
+          "back_arr_date": "2026-11-23",
+          "back_duration_min": 188,
+          "back_duration_hours": 3.1,
+          "back_stops": 0,
+          "back_carrier": "РЖД",
+          "back_number": "422А",
+          "back_baggage": true,
+          "back_car_class": "seat",
+          "back_door_hours": 3.5,
+          "transfer_out_min": 25,
+          "transfer_out_price_rub": 120,
+          "transfer_out_kind": "public",
+          "transfer_back_min": 13,
+          "transfer_back_price_rub": 360,
+          "transfer_back_kind": "taxi",
+          "price_transfers_rub": 480,
+          "price_transport_rub": 6030,
+          "arrival_at_hotel_time": "11:38",
+          "wait_before_checkin_min": 202,
+          "leave_hotel_time": "05:25",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.07,
+          "district_quiet": 0.87,
+          "district_family": 0.3,
+          "district_walkable": 0.34,
+          "poi_bar": 1,
+          "poi_beach": 5,
+          "poi_cafe": 1,
+          "poi_convenience": 0,
+          "poi_fast_food": 0,
+          "poi_nightclub": 0,
+          "poi_park": 0,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 2,
+          "poi_playground": 0,
+          "poi_pub": 0,
+          "poi_restaurant": 1,
+          "poi_station": 0,
+          "poi_stop": 4,
+          "poi_supermarket": 1,
+          "nearest_beach_m": 411,
+          "nearest_centre_m": 1516,
+          "nearest_major_road_m": 1659,
+          "nearest_railway_m": 224,
+          "nearest_station_m": 2064,
+          "nearest_stop_m": 406,
+          "district_fit": 0.705,
+          "center_fit": 0.871,
+          "comfort_score": 0.6566,
+          "ref_min_rub": 18230,
+          "delta_rub_vs_cheapest": 0,
+          "ref_min_hours": 6.7,
+          "delta_hours_vs_fastest": 0.4
+        },
+        "sacrifices": [
+          {
+            "code": "slower",
+            "text": "+0,4 ч в пути",
+            "data": {
+              "delta_hours": 0.4
+            }
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 2★",
+            "data": {
+              "stars": 2
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "early_departure",
+            "text": "Ранний поезд — в 06:15",
+            "data": {
+              "time": "06:15",
+              "direction": "back"
+            }
+          },
+          {
+            "code": "wait_before_checkin",
+            "text": "Приезд в 11:38, а заселение с 15:00 — ждать 3,4 ч",
+            "data": {
+              "minutes": 202,
+              "arrival": "11:38",
+              "check_in": "15:00"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "quiet_no_nightlife",
+            "text": "Тихо и почти нет баров — не для тех, кто хочет вечерней движухи",
+            "data": {
+              "quiet": 0.871
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.86,
+          "breakdown": {
+            "budget": 1.0,
+            "time": 0.944,
+            "district": 0.704,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "center": 0.871,
+            "rating": 0.88
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      },
+      {
+        "id": "comfort",
+        "label": "2",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 34490,
+          "door_to_door_hours": 6.7,
+          "out_hours": 3.3,
+          "back_hours": 3.4
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Московский вокзал",
+            "to": "Петрозаводск",
+            "start": "2026-11-20T07:50:00+03:00",
+            "end": "2026-11-20T10:58:00+03:00",
+            "carrier": "РЖД",
+            "price_rub": 2970
+          },
+          {
+            "type": "transfer",
+            "from": "Петрозаводск",
+            "to": "Клубный отель \"Прионежский\"",
+            "start": "2026-11-20T11:08:00+03:00",
+            "end": "2026-11-20T11:18:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "stay",
+            "from": "Клубный отель \"Прионежский\"",
+            "to": "Клубный отель \"Прионежский\"",
+            "start": "2026-11-20T14:00:00+03:00",
+            "end": "2026-11-23T05:30:00+03:00",
+            "carrier": null,
+            "price_rub": 25620
+          },
+          {
+            "type": "transfer",
+            "from": "Клубный отель \"Прионежский\"",
+            "to": "Петрозаводск",
+            "start": "2026-11-23T05:30:00+03:00",
+            "end": "2026-11-23T05:45:00+03:00",
+            "carrier": null,
+            "price_rub": 340
+          },
+          {
+            "type": "train",
+            "from": "Петрозаводск",
+            "to": "Московский вокзал",
+            "start": "2026-11-23T06:15:00+03:00",
+            "end": "2026-11-23T09:23:00+03:00",
+            "carrier": "РЖД",
+            "price_rub": 3060
+          }
+        ],
+        "hotel": {
+          "name": "Клубный отель \"Прионежский\"",
+          "stars": 4,
+          "rating": 8.0,
+          "district": {
+            "labels": [
+              "тихий район"
+            ],
+            "counts": {
+              "bar": 0,
+              "beach": 0,
+              "cafe": 0,
+              "convenience": 1,
+              "fast_food": 0,
+              "nightclub": 0,
+              "park": 1,
+              "pedestrian": 2,
+              "pharmacy": 0,
+              "playground": 1,
+              "pub": 0,
+              "restaurant": 2,
+              "station": 0,
+              "stop": 8,
+              "supermarket": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 34490,
+          "door_to_door_hours": 6.7,
+          "price_stay_rub": 25620,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "14:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Клубный отель \"Прионежский\"",
+          "hotel_kind": "hotel",
+          "hotel_stars": 4,
+          "hotel_rating": 8.0,
+          "hotel_reviews": 891,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-13",
+          "cancellation_penalty_pct": 50,
+          "cancellation_penalty_rub": 12810,
+          "distance_center_m": 1059,
+          "room_name": "Стандартный двухместный",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 4600,
+          "kitchen": false,
+          "step_free": true,
+          "lift": true,
+          "out_kind": "train",
+          "out_price_rub": 2970,
+          "out_from": "Московский вокзал",
+          "out_to": "Петрозаводск",
+          "out_date": "2026-11-20",
+          "out_dep_time": "07:50",
+          "out_arr_time": "10:58",
+          "out_arr_date": "2026-11-20",
+          "out_duration_min": 188,
+          "out_duration_hours": 3.1,
+          "out_stops": 0,
+          "out_carrier": "РЖД",
+          "out_number": "737В",
+          "out_baggage": true,
+          "out_car_class": "seat",
+          "out_door_hours": 3.3,
+          "back_kind": "train",
+          "back_price_rub": 3060,
+          "back_from": "Петрозаводск",
+          "back_to": "Московский вокзал",
+          "back_date": "2026-11-23",
+          "back_dep_time": "06:15",
+          "back_arr_time": "09:23",
+          "back_arr_date": "2026-11-23",
+          "back_duration_min": 188,
+          "back_duration_hours": 3.1,
+          "back_stops": 0,
+          "back_carrier": "РЖД",
+          "back_number": "422А",
+          "back_baggage": true,
+          "back_car_class": "seat",
+          "back_door_hours": 3.4,
+          "transfer_out_min": 7,
+          "transfer_out_price_rub": 2500,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 12,
+          "transfer_back_price_rub": 340,
+          "transfer_back_kind": "taxi",
+          "price_transfers_rub": 2840,
+          "price_transport_rub": 6030,
+          "arrival_at_hotel_time": "11:18",
+          "wait_before_checkin_min": 162,
+          "leave_hotel_time": "05:30",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.02,
+          "district_quiet": 0.99,
+          "district_family": 0.26,
+          "district_walkable": 0.58,
+          "poi_bar": 0,
+          "poi_beach": 0,
+          "poi_cafe": 0,
+          "poi_convenience": 1,
+          "poi_fast_food": 0,
+          "poi_nightclub": 0,
+          "poi_park": 1,
+          "poi_pedestrian": 2,
+          "poi_pharmacy": 0,
+          "poi_playground": 1,
+          "poi_pub": 0,
+          "poi_restaurant": 2,
+          "poi_station": 0,
+          "poi_stop": 8,
+          "poi_supermarket": 1,
+          "nearest_beach_m": 1358,
+          "nearest_centre_m": 1059,
+          "nearest_major_road_m": 1248,
+          "nearest_railway_m": 1708,
+          "nearest_station_m": 2049,
+          "nearest_stop_m": 150,
+          "district_fit": 0.839,
+          "center_fit": 0.985,
+          "comfort_score": 0.7496,
+          "ref_min_rub": 18230,
+          "delta_rub_vs_cheapest": 16260,
+          "ref_min_hours": 6.7,
+          "delta_hours_vs_fastest": 0.0
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+16 260 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 16260
+            }
+          },
+          {
+            "code": "lower_rating",
+            "text": "Рейтинг 8 — ниже остальных",
+            "data": {
+              "rating": 8.0
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "early_departure",
+            "text": "Ранний поезд — в 06:15",
+            "data": {
+              "time": "06:15",
+              "direction": "back"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "quiet_no_nightlife",
+            "text": "Тихо и почти нет баров — не для тех, кто хочет вечерней движухи",
+            "data": {
+              "quiet": 0.995
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.81,
+          "breakdown": {
+            "budget": 0.529,
+            "time": 1.0,
+            "district": 0.835,
+            "cancellation": 1.0,
+            "stars": 0.8,
+            "center": 0.985,
+            "rating": 0.8
+          }
+        },
+        "diff_rub": 16260,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      },
+      {
+        "id": "custom-1",
+        "label": "3",
+        "title": "Удачнее по району",
+        "totals": {
+          "rub": 23970,
+          "door_to_door_hours": 7.0,
+          "out_hours": 3.6,
+          "back_hours": 3.4
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Московский вокзал",
+            "to": "Петрозаводск",
+            "start": "2026-11-20T07:50:00+03:00",
+            "end": "2026-11-20T10:58:00+03:00",
+            "carrier": "РЖД",
+            "price_rub": 2970
+          },
+          {
+            "type": "transfer",
+            "from": "Петрозаводск",
+            "to": "Petra",
+            "start": "2026-11-20T11:08:00+03:00",
+            "end": "2026-11-20T11:38:00+03:00",
+            "carrier": null,
+            "price_rub": 120
+          },
+          {
+            "type": "stay",
+            "from": "Petra",
+            "to": "Petra",
+            "start": "2026-11-20T14:00:00+03:00",
+            "end": "2026-11-23T05:30:00+03:00",
+            "carrier": null,
+            "price_rub": 17480
+          },
+          {
+            "type": "transfer",
+            "from": "Petra",
+            "to": "Петрозаводск",
+            "start": "2026-11-23T05:30:00+03:00",
+            "end": "2026-11-23T05:45:00+03:00",
+            "carrier": null,
+            "price_rub": 340
+          },
+          {
+            "type": "train",
+            "from": "Петрозаводск",
+            "to": "Московский вокзал",
+            "start": "2026-11-23T06:15:00+03:00",
+            "end": "2026-11-23T09:23:00+03:00",
+            "carrier": "РЖД",
+            "price_rub": 3060
+          }
+        ],
+        "hotel": {
+          "name": "Petra",
+          "stars": 3,
+          "rating": 8.5,
+          "district": {
+            "labels": [
+              "движ",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 5,
+              "beach": 0,
+              "cafe": 18,
+              "convenience": 9,
+              "fast_food": 10,
+              "nightclub": 1,
+              "park": 3,
+              "pedestrian": 5,
+              "pharmacy": 11,
+              "playground": 4,
+              "pub": 1,
+              "restaurant": 8,
+              "station": 1,
+              "stop": 25,
+              "supermarket": 5
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 23970,
+          "door_to_door_hours": 7.0,
+          "price_stay_rub": 17480,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "14:00",
+          "check_out_time": "10:00",
+          "hotel_name": "Petra",
+          "hotel_kind": "hotel",
+          "hotel_stars": 3,
+          "hotel_rating": 8.5,
+          "hotel_reviews": 19,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-17",
+          "cancellation_penalty_pct": 30,
+          "cancellation_penalty_rub": 5240,
+          "distance_center_m": 1015,
+          "room_name": "Стандартный двухместный",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": true,
+          "children_allowed": true,
+          "infant_cot": "on_request",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 2800,
+          "kitchen": false,
+          "step_free": false,
+          "lift": true,
+          "out_kind": "train",
+          "out_price_rub": 2970,
+          "out_from": "Московский вокзал",
+          "out_to": "Петрозаводск",
+          "out_date": "2026-11-20",
+          "out_dep_time": "07:50",
+          "out_arr_time": "10:58",
+          "out_arr_date": "2026-11-20",
+          "out_duration_min": 188,
+          "out_duration_hours": 3.1,
+          "out_stops": 0,
+          "out_carrier": "РЖД",
+          "out_number": "737В",
+          "out_baggage": true,
+          "out_car_class": "seat",
+          "out_door_hours": 3.6,
+          "back_kind": "train",
+          "back_price_rub": 3060,
+          "back_from": "Петрозаводск",
+          "back_to": "Московский вокзал",
+          "back_date": "2026-11-23",
+          "back_dep_time": "06:15",
+          "back_arr_time": "09:23",
+          "back_arr_date": "2026-11-23",
+          "back_duration_min": 188,
+          "back_duration_hours": 3.1,
+          "back_stops": 0,
+          "back_carrier": "РЖД",
+          "back_number": "422А",
+          "back_baggage": true,
+          "back_car_class": "seat",
+          "back_door_hours": 3.4,
+          "transfer_out_min": 23,
+          "transfer_out_price_rub": 120,
+          "transfer_out_kind": "public",
+          "transfer_back_min": 12,
+          "transfer_back_price_rub": 340,
+          "transfer_back_kind": "taxi",
+          "price_transfers_rub": 460,
+          "price_transport_rub": 6030,
+          "arrival_at_hotel_time": "11:38",
+          "wait_before_checkin_min": 142,
+          "leave_hotel_time": "05:30",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.76,
+          "district_quiet": 0.16,
+          "district_family": 0.5,
+          "district_walkable": 1.0,
+          "poi_bar": 5,
+          "poi_beach": 0,
+          "poi_cafe": 18,
+          "poi_convenience": 9,
+          "poi_fast_food": 10,
+          "poi_nightclub": 1,
+          "poi_park": 3,
+          "poi_pedestrian": 5,
+          "poi_pharmacy": 11,
+          "poi_playground": 4,
+          "poi_pub": 1,
+          "poi_restaurant": 8,
+          "poi_station": 1,
+          "poi_stop": 25,
+          "poi_supermarket": 5,
+          "nearest_beach_m": 1015,
+          "nearest_centre_m": 1015,
+          "nearest_major_road_m": 42,
+          "nearest_railway_m": 391,
+          "nearest_station_m": 434,
+          "nearest_stop_m": 73,
+          "district_fit": 0.371,
+          "center_fit": 0.996,
+          "comfort_score": 0.6828,
+          "ref_min_rub": 18230,
+          "delta_rub_vs_cheapest": 5740,
+          "ref_min_hours": 6.7,
+          "delta_hours_vs_fastest": 0.3
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+5 740 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 5740
+            }
+          },
+          {
+            "code": "slower",
+            "text": "+0,3 ч в пути",
+            "data": {
+              "delta_hours": 0.3
+            }
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 3★",
+            "data": {
+              "stars": 3
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "early_departure",
+            "text": "Ранний поезд — в 06:15",
+            "data": {
+              "time": "06:15",
+              "direction": "back"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.76
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.777,
+          "breakdown": {
+            "budget": 0.761,
+            "time": 0.957,
+            "district": 0.373,
+            "cancellation": 1.0,
+            "stars": 0.6,
+            "center": 0.996,
+            "rating": 0.85
+          }
+        },
+        "diff_rub": 5740,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      }
+    ],
+    "recommended_hint": "cheapest",
+    "questions": [
+      {
+        "id": "q_budget",
+        "text": "Какой бюджет на всех, примерно?"
+      },
+      {
+        "id": "q_nights",
+        "text": "На сколько ночей?"
+      }
+    ],
+    "upsell_candidates": [],
+    "changes": [
+      {
+        "field": "prefs.no_night_flights",
+        "before": null,
+        "after": true
+      },
+      {
+        "field": "totals.cheapest.rub",
+        "before": 16990,
+        "after": 18230,
+        "delta_rub": 1240,
+        "delta_word": "дороже"
+      },
+      {
+        "field": "totals.comfort.rub",
+        "before": 33530,
+        "after": 34490,
+        "delta_rub": 960,
+        "delta_word": "дороже"
+      }
+    ],
+    "rebuilt": [],
+    "request": "Без ночных поездов, пожалуйста"
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "ночн",
+          "дн[её]м",
+          "дневн"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "no_unbacked_claims",
+      "args": {
+        "card": "present.update"
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "билет\\w*\\s+не\\s+нашл|не\\s+смотрел\\w*\\s+билет|нет\\s+аэропорт|аэропорт\\w*\\s+нет"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 2
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«без ночных поездов»: code dropped the 23:15 train (a prefs.no_night_flights row, no item with facts.out_night / back_night) — the card may say the night trains are gone; every claim it makes is backed (no_unbacked_claims)."
+}

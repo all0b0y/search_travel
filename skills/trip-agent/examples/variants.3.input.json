@@ -257,5 +257,11 @@
   ],
   "recommended_hint": "comfort",
   "questions": [],
-  "upsell_candidates": []
+  "upsell_candidates": [],
+  "offers": [
+    {
+      "kind": "add_road",
+      "label": "добавить дорогу"
+    }
+  ]
 }

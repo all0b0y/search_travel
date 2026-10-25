@@ -434,7 +434,9 @@ def kazan_variants():
     ]
 
 
-write("present.variants", 3, v_input(KZN, "selection", kazan_variants(), "comfort", assumptions=KZN_CHIPS),
+ROAD_OFFER = [{"kind": "add_road", "label": "добавить дорогу"}]   # stay-only + the scope chip: the road is one tap
+write("present.variants", 3, v_input(KZN, "selection", kazan_variants(), "comfort", assumptions=KZN_CHIPS,
+                                     offers=ROAD_OFFER),
       P("Казань, 3 ночи — советую «В центре»: 24 900 ₽ с завтраками, отель на 3 звезды в 400 м от центра, всё пешком. "
         "«Дешевле» — 14 700 ₽, но до центра 3,2 км. «Комфортнее» — 5 звёзд со спа за 41 300 ₽, это на 11 300 ₽ выше "
         "вашего бюджета 30 000 ₽. Поставил даты 30 октября – 2 ноября и двоих гостей — поправьте чипами, если не так. "
@@ -459,7 +461,8 @@ KZN_Q = {"text": "Когда в Казани лучше всего?", "facts": [
         {"id": "cheapest", "title": "Дешевле", "hotel": VOL, "distance_center_m": 3200, "distance_center_km": 3.2},
         {"id": "custom-1", "title": "В центре", "hotel": BAU, "distance_center_m": 400, "distance_center_km": 0.4},
         {"id": "comfort", "title": "Комфортнее", "hotel": RIV, "distance_center_m": 1800, "distance_center_km": 1.8}]}]}
-write("present.variants", 4, v_input(KZN, "selection", kazan_variants(), "comfort", assumptions=KZN_CHIPS, question=KZN_Q),
+write("present.variants", 4, v_input(KZN, "selection", kazan_variants(), "comfort", assumptions=KZN_CHIPS, question=KZN_Q,
+                                     offers=ROAD_OFFER),
       P("Лучшее время для поездки в Казань — май, июнь, июль и август: днём около 18–25°; октябрь в их число не "
         "входит, но даты оставил ваши. На 30 октября – 2 ноября советую «В центре»: 24 900 ₽ с завтраками, отель в "
         "400 м от центра. «Дешевле» — 14 700 ₽, но до центра 3,2 км. «Комфортнее» — 41 300 ₽, это на 11 300 ₽ выше "

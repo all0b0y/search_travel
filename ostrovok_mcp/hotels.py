@@ -18,6 +18,13 @@ not show (max_distance_center_m: distance_center_m from the destination's centre
 `near` {lat, lon}: a point the user wants to stay near — every offer then carries distance_near_m, and
 max_distance_near_m keeps only the hotels that close to it, «рядом с Айя-Софией»).
 Sorting: stable score = 0.45 rating + 0.20 stars + 0.15 reviews volume + 0.20 price rank.
+
+Synthetic amenities (no column in the catalog has them; deterministic, marked synthetic):
+- kitchen (room.kitchen): every room of a hotel of kind apartment, and rooms named «…апартамент…» / «…студи…»
+  in any hotel; filters.kitchen picks the cheapest fitting room with a kitchen;
+- accessibility {step_free, lift, synthetic}: seeded by hotel_id — step-free access for ~60 % of hotels / resorts
+  of 3+ stars, ~20 % of the other kinds, never a hostel; a lift with every step-free hotel and otherwise
+  ~70 % / ~20 %; filters.step_free keeps only step-free hotels.
 """
 from __future__ import annotations
 
@@ -58,6 +65,27 @@ def rooms_of(hotel_id: str) -> list[dict]:
 def policy_of(hotel_id: str) -> dict:
     rows = db.catalog().query("policies", "hotel_id = ?", (hotel_id,), key="hotel_id")
     return {**DEFAULT_POLICY, **rows[0]} if rows else dict(DEFAULT_POLICY)
+
+
+KITCHEN_WORDS = ("апартамент", "студи")
+STEP_FREE_SHARE = {"high": 0.6, "other": 0.2}
+LIFT_SHARE = {"high": 0.7, "other": 0.2}
+
+
+def room_kitchen(h: dict, room: dict) -> bool:
+    """Synthetic: an apartment's every room, or a room named «апартаменты» / «студия» (a kitchen corner)."""
+    name = str(room.get("name") or "").casefold()
+    return h.get("kind") == "apartment" or any(w in name for w in KITCHEN_WORDS)
+
+
+def accessibility(h: dict) -> dict:
+    """Synthetic step-free access and lift, seeded by hotel_id (never a hostel)."""
+    if h.get("kind") == "hostel":
+        return {"step_free": False, "lift": False, "synthetic": True}
+    tier = "high" if h.get("kind") in ("hotel", "resort") and (h.get("stars") or 0) >= 3 else "other"
+    step_free = rng.unit("hotel", h["hotel_id"], "step_free") < STEP_FREE_SHARE[tier]
+    lift = step_free or rng.unit("hotel", h["hotel_id"], "lift") < LIFT_SHARE[tier]
+    return {"step_free": step_free, "lift": lift, "synthetic": True}
 
 
 def kids_policy(pol: dict) -> dict:
@@ -157,10 +185,11 @@ def _distance_near(h: dict, near: dict | None) -> int | None:
     return int(round(geo.haversine_km(h["lat"], h["lon"], float(near["lat"]), float(near["lon"])) * 1000))
 
 
-def _room_out(room: dict, n: int) -> dict:
+def _room_out(room: dict, n: int, h: dict | None = None) -> dict:
     name = room["name"] if n == 1 else f"{n} номера: {room['name']}"
     return {"room_id": room["room_id"], "name": name, "capacity_adults": room["capacity_adults"] * n,
-            "capacity_children": room["capacity_children"] * n, "bed": room.get("bed")}
+            "capacity_children": room["capacity_children"] * n, "bed": room.get("bed"),
+            "kitchen": room_kitchen(h or {}, room)}
 
 
 def _offer(h: dict, room: dict, n: int, extra: int, meals: str, adults: int, ages: list[int], ci: date, co: date,
@@ -172,13 +201,13 @@ def _offer(h: dict, room: dict, n: int, extra: int, meals: str, adults: int, age
         "offer_id": encode("hotel", params),
         "hotel_id": h["hotel_id"], "osm_id": h["osm_id"], "name": h["name"], "kind": h["kind"],
         "stars": h.get("stars"), "rating": h.get("rating"), "reviews": int(h.get("reviews") or 0),
-        "lat": h["lat"], "lon": h["lon"], "room": _room_out(room, n), "meals": meals,
+        "lat": h["lat"], "lon": h["lon"], "room": _room_out(room, n, h), "meals": meals,
         "cancellation": cancellation(pol, ci, tz, today), "price_total_rub": price,
         "pets_allowed": bool(pol["pets_allowed"]), "kids_policy": kids_policy(pol), "early_checkin": early_checkin(pol),
         "check_in": geo.iso(datetime.combine(ci, time(0), tzinfo=tz) + timedelta(minutes=geo.hhmm_to_min(pol["check_in_from"]))),
         "check_out": geo.iso(datetime.combine(co, time(0), tzinfo=tz) + timedelta(minutes=geo.hhmm_to_min(pol["check_out_until"]))),
         "distance_beach_m": h.get("distance_beach_m"), "distance_center_m": _distance_center(h, dest),
-        "synthetic": True,
+        "accessibility": accessibility(h), "synthetic": True,
     }
 
 
@@ -226,6 +255,8 @@ def search(dest_id: str, ci: date, co: date, adults: int, ages: list[int], filte
             continue
         if filters.get("kinds") and h["kind"] not in filters["kinds"]:
             continue
+        if filters.get("step_free") and not accessibility(h)["step_free"]:
+            continue
         if filters.get("max_distance_center_m") is not None and \
                 _distance_center(h, dest) > int(filters["max_distance_center_m"]):
             continue
@@ -241,6 +272,8 @@ def search(dest_id: str, ci: date, co: date, adults: int, ages: list[int], filte
         for room in rooms_of(h["hotel_id"]):
             fit = room_fit(room, adults, ages, pol)
             if not fit:
+                continue
+            if filters.get("kitchen") and not room_kitchen(h, room):
                 continue
             if meals_f:
                 if meals_f not in room["meals_options"]:
@@ -296,7 +329,7 @@ def details(hotel_id: str) -> dict:
     synthetic_fields = db.jload(h.get("synthetic_fields"), None)
     if not isinstance(synthetic_fields, list):
         synthetic_fields = ["stars", "rating", "reviews", "policies", "rooms"]
-    for f in ("policies", "rooms"):
+    for f in ("policies", "rooms", "accessibility"):
         if f not in synthetic_fields:
             synthetic_fields.append(f)
     return {
@@ -307,6 +340,6 @@ def details(hotel_id: str) -> dict:
         "policies": {"check_in_from": pol["check_in_from"], "check_out_until": pol["check_out_until"],
                      "pets_allowed": bool(pol["pets_allowed"]), "kids_policy": kids_policy(pol),
                      "early_checkin": early_checkin(pol), "cancellation_note": note},
-        "rooms": [_room_out(r, 1) for r in rooms_of(hotel_id)],
-        "photos": photos, "source": h.get("source") or "osm", "synthetic": True, "synthetic_fields": synthetic_fields,
+        "rooms": [_room_out(r, 1, h) for r in rooms_of(hotel_id)],
+        "photos": photos, "accessibility": accessibility(h), "source": h.get("source") or "osm", "synthetic": True, "synthetic_fields": synthetic_fields,
     }

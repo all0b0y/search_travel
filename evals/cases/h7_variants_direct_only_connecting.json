@@ -1,0 +1,485 @@
+{
+  "id": "h7_variants_direct_only_connecting",
+  "category": "C",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Екатеринбург",
+        "iata": [
+          "SVX"
+        ]
+      },
+      "destination": {
+        "id": "antalya",
+        "name": "Анталья",
+        "country": "Турция"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-20",
+        "end": "2026-11-23",
+        "month": 11,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": true,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.nights",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "dates.nights",
+        "label": "3 ночи"
+      },
+      {
+        "field": "prefs.district",
+        "label": "тихий район"
+      },
+      {
+        "field": "scope",
+        "label": "перелёт + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 8090,
+          "door_to_door_hours": 0.0,
+          "out_hours": null,
+          "back_hours": null
+        },
+        "steps": [
+          {
+            "type": "stay",
+            "from": "Aziz Konaklama",
+            "to": "Aziz Konaklama",
+            "start": "2026-11-20T14:00:00+03:00",
+            "end": "2026-11-23T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 8090
+          }
+        ],
+        "hotel": {
+          "name": "Aziz Konaklama",
+          "stars": 1,
+          "rating": 7.5,
+          "district": {
+            "labels": [
+              "тихий район",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 1,
+              "beach": 0,
+              "cafe": 13,
+              "convenience": 6,
+              "fast_food": 10,
+              "nightclub": 0,
+              "park": 7,
+              "pedestrian": 4,
+              "pharmacy": 10,
+              "playground": 1,
+              "pub": 0,
+              "restaurant": 5,
+              "station": 0,
+              "stop": 10,
+              "supermarket": 10
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 8090,
+          "door_to_door_hours": 0.0,
+          "price_stay_rub": 8090,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "14:00",
+          "check_out_time": "11:00",
+          "hotel_name": "Aziz Konaklama",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 1,
+          "hotel_rating": 7.5,
+          "hotel_reviews": 1103,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-13",
+          "cancellation_penalty_pct": 30,
+          "cancellation_penalty_rub": 2430,
+          "distance_beach_m": 1227,
+          "distance_center_m": 900,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "on_request",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 1800,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "district_lively": 0.33,
+          "district_quiet": 0.77,
+          "district_family": 0.51,
+          "district_walkable": 1.0,
+          "poi_bar": 1,
+          "poi_beach": 0,
+          "poi_cafe": 13,
+          "poi_convenience": 6,
+          "poi_fast_food": 10,
+          "poi_nightclub": 0,
+          "poi_park": 7,
+          "poi_pedestrian": 4,
+          "poi_pharmacy": 10,
+          "poi_playground": 1,
+          "poi_pub": 0,
+          "poi_restaurant": 5,
+          "poi_station": 0,
+          "poi_stop": 10,
+          "poi_supermarket": 10,
+          "nearest_beach_m": 1227,
+          "nearest_centre_m": 900,
+          "nearest_major_road_m": 188,
+          "nearest_stop_m": 202,
+          "district_fit": 0.784,
+          "comfort_score": 0.5074,
+          "no_transport": true,
+          "ref_min_rub": 8090,
+          "delta_rub_vs_cheapest": 0,
+          "transport_gap": "direct_only",
+          "transport_gap_ru": "Прямых рейсов по маршруту Екатеринбург — Анталья на эти даты нет; с пересадкой поездка — от 76 500 ₽",
+          "dest_airports": true,
+          "transport_gap_from_rub": 76500
+        },
+        "sacrifices": [
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 1★",
+            "data": {
+              "stars": 1
+            }
+          },
+          {
+            "code": "lower_rating",
+            "text": "Рейтинг 7,5 — ниже остальных",
+            "data": {
+              "rating": 7.5
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "no_transport",
+            "text": "Прямых рейсов по маршруту Екатеринбург — Анталья на эти даты нет; с пересадкой поездка — от 76 500 ₽",
+            "data": {}
+          }
+        ],
+        "not_for": [],
+        "fit": {
+          "score": 0.818,
+          "breakdown": {
+            "budget": 1.0,
+            "district": 0.783,
+            "cancellation": 1.0,
+            "stars": 0.2,
+            "rating": 0.75
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      },
+      {
+        "id": "comfort",
+        "label": "2",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 15420,
+          "door_to_door_hours": 0.0,
+          "out_hours": null,
+          "back_hours": null
+        },
+        "steps": [
+          {
+            "type": "stay",
+            "from": "Han Hotel",
+            "to": "Han Hotel",
+            "start": "2026-11-20T13:00:00+03:00",
+            "end": "2026-11-23T12:00:00+03:00",
+            "carrier": null,
+            "price_rub": 15420
+          }
+        ],
+        "hotel": {
+          "name": "Han Hotel",
+          "stars": 3,
+          "rating": 8.3,
+          "district": {
+            "labels": [
+              "тихий район"
+            ],
+            "counts": {
+              "bar": 0,
+              "beach": 0,
+              "cafe": 0,
+              "convenience": 0,
+              "fast_food": 0,
+              "nightclub": 0,
+              "park": 5,
+              "pedestrian": 0,
+              "pharmacy": 0,
+              "playground": 0,
+              "pub": 0,
+              "restaurant": 0,
+              "station": 0,
+              "stop": 12,
+              "supermarket": 0
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 15420,
+          "door_to_door_hours": 0.0,
+          "price_stay_rub": 15420,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "13:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Han Hotel",
+          "hotel_kind": "hotel",
+          "hotel_stars": 3,
+          "hotel_rating": 8.3,
+          "hotel_reviews": 890,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-18",
+          "cancellation_penalty_pct": 50,
+          "cancellation_penalty_rub": 7710,
+          "distance_beach_m": 4451,
+          "distance_center_m": 4215,
+          "room_name": "Стандартный двухместный",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": true,
+          "lift": true,
+          "district_lively": 0.0,
+          "district_quiet": 0.82,
+          "district_family": 0.25,
+          "district_walkable": 0.29,
+          "poi_bar": 0,
+          "poi_beach": 0,
+          "poi_cafe": 0,
+          "poi_convenience": 0,
+          "poi_fast_food": 0,
+          "poi_nightclub": 0,
+          "poi_park": 5,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 0,
+          "poi_playground": 0,
+          "poi_pub": 0,
+          "poi_restaurant": 0,
+          "poi_station": 0,
+          "poi_stop": 12,
+          "poi_supermarket": 0,
+          "nearest_beach_m": 4451,
+          "nearest_centre_m": 4215,
+          "nearest_major_road_m": 73,
+          "nearest_stop_m": 117,
+          "district_fit": 0.651,
+          "comfort_score": 0.6158,
+          "no_transport": true,
+          "ref_min_rub": 8090,
+          "delta_rub_vs_cheapest": 7330,
+          "transport_gap": "direct_only",
+          "transport_gap_ru": "Прямых рейсов по маршруту Екатеринбург — Анталья на эти даты нет; с пересадкой поездка — от 76 500 ₽",
+          "dest_airports": true,
+          "transport_gap_from_rub": 76500
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+7 330 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 7330
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "no_transport",
+            "text": "Прямых рейсов по маршруту Екатеринбург — Анталья на эти даты нет; с пересадкой поездка — от 76 500 ₽",
+            "data": {}
+          }
+        ],
+        "not_for": [
+          {
+            "code": "quiet_no_nightlife",
+            "text": "Тихо и почти нет баров — не для тех, кто хочет вечерней движухи",
+            "data": {
+              "quiet": 0.818
+            }
+          },
+          {
+            "code": "not_walkable",
+            "text": "До кафе и магазинов не пешком — без такси неудобно",
+            "data": {
+              "walkable": 0.289
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.648,
+          "breakdown": {
+            "budget": 0.525,
+            "district": 0.652,
+            "cancellation": 1.0,
+            "stars": 0.6,
+            "rating": 0.83
+          }
+        },
+        "diff_rub": 7330,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      }
+    ],
+    "recommended_hint": "cheapest",
+    "questions": [
+      {
+        "id": "q_budget",
+        "text": "Какой бюджет на всех, примерно?"
+      }
+    ],
+    "upsell_candidates": [],
+    "offers": [
+      {
+        "kind": "connecting",
+        "label": "Показать с пересадкой"
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "пересадк"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "76[\\s\\u00a0\\u202f]?500"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "билет\\w*\\s+не\\s+нашл|не\\s+смотрел\\w*\\s+билет|нет\\s+аэропорт|аэропорт\\w*\\s+нет"
+    },
+    {
+      "type": "predicate",
+      "name": "no_unbacked_claims"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 1
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«только прямые» removed every flight Ekaterinburg → Antalya, connecting ones exist: the card says there are no direct flights and names the connecting trip «от 76500 ₽» (facts.transport_gap_ru, the «Показать с пересадкой» button), never «билеты не нашлись»."
+}

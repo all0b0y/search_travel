@@ -166,6 +166,8 @@ class Ctx:
     other_country: bool = False                            # «другую страну»: the dropped one's country too
     best_time_asked: bool = False                          # «когда лучше поехать?» (rules.json best_time cues)
     best_month_assumed: Optional[int] = None               # dates assumed in the nearest best month this turn
+    transport_gap: Optional[dict] = None                   # no transport to the place: why, in code (recover_transport)
+    unsold: list = field(default_factory=list)             # services asked for that are not sold (rules.json unsold)
     trace: dict = field(default_factory=new_trace)
     flash_calls: int = 0
     lock: threading.RLock = field(default_factory=threading.RLock)
@@ -907,6 +909,7 @@ def _passes_dest_prefs(rec, origin, train, domestic):
 
 
 def step_find_destinations(ctx):
+    reset_auto_transport(ctx)
     b = ctx.brief.values()
     limit = int(ctx.rules.get("max_destinations", 6))
     month = _month(ctx.brief)
@@ -1542,6 +1545,28 @@ def center_distance_fact(variants):
     return {"kind": "center_distance", "items": rows} if rows else None
 
 
+def unsold_cues(rules, text):
+    """Services the user asked for that the agent does not sell (rules.json `unsold`: car rental, visas,
+    excursions, insurance, cruises) -> their Russian names in the accusative, in rules order."""
+    out = []
+    for row in (rules or {}).get("unsold") or []:
+        if text and re.search(row["re"], text, re.I) and row["ru"] not in out:
+            out.append(row["ru"])
+    return out
+
+
+def unsold_only(rules, text):
+    """«…и больше ничего не надо», «только машину»: the message asks for nothing the agent sells."""
+    return bool(text and any(re.search(c, text, re.I) for c in (rules or {}).get("unsold_only_cues") or []))
+
+
+def not_sold_fact(items):
+    """{kind: not_sold, items_ru, line}: the ready sentence about what the agent does not book."""
+    what = _ru_list(items)
+    return {"kind": "not_sold", "items_ru": what,
+            "line": f"{what[:1].upper() + what[1:]} я не оформляю — подбираю дорогу, отели и трансферы"}
+
+
 def search_question(ctx):
     """A question inside a search / refine message (understand info_question, or a best-time cue): never dropped.
     -> {"text", "facts"} for present.variants / present.update, or None. facts: best_time (when asked), the
@@ -1551,11 +1576,13 @@ def search_question(ctx):
         return None
     text = ((ctx.understand or {}).get("info_question") or "").strip()
     asked = ctx.best_time_asked or best_time_cue(ctx.rules, text)
-    if not text and asked:
+    if not text and (asked or ctx.unsold):
         text = (ctx.text or "").strip()
     if not text:
         return None
     facts = []
+    if ctx.unsold:   # car rental, a visa, excursions…: not sold here — one sentence, the trip goes on
+        facts.append(not_sold_fact(ctx.unsold))
     if asked:
         bt = best_time_fact(ctx)
         if bt is not None:
@@ -1601,6 +1628,18 @@ def _hotel_filters(brief):
     if NO_HOSTEL in (v.get("constraints") or []):
         f["kinds"] = list(NON_HOSTEL_KINDS)   # the mock drops hostels before its top-`limit` cut
     return f
+
+
+def amenity_filters(brief):
+    """search_hotels filters for the synthetic amenities the user asked for: constraint kitchen -> kitchen,
+    accessible -> step_free (used by the extra search only: ranking relaxes them when nothing has them)."""
+    cons = brief.values().get("constraints") or []
+    out = {}
+    if "kitchen" in cons:
+        out["kitchen"] = True
+    if "accessible" in cons:
+        out["step_free"] = True
+    return out
 
 
 # catalog hotels.kind values other than hostel (constraint no_hostel searches only these)
@@ -1788,6 +1827,13 @@ def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None, hotel_ca
             name, payload = jobs["hotels"]
             jobs["hotels.center"] = (name, {**payload, "limit": 20,
                                             "filters": {**payload["filters"], "max_distance_center_m": center_m}})
+    amenity = amenity_filters(brief)
+    if amenity and "hotels" in jobs and not hotel_id:
+        # kitchen / step-free (constraints kitchen, accessible): the mock's top `limit` rarely holds them, so an
+        # extra search filtered by them (applied before that cut) brings them to the ranking, which keeps them
+        # and relaxes the wish only when none is left
+        name, payload = jobs["hotels"]
+        jobs["hotels.amenity"] = (name, {**payload, "limit": 20, "filters": {**payload["filters"], **amenity}})
     out = _parallel(ctx, jobs)
     if "hotels.near" in jobs and not (out.get("hotels.near") or {}).get("offers"):
         # no hotel within the radius: one wider search finds the nearest ones (ranking relaxes and says so)
@@ -1795,7 +1841,7 @@ def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None, hotel_ca
         wide = int(_ranking_rule(ctx, "near_wide_m", 6000))
         out["hotels.near"] = tool_safe(ctx, name, {**payload, "filters": {**payload["filters"],
                                                                           "max_distance_near_m": wide}})
-    for extra_key in ("hotels.near", "hotels.center"):
+    for extra_key in ("hotels.near", "hotels.center", "hotels.amenity"):
         if out.get(extra_key) is None:
             continue
         seen = {o["offer_id"] for o in (out.get("hotels") or {}).get("offers") or []}
@@ -1936,6 +1982,7 @@ def current_destination(ctx):
 
 def step_search(ctx):
     merge_prefetched(ctx)
+    reset_auto_transport(ctx)
     dest = current_destination(ctx)
     check_in, check_out = resolve_dates(ctx, dest)
     results, districts, called = run_search(ctx, ctx.session.brief, dest, check_in, check_out)
@@ -2034,6 +2081,7 @@ def step_build_variants(ctx):
     if not ctx.variants:
         ctx.variants = rescue_dates(ctx)
     if ctx.variants:
+        recover_transport(ctx)
         ctx.variants = fit_budget(ctx, ctx.variants)
         offer_other_places(ctx)
     ctx.session.variants = ctx.variants
@@ -2058,10 +2106,11 @@ COMFORT_RU = {"district": "район", "meals": "питание", "free_cancell
               "stars_min": "звёздность"}
 
 
-def _built(ctx, brief, results, districts):
-    """Door-to-door variants of a result (stay-only `no_transport` ones never count as built)."""
+def _built(ctx, brief, results, districts, pin=False):
+    """Door-to-door variants of a result (stay-only `no_transport` ones never count as built). pin: transfers
+    re-quoted at their legs' times (the price the user will see)."""
     want_transport = bool(set(results.get("scope") or []) & {"flights", "trains"})
-    out = build(ctx, brief, results, districts, pin=False)
+    out = build(ctx, brief, results, districts, pin=pin)
     return [v for v in out if not (want_transport and v.facts.get("no_transport"))] if want_transport else out
 
 
@@ -2320,7 +2369,7 @@ def offer_other_places(ctx):
                               f"{round((time.perf_counter() - t0) * 1000)} ms")
 
 
-def other_places(ctx, budget, keep_over=False):
+def other_places(ctx, budget, keep_over=False, traits=None, fresh=False, country=None):
     """[{id, name, price_from_rub, nights, transport_ru, within_budget, price_includes}]: other places priced
     for this trip's dates and party (the shown ones, else a fresh search), the ones within the budget first by
     price; places above it only when the user asked for another place (the two cheapest)."""
@@ -2331,7 +2380,7 @@ def other_places(ctx, budget, keep_over=False):
     res = ctx.results or {}
     dates = (res["check_in"], res["check_out"]) if res.get("check_in") and res.get("check_out") else None
     train_only, domestic = _dest_prefs(brief)
-    shown = [i for i in remembered_destinations(s) if i["id"] != current]
+    shown = [] if fresh else [i for i in remembered_destinations(s) if i["id"] != current]
     if shown:
         recs = [r for r in (destination_record(ctx, dest_id=i["id"]) for i in shown) if r]
         by_train = {i["id"] for i in shown if i.get("transport") == "train"}
@@ -2339,15 +2388,21 @@ def other_places(ctx, budget, keep_over=False):
         trains = recs if train_only else [r for r in recs if r["id"] in by_train]
     else:
         limit = int(ctx.rules.get("max_destinations", 6))
-        found = od(ctx, "find_destinations", traits=b.get("traits") or [], month=_month(brief),
+        found = od(ctx, "find_destinations", traits=traits if traits is not None else (b.get("traits") or []),
+                   month=_month(brief),
                    origin_city=(b.get("origin") or {}).get("city"), budget=budget,
                    max_travel_hours=(b.get("prefs") or {}).get("max_travel_hours"),
                    segment=(b.get("party") or {}).get("segment"), limit=DEST_ALL)
         recs = [r for r in (norm_destination(x) for x in found or []) if r and r.get("id") and r["id"] != current]
         origin = _origin_place(ctx, brief)
         recs = [r for r in recs if _passes_dest_prefs(r, origin, train_only, domestic)]
+        if country:   # a place without transport: its country's places are the closest alternatives
+            recs.sort(key=lambda r: r.get("country_code") != country)
         plane = [] if train_only else recs[:limit * DEST_BUDGET_POOL_X]
         origin_t = None if train_only else _mixed_trains_origin(ctx, brief)
+        if origin_t is None and fresh and not train_only and origin and origin.get("stations") \
+                and origin.get("lat") is not None:
+            origin_t = origin   # alternatives for a place without transport are priced by train too
         trains = recs[:limit * DEST_TRAIN_POOL_X] if train_only else [
             r for r in recs if origin_t is not None and r["id"] != origin_t.get("id")
             and train_reachable(origin_t, r)][:limit * DEST_TRAIN_POOL_X]
@@ -2363,6 +2418,10 @@ def other_places(ctx, budget, keep_over=False):
                     "transport_ru": f.get("transport_ru"), "within_budget": (e["price"] <= budget) if budget else None,
                     "price_includes": f.get("price_includes"), "transport": f.get("transport")})
     out.sort(key=lambda p: p["price_from_rub"])
+    if country:   # alternatives to a place without transport: its country first, then by likeness (the rank)
+        rank = {r["id"]: i for i, r in enumerate(dict((r["id"], r) for r in plane + trains).values())}
+        cc = {r["id"]: r.get("country_code") for r in plane + trains}
+        out.sort(key=lambda p: (cc.get(p["id"]) != country, rank.get(p["id"], 999)))
     fits = [p for p in out if p["within_budget"] is not False]
     picked = fits[:OTHER_PLACES_MAX] or (out[:2] if keep_over else [])
     if picked:
@@ -2386,6 +2445,187 @@ def other_destination_actions(ctx):
         if item.id != current and len(out) < 5:
             out.append({"type": "choose_destination", "label": f"Смотреть {item.title}",
                         "payload": {"destination_id": item.id}})
+    return out
+
+
+# ---------------------------------------------------------------- no transport to the place (honest recovery)
+# The stay-only answer «Билеты не нашлись» was a dead end and sometimes untrue: the user's direct-only wish had
+# removed every flight while connecting ones existed, or no plane flies there while a train does. Code finds the
+# reason and the real way out; the card says the ready line (facts.transport_gap_ru) and the buttons do the rest.
+
+TRANSPORT_GAP_KEY = "engine:transport_gap"     # the last gap found ({destination_id, code, line, ...})
+TRANSPORT_AUTO_KEY = "engine:transport_auto"   # prefs.transport train set by code for a place without flights
+GAP_CODES = ("direct_only", "train_instead", "plane_fixed", "train_fixed", "none", "filtered")
+
+
+def _route_ru(ctx, brief, res):
+    origin = (brief.values().get("origin") or {}).get("city") or "город вылета"
+    dest = (res.get("destination") or {}).get("name") or (brief.values().get("destination") or {}).get("name") or "туда"
+    return f"{origin} — {dest}"
+
+
+def _mode_variants(ctx, brief, dest, res, mode):
+    """Variants of the same trip with prefs.transport = mode (assumed by code) -> (brief, results, districts, built)."""
+    b2 = normalize_brief(ctx, assume(brief, "prefs.transport", mode, "inferred"))
+    r2, d2, _ = run_search(ctx, b2, dest, _date(res["check_in"]), _date(res["check_out"]))
+    return b2, r2, d2, _built(ctx, b2, r2, d2, pin=True)
+
+
+def recover_transport(ctx):
+    """Every variant is stay-only because no ticket passed (risk no_transport) while the trip wants transport:
+    find why and the real way out —
+    - the user's direct-only wish removed every flight and connecting ones exist -> say so with the connecting
+      trip's price, a set_chip action prefs.direct_only false («Показать с пересадкой»);
+    - no flight (or no train) at all but the other mode exists -> build by it (prefs.transport assumed, a
+      `transport_switched` risk «… самолётов нет — собрал поездом»), or when the user fixed the mode, say it with the
+      other mode's price and offer it as a set_chip action;
+    - nothing at all -> «… в данных нет ни рейсов, ни поездов», the stays stay what they are, and up to 3 similar
+      places that do have transport from the origin become `other_places` + choose_destination actions.
+    Variant facts: transport_gap (code), transport_gap_ru (ready line), transport_gap_from_rub, dest_airports."""
+    res = ctx.results or {}
+    scope = set(res.get("scope") or [])
+    vs = ctx.variants
+    if not vs or not scope & {"flights", "trains"} or not res.get("check_in") or \
+            not all(v.facts.get("no_transport") for v in vs):
+        return
+    t0 = time.perf_counter()
+    s = ctx.session
+    brief = s.brief
+    prefs = brief.values().get("prefs") or {}
+    dest = res.get("destination") or current_destination(ctx)
+    rec = destination_record(ctx, dest_id=dest["id"]) or dest
+    origin = _origin_place(ctx, brief)
+    route = _route_ru(ctx, brief, res)
+    fixed = prefs.get("transport") if brief.source_of("prefs.transport") == "user" else None
+    fo, fb = res.get("flights_out") or [], res.get("flights_back") or []
+    to, tb = res.get("trains_out") or [], res.get("trains_back") or []
+    flights_searched = "flights" in scope and (prefs.get("transport") or "any") != "train"
+    trains_searched = "trains" in scope or prefs.get("transport") == "train"
+    gap, actions = None, []
+    if prefs.get("direct_only") and brief.source_of("prefs.direct_only") == "user" and fo and fb:
+        conn = _built(ctx, assume(brief, "prefs.direct_only", False, "inferred"), res, ctx.districts, pin=True)
+        if conn:
+            low = _low(conn)
+            gap = {"code": "direct_only", "from_rub": low,
+                   "line": f"Прямых рейсов по маршруту {route} на эти даты нет; с пересадкой поездка — от {P.fmt_rub(low)}"}
+            actions.append({"type": "set_chip", "label": "Показать с пересадкой",
+                            "payload": {"field": "prefs.direct_only", "value": False}})
+    if gap is None:
+        has_flights = bool(fo and fb) if flights_searched else None
+        has_trains = bool(to and tb) if trains_searched else None
+        other = None
+        if not has_flights and not has_trains:
+            if fixed != "train" and has_trains is None and train_reachable(origin, rec):
+                other = "train"
+            elif fixed == "train" and has_flights is None and _json_list(rec.get("airports")):
+                other = "plane"
+        built = None
+        if other is not None:
+            built = _mode_variants(ctx, brief, dest, res, other)
+            if not built[3]:
+                built = None
+        word = {"train": "поездом", "plane": "самолётом"}
+        if built is not None and fixed is None:
+            b2, r2, d2, _ = built
+            before_rub = _low(vs)
+            ctx.variants = _adopt(ctx, b2, r2, d2)
+            if "trains" not in ctx.rebuilt:
+                ctx.rebuilt.append("trains")
+            store_result(s, CachedResult(key=TRANSPORT_AUTO_KEY, kind="transport_auto", params={},
+                                         fetched_at=s.clock(), data={"destination_id": dest["id"], "mode": other}))
+            ctx.changes.append({"field": "prefs.transport", "before": prefs.get("transport") or "any", "after": other})
+            gap = {"code": "train_instead",
+                   "line": f"Самолётов по маршруту {route} в данных нет — собрал поездом"}
+            ctx.trace["notes"].append(f"transport: no flights {route}, built by train (stay-only was {before_rub})")
+        elif built is not None:
+            low = _low(built[3])
+            no_word = "самолётов" if fixed == "plane" else "поездов"
+            gap = {"code": f"{fixed}_fixed", "from_rub": low,
+                   "line": f"{no_word.capitalize()} по маршруту {route} в данных нет; {word[other]} поездка — от {P.fmt_rub(low)}"}
+            actions.append({"type": "set_chip", "label": f"Поехать {word[other]}",
+                            "payload": {"field": "prefs.transport", "value": other}})
+        elif not has_flights and not has_trains:
+            line = (f"По маршруту {route} в данных нет ни рейсов, ни поездов" if not (fo or fb or to or tb) else
+                    f"По маршруту {route} на эти даты нет билетов в обе стороны")
+            gap = {"code": "none", "line": line + " — показываю только проживание"}
+    if gap is None:   # tickets exist both ways, but none passed the user's conditions
+        gap = {"code": "filtered", "line": f"По маршруту {route} на эти даты нет билетов под ваши условия — "
+                                           f"показываю только проживание"}
+    dest_airports = bool(_json_list(rec.get("airports")))
+    for v in ctx.variants:
+        v.facts.update({"transport_gap": gap["code"], "transport_gap_ru": gap["line"], "dest_airports": dest_airports})
+        if gap.get("from_rub") is not None:
+            v.facts["transport_gap_from_rub"] = int(gap["from_rub"])
+        if v.facts.get("no_transport"):
+            v.risks = [n.model_copy(update={"text": gap["line"]}) if n.code == "no_transport" else n for n in v.risks]
+        else:
+            v.risks.insert(0, _risk_note("transport_switched", gap["line"], mode="train"))
+    if gap["code"] == "none":
+        places = reachable_places(ctx, rec)
+        ctx.other_places = places
+        actions += [{"type": "choose_destination", "label": f"Смотреть {p['name']}",
+                     "payload": {"destination_id": p["id"]}} for p in places]
+    ctx.transport_gap = dict(gap, destination_id=dest["id"], route=route, dest_airports=dest_airports,
+                             trains_in_data=bool(train_reachable(origin, rec)))
+    store_result(s, CachedResult(key=TRANSPORT_GAP_KEY, kind="transport_gap", params={}, fetched_at=s.clock(),
+                                 data=ctx.transport_gap))
+    ctx.extra_actions = actions + [a for a in ctx.extra_actions if a not in actions]
+    ctx.trace["notes"].append(f"transport gap {gap['code']}: {gap['line']} "
+                              f"({round((time.perf_counter() - t0) * 1000)} ms)")
+
+
+def reachable_places(ctx, rec, limit=OTHER_PLACES_MAX):
+    """Up to `limit` places like `rec` (its catalog tags as wishes) that do have transport from the origin, priced
+    for this trip's dates and party (a plane quote, or a train one for train-reachable places)."""
+    traits = [t for t in _json_list(rec.get("tags")) if isinstance(t, str)]
+    return other_places(ctx, None, keep_over=True, traits=traits, fresh=True, country=rec.get("country_code"))[:limit]
+
+
+def reset_auto_transport(ctx):
+    """prefs.transport train set by code for a place without flights belongs to that place: another destination
+    (or the destinations route) goes back to any transport."""
+    s = ctx.session
+    rec = s.results.get(TRANSPORT_AUTO_KEY)
+    if rec is None or not isinstance(rec.data, dict):
+        return
+    dest = (s.brief.values().get("destination") or {}).get("id")
+    if dest == rec.data.get("destination_id"):
+        return
+    s.results.pop(TRANSPORT_AUTO_KEY, None)
+    if s.brief.source_of("prefs.transport") != "user":
+        s.brief = normalize_brief(ctx, assume(s.brief, "prefs.transport", "any", "inferred"))
+        ctx.trace["notes"].append("transport: code's train for another place -> any")
+
+
+def transport_search_fact(ctx):
+    """What code searched for the road to the current place («а с пересадкой?», «а поездом?»): the last
+    transport gap of this place as a ready line, never «билетов я не смотрел»."""
+    rec = ctx.session.results.get(TRANSPORT_GAP_KEY)
+    dest = (ctx.brief.values().get("destination") or {}).get("id")
+    if rec is None or not isinstance(rec.data, dict) or rec.data.get("destination_id") != dest:
+        return None
+    d = rec.data
+    return {"kind": "transport_search", "searched": True, "route": d.get("route"), "code": d.get("code"),
+            "line": d.get("line"), "from_rub": d.get("from_rub"), "dest_airports": d.get("dest_airports"),
+            "trains_in_data": d.get("trains_in_data")}
+
+
+def response_offers(ctx, variants, chips):
+    """card-input `offers`: what the buttons of this answer really do ([{kind, label}]): add_road (the scope chip
+    adds the road to stay-only variants), connecting / train / plane (set_chip actions of a transport gap), place
+    (choose_destination). The card promises only these (variants.md / update.md; guard promise_claim)."""
+    out = []
+    stay_only = bool(variants) and all(not any(st.type in ("flight", "train") for st in v.steps) for v in variants)
+    if stay_only and not any(v.facts.get("no_transport") for v in variants) and any(c.field == "scope" for c in chips):
+        out.append({"kind": "add_road", "label": "добавить дорогу"})
+    for a in ctx.extra_actions or []:
+        p = a.get("payload") or {}
+        if a.get("type") == "set_chip" and p.get("field") == "prefs.direct_only":
+            out.append({"kind": "connecting", "label": a["label"]})
+        elif a.get("type") == "set_chip" and p.get("field") == "prefs.transport":
+            out.append({"kind": "train" if p.get("value") == "train" else "plane", "label": a["label"]})
+        elif a.get("type") == "choose_destination":
+            out.append({"kind": "place", "label": a["label"]})
     return out
 
 
@@ -2795,7 +3035,11 @@ def _stay_fact(variant, offer):
            "cancellation": {"free_until": c.get("free_until"), "penalty_pct": c.get("penalty_pct"),
                             "free": bool(c.get("free_until"))} if c else None,
            "pets_allowed": o.get("pets_allowed"), "early_checkin": o.get("early_checkin"),
-           "distance_beach_m": o.get("distance_beach_m"), "distance_center_m": o.get("distance_center_m")}
+           "distance_beach_m": o.get("distance_beach_m"), "distance_center_m": o.get("distance_center_m"),
+           # synthetic amenities of the mock: «есть ли кухня?», «можно ли без ступенек?»
+           "kitchen": (o.get("room") or {}).get("kitchen") if o.get("room") else None,
+           "step_free": (o.get("accessibility") or {}).get("step_free") if o.get("accessibility") else None,
+           "lift": (o.get("accessibility") or {}).get("lift") if o.get("accessibility") else None}
     return {k: v for k, v in out.items() if v is not None}
 
 
@@ -2982,6 +3226,14 @@ def step_info_lookup(ctx):
     dest_fact = destinations_fact(ctx)
     if dest_fact is not None:
         facts.append(dest_fact)
+    road = transport_search_fact(ctx)
+    if road is not None:
+        facts.append(road)
+    if dest.get("id") and re.search(r"аэропорт", f"{ctx.info_question} {ctx.text or ''}", re.I):
+        rec = destination_record(ctx, dest_id=dest["id"]) or {}
+        airports = [a for a in _json_list(rec.get("airports")) if a]
+        facts.append({"kind": "place", "id": dest["id"], "name": rec.get("name") or dest.get("name"),
+                      "airports": airports, "dest_airports": bool(airports)})   # «нет аэропорта» only when empty
     ctx.info_facts = facts
 
 

@@ -1,0 +1,350 @@
+{
+  "id": "h8_variants_nothing_reachable",
+  "category": "edge",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Санкт-Петербург",
+        "iata": [
+          "LED"
+        ]
+      },
+      "destination": {
+        "id": "gelendzhik",
+        "name": "Геленджик",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-20",
+        "end": "2026-11-23",
+        "month": 11,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.nights",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "dates.nights",
+        "label": "3 ночи"
+      },
+      {
+        "field": "prefs.district",
+        "label": "тихий район"
+      },
+      {
+        "field": "scope",
+        "label": "перелёт + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 8110,
+          "door_to_door_hours": 0.0,
+          "out_hours": null,
+          "back_hours": null
+        },
+        "steps": [
+          {
+            "type": "stay",
+            "from": "У Нины Николаевны",
+            "to": "У Нины Николаевны",
+            "start": "2026-11-20T15:00:00+03:00",
+            "end": "2026-11-23T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 8110
+          }
+        ],
+        "hotel": {
+          "name": "У Нины Николаевны",
+          "stars": 2,
+          "rating": 8.9,
+          "district": {
+            "labels": [
+              "тихий район",
+              "семейный район",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 0,
+              "beach": 1,
+              "cafe": 14,
+              "convenience": 11,
+              "fast_food": 4,
+              "nightclub": 0,
+              "park": 0,
+              "pedestrian": 2,
+              "pharmacy": 4,
+              "playground": 5,
+              "pub": 0,
+              "restaurant": 3,
+              "station": 0,
+              "stop": 22,
+              "supermarket": 6
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 8110,
+          "door_to_door_hours": 0.0,
+          "price_stay_rub": 8110,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "15:00",
+          "check_out_time": "11:00",
+          "hotel_name": "У Нины Николаевны",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 2,
+          "hotel_rating": 8.9,
+          "hotel_reviews": 94,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-17",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 8110,
+          "distance_beach_m": 494,
+          "distance_center_m": 1199,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "paid",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 1800,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "district_lively": 0.21,
+          "district_quiet": 0.95,
+          "district_family": 0.7,
+          "district_walkable": 0.89,
+          "poi_bar": 0,
+          "poi_beach": 1,
+          "poi_cafe": 14,
+          "poi_convenience": 11,
+          "poi_fast_food": 4,
+          "poi_nightclub": 0,
+          "poi_park": 0,
+          "poi_pedestrian": 2,
+          "poi_pharmacy": 4,
+          "poi_playground": 5,
+          "poi_pub": 0,
+          "poi_restaurant": 3,
+          "poi_station": 0,
+          "poi_stop": 22,
+          "poi_supermarket": 6,
+          "nearest_beach_m": 494,
+          "nearest_centre_m": 1199,
+          "nearest_major_road_m": 1883,
+          "nearest_stop_m": 95,
+          "district_fit": 0.881,
+          "comfort_score": 0.6133,
+          "no_transport": true,
+          "ref_min_rub": 8110,
+          "delta_rub_vs_cheapest": 0,
+          "also_comfort": true,
+          "coincide_note": "Самый дешёвый вариант оказался и самым комфортным — отдельной карточки нет.",
+          "transport_gap": "none",
+          "transport_gap_ru": "По маршруту Санкт-Петербург — Геленджик в данных нет ни рейсов, ни поездов — показываю только проживание",
+          "dest_airports": false
+        },
+        "sacrifices": [],
+        "risks": [
+          {
+            "code": "no_transport",
+            "text": "По маршруту Санкт-Петербург — Геленджик в данных нет ни рейсов, ни поездов — показываю только проживание",
+            "data": {}
+          }
+        ],
+        "not_for": [],
+        "fit": {
+          "score": 0.882,
+          "breakdown": {
+            "budget": 1.0,
+            "district": 0.883,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "rating": 0.89
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      }
+    ],
+    "recommended_hint": "cheapest",
+    "questions": [
+      {
+        "id": "q_budget",
+        "text": "Какой бюджет на всех, примерно?"
+      }
+    ],
+    "upsell_candidates": [],
+    "other_places": [
+      {
+        "id": "sochi",
+        "name": "Сочи",
+        "price_from_rub": 55760,
+        "nights": 3,
+        "transport_ru": "самолётом",
+        "within_budget": null,
+        "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+      },
+      {
+        "id": "adler",
+        "name": "Адлер (Сириус)",
+        "price_from_rub": 55190,
+        "nights": 3,
+        "transport_ru": "самолётом",
+        "within_budget": null,
+        "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+      },
+      {
+        "id": "svetlogorsk",
+        "name": "Светлогорск",
+        "price_from_rub": 20540,
+        "nights": 3,
+        "transport_ru": "поездом",
+        "within_budget": null,
+        "price_includes": "поезд туда и обратно на двоих по самым дешёвым билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+      }
+    ],
+    "offers": [
+      {
+        "kind": "place",
+        "label": "Смотреть Сочи"
+      },
+      {
+        "kind": "place",
+        "label": "Смотреть Адлер (Сириус)"
+      },
+      {
+        "kind": "place",
+        "label": "Смотреть Светлогорск"
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "ни\\s+рейсов|ни\\s+поездов|нет\\s+ни"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "Сочи|Адлер|Светл"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "билет\\w*\\s+не\\s+нашл|не\\s+смотрел\\w*\\s+билет|нет\\s+аэропорт|аэропорт\\w*\\s+нет|одной\\s+кнопк"
+    },
+    {
+      "type": "predicate",
+      "name": "no_unbacked_claims"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 1
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Saint Petersburg → Gelendzhik: no flight and no train in the data (Gelendzhik has an airport, so never «нет аэропорта»); the stays are what they are, and the places with transport (Сочи, Адлер (Сириус), Светлогорск) are named with their price — buttons below."
+}

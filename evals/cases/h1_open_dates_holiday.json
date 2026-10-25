@@ -1,0 +1,84 @@
+{
+  "id": "h1_open_dates_holiday",
+  "category": "B",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "На ноябрьские в Казань из Москвы, вдвоём, но числа пока плавают",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_in",
+      "path": "/intent",
+      "values": [
+        "new_trip"
+      ]
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/destination.name",
+      "value": "Казань"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.month",
+      "value": 11
+    },
+    {
+      "type": "predicate",
+      "name": "number_between",
+      "args": {
+        "path": "/patch/set/dates.flexible_days",
+        "min": 1,
+        "max": 7
+      }
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/dates.start"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/dates.end"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "destination.name",
+          "dates.month",
+          "dates.flexible_days",
+          "origin.city",
+          "party.segment",
+          "party.adults"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«числа пока плавают» with a holiday: the dates are open — dates.month 11 + dates.flexible_days, never exact start/end; the engine picks the dates as an assumption chip."
+}

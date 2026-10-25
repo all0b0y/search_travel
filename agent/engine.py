@@ -238,6 +238,8 @@ class Engine:
                 self._fix_intent(ctx)
                 route_kw = {"intent": ctx.intent}
                 self._apply_season(ctx)
+                self._read_unsold(ctx)
+                route_kw = {"intent": ctx.intent}
                 self._read_rebuild_wishes(ctx)
                 self._read_location_cues(ctx)
         self._validate_patch(ctx)
@@ -392,9 +394,7 @@ class Engine:
             ctx.message = (f"{tried}. Ближе всего — «{title}», {P.fmt_rub(best.totals.rub)} за всё. Можно взять его, "
                            f"поднять бюджет, сократить поездку на ночь или посмотреть другое направление.")
             return
-        ctx.message = (f"Пересобрал ещё раз — подборка та же: вариантов, где это гарантировано, у меня нет. "
-                       f"Ближе всего — «{title}», {P.fmt_rub(best.totals.rub)} за всё. Можно взять его или "
-                       f"поменять даты, бюджет или район — напишите, что можно сдвинуть.")
+        ctx.message = noop_rebuild_text(ctx, best, title)
 
     # ------------------------------------------------------------ 3. patch validation
     def _validate_patch(self, ctx):
@@ -502,6 +502,23 @@ class Engine:
         if wants_cheaper(ctx.text) and "budget_rub.max" not in sets:   # a new budget is the exact value
             ctx.ask_cheaper = True
             ctx.trace["notes"].append("wish: cheaper without values -> cheaper search")
+
+    def _read_unsold(self, ctx):
+        """Car rental, a visa, excursions, insurance, a cruise (rules.json `unsold`): not sold here. With a trip in
+        the same message the trip goes on and the card says one sentence (search_question `not_sold` fact); a
+        message that asks only for such a service («…больше ничего не надо») is out_of_scope with no trip patch."""
+        from .steps import unsold_cues, unsold_only
+        if not ctx.text:
+            return
+        found = unsold_cues(self.skill.rules, ctx.text)
+        if not found:
+            return
+        ctx.unsold = found
+        ctx.trace["notes"].append(f"unsold: {found}")
+        if unsold_only(self.skill.rules, ctx.text) and ctx.intent in ("new_trip", "refine", "answer"):
+            ctx.intent = "out_of_scope"
+            ctx.patch = {"set": {}, "unset": []}
+            ctx.trace["notes"].append("unsold only -> out_of_scope, no trip patch")
 
     def _read_location_cues(self, ctx):
         """Code rules behind understand (rules.json `location`, `best_time`) on a trip request:
@@ -763,10 +780,11 @@ class Engine:
                           for vid in list(ctx.old_totals) + [i for i in new_totals if i not in ctx.old_totals]
                           if ctx.old_totals.get(vid) != new_totals.get(vid)]
                 changes, rebuilt = ctx.changes + totals, ctx.rebuilt
-            from .steps import search_question
+            from .steps import response_offers, search_question
             return P.variants_input(s, items, hint, ctx.questions, ctx.upsell[:cap],
                                     ctx.chips, changes, rebuilt, request=ctx.text if ctx.action is None else "",
-                                    question=search_question(ctx), other_places=ctx.other_places)
+                                    question=search_question(ctx), other_places=ctx.other_places,
+                                    offers=response_offers(ctx, ctx.variants, ctx.chips))
         if card == "present.compare":
             labels = {i.id: i.label for i in s.shown.variants}
             labels = {v.id: labels.get(v.id, str(n + 1)) for n, v in enumerate(ctx.variants)}
@@ -924,6 +942,33 @@ def variant_signature(variants):
 
 
 NOOP_REBUILD_KEY = "engine:noop_rebuild"
+UNMET_NOTE_CODES = ("relaxed_pref", "non_refundable_only", "no_transport", "transport_switched", "accessibility_unknown")
+
+
+def noop_rebuild_text(ctx, best, title):
+    """The same rebuild again, the same variants: name the wish that is not met (a relaxed hotel / ticket filter,
+    the transport gap, or — when code has no filter for it — the user's own words), say it was searched again
+    with the same result, and offer only what this answer's buttons or a real rebuild can change."""
+    notes = [n.text for n in best.risks if n.code in UNMET_NOTE_CODES]
+    gap = (ctx.transport_gap or {}).get("line") or best.facts.get("transport_gap_ru")
+    wishes = list(dict.fromkeys([t for t in [gap] + notes if t]))[:2]
+    if wishes:
+        head = "Пересобрал ещё раз с теми же условиями: " + "; ".join(
+            w[:1].lower() + w[1:] if not w[:2].isupper() else w for w in wishes) + "."
+    else:
+        words = re.sub(r"\s+", " ", (ctx.text or "").strip()).rstrip(".!?")
+        words = (words[:70].rsplit(" ", 1)[0] + "…") if len(words) > 70 else words
+        head = (f"Пересобрал ещё раз — подборка та же: под «{words}» отдельного фильтра у меня нет, поиск идёт по "
+                f"датам, бюджету, составу, питанию, звёздам, отмене, району и дороге." if words else
+                "Пересобрал ещё раз с теми же условиями — подборка та же.")
+    road = any(st.type in ("flight", "train") for st in best.steps)
+    text = f"{head} Ближе всего — «{title}», {P.fmt_rub(best.totals.rub)} {'за всё' if road else 'за проживание'}."
+    labels = [a["label"] for a in ctx.extra_actions or [] if a.get("label")][:3]
+    if labels:
+        text += " Другие пути — кнопками ниже: " + ", ".join(f"«{lb}»" for lb in labels) + "."
+    else:
+        text += " Можно взять его или назвать другие даты, бюджет или место — соберу заново."
+    return text
 
 
 def validate_patch_hook(ctx):

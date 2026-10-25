@@ -181,7 +181,8 @@ class Prefs(Model):
     transport: Transport = "any"
     # "HH:MM", local time at the destination: the outbound leg must arrive at or before it
     arrive_before: Optional[str] = PField(default=None, pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
-    # no flight departing or arriving inside the night window (rules.json ranking.night_window)
+    # no night leg, flights and trains: none departing or arriving inside the night window (rules.json
+    # ranking.night_window) and no train on the move at ranking.night_move_at (03:00, an overnight sleeper)
     no_night_flights: Optional[bool] = None
     # only destinations inside the origin's country (consumed by the inspiration path)
     domestic: Optional[bool] = None

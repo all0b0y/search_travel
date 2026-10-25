@@ -48,6 +48,7 @@ RANKING_DEFAULTS = {
     "comfort_price_cap_ratio": 2.0,   # without a budget, comfort costs at most this x the cheapest
     "after_train_min": 10,            # leaving the platform after a train
     "night_window": ["23:00", "06:00"],   # night departure / arrival (local clock)
+    "night_move_at": "03:00",             # a train still on the move at this local time is an overnight one
     "early_departure_before": "07:00",    # departures before this are "early"
     "tight_layover_min": 60,          # a flight's own connection shorter than this is tight
     "long_transfer_min": 90,          # airport -> hotel longer than this is long
@@ -220,7 +221,7 @@ def _leg_ok(leg, brief, rr, today):
     constraints = set(brief.constraints.value or [])
     if today and leg.dep.date() < today:
         return False
-    if leg.kind == "flight" and "no_night_flights" in constraints and (_night(leg.dep, rr) or _night(leg.arr, rr)):
+    if "no_night_flights" in constraints and night_leg(leg, rr):
         return False
     if prefs is not None:
         if leg.kind == "flight" and prefs.direct_only and _user(brief, "prefs.direct_only") and leg.stops:
@@ -231,8 +232,25 @@ def _leg_ok(leg, brief, rr, today):
     return True
 
 
+def _on_move_at(leg, hhmm) -> bool:
+    """The leg is travelling at the local clock time `hhmm` (of its departure time zone) on some night."""
+    t = leg.dep.replace(hour=int(hhmm[:2]), minute=int(hhmm[3:5]), second=0, microsecond=0)
+    if t <= leg.dep:
+        t += timedelta(days=1)
+    return t < leg.arr
+
+
+def night_leg(leg, rr) -> bool:
+    """«Без ночных рейсов / поездов» (prefs.no_night_flights covers every leg): a flight or a train leaving or
+    arriving inside ranking.night_window, or a train still on the move at ranking.night_move_at (03:00 local:
+    an overnight sleeper leaving at 21:30 and arriving at 07:40 is a night train)."""
+    if _night(leg.dep, rr) or _night(leg.arr, rr):
+        return True
+    return leg.kind == "train" and _on_move_at(leg, rr.get("night_move_at") or "03:00")
+
+
 def _night_flight(leg, rr) -> bool:
-    return leg.kind == "flight" and (_night(leg.dep, rr) or _night(leg.arr, rr))
+    return night_leg(leg, rr)
 
 
 def _soft_leg_filters(brief, direction, rr):
@@ -431,11 +449,16 @@ def _free_cancel(h) -> bool:
 
 def _pref_fails(h, brief, near=None) -> list[str]:
     """User-given prefs this hotel does not meet (hard filters, relaxed only when nothing is left). `near`: the
-    resolved place of prefs.near (results["near"] with radius_m): farther hotels fail "prefs.near"."""
+    resolved place of prefs.near (results["near"] with radius_m): farther hotels fail "prefs.near". Constraints
+    kitchen / accessible need the mock's synthetic room.kitchen / accessibility.step_free (unknown fails)."""
     prefs = brief.prefs.value
     bad = []
     if wants_crib(brief) and _infant_cot(h) not in GUARANTEED_COT:
         bad.append(CRIB)
+    if wants_kitchen(brief) and not has_kitchen(h):
+        bad.append(KITCHEN)
+    if wants_step_free(brief) and not step_free(h):
+        bad.append(ACCESSIBLE)
     if near is not None and near.get("radius_m") is not None:
         d = h.get("distance_near_m")
         if d is None or d > int(near["radius_m"]):
@@ -587,12 +610,38 @@ GUARANTEED_COT = ("free", "paid")  # ostrovok KidsPolicy.infant_cot; on_request 
 COT_COMFORT = {"free": 1.0, "paid": 0.6, "on_request": 0.2, "none": 0.0}
 # hotel prefs in relaxation order: when no hotel meets them all, the smallest set is dropped, the
 # earliest paths in this list first (a cot for a toddler is dropped last)
+KITCHEN = "constraints.kitchen"         # relaxed marker: no room with a kitchen
+ACCESSIBLE = "constraints.accessible"   # relaxed marker: no hotel with step-free access
 RELAX_ORDER = ("prefs.center_max_m", "prefs.near", "prefs.beach_max_m", "prefs.stars_min", "prefs.meals",
-               "prefs.free_cancellation", CRIB)
+               "prefs.free_cancellation", CRIB, KITCHEN, ACCESSIBLE)
 
 
 def wants_crib(brief) -> bool:
     return "crib" in (brief.constraints.value or [])
+
+
+def wants_kitchen(brief) -> bool:
+    return "kitchen" in (brief.constraints.value or [])
+
+
+def wants_step_free(brief) -> bool:
+    return "accessible" in (brief.constraints.value or [])
+
+
+def has_kitchen(h) -> bool:
+    """The offer's room has a kitchen (the mock's synthetic room.kitchen)."""
+    return bool(((h or {}).get("room") or {}).get("kitchen"))
+
+
+def step_free(h) -> Optional[bool]:
+    """Step-free access of the offer's hotel (the mock's synthetic accessibility.step_free), None when unknown."""
+    acc = (h or {}).get("accessibility")
+    return None if not isinstance(acc, dict) else bool(acc.get("step_free"))
+
+
+def lift(h) -> Optional[bool]:
+    acc = (h or {}).get("accessibility")
+    return None if not isinstance(acc, dict) else bool(acc.get("lift"))
 
 
 def _infant_cot(h):
@@ -622,7 +671,8 @@ RELAXED_RU = {"prefs.stars_min": "с нужной звёздностью", "pref
               "prefs.free_cancellation": "с бесплатной отменой", "prefs.beach_max_m": "так близко к пляжу",
               "prefs.center_max_m": "так близко к центру", "prefs.near": "так близко к нужному месту",
               "prefs.max_travel_hours": "с дорогой в нужное время", "prefs.arrive_before": "с прибытием к нужному времени",
-              "prefs.no_night_flights": "без ночных рейсов", CRIB: "с гарантированной детской кроваткой"}
+              "prefs.no_night_flights": "без ночной дороги", CRIB: "с гарантированной детской кроваткой",
+              KITCHEN: "с кухней в номере", ACCESSIBLE: "без ступенек"}
 
 
 # ---------------------------------------------------------------- district
@@ -967,7 +1017,7 @@ def _steps_for(c: Combo, brief, rules, today, dest_name):
 def _facts(c: Combo, brief, districts, segments, rr):
     h = c.hotel
     if h is None:
-        return _transport_facts(c)
+        return _transport_facts(c, rr)
     room = h.get("room") or {}
     kids = h.get("kids_policy") or {}
     canc = h.get("cancellation") or {}
@@ -1005,8 +1055,11 @@ def _facts(c: Combo, brief, districts, segments, rr):
         "infant_cot": kids.get("infant_cot"),
         "early_checkin_available": early.get("available"),
         "early_checkin_price_rub": early.get("price_rub"),
+        "kitchen": has_kitchen(h) if "room" in h else None,   # synthetic (the mock): a kitchen in the room
+        "step_free": step_free(h),                            # synthetic: step-free access
+        "lift": lift(h),
     }
-    _leg_facts(f, c)
+    _leg_facts(f, c, rr)
     for direction, tr in (("out", c.tr_out), ("back", c.tr_back)):
         if tr is not None:
             f[f"transfer_{direction}_min"] = int(tr["duration_min"])
@@ -1051,10 +1104,12 @@ def _facts(c: Combo, brief, districts, segments, rr):
     return {k: v for k, v in f.items() if v is not None}
 
 
-def _leg_facts(f, c: Combo):
+def _leg_facts(f, c: Combo, rr=None):
     for direction, leg in (("out", c.out), ("back", c.back)):
         if leg is None:
             continue
+        if rr is not None and night_leg(leg, rr):
+            f[f"{direction}_night"] = True   # leaves / arrives at night or an overnight train
         f.update({
             f"{direction}_kind": leg.kind,
             f"{direction}_price_rub": leg.price_rub,
@@ -1087,10 +1142,10 @@ def _leg_facts(f, c: Combo):
         f["price_pets_rub"] = sum(fees)
 
 
-def _transport_facts(c: Combo):
+def _transport_facts(c: Combo, rr=None):
     """Facts of a tickets-only variant (no stay, no transfers)."""
     f: dict[str, Any] = {"total_rub": c.rub, "door_to_door_hours": c.hours, "transport_only": True}
-    _leg_facts(f, c)
+    _leg_facts(f, c, rr)
     f["price_transport_rub"] = c.rub
     if c.out is not None and c.back is not None:
         f["days_at_destination"] = (c.back.dep.date() - c.out.arr.date()).days
@@ -1165,7 +1220,7 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
     if wait and wait > rr["wait_after_checkout_min"]:
         out.append(_note("wait_after_checkout", f"После выезда из отеля {fmt_hours(wait / 60)} ч до отправления",
                          minutes=wait))
-    if "accessible" in (brief.constraints.value or []):
+    if wants_step_free(brief) and c.hotel is not None and step_free(c.hotel) is None:
         out.append(_note("accessibility_unknown", "Доступность для коляски в демо-данных не проверена"))
     # what the user asked for and did not get goes first: the list is capped
     prefs = brief.prefs.value
@@ -1193,6 +1248,23 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
         if path == CRIB:
             head.append(_note("relaxed_pref", "Отелей с гарантированной кроваткой не нашли — кроватка только по запросу",
                               field=path, infant_cot=_infant_cot(c.hotel or {})))
+            continue
+        if path == KITCHEN:
+            head.append(_note("relaxed_pref", "С кухней в номере на эти даты ничего нет — показываю без неё", field=path))
+            continue
+        if path == ACCESSIBLE:
+            head.append(_note("relaxed_pref", "Отелей без ступенек на эти даты нет — показываю без этого условия",
+                              field=path))
+            continue
+        if path == "prefs.no_night_flights":
+            legs = [l for l in (c.out, c.back) if l is not None and night_leg(l, rr)]
+            if any(l.kind == "train" for l in legs):
+                text = "Дневных поездов на эти даты нет — в варианте ночной поезд"
+            elif legs:
+                text = "Дневных рейсов на эти даты нет — в варианте ночной рейс"
+            else:
+                continue   # this variant's legs are all by day: nothing to say
+            head.append(_note("relaxed_pref", text, field=path))
             continue
         if path == "prefs.arrive_before" and prefs is not None and prefs.arrive_before:
             text = f"Рейсов с прибытием до {prefs.arrive_before} не нашли — показываем ближайшие"
@@ -1420,7 +1492,8 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     - Tickets only (scope without "stay": flights and/or trains): out + back pairs, no hotel, no transfers;
       cheapest / fastest / comfort (fare tier, baggage, car class) among them; facts `transport_only`.
     - Ticket prefs (user-set): prefs.arrive_before (outbound arrival, local clock at the destination),
-      prefs.no_night_flights (no flight leaving or landing in ranking.night_window), and refundable fares
+      prefs.no_night_flights (no night leg: a flight or train leaving or arriving in ranking.night_window, or a
+      train on the move at ranking.night_move_at 03:00 — night_leg; facts out_night / back_night), and refundable fares
       under prefs.free_cancellation. Each is relaxed per direction when nothing passes: risk
       `relaxed_pref` (or `non_refundable_only` for tickets).
     - Dates never mix: an outbound reaching the hotel on a day before the check-in date (a night without

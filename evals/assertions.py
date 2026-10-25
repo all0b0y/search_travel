@@ -457,7 +457,17 @@ def none_of(output, inp, assertions):
     return _res(True)
 
 
+def no_unbacked_claims(output, inp, card="present.variants"):
+    """The code guard of claims holds: no «убрал ночные / с кухней / прямые / перенёс / пересчитал / нет аэропорта /
+    билеты не нашлись» without this turn's evidence and no button or rebuild promised without the means
+    (agent.guards.change_claim_issues: change_claim / promise_claim)."""
+    from agent.guards import change_claim_issues
+    found = [i["message"] for i in change_claim_issues(card, inp, output) if i["severity"] == "block"]
+    return _res(not found, "; ".join(found[:3]))
+
+
 PREDICATES = {
+    "no_unbacked_claims": no_unbacked_claims,
     "patch_has_no_assumptions": patch_has_no_assumptions,
     "patch_empty": patch_empty,
     "contains": contains,

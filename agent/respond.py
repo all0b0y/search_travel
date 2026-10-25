@@ -246,6 +246,9 @@ def _variants_text(ctx, update=False):
             before[field.split(".")[1]] = row["before"]
     was = f" (было {P.fmt_rub(before[best.id])})" if best.id in before else ""
     head = "Пересобрал варианты. " if update else ""
+    gap = best.facts.get("transport_gap_ru")
+    if gap:   # no road there (or another mode built): code's line first (steps.recover_transport)
+        head += gap.rstrip(".") + ". "
     text = f"{head}Советую «{_title(best)}»: {P.fmt_rub(best.totals.rub)} за всё{was}{_road(best)}."
     others = [f"«{_title(v)}» — {P.fmt_rub(v.totals.rub)}" for v in variants if v.id != best.id][:2]
     if others:
@@ -506,6 +509,9 @@ def code_text(ctx):
         return {"present.info": "Точного ответа на это у меня нет — спросите, пожалуйста, иначе.",
                 "present.aftercare": "Запрос по заказу выполнен — состояние заказа ниже."}.get(
             card, "Вот что получилось — подробности в карточках ниже.")
+    if card == "present.fallback" and getattr(ctx, "unsold", None):
+        from .steps import not_sold_fact
+        return not_sold_fact(ctx.unsold)["line"] + ". Если нужна сама поездка — напишите куда и когда, подберу."
     return FALLBACK_TEXT if card == "present.fallback" else "Готово."
 
 

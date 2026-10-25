@@ -133,6 +133,10 @@ class HotelFilters(Model):
     # offers carry distance_near_m (metres to `near`); max_distance_near_m (needs `near`) applies before the cut
     near: Optional[NearPoint] = None
     max_distance_near_m: Optional[int] = PField(default=None, ge=0)
+    # synthetic amenities (hotels.room_kitchen / hotels.accessibility), applied before the cut: kitchen -> the
+    # cheapest fitting room with a kitchen; step_free -> only hotels with step-free access
+    kitchen: Optional[bool] = None
+    step_free: Optional[bool] = None
 
 
 class SearchHotelsIn(Model):
@@ -160,6 +164,15 @@ class Room(Model):
     capacity_adults: int
     capacity_children: int = 0
     bed: Optional[str] = None   # e.g. "double", "twin"
+    kitchen: bool = False       # synthetic: every room of an apartment, rooms named «апартаменты» / «студия»
+
+
+class Accessibility(Model):
+    """Synthetic (no source has it): step_free = an entrance and a route to the rooms without steps, lift = a lift
+    to the upper floors; seeded by hotel_id, a higher share for hotels / resorts of 3+ stars, never hostels."""
+    step_free: bool = False
+    lift: bool = False
+    synthetic: bool = True
 
 
 class Cancellation(Model):
@@ -202,6 +215,7 @@ class HotelOffer(Model):
     distance_beach_m: Optional[int] = PField(default=None, ge=0)
     distance_center_m: int = PField(ge=0)
     distance_near_m: Optional[int] = PField(default=None, ge=0)   # to filters.near, only when it was given
+    accessibility: Optional[Accessibility] = None                  # synthetic
     synthetic: bool = True      # price, availability, rating, policies are synthetic
 
 
@@ -247,6 +261,7 @@ class HotelDetails(Model):
     policies: HotelPolicies
     rooms: list[Room]
     photos: list[Photo] = PField(default_factory=list)  # real links only; empty when none
+    accessibility: Optional[Accessibility] = None         # synthetic
     source: str = "osm"
     synthetic: bool = True      # some fields are synthetic: see synthetic_fields
     synthetic_fields: list[str] = PField(default_factory=lambda: ["stars", "rating", "reviews", "policies", "rooms"])

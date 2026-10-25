@@ -26,7 +26,10 @@ CARD_KEYS = {
 # search / refine message ({text, facts}, steps.search_question) that the card answers first; `other_places` =
 # other places priced for this trip (steps.offer_other_places: the budget is not reached here, or the user asked
 # for another place) — each one a choose_destination action the card names with its price
-OPTIONAL_KEYS = {"present.variants": ("question", "other_places"), "present.update": ("question", "other_places")}
+# `offers` = what this answer's buttons really do (steps.response_offers: add_road, connecting, train, plane, place) —
+# the card promises a button only from it
+OPTIONAL_KEYS = {"present.variants": ("question", "other_places", "offers"),
+                 "present.update": ("question", "other_places", "offers")}
 CARDS = tuple(CARD_KEYS)
 UPSELL_KINDS = ("transfer", "early_checkin", "room_upgrade", "meal_upgrade", "flexible_fare")  # decision 8
 
@@ -100,7 +103,9 @@ OTHER_PLACES = {"type": "array", "maxItems": 3, "items": _obj(
         "price_from_rub": {"type": "integer", "minimum": 1}, "nights": {"type": "integer", "minimum": 1},
         "transport_ru": {"enum": ["поездом", "самолётом", None]}, "within_budget": {"type": ["boolean", "null"]},
         "price_includes": {"type": ["string", "null"]}})}
-OPTIONAL_PROPS = {"question": SEARCH_QUESTION, "other_places": OTHER_PLACES}
+OFFERS = {"type": "array", "minItems": 1, "items": _obj(["kind", "label"], {
+    "kind": {"enum": ["add_road", "connecting", "train", "plane", "place"]}, "label": {"type": "string", "minLength": 1}})}
+OPTIONAL_PROPS = {"question": SEARCH_QUESTION, "other_places": OTHER_PLACES, "offers": OFFERS}
 _COMMON_PROPS = {
     "today": DATE,
     "stage": {"enum": list(STAGES)},

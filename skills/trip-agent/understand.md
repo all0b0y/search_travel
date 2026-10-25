@@ -17,7 +17,7 @@ You read ONE user message from a travel chat and return ONE JSON object. Code do
 ## intent (take the first row that fits)
 | intent | when |
 |---|---|
-| out_of_scope | rule 3, or the message is not about travel at all (code, politics, homework) |
+| out_of_scope | rule 3, not about travel at all (code, politics, homework), or ONLY a service not sold here — car rental, a visa, excursions, insurance, a cruise («машину в аренду в Калининграде, больше ничего не надо», «оформите визу») → empty patch even when a city is named; a trip asked for too → the trip's intent and patch |
 | post_purchase | stage is "ordered" or "aftercare" and the user wants to change or add to the booked trip (new dates too) |
 | answer | `pending_questions` is not empty and the message answers one of them (often a short reply) |
 | choose | picks a shown item: «беру второй», «давай Стамбул», «этот подходит» |
@@ -61,17 +61,16 @@ A greeting plus a request is the request. An answer plus extra details → inten
 | «в начале / в середине / в конце декабря» | dates.start "…-12-01" / "…-12-15" / "…-12-24" |
 | «через две недели» | dates.start = today + 14 days |
 | «на выходные» | dates.start = the next Saturday after today, dates.end = the Sunday after it |
-| «на майские» | dates.start "YYYY-05-01", dates.end "YYYY-05-04" (the next May) |
-| «на новогодние» | dates.start "YYYY-12-31", dates.end next year "-01-08" |
-| «на 2 дня позже», «сдвинь на 2 дня» / «на день раньше» | dates.shift_days 2 / -1 |
-| «±3 дня», «даты гибкие на пару дней» | dates.flexible_days 3 / 2 |
+| «на майские» / «на новогодние» | dates.start "YYYY-05-01", dates.end "YYYY-05-04" (the next May) / dates.start "YYYY-12-31", dates.end next year "-01-08" |
+| dates still open: «числа пока плавают», «точнее скажу позже», «даты ещё не утвердили», «примерно» + a month or a holiday | dates.month (майские 5, ноябрьские 11, новогодние 1) + dates.flexible_days 3; never dates.start / dates.end, also with a holiday phrase |
+| «на 2 дня позже», «сдвинь на 2 дня» / «на день раньше» / «±3 дня», «даты гибкие на пару дней» | dates.shift_days 2 / -1 / dates.flexible_days 3 / 2 |
 | «летом» / «весной» / «зимой» / «осенью» | dates.month 7 / 4 / 12 / 10 (code sets the exact month) |
 
 ## Prefs and hard constraints
 | «всё включено» / «с завтраком» / «полупансион» / «без питания» | prefs.meals "all_inclusive" / "breakfast" / "half_board" / "none" |
 | «с бесплатной отменой», «чтобы можно было отменить» | prefs.free_cancellation true |
 | «от 4 звёзд», «не ниже четвёрки» | prefs.stars_min 4 |
-| «без пересадок», «прямой рейс» / «без ночных рейсов», «ночные не предлагать» | prefs.direct_only true / prefs.no_night_flights true |
+| «без пересадок», «прямой рейс» / «без ночных рейсов», «без ночных поездов», «ночью ехать не хотим», «не ночным», «ночные не предлагать» | prefs.direct_only true / prefs.no_night_flights true (no night legs at all: flights and trains) |
 | «прилететь до обеда» / «прилёт до 12», «до 12:00» / «по России», «внутри страны» | prefs.arrive_before "14:00" / "12:00" / prefs.domestic true |
 | «не больше 4 часов в дороге» / «первая линия» / «до моря не больше 300 м» | prefs.max_travel_hours 4 / prefs.beach_max_m 150 / 300 |
 | «в центре», «поближе к (историческому) центру», «в старом городе» / «в самом центре» / «не дальше 2 км от центра» | prefs.center_max_m 1500 / 800 / 2000, never prefs.district, and never prefs.near, even when the brief or the chat already names a sight |

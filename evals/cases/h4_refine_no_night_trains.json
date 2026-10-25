@@ -1,0 +1,115 @@
+{
+  "id": "h4_refine_no_night_trains",
+  "category": "E",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Санкт-Петербург",
+        "iata": [
+          "LED"
+        ]
+      },
+      "destination": {
+        "id": "petrozavodsk",
+        "name": "Карелия (Петрозаводск)",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-20",
+        "end": "2026-11-23",
+        "month": null,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "trains",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "train"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "party.segment"
+    ],
+    "assumptions": [
+      {
+        "field": "party.segment",
+        "label": "вдвоём"
+      }
+    ],
+    "shown": [
+      {
+        "label": "1",
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле"
+      },
+      {
+        "label": "2",
+        "kind": "variant",
+        "id": "comfort",
+        "title": "Комфортнее"
+      }
+    ],
+    "pending_questions": [],
+    "history": [],
+    "message": "Без ночных поездов, пожалуйста",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "refine"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/prefs.no_night_flights",
+      "value": true
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "prefs.no_night_flights",
+          "prefs.transport"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«без ночных поездов» at selection: prefs.no_night_flights true — it covers every leg (flights and trains); ranking then drops night and overnight trains."
+}

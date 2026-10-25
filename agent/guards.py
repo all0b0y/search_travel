@@ -79,6 +79,186 @@ def hostel_claim_issues(card, card_input, message):
     return out
 
 
+# ---------------------------------------------------------------- claims about what code did (table-driven)
+# A reply may say it removed / added / moved something, or that the variants now have a property, only when this
+# turn's evidence holds: the `changes` rows (present.update) and the shown items' facts. Each row: (kind, regex,
+# scope) — scope "state": a property of the items (some / all when the sentence says «все», «везде», «оба»);
+# "removed": code dropped it this turn; "change": a changes row of that field; "negative": a «нет …» claim.
+# A sentence with a negation («нет», «не », «ничего») is no positive claim («с кухней ничего нет» is honest).
+CLAIM_NEG_RE = re.compile(r"\bнет\b|\bне\s|\bни\b|ничего|нельзя|без\s+не[её]\b|без\s+него\b", re.I)
+CLAIM_NEG_STRICT_RE = re.compile(r"\bне\s+(?:смог|получил|вышло|удалось|убрал|нашл)|ничего", re.I)
+CLAIM_ALL_RE = re.compile(r"\b(?:все|всех|везде|каждом|каждый|оба|обоих|обе)\b", re.I)
+TRANSPORT_WORDS_RE = re.compile(r"поезд|рейс|перел[её]т|дорог|отправлен|прибыти|вылет|едете|летите|в\s+пути", re.I)
+CLAIMS = (
+    ("night_removed", re.compile(r"(?:убрал|убрали|убраны|исключил|отсеял|выкинул)\w*\s+(?:все\s+)?ночн|"
+                                 r"ночн\w*\s+(?:рейс\w*|поезд\w*|перее\w*)\s+(?:я\s+)?(?:убрал|исключил)\w*|"
+                                 r"ночн\w*\s+(?:рейсов|поездов)\s+больше\s+нет", re.I), "removed"),
+    ("night", re.compile(r"без\s+ночн\w*\s+(?:рейс|поезд|перел|перее|дорог)|только\s+дневн\w*\s+(?:рейс|поезд)|"
+                         r"\b(?:все|оба|обе|везде|теперь)\b[^.!?]{0,50}?\bдн[её]м\b", re.I), "state"),
+    ("kitchen", re.compile(r"\bс\s+кухн|\bкухн\w*\s+в\s+номер|\bесть\s+(?:своя\s+|собственная\s+)?кухн|"
+                           r"\bкухн\w*\s+есть|\bс\s+кухоньк", re.I), "state"),
+    ("cot", re.compile(r"\bс\s+(?:детской\s+)?кроватк|\bкроватк\w*\s+(?:есть|будет|гарантир|бесплатн|включен)|"
+                       r"\bесть\s+(?:детская\s+)?кроватк", re.I), "state"),
+    ("step_free", re.compile(r"без\s+ступен|без\s+лестниц|безбарьер|доступ\w*\s+для\s+(?:коляс|инвалид)|"
+                             r"(?:можно|удобно)\s+(?:проехать\s+|заехать\s+)?(?:с|на)\s+коляск", re.I), "state"),
+    ("lift", re.compile(r"\bесть\s+лифт|\bс\s+лифтом|\bлифт\s+есть", re.I), "state"),
+    ("direct", re.compile(r"\bпрям(?:ой|ые|ым|ыми|ых|ого)\s+(?:рейс|перел)|без\s+пересад", re.I), "state"),
+    ("dates_moved", re.compile(r"перен[её]с\w*\s+(?:поездку\s+|даты\s+|всё\s+)?на\b|"
+                               r"сдвинул\w*\s+(?:поездку\s+|даты\s+|всё\s+)?на\b|сдвинул\w*\s+даты", re.I), "change"),
+    ("party", re.compile(r"пересчитал\w*\s+(?:цены\s+|всё\s+|варианты\s+)?на\b", re.I), "change"),
+    ("no_airport", re.compile(r"нет\s+(?:своего\s+|собственного\s+)?аэропорт|аэропорт\w*\s+(?:там\s+|здесь\s+|у\s+\w+\s+)?нет|"
+                              r"без\s+аэропорт", re.I), "negative"),
+    ("no_tickets", re.compile(r"билет\w*\s+не\s+нашл|не\s+(?:смотрел|искал)\w*\s+(?:ещё\s+)?билет|"
+                              r"билет\w*\s+(?:я\s+)?(?:пока\s+|ещё\s+)?не\s+(?:смотрел|искал)", re.I), "negative"),
+)
+# offers of a rebuild the engine cannot make: no searchable data behind these words
+REBUILD_OFFER_RE = re.compile(r"пересоберу|подберу|поищу|найду|соберу|могу\s+(?:подобрать|поискать|найти|пересобрать|"
+                              r"собрать)|скажите\s*[—-]", re.I)
+NOT_SEARCHABLE_RE = re.compile(r"вид\w*\s+на\s+(?:мор|гор|город)|балкон|бассейн|парковк|\bспа\b|саун|тренаж|джакузи|"
+                               r"камин|террас|кондиционер|аквапарк|анимаци|песчан\w*\s+пляж|wi-?fi|вайфа", re.I)
+AMENITY_WORDS = {"constraints.kitchen": re.compile(r"кухн", re.I), "constraints.crib": re.compile(r"кроватк", re.I),
+                 "constraints.accessible": re.compile(r"ступен|лестниц|коляск|безбарьер", re.I)}
+ONE_TAP_RE = re.compile(r"одной\s+кнопк|(?:добавлю|докину|подкину)\s+(?:и\s+)?(?:дорогу|перел[её]т|билеты|поезд)", re.I)
+
+
+def _items(card_input):
+    return [i for i in card_input.get("items") or [] if isinstance(i, dict)]
+
+
+def _facts_of(item):
+    return item.get("facts") or {}
+
+
+def _night_item(item):
+    return bool(_facts_of(item).get("out_night") or _facts_of(item).get("back_night"))
+
+
+def _has_legs(item):
+    return any(st.get("type") in ("flight", "train") for st in item.get("steps") or [] if isinstance(st, dict))
+
+
+def _direct_item(item):
+    f = _facts_of(item)
+    return _has_legs(item) and all((f.get(f"{d}_stops") or 0) == 0 for d in ("out", "back") if f"{d}_kind" in f)
+
+
+STATE_OK = {
+    "night": lambda i: _has_legs(i) and not _night_item(i),
+    "kitchen": lambda i: _facts_of(i).get("kitchen") is True,
+    "cot": lambda i: _facts_of(i).get("infant_cot") in ("free", "paid"),
+    "step_free": lambda i: _facts_of(i).get("step_free") is True,
+    "lift": lambda i: _facts_of(i).get("lift") is True,
+    "direct": _direct_item,
+}
+
+
+
+def _changed(card_input, prefix):
+    return any(isinstance(r, dict) and str(r.get("field") or "").startswith(prefix) and r.get("before") != r.get("after")
+               for r in card_input.get("changes") or [])
+
+
+def _claim_problem(kind, scope, sentence, items, card, card_input, own=None):
+    """None when the claim holds; else why it does not (a short Russian reason)."""
+    if kind == "night_removed":
+        if any(_night_item(i) for i in items):
+            return "в подборке ещё есть ночной рейс или поезд"
+        if card == "present.update" and not (_changed(card_input, "prefs.no_night_flights")
+                                             or _changed(card_input, "constraints")):
+            return "код в этот раз ночную дорогу не убирал"
+        prefs = (card_input.get("brief") or {}).get("prefs") or {}
+        if card != "present.update" and not prefs.get("no_night_flights"):
+            return "в запросе нет условия «без ночных»"
+        return None
+    if kind == "night" and not TRANSPORT_WORDS_RE.search(sentence) and "ночн" not in sentence.casefold():
+        return None
+    if scope == "state":
+        pool = [own] if own is not None else items
+        ok = [i for i in pool if STATE_OK[kind](i)]
+        if kind == "night":   # «без ночных»: every shown variant with a road must be by day
+            bad = [i for i in pool if _has_legs(i) and _night_item(i)]
+            return "в подборке есть ночной рейс или поезд" if bad or not ok else None
+        if not ok:
+            return "ни у одного варианта этого нет в данных"
+        if own is None and CLAIM_ALL_RE.search(sentence) and len(ok) < len(pool):
+            return "это есть не у всех вариантов"
+        return None
+    if kind == "dates_moved":
+        moved = _changed(card_input, "dates.") or any(
+            _facts_of(i).get("dates_shifted_days") or _facts_of(i).get("nights_changed_from")
+            or _facts_of(i).get("budget_fit") in ("dates", "dates_and_hotel") for i in items)
+        return None if moved else "даты в этот раз не переносились"
+    if kind == "party":
+        return None if _changed(card_input, "party.") else "состав в этот раз не менялся"
+    if kind == "no_airport":
+        facts = [_facts_of(i) for i in items] + [f for f in card_input.get("facts") or [] if isinstance(f, dict)]
+        return None if any(f.get("dest_airports") is False for f in facts) else "у места в данных есть аэропорт"
+    if kind == "no_tickets":
+        searched = any(_facts_of(i).get("transport_gap") for i in items) or any(
+            isinstance(f, dict) and f.get("kind") == "transport_search" for f in card_input.get("facts") or [])
+        return "код искал дорогу — скажите, что нашлось" if searched else None
+    return None
+
+
+def change_claim_issues(card, card_input, output):
+    """Block `change_claim` for every claim of the CLAIMS table without this turn's evidence; `promise_claim` for an
+    offer the response has no means for (one tap that adds the road without an add_road offer, a rebuild by a
+    property no data has, a rebuild by an amenity code already found nowhere)."""
+    if card not in ("present.variants", "present.update", "present.compare", "present.info"):
+        return []
+    items = _items(card_input)
+    by_id = {str(i.get("id")): i for i in items}
+    texts = [(output.get("message") or "", None)]
+    for it in output.get("items") or []:
+        if isinstance(it, dict):
+            for key in ITEM_TEXT_KEYS:
+                texts += [(t, by_id.get(str(it.get("id")))) for t in _texts(it.get(key))]
+    out, seen = [], set()
+    for text, own in texts:
+        for sentence in _sentences(text):
+            for kind, rx, scope in CLAIMS:
+                if card == "present.info" and scope != "negative":
+                    continue
+                m = rx.search(sentence)
+                if not m:
+                    continue
+                if scope == "state" and CLAIM_NEG_RE.search(sentence):
+                    continue
+                if scope in ("removed", "change") and CLAIM_NEG_STRICT_RE.search(sentence):
+                    continue
+                why = _claim_problem(kind, scope, sentence, items, card, card_input, own)
+                if why and (kind, m.group(0)) not in seen:
+                    seen.add((kind, m.group(0)))
+                    out.append(_issue("change_claim", "block", f"«{m.group(0)}» — {why}", kind=kind,
+                                      phrase=m.group(0)))
+            out += _promise_issues(sentence, card, card_input, items)
+    return out
+
+
+def _promise_issues(sentence, card, card_input, items):
+    if card not in ("present.variants", "present.update"):
+        return []
+    offers = {o.get("kind") for o in card_input.get("offers") or [] if isinstance(o, dict)}
+    out = []
+    m = ONE_TAP_RE.search(sentence)
+    if m and "add_road" not in offers:
+        out.append(_issue("promise_claim", "block", f"«{m.group(0)}» — такой кнопки в ответе нет", kind="add_road",
+                          phrase=m.group(0)))
+    if REBUILD_OFFER_RE.search(sentence):
+        m = NOT_SEARCHABLE_RE.search(sentence)
+        if m:
+            out.append(_issue("promise_claim", "block", f"«{m.group(0)}» — по этому код искать не умеет",
+                              kind="not_searchable", phrase=m.group(0)))
+        relaxed = {(n.get("data") or {}).get("field") for i in items for n in i.get("risks") or [] if isinstance(n, dict)
+                   and n.get("code") == "relaxed_pref"}
+        for field, rx in AMENITY_WORDS.items():
+            m = rx.search(sentence) if field in relaxed else None
+            if m:
+                out.append(_issue("promise_claim", "block", f"«{m.group(0)}» — код уже искал и не нашёл",
+                                  kind="exhausted", phrase=m.group(0)))
+    return out
+
+
 MONEY_WORDS = re.compile(r"₽|руб|\bцен|стоим|отмен|штраф|невозврат|риск|стыковк|опозда|доплат", re.I)
 JOKE_WORDS = re.compile(r"шучу|хаха|ахах|хех|\bлол\b|😄|😂|🤣|😅|😜|😉|🙃|😏|😎|🤪", re.I)
 SMILEY = re.compile(r"[:;]-?\)|\){2,}|\(\s*:")
@@ -452,6 +632,7 @@ def check_card_output(card, card_input: dict, output: dict, rules: dict):
             found.append(_issue("banned_phrase", "block", f"Запрещённая фраза «{phrase}»", phrase=phrase))
     found += latin_issues(output, card_input, g)
     found += hostel_claim_issues(card, card_input, message)
+    found += change_claim_issues(card, card_input, output)
     emo = emoji_count(all_text)
     if emo > g["max_emoji"]:
         found.append(_issue("too_many_emoji", "warn", "Слишком много эмодзи", count=emo, limit=g["max_emoji"]))

@@ -1,0 +1,917 @@
+{
+  "id": "h10_variants_kitchen",
+  "category": "D",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "VKO",
+          "SVO",
+          "ZIA",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "saint-petersburg",
+        "name": "Санкт-Петербург",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-20",
+        "end": "2026-11-23",
+        "month": 11,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": [
+        "kitchen"
+      ],
+      "mood": null
+    },
+    "assumed": [
+      "dates.nights",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "prefs.district",
+        "label": "тихий район"
+      },
+      {
+        "field": "scope",
+        "label": "перелёт + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 36380,
+          "door_to_door_hours": 4.3,
+          "out_hours": 2.4,
+          "back_hours": 1.9
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "LED",
+            "start": "2026-11-20T11:20:00+03:00",
+            "end": "2026-11-20T12:35:00+03:00",
+            "carrier": "Аэрофлот",
+            "price_rub": 10080
+          },
+          {
+            "type": "transfer",
+            "from": "LED",
+            "to": "Not Bad Loft",
+            "start": "2026-11-20T13:20:00+03:00",
+            "end": "2026-11-20T14:30:00+03:00",
+            "carrier": null,
+            "price_rub": 120
+          },
+          {
+            "type": "stay",
+            "from": "Not Bad Loft",
+            "to": "Not Bad Loft",
+            "start": "2026-11-20T14:30:00+03:00",
+            "end": "2026-11-23T08:05:00+03:00",
+            "carrier": null,
+            "price_rub": 16340
+          },
+          {
+            "type": "transfer",
+            "from": "Not Bad Loft",
+            "to": "LED",
+            "start": "2026-11-23T08:05:00+03:00",
+            "end": "2026-11-23T08:45:00+03:00",
+            "carrier": null,
+            "price_rub": 810
+          },
+          {
+            "type": "flight",
+            "from": "LED",
+            "to": "SVO",
+            "start": "2026-11-23T10:45:00+03:00",
+            "end": "2026-11-23T12:00:00+03:00",
+            "carrier": "Аэрофлот",
+            "price_rub": 9030
+          }
+        ],
+        "hotel": {
+          "name": "Not Bad Loft",
+          "stars": 2,
+          "rating": 8.0,
+          "district": {
+            "labels": [
+              "тихий район",
+              "семейный район"
+            ],
+            "counts": {
+              "bar": 1,
+              "beach": 0,
+              "cafe": 8,
+              "convenience": 3,
+              "fast_food": 1,
+              "nightclub": 0,
+              "park": 3,
+              "pedestrian": 0,
+              "pharmacy": 0,
+              "playground": 6,
+              "pub": 0,
+              "restaurant": 2,
+              "station": 0,
+              "stop": 24,
+              "supermarket": 3
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 36380,
+          "door_to_door_hours": 4.3,
+          "price_stay_rub": 16340,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "14:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Not Bad Loft",
+          "hotel_kind": "apartment",
+          "hotel_stars": 2,
+          "hotel_rating": 8.0,
+          "hotel_reviews": 213,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-13",
+          "cancellation_penalty_pct": 50,
+          "cancellation_penalty_rub": 8170,
+          "distance_center_m": 4117,
+          "room_name": "Студия",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "on_request",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 2900,
+          "kitchen": true,
+          "step_free": true,
+          "lift": true,
+          "out_kind": "flight",
+          "out_price_rub": 10080,
+          "out_from": "SVO",
+          "out_to": "LED",
+          "out_date": "2026-11-20",
+          "out_dep_time": "11:20",
+          "out_arr_time": "12:35",
+          "out_arr_date": "2026-11-20",
+          "out_duration_min": 75,
+          "out_duration_hours": 1.2,
+          "out_stops": 0,
+          "out_carrier": "Аэрофлот",
+          "out_number": "SU5801",
+          "out_baggage": false,
+          "out_refundable": false,
+          "out_fare": "basic",
+          "out_door_hours": 2.4,
+          "back_kind": "flight",
+          "back_price_rub": 9030,
+          "back_from": "LED",
+          "back_to": "SVO",
+          "back_date": "2026-11-23",
+          "back_dep_time": "10:45",
+          "back_arr_time": "12:00",
+          "back_arr_date": "2026-11-23",
+          "back_duration_min": 75,
+          "back_duration_hours": 1.2,
+          "back_stops": 0,
+          "back_carrier": "Аэрофлот",
+          "back_number": "SU6346",
+          "back_baggage": false,
+          "back_refundable": false,
+          "back_fare": "basic",
+          "back_door_hours": 1.9,
+          "transfer_out_min": 58,
+          "transfer_out_price_rub": 120,
+          "transfer_out_kind": "public",
+          "transfer_back_min": 31,
+          "transfer_back_price_rub": 810,
+          "transfer_back_kind": "taxi",
+          "price_transfers_rub": 930,
+          "price_transport_rub": 19110,
+          "arrival_at_hotel_time": "14:30",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "08:05",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.16,
+          "district_quiet": 0.86,
+          "district_family": 0.71,
+          "district_walkable": 0.44,
+          "poi_bar": 1,
+          "poi_beach": 0,
+          "poi_cafe": 8,
+          "poi_convenience": 3,
+          "poi_fast_food": 1,
+          "poi_nightclub": 0,
+          "poi_park": 3,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 0,
+          "poi_playground": 6,
+          "poi_pub": 0,
+          "poi_restaurant": 2,
+          "poi_station": 0,
+          "poi_stop": 24,
+          "poi_supermarket": 3,
+          "nearest_beach_m": 4796,
+          "nearest_centre_m": 4117,
+          "nearest_major_road_m": 241,
+          "nearest_railway_m": 558,
+          "nearest_station_m": 1882,
+          "nearest_stop_m": 176,
+          "district_fit": 0.722,
+          "center_fit": 0.221,
+          "comfort_score": 0.4931,
+          "ref_min_rub": 36380,
+          "delta_rub_vs_cheapest": 0,
+          "ref_min_hours": 3.8,
+          "delta_hours_vs_fastest": 0.5
+        },
+        "sacrifices": [
+          {
+            "code": "slower",
+            "text": "+0,5 ч в пути",
+            "data": {
+              "delta_hours": 0.5
+            }
+          },
+          {
+            "code": "no_baggage",
+            "text": "Без багажа в тарифе",
+            "data": {}
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 2★",
+            "data": {
+              "stars": 2
+            }
+          },
+          {
+            "code": "center_farther",
+            "text": "До центра 4 117 м",
+            "data": {
+              "distance_m": 4117
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "non_refundable",
+            "text": "Невозвратные билеты без обмена",
+            "data": {
+              "directions": "out,back"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "quiet_no_nightlife",
+            "text": "Тихо и почти нет баров — не для тех, кто хочет вечерней движухи",
+            "data": {
+              "quiet": 0.857
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.754,
+          "breakdown": {
+            "budget": 1.0,
+            "time": 0.884,
+            "district": 0.723,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "center": 0.221,
+            "constraints": 1.0,
+            "rating": 0.8
+          }
+        },
+        "diff_rub": 18080,
+        "diff_word": "дешевле",
+        "over_budget_rub": null
+      },
+      {
+        "id": "comfort",
+        "label": "2",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 64990,
+          "door_to_door_hours": 3.8,
+          "out_hours": 1.9,
+          "back_hours": 1.9
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "LED",
+            "start": "2026-11-20T11:20:00+03:00",
+            "end": "2026-11-20T12:35:00+03:00",
+            "carrier": "Аэрофлот",
+            "price_rub": 14620
+          },
+          {
+            "type": "transfer",
+            "from": "LED",
+            "to": "Repeat Apart",
+            "start": "2026-11-20T13:50:00+03:00",
+            "end": "2026-11-20T14:30:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "stay",
+            "from": "Repeat Apart",
+            "to": "Repeat Apart",
+            "start": "2026-11-20T14:30:00+03:00",
+            "end": "2026-11-23T08:05:00+03:00",
+            "carrier": null,
+            "price_rub": 32280
+          },
+          {
+            "type": "transfer",
+            "from": "Repeat Apart",
+            "to": "LED",
+            "start": "2026-11-23T08:05:00+03:00",
+            "end": "2026-11-23T08:45:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "flight",
+            "from": "LED",
+            "to": "SVO",
+            "start": "2026-11-23T10:45:00+03:00",
+            "end": "2026-11-23T12:00:00+03:00",
+            "carrier": "Аэрофлот",
+            "price_rub": 13090
+          }
+        ],
+        "hotel": {
+          "name": "Repeat Apart",
+          "stars": 4,
+          "rating": 8.4,
+          "district": {
+            "labels": [
+              "движ",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 6,
+              "beach": 0,
+              "cafe": 37,
+              "convenience": 11,
+              "fast_food": 7,
+              "nightclub": 1,
+              "park": 4,
+              "pedestrian": 0,
+              "pharmacy": 6,
+              "playground": 20,
+              "pub": 3,
+              "restaurant": 10,
+              "station": 1,
+              "stop": 24,
+              "supermarket": 6
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 64990,
+          "door_to_door_hours": 3.8,
+          "price_stay_rub": 32280,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "14:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Repeat Apart",
+          "hotel_kind": "apartment",
+          "hotel_stars": 4,
+          "hotel_rating": 8.4,
+          "hotel_reviews": 200,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-17",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 32280,
+          "distance_center_m": 1958,
+          "room_name": "Студия",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": true,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": false,
+          "kitchen": true,
+          "step_free": true,
+          "lift": true,
+          "out_kind": "flight",
+          "out_price_rub": 14620,
+          "out_from": "SVO",
+          "out_to": "LED",
+          "out_date": "2026-11-20",
+          "out_dep_time": "11:20",
+          "out_arr_time": "12:35",
+          "out_arr_date": "2026-11-20",
+          "out_duration_min": 75,
+          "out_duration_hours": 1.2,
+          "out_stops": 0,
+          "out_carrier": "Аэрофлот",
+          "out_number": "SU5801",
+          "out_baggage": true,
+          "out_refundable": true,
+          "out_fare": "flex",
+          "out_door_hours": 1.9,
+          "back_kind": "flight",
+          "back_price_rub": 13090,
+          "back_from": "LED",
+          "back_to": "SVO",
+          "back_date": "2026-11-23",
+          "back_dep_time": "10:45",
+          "back_arr_time": "12:00",
+          "back_arr_date": "2026-11-23",
+          "back_duration_min": 75,
+          "back_duration_hours": 1.2,
+          "back_stops": 0,
+          "back_carrier": "Аэрофлот",
+          "back_number": "SU6346",
+          "back_baggage": true,
+          "back_refundable": true,
+          "back_fare": "flex",
+          "back_door_hours": 1.9,
+          "transfer_out_min": 31,
+          "transfer_out_price_rub": 2500,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 31,
+          "transfer_back_price_rub": 2500,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 5000,
+          "price_transport_rub": 27710,
+          "arrival_at_hotel_time": "14:30",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "08:05",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.95,
+          "district_quiet": 0.12,
+          "district_family": 0.42,
+          "district_walkable": 0.75,
+          "poi_bar": 6,
+          "poi_beach": 0,
+          "poi_cafe": 37,
+          "poi_convenience": 11,
+          "poi_fast_food": 7,
+          "poi_nightclub": 1,
+          "poi_park": 4,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 6,
+          "poi_playground": 20,
+          "poi_pub": 3,
+          "poi_restaurant": 10,
+          "poi_station": 1,
+          "poi_stop": 24,
+          "poi_supermarket": 6,
+          "nearest_beach_m": 905,
+          "nearest_centre_m": 1958,
+          "nearest_major_road_m": 22,
+          "nearest_railway_m": 2649,
+          "nearest_station_m": 400,
+          "nearest_stop_m": 38,
+          "district_fit": 0.305,
+          "center_fit": 0.76,
+          "comfort_score": 0.7142,
+          "ref_min_rub": 36380,
+          "delta_rub_vs_cheapest": 28610,
+          "ref_min_hours": 3.8,
+          "delta_hours_vs_fastest": 0.0
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+28 610 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 28610
+            }
+          }
+        ],
+        "risks": [],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.95
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.712,
+          "breakdown": {
+            "budget": 0.56,
+            "time": 1.0,
+            "district": 0.308,
+            "cancellation": 1.0,
+            "stars": 0.8,
+            "center": 0.76,
+            "constraints": 1.0,
+            "rating": 0.84
+          }
+        },
+        "diff_rub": 10530,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      },
+      {
+        "id": "custom-1",
+        "label": "3",
+        "title": "Удачнее по району",
+        "totals": {
+          "rub": 54460,
+          "door_to_door_hours": 3.8,
+          "out_hours": 1.8,
+          "back_hours": 2.0
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "LED",
+            "start": "2026-11-20T11:20:00+03:00",
+            "end": "2026-11-20T12:35:00+03:00",
+            "carrier": "Аэрофлот",
+            "price_rub": 10080
+          },
+          {
+            "type": "transfer",
+            "from": "LED",
+            "to": "Loft&home",
+            "start": "2026-11-20T13:20:00+03:00",
+            "end": "2026-11-20T13:55:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "stay",
+            "from": "Loft&home",
+            "to": "Loft&home",
+            "start": "2026-11-20T15:00:00+03:00",
+            "end": "2026-11-23T08:00:00+03:00",
+            "carrier": null,
+            "price_rub": 31930
+          },
+          {
+            "type": "transfer",
+            "from": "Loft&home",
+            "to": "LED",
+            "start": "2026-11-23T08:00:00+03:00",
+            "end": "2026-11-23T08:45:00+03:00",
+            "carrier": null,
+            "price_rub": 920
+          },
+          {
+            "type": "flight",
+            "from": "LED",
+            "to": "SVO",
+            "start": "2026-11-23T10:45:00+03:00",
+            "end": "2026-11-23T12:00:00+03:00",
+            "carrier": "Аэрофлот",
+            "price_rub": 9030
+          }
+        ],
+        "hotel": {
+          "name": "Loft&home",
+          "stars": 4,
+          "rating": 7.9,
+          "district": {
+            "labels": [
+              "движ",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 4,
+              "beach": 0,
+              "cafe": 25,
+              "convenience": 4,
+              "fast_food": 3,
+              "nightclub": 0,
+              "park": 2,
+              "pedestrian": 1,
+              "pharmacy": 1,
+              "playground": 5,
+              "pub": 0,
+              "restaurant": 13,
+              "station": 0,
+              "stop": 20,
+              "supermarket": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 54460,
+          "door_to_door_hours": 3.8,
+          "price_stay_rub": 31930,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "15:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Loft&home",
+          "hotel_kind": "apartment",
+          "hotel_stars": 4,
+          "hotel_rating": 7.9,
+          "hotel_reviews": 6,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": false,
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 31930,
+          "distance_center_m": 1267,
+          "room_name": "Студия",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "min_child_age": 6,
+          "infant_cot": "none",
+          "early_checkin_available": false,
+          "kitchen": true,
+          "step_free": true,
+          "lift": true,
+          "out_kind": "flight",
+          "out_price_rub": 10080,
+          "out_from": "SVO",
+          "out_to": "LED",
+          "out_date": "2026-11-20",
+          "out_dep_time": "11:20",
+          "out_arr_time": "12:35",
+          "out_arr_date": "2026-11-20",
+          "out_duration_min": 75,
+          "out_duration_hours": 1.2,
+          "out_stops": 0,
+          "out_carrier": "Аэрофлот",
+          "out_number": "SU5801",
+          "out_baggage": false,
+          "out_refundable": false,
+          "out_fare": "basic",
+          "out_door_hours": 1.8,
+          "back_kind": "flight",
+          "back_price_rub": 9030,
+          "back_from": "LED",
+          "back_to": "SVO",
+          "back_date": "2026-11-23",
+          "back_dep_time": "10:45",
+          "back_arr_time": "12:00",
+          "back_arr_date": "2026-11-23",
+          "back_duration_min": 75,
+          "back_duration_hours": 1.2,
+          "back_stops": 0,
+          "back_carrier": "Аэрофлот",
+          "back_number": "SU6346",
+          "back_baggage": false,
+          "back_refundable": false,
+          "back_fare": "basic",
+          "back_door_hours": 2.0,
+          "transfer_out_min": 28,
+          "transfer_out_price_rub": 2500,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 36,
+          "transfer_back_price_rub": 920,
+          "transfer_back_kind": "taxi",
+          "price_transfers_rub": 3420,
+          "price_transport_rub": 19110,
+          "arrival_at_hotel_time": "13:55",
+          "wait_before_checkin_min": 65,
+          "leave_hotel_time": "08:00",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.6,
+          "district_quiet": 0.57,
+          "district_family": 0.52,
+          "district_walkable": 0.84,
+          "poi_bar": 4,
+          "poi_beach": 0,
+          "poi_cafe": 25,
+          "poi_convenience": 4,
+          "poi_fast_food": 3,
+          "poi_nightclub": 0,
+          "poi_park": 2,
+          "poi_pedestrian": 1,
+          "poi_pharmacy": 1,
+          "poi_playground": 5,
+          "poi_pub": 0,
+          "poi_restaurant": 13,
+          "poi_station": 0,
+          "poi_stop": 20,
+          "poi_supermarket": 1,
+          "nearest_beach_m": 1827,
+          "nearest_centre_m": 1267,
+          "nearest_major_road_m": 232,
+          "nearest_railway_m": 2279,
+          "nearest_station_m": 1073,
+          "nearest_stop_m": 159,
+          "district_fit": 0.624,
+          "center_fit": 0.933,
+          "comfort_score": 0.6498,
+          "ref_min_rub": 36380,
+          "delta_rub_vs_cheapest": 18080,
+          "ref_min_hours": 3.8,
+          "delta_hours_vs_fastest": 0.0
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+18 080 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 18080
+            }
+          },
+          {
+            "code": "no_free_cancel",
+            "text": "Нет бесплатной отмены",
+            "data": {}
+          },
+          {
+            "code": "no_baggage",
+            "text": "Без багажа в тарифе",
+            "data": {}
+          },
+          {
+            "code": "lower_rating",
+            "text": "Рейтинг 7,9 — ниже остальных",
+            "data": {
+              "rating": 7.9
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "non_refundable",
+            "text": "Невозвратные билеты без обмена",
+            "data": {
+              "directions": "out,back"
+            }
+          },
+          {
+            "code": "no_free_cancel",
+            "text": "Отель без бесплатной отмены: штраф 100% — 31 930 ₽",
+            "data": {
+              "penalty_pct": 100,
+              "penalty_rub": 31930
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.6
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.778,
+          "breakdown": {
+            "budget": 0.668,
+            "time": 1.0,
+            "district": 0.626,
+            "cancellation": 0.5,
+            "stars": 0.8,
+            "center": 0.933,
+            "constraints": 1.0,
+            "rating": 0.79
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      }
+    ],
+    "recommended_hint": "custom-1",
+    "questions": [
+      {
+        "id": "q_nights",
+        "text": "На сколько ночей?"
+      },
+      {
+        "id": "q_budget",
+        "text": "Какой бюджет на всех, примерно?"
+      }
+    ],
+    "upsell_candidates": []
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "кухн"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "no_unbacked_claims"
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "не\\s+провер|нет\\s+данных\\s+о\\s+кухн"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 2
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«нужна кухня в номере»: constraint kitchen filtered the stays (every item has facts.kitchen true — studios and apartments); the card says the rooms have a kitchen."
+}

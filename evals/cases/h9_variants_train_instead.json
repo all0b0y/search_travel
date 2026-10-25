@@ -1,0 +1,699 @@
+{
+  "id": "h9_variants_train_instead",
+  "category": "C",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "VKO",
+          "SVO",
+          "ZIA",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "yaroslavl",
+        "name": "Ярославль",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-20",
+        "end": "2026-11-23",
+        "month": 11,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "trains",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "train",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.nights",
+      "scope",
+      "prefs.district",
+      "prefs.transport"
+    ],
+    "assumptions": [
+      {
+        "field": "prefs.district",
+        "label": "тихий район"
+      },
+      {
+        "field": "scope",
+        "label": "поезд + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 11070,
+          "door_to_door_hours": 9.9,
+          "out_hours": 5.0,
+          "back_hours": 5.0
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Ярославский вокзал",
+            "to": "Ярославль-Главный",
+            "start": "2026-11-20T20:15:00+03:00",
+            "end": "2026-11-21T00:43:00+03:00",
+            "carrier": "ФПК",
+            "price_rub": 1580
+          },
+          {
+            "type": "transfer",
+            "from": "Ярославль-Главный",
+            "to": "Тверицы",
+            "start": "2026-11-21T00:53:00+03:00",
+            "end": "2026-11-21T01:23:00+03:00",
+            "carrier": null,
+            "price_rub": 370
+          },
+          {
+            "type": "stay",
+            "from": "Тверицы",
+            "to": "Тверицы",
+            "start": "2026-11-21T01:23:00+03:00",
+            "end": "2026-11-23T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 7460
+          },
+          {
+            "type": "transfer",
+            "from": "Тверицы",
+            "to": "Ярославль-Главный",
+            "start": "2026-11-23T21:15:00+03:00",
+            "end": "2026-11-23T21:45:00+03:00",
+            "carrier": null,
+            "price_rub": 120
+          },
+          {
+            "type": "train",
+            "from": "Ярославль-Главный",
+            "to": "Ярославский вокзал",
+            "start": "2026-11-23T22:15:00+03:00",
+            "end": "2026-11-24T02:43:00+03:00",
+            "carrier": "ФПК",
+            "price_rub": 1540
+          }
+        ],
+        "hotel": {
+          "name": "Тверицы",
+          "stars": 1,
+          "rating": 8.5,
+          "district": {
+            "labels": [
+              "тихий район"
+            ],
+            "counts": {
+              "bar": 1,
+              "beach": 1,
+              "cafe": 1,
+              "convenience": 0,
+              "fast_food": 0,
+              "nightclub": 0,
+              "park": 0,
+              "pedestrian": 0,
+              "pharmacy": 0,
+              "playground": 0,
+              "pub": 0,
+              "restaurant": 1,
+              "station": 0,
+              "stop": 17,
+              "supermarket": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 10820,
+          "door_to_door_hours": 9.9,
+          "price_stay_rub": 7460,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "14:00",
+          "check_out_time": "11:00",
+          "hotel_name": "Тверицы",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 1,
+          "hotel_rating": 8.5,
+          "hotel_reviews": 667,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": false,
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 7460,
+          "distance_center_m": 1580,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "on_request",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "out_night": true,
+          "out_kind": "train",
+          "out_price_rub": 1580,
+          "out_from": "Ярославский вокзал",
+          "out_to": "Ярославль-Главный",
+          "out_date": "2026-11-20",
+          "out_dep_time": "20:15",
+          "out_arr_time": "00:43",
+          "out_arr_date": "2026-11-21",
+          "out_duration_min": 268,
+          "out_duration_hours": 4.5,
+          "out_stops": 0,
+          "out_carrier": "ФПК",
+          "out_number": "610В",
+          "out_baggage": true,
+          "out_car_class": "platzkart",
+          "out_door_hours": 5.0,
+          "back_night": true,
+          "back_kind": "train",
+          "back_price_rub": 1540,
+          "back_from": "Ярославль-Главный",
+          "back_to": "Ярославский вокзал",
+          "back_date": "2026-11-23",
+          "back_dep_time": "22:15",
+          "back_arr_time": "02:43",
+          "back_arr_date": "2026-11-24",
+          "back_duration_min": 268,
+          "back_duration_hours": 4.5,
+          "back_stops": 0,
+          "back_carrier": "ФПК",
+          "back_number": "349Н",
+          "back_baggage": true,
+          "back_car_class": "platzkart",
+          "back_door_hours": 5.0,
+          "transfer_out_min": 25,
+          "transfer_out_price_rub": 120,
+          "transfer_out_kind": "public",
+          "transfer_back_min": 25,
+          "transfer_back_price_rub": 120,
+          "transfer_back_kind": "public",
+          "price_transfers_rub": 240,
+          "price_transport_rub": 3120,
+          "arrival_at_hotel_time": "01:23",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "21:15",
+          "wait_after_checkout_min": 615,
+          "district_lively": 0.07,
+          "district_quiet": 0.93,
+          "district_family": 0.22,
+          "district_walkable": 0.45,
+          "poi_bar": 1,
+          "poi_beach": 1,
+          "poi_cafe": 1,
+          "poi_convenience": 0,
+          "poi_fast_food": 0,
+          "poi_nightclub": 0,
+          "poi_park": 0,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 0,
+          "poi_playground": 0,
+          "poi_pub": 0,
+          "poi_restaurant": 1,
+          "poi_station": 0,
+          "poi_stop": 17,
+          "poi_supermarket": 1,
+          "nearest_beach_m": 414,
+          "nearest_centre_m": 1580,
+          "nearest_major_road_m": 717,
+          "nearest_railway_m": 779,
+          "nearest_station_m": 2469,
+          "nearest_stop_m": 61,
+          "district_fit": 0.766,
+          "center_fit": 0.855,
+          "comfort_score": 0.4754,
+          "ref_min_rub": 10820,
+          "delta_rub_vs_cheapest": 0,
+          "ref_min_hours": 5.5,
+          "delta_hours_vs_fastest": 4.4,
+          "transport_gap": "train_instead",
+          "transport_gap_ru": "Самолётов по маршруту Москва — Ярославль в данных нет — собрал поездом",
+          "dest_airports": true
+        },
+        "sacrifices": [
+          {
+            "code": "slower",
+            "text": "+4,4 ч в пути",
+            "data": {
+              "delta_hours": 4.4
+            }
+          },
+          {
+            "code": "no_free_cancel",
+            "text": "Нет бесплатной отмены",
+            "data": {}
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 1★",
+            "data": {
+              "stars": 1
+            }
+          },
+          {
+            "code": "center_farther",
+            "text": "До центра 1 580 м",
+            "data": {
+              "distance_m": 1580
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "transport_switched",
+            "text": "Самолётов по маршруту Москва — Ярославль в данных нет — собрал поездом",
+            "data": {
+              "mode": "train"
+            }
+          },
+          {
+            "code": "night_arrival",
+            "text": "Прибытие ночью, в 00:43",
+            "data": {
+              "time": "00:43"
+            }
+          },
+          {
+            "code": "no_free_cancel",
+            "text": "Отель без бесплатной отмены: штраф 100% — 7 460 ₽",
+            "data": {
+              "penalty_pct": 100,
+              "penalty_rub": 7460
+            }
+          },
+          {
+            "code": "late_checkin",
+            "text": "Заселение поздно, в 01:23 — отель стоит предупредить",
+            "data": {
+              "time": "01:23"
+            }
+          },
+          {
+            "code": "unused_first_night",
+            "text": "Приезд 21.11 в 01:23, а заезд с 20.11 — первая ночь оплачена, но не используется",
+            "data": {
+              "arrival": "01:23",
+              "check_in_date": "2026-11-20"
+            }
+          },
+          {
+            "code": "wait_after_checkout",
+            "text": "После выезда из отеля 10,2 ч до отправления",
+            "data": {
+              "minutes": 615
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "quiet_no_nightlife",
+            "text": "Тихо и почти нет баров — не для тех, кто хочет вечерней движухи",
+            "data": {
+              "quiet": 0.926
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.745,
+          "breakdown": {
+            "budget": 1.0,
+            "time": 0.556,
+            "district": 0.769,
+            "cancellation": 0.5,
+            "stars": 0.2,
+            "center": 0.855,
+            "rating": 0.85
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "Быстрее",
+        "totals": {
+          "rub": 18890,
+          "door_to_door_hours": 5.5,
+          "out_hours": 2.8,
+          "back_hours": 2.8
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Ярославский вокзал",
+            "to": "Ярославль-Главный",
+            "start": "2026-11-20T11:20:00+03:00",
+            "end": "2026-11-20T13:56:00+03:00",
+            "carrier": "РЖД",
+            "price_rub": 2530
+          },
+          {
+            "type": "transfer",
+            "from": "Ярославль-Главный",
+            "to": "Welcome2Yar",
+            "start": "2026-11-20T14:06:00+03:00",
+            "end": "2026-11-20T14:16:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "stay",
+            "from": "Welcome2Yar",
+            "to": "Welcome2Yar",
+            "start": "2026-11-20T15:00:00+03:00",
+            "end": "2026-11-23T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 8610
+          },
+          {
+            "type": "transfer",
+            "from": "Welcome2Yar",
+            "to": "Ярославль-Главный",
+            "start": "2026-11-23T11:00:00+03:00",
+            "end": "2026-11-23T11:10:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "train",
+            "from": "Ярославль-Главный",
+            "to": "Ярославский вокзал",
+            "start": "2026-11-23T11:40:00+03:00",
+            "end": "2026-11-23T14:16:00+03:00",
+            "carrier": "РЖД",
+            "price_rub": 2750
+          }
+        ],
+        "hotel": {
+          "name": "Welcome2Yar",
+          "stars": 2,
+          "rating": 8.4,
+          "district": {
+            "labels": [
+              "движ",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 10,
+              "beach": 0,
+              "cafe": 44,
+              "convenience": 2,
+              "fast_food": 7,
+              "nightclub": 1,
+              "park": 8,
+              "pedestrian": 11,
+              "pharmacy": 7,
+              "playground": 2,
+              "pub": 2,
+              "restaurant": 17,
+              "station": 0,
+              "stop": 14,
+              "supermarket": 1
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 18890,
+          "door_to_door_hours": 5.5,
+          "price_stay_rub": 8610,
+          "nights": 3,
+          "check_in_date": "2026-11-20",
+          "check_out_date": "2026-11-23",
+          "check_in_time": "15:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Welcome2Yar",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 2,
+          "hotel_rating": 8.4,
+          "hotel_reviews": 102,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-06",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 8610,
+          "distance_center_m": 169,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 1700,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "out_kind": "train",
+          "out_price_rub": 2530,
+          "out_from": "Ярославский вокзал",
+          "out_to": "Ярославль-Главный",
+          "out_date": "2026-11-20",
+          "out_dep_time": "11:20",
+          "out_arr_time": "13:56",
+          "out_arr_date": "2026-11-20",
+          "out_duration_min": 156,
+          "out_duration_hours": 2.6,
+          "out_stops": 0,
+          "out_carrier": "РЖД",
+          "out_number": "547Г",
+          "out_baggage": true,
+          "out_car_class": "seat",
+          "out_door_hours": 2.8,
+          "back_kind": "train",
+          "back_price_rub": 2750,
+          "back_from": "Ярославль-Главный",
+          "back_to": "Ярославский вокзал",
+          "back_date": "2026-11-23",
+          "back_dep_time": "11:40",
+          "back_arr_time": "14:16",
+          "back_arr_date": "2026-11-23",
+          "back_duration_min": 156,
+          "back_duration_hours": 2.6,
+          "back_stops": 0,
+          "back_carrier": "РЖД",
+          "back_number": "439У",
+          "back_baggage": true,
+          "back_car_class": "seat",
+          "back_door_hours": 2.8,
+          "transfer_out_min": 5,
+          "transfer_out_price_rub": 2500,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 5,
+          "transfer_back_price_rub": 2500,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 5000,
+          "price_transport_rub": 5280,
+          "arrival_at_hotel_time": "14:16",
+          "wait_before_checkin_min": 44,
+          "leave_hotel_time": "11:00",
+          "wait_after_checkout_min": 0,
+          "district_lively": 1.0,
+          "district_quiet": 0.3,
+          "district_family": 0.37,
+          "district_walkable": 1.0,
+          "poi_bar": 10,
+          "poi_beach": 0,
+          "poi_cafe": 44,
+          "poi_convenience": 2,
+          "poi_fast_food": 7,
+          "poi_nightclub": 1,
+          "poi_park": 8,
+          "poi_pedestrian": 11,
+          "poi_pharmacy": 7,
+          "poi_playground": 2,
+          "poi_pub": 2,
+          "poi_restaurant": 17,
+          "poi_station": 0,
+          "poi_stop": 14,
+          "poi_supermarket": 1,
+          "nearest_beach_m": 587,
+          "nearest_centre_m": 169,
+          "nearest_major_road_m": 342,
+          "nearest_railway_m": 2397,
+          "nearest_station_m": 2762,
+          "nearest_stop_m": 386,
+          "district_fit": 0.492,
+          "center_fit": 1.0,
+          "comfort_score": 0.6816,
+          "ref_min_rub": 10820,
+          "delta_rub_vs_cheapest": 8070,
+          "ref_min_hours": 5.5,
+          "delta_hours_vs_fastest": 0.0,
+          "also_comfort": true,
+          "coincide_note": "Самый быстрый вариант оказался и самым комфортным — отдельной карточки нет.",
+          "transport_gap": "train_instead",
+          "transport_gap_ru": "Самолётов по маршруту Москва — Ярославль в данных нет — собрал поездом",
+          "dest_airports": true
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+8 070 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 8070
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "transport_switched",
+            "text": "Самолётов по маршруту Москва — Ярославль в данных нет — собрал поездом",
+            "data": {
+              "mode": "train"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 1.0
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.734,
+          "breakdown": {
+            "budget": 0.573,
+            "time": 1.0,
+            "district": 0.492,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "center": 1.0,
+            "rating": 0.84
+          }
+        },
+        "diff_rub": 7820,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      }
+    ],
+    "recommended_hint": "cheapest",
+    "questions": [
+      {
+        "id": "q_budget",
+        "text": "Какой бюджет на всех, примерно?"
+      },
+      {
+        "id": "q_nights",
+        "text": "На сколько ночей?"
+      }
+    ],
+    "upsell_candidates": []
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "поезд"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "билет\\w*\\s+не\\s+нашл|не\\s+смотрел\\w*\\s+билет|нет\\s+аэропорт|аэропорт\\w*\\s+нет"
+    },
+    {
+      "type": "predicate",
+      "name": "no_unbacked_claims"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 2
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Moscow → Yaroslavl: no plane flies there, so code built the trip by train (risk transport_switched «Самолётов … нет — собрал поездом»); the card says it goes by train."
+}

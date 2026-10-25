@@ -1,0 +1,45 @@
+{
+  "id": "h2_visa_only",
+  "category": "edge",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Оформите мне, пожалуйста, визу в Китай",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "out_of_scope"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_empty"
+    }
+  ],
+  "runs": 5,
+  "notes": "A visa is not sold here: out_of_scope with an empty patch (the reply says what it cannot do and what it can); no destination is set from «в Китай»."
+}

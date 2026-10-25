@@ -1,0 +1,45 @@
+{
+  "id": "h3_car_rental_only",
+  "category": "edge",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Машину в аренду в Калининграде на неделю, больше ничего не надо",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "out_of_scope"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_empty"
+    }
+  ],
+  "runs": 5,
+  "notes": "Only a rental car (not sold) and «больше ничего не надо»: out_of_scope, no trip patch even though a city is named; code also guards this (rules.json unsold / unsold_only_cues)."
+}
