@@ -124,7 +124,42 @@ def load_skill_for_run(dry_run):
 
 # ---------------------------------------------------------------- level 2
 
-def run_case_once(case, run_index, backend, skill):
+THINK_ORDER = ("off", "low", "high")
+
+
+def call_settings(case, card, policy=None):
+    """(thinking, temperature) for one level-2 call: the card's own settings, then the experiment policy
+    (--temperature card=value, --think-image level, --think-long chars:level)."""
+    thinking, temperature = card.thinking, getattr(card, "temperature", None)
+    policy = policy or {}
+    for pattern, value in (policy.get("temperature") or {}).items():
+        if case["card"] == pattern or case["card"].startswith(pattern + "."):
+            temperature = value
+    raised = []
+    if case.get("image") and policy.get("think_image"):
+        raised.append(policy["think_image"])
+    long_rule = policy.get("think_long")
+    if long_rule and case["card"] == "understand" and len((case["input"] or {}).get("message") or "") >= long_rule[0]:
+        raised.append(long_rule[1])
+    for level in raised:
+        if THINK_ORDER.index(level) > THINK_ORDER.index(thinking):
+            thinking = level
+    return thinking, temperature
+
+
+def parse_policy(args):
+    policy = {}
+    if getattr(args, "temperature", None):
+        policy["temperature"] = {k.strip(): float(v) for k, v in (p.split("=") for p in args.temperature.split(","))}
+    if getattr(args, "think_image", None):
+        policy["think_image"] = args.think_image
+    if getattr(args, "think_long", None):
+        chars, level = args.think_long.split(":")
+        policy["think_long"] = (int(chars), level)
+    return policy
+
+
+def run_case_once(case, run_index, backend, skill, policy=None):
     from agent.llm import LLMError, LLMRequest
     rec = {"case_id": case["id"], "category": case["category"], "card": case["card"], "run_index": run_index,
            "ok": False, "results": [], "output": None, "error": None, "latency_ms": None, "usage": None,
@@ -135,9 +170,11 @@ def run_case_once(case, run_index, backend, skill):
         return rec
     card = skill.card(case["card"])
     images = [image_data_url(case["image"])] if case.get("image") else []
+    thinking, temperature = call_settings(case, card, policy)
+    rec.update(thinking=thinking, temperature=temperature)
     req = LLMRequest(card=case["card"], system=skill.system_prompt(case["card"]),
                      user=json.dumps(case["input"], ensure_ascii=False), schema=card.schema, images=images,
-                     thinking=card.thinking, max_tokens=card.max_tokens)
+                     thinking=thinking, max_tokens=card.max_tokens, temperature=temperature)
     started = time.monotonic()
     try:
         res = backend.complete(req)
@@ -155,7 +192,8 @@ def run_case_once(case, run_index, backend, skill):
         if issues:
             rerun = {"issues": [f"{i['code']}: {i['message']}" for i in issues], "first_output": res.data}
             req2 = LLMRequest(card=case["card"], system=rerun_system(req.system, issues), user=req.user,
-                              schema=card.schema, images=images, thinking=card.thinking, max_tokens=card.max_tokens)
+                              schema=card.schema, images=images, thinking=thinking, max_tokens=card.max_tokens,
+                              temperature=temperature)
             try:
                 res = backend.complete(req2)
             except LLMError as exc:
@@ -225,14 +263,14 @@ def summarize_level2(cases, records, runs_for):
     return case_rows, metrics
 
 
-def run_level2(cases, backend, skill, run_dir, runs=None, parallel=1, log=print):
+def run_level2(cases, backend, skill, run_dir, runs=None, parallel=1, log=print, policy=None):
     jobs = [(c, i) for c in cases for i in range(runs or c.get("runs", 5))]
     out = Path(run_dir) / "level2.jsonl"
     records = []
 
     def work(job):
         case, i = job
-        rec = run_case_once(case, i, backend, skill)
+        rec = run_case_once(case, i, backend, skill, policy)
         with _lock:
             append_jsonl(out, rec)
             records.append(rec)
@@ -615,6 +653,10 @@ def parse_args(argv=None):
     ap.add_argument("--claude-bin", default="claude")
     ap.add_argument("--max-turns", type=int, default=None)
     ap.add_argument("--dry-run", action="store_true", help="offline: FakeBackend / FakeEngine / ButtonPersona")
+    ap.add_argument("--temperature", default=None, help="level 2 experiment: card=value,... (understand=0.3,present=0.6)")
+    ap.add_argument("--think-image", default=None, choices=("low", "high"), help="level 2: thinking for calls with an image")
+    ap.add_argument("--think-long", default=None, help="level 2: CHARS:LEVEL thinking for long understand messages")
+    ap.add_argument("--tag", default=None, help="suffix of the run dir and report name (experiment label)")
     return ap.parse_args(argv)
 
 
@@ -624,7 +666,8 @@ def main(argv=None, log=print):
     flags = parse_flags(args.flags)
     ts = timestamp()
     set_label = args.set_name if args.level == 3 else "cases"
-    run_dir = Path(args.out) if args.out else RUNS_DIR / f"{ts}-L{args.level}-{set_label}{'-dryrun' if args.dry_run else ''}"
+    tag = f"-{args.tag}" if args.tag else ""
+    run_dir = Path(args.out) if args.out else RUNS_DIR / f"{ts}-L{args.level}-{set_label}{tag}{'-dryrun' if args.dry_run else ''}"
     run_dir.mkdir(parents=True, exist_ok=True)
     reports_dir = Path(args.reports_dir) if args.reports_dir else (run_dir / "reports" if args.dry_run else REPORTS_DIR)
     started = datetime.now().astimezone().isoformat(timespec="seconds")
@@ -633,7 +676,9 @@ def main(argv=None, log=print):
     report = {"run_id": run_dir.name, "level": args.level, "set": args.set_name if args.level == 3 else "cases",
               "model": model_label, "flags": args.flags, "flags_enabled": list(flags.enabled()),
               "dry_run": args.dry_run, "persona": ("buttons" if args.dry_run else args.persona) if args.level == 3 else None,
-              "started_at": started, "run_dir": str(run_dir), "argv": sys.argv[1:] if argv is None else list(argv)}
+              "started_at": started, "run_dir": str(run_dir), "argv": sys.argv[1:] if argv is None else list(argv),
+              "policy": {k: list(v) if isinstance(v, tuple) else v for k, v in parse_policy(args).items()},
+              "tag": args.tag}
     if args.model == "qwen" and not args.dry_run:
         notes.append("qwen: no provider pin (plan does not fix one); served provider recorded per call")
     if args.level == 2:
@@ -647,7 +692,8 @@ def main(argv=None, log=print):
         else:
             backend = make_backend(args.model)
         log(f"level 2: {len(cases)} cases -> {run_dir}")
-        rows, metrics = run_level2(cases, backend, skill, run_dir, runs=args.runs, parallel=args.parallel, log=log)
+        rows, metrics = run_level2(cases, backend, skill, run_dir, runs=args.runs, parallel=args.parallel, log=log,
+                                   policy=parse_policy(args))
         report.update(cases=rows, metrics=metrics)
     else:
         scenarios = load_scenarios(args.set_name, args.only)
@@ -677,7 +723,7 @@ def main(argv=None, log=print):
                          "(engine has no profiles.put/save/upsert/set); home city came from engine defaults")
     report["finished_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
     report["notes"] = notes
-    stem = f"{ts}-L{args.level}-{report['set']}" + ("-dryrun" if args.dry_run else "")
+    stem = f"{ts}-L{args.level}-{report['set']}{tag}" + ("-dryrun" if args.dry_run else "")
     jpath, mpath = write_report(report, reports_dir, stem)
     write_json(run_dir / "summary.json", report)
     log(f"report: {jpath}\nreport: {mpath}")

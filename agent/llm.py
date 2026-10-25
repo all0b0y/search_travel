@@ -37,6 +37,7 @@ class LLMRequest:
     images: list = field(default_factory=list)   # data URLs
     thinking: str = "off"           # off | low | high
     max_tokens: int = 1000
+    temperature: Optional[float] = None   # None: the backend's own setting (OpenRouter/DeepSeek default otherwise)
 
     def __post_init__(self):
         if self.thinking not in THINKING_LEVELS:
@@ -319,8 +320,9 @@ class OpenRouterBackend(JsonBackend):
             "response_format": {"type": "json_object"},
             "extra_body": extra,
         }
-        if self.temperature is not None:
-            params["temperature"] = self.temperature
+        temperature = req.temperature if req.temperature is not None else self.temperature
+        if temperature is not None:
+            params["temperature"] = temperature
         return params
 
     def _call(self, req, messages):

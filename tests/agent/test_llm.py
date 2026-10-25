@@ -257,3 +257,12 @@ def test_partial_import_race_is_transient():
     from agent.llm import is_transient
     assert is_transient(AttributeError("partially initialized module 'httpx' has no attribute 'TimeoutException'"))
     assert not is_transient(AttributeError("'NoneType' object has no attribute 'x'"))
+
+
+def test_request_temperature_overrides_backend_default():
+    from agent.llm import LLMRequest, OpenRouterBackend
+    backend = OpenRouterBackend(model="m", api_key="x", client=object())
+    req = LLMRequest(card="understand", system="s", user="{}", schema={"type": "object"}, temperature=0.3)
+    assert backend.request_params(req, [])["temperature"] == 0.3
+    req = LLMRequest(card="understand", system="s", user="{}", schema={"type": "object"})
+    assert "temperature" not in backend.request_params(req, [])
