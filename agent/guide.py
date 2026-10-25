@@ -1272,7 +1272,71 @@ def check_reply(engine, ctx, reply, plan, pool, tool_results):
         issues.append(issue("savings_claim", f"«{m.group(0)}» — find_savings нашёл дешевле: "
                                              + ", ".join(str(x.get("total_rub") or x.get("price_from_rub"))
                                                          for x in cheaper[:3])))
+    issues += unannounced_change(ctx, plan, msg)
     return issues
+
+
+MONTHS_GEN = ("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября",
+              "ноября", "декабря")
+
+
+def span_ru(start, end):
+    """ISO dates -> «8–12 декабря», «30 декабря – 3 января»."""
+    d1, d2 = date.fromisoformat(start), date.fromisoformat(end)
+    if (d1.year, d1.month) == (d2.year, d2.month):
+        return f"{d1.day}–{d2.day} {MONTHS_GEN[d1.month - 1]}"
+    return f"{d1.day} {MONTHS_GEN[d1.month - 1]} – {d2.day} {MONTHS_GEN[d2.month - 1]}"
+
+
+def names_dates(msg, start, end):
+    """Does the message name these trip dates: «8–12 декабря», «с 8 по 12», «заезд 8 декабря» (a price «8 400 ₽»
+    or «8 ч» is not a date)."""
+    d1, d2 = date.fromisoformat(start), date.fromisoformat(end)
+    m1 = MONTHS_GEN[d1.month - 1]
+    pats = (rf"\b{d1.day}\s*[–—-]\s*{d2.day}\b", rf"\b{d1.day}(?:-?го)?\s+{m1}",
+            rf"\bс\s+{d1.day}(?:\s+{m1})?\s+по\s+{d2.day}\b")
+    return any(re.search(p, msg, re.IGNORECASE) for p in pats)
+
+
+def _nights_word(n):
+    n = abs(int(n))
+    if n % 10 == 1 and n % 100 != 11:
+        return "ночь"
+    if n % 10 in (2, 3, 4) and n % 100 not in (12, 13, 14):
+        return "ночи"
+    return "ночей"
+
+
+def unannounced_change(ctx, plan, msg):
+    """The shown trip's dates differ from the trip the person saw before this turn, they did not ask to change the
+    dates, and the message does not name the new ones (the pipeline's budget fit moves dates by itself on
+    «подешевле») -> [unannounced_change] carrying the sentence code adds in front (data.say)."""
+    if plan.show != "variants" or not plan.variants:
+        return []
+    patch = getattr(ctx, "patch", None) or {}
+    if any(str(p).startswith("dates.") for p in list(patch.get("set") or {}) + list(patch.get("unset") or [])):
+        return []
+    seen = [x["dates"] for x in (ctx.__dict__.get("guide_screen") or {}).get("variants") or []
+            if isinstance(x, dict) and x.get("dates")]
+    if not seen:
+        return []
+    v = next((x for x in plan.variants if x.id == plan.rec), plan.variants[0])
+    start, end = _dates_of(v)
+    if not start or not end or f"{start}..{end}" in seen:
+        return []
+    old_start, old_end = seen[0].split("..")
+    nights = (date.fromisoformat(end) - date.fromisoformat(start)).days
+    old_nights = (date.fromisoformat(old_end) - date.fromisoformat(old_start)).days
+    if names_dates(msg, start, end):
+        return []
+    if start == old_start and nights != old_nights and re.search(rf"\b{nights}\s+ноч", msg):
+        return []
+    say = f"Даты теперь {span_ru(start, end)}"
+    if nights != old_nights:
+        say += f" — {nights} {_nights_word(nights)} вместо {old_nights}"
+    say += "."
+    return [issue("unannounced_change", f"Даты поездки поменялись ({seen[0]} → {start}..{end}), а сообщение их не "
+                                        f"называет — скажите прямо: «{say}»", say=say)]
 
 
 def offline_issues(card_input, output, rules):
@@ -1406,7 +1470,7 @@ def commit(engine, ctx, reply, plan, state, tool_results):
 
 # ---------------------------------------------------------------- code repairs of formal issues
 
-REPAIRABLE = {"too_many_questions"}
+REPAIRABLE = {"too_many_questions", "unannounced_change"}
 
 
 def repair_questions(reply, max_questions=1):
@@ -1624,6 +1688,14 @@ def run_guide(engine, ctx, failure=None, code_message=None, speculative=False):
             plan, issues2 = _checked(engine, ctx, reply2, state, default_card, default, screen, tool_results)
             _hook(ctx, "guide.fixup", issues2)
             if blocking(issues2):
+                fixed2 = _repair(engine, ctx, reply2, blocking(issues2), cfg)
+                if fixed2 is not None:
+                    plan3, issues3 = _checked(engine, ctx, fixed2, state, default_card, default, screen, tool_results)
+                    _hook(ctx, "guide.repair", issues3)
+                    if not blocking(issues3):
+                        g["repaired"] = sorted(set(g.get("repaired") or []) | {i["code"] for i in blocking(issues2)})
+                        reply2, plan, issues2 = fixed2, plan3, issues3
+            if blocking(issues2):
                 _rejected(ctx, g, "fixup", reply2, blocking(issues2))
                 raise GuideFailed("guard: " + "; ".join(f"{i['code']}" for i in blocking(issues2))[:300])
             reply = reply2
@@ -1653,7 +1725,17 @@ def _repair(engine, ctx, reply, issues, cfg):
     codes = {i["code"] for i in issues}
     if not codes or not codes <= REPAIRABLE:
         return None
-    return repair_questions(reply, int(cfg["max_questions"]))
+    out = reply
+    if "too_many_questions" in codes:
+        out = repair_questions(out, int(cfg["max_questions"]))
+        if out is None:
+            return None
+    says = [(i.get("data") or {}).get("say") for i in issues if i["code"] == "unannounced_change"]
+    if says:
+        if not all(says):
+            return None
+        out = dict(out, message=" ".join([str(x) for x in says] + [(out.get("message") or "").strip()]))
+    return out
 
 
 def _rejected(ctx, g, round_label, reply, issues):

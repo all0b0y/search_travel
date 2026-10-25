@@ -358,3 +358,89 @@ def test_sochi_savings_offer_domestic_sea_places(live):
     for p in places:
         rec = dict(od.destination(p["id"]))
         assert rec["country_code"] == "RU" and G.main_trait(rec) == "sea", (p["name"], rec.get("kind"), rec.get("tags"))
+
+
+# ---------------------------------------------------------------- dates code moved are said (unannounced_change)
+
+ISTANBUL_EARLY = {**ISTANBUL, "dates.start": "2026-12-05", "dates.end": "2026-12-09"}
+
+
+def _early_then_cheaper(h, second):
+    Script(h, lambda c, req: reply("Стамбул на 4 ночи — советую «Быстрее».", rec=c["default_plan"]["recommended_id"]))
+    h.understand(u(set=ISTANBUL_EARLY))
+    assert h.turn("Стамбул, 5–9 декабря, вдвоём").get("error") is None
+    s = Script(h, second)
+    h.understand(u(intent="refine"))
+    return h.turn("а можно подешевле?"), s
+
+
+def _moved(c):
+    """The default plan's budget fit moved the dates by itself (the setup this test needs)."""
+    before = {x["dates"] for x in c["screen"]["variants"]}
+    after = {x["dates"] for x in c["default_plan"]["variants"]}
+    assert before == {"2026-12-05..2026-12-09"} and after and not after & before, (before, after)
+    return sorted(after)[0]
+
+
+@pytest.mark.parametrize("live", [GUIDE], indirect=True)
+def test_dates_the_budget_fit_moved_are_said_by_code(live):
+    h = live
+    seen = {}
+
+    def silent(c, req):
+        seen["dates"] = _moved(c)
+        cheapest = min(c["default_plan"]["variants"], key=lambda v: v["total_rub"])
+        return reply(f"Самый дешёвый вариант — {cheapest['total_rub']} ₽ за всю поездку.", rec=cheapest["id"])
+
+    r, s = _early_then_cheaper(h, silent)
+    g = guide_trace(r)
+    start, end = seen["dates"].split("..")
+    assert g["used"] is True and len(s.requests) == 1 and "unannounced_change" in g["repaired"]
+    assert r["message"].startswith(f"Даты теперь {G.span_ru(start, end)}"), r["message"]
+    assert g["rejected"][0]["issues"][0]["code"] == "unannounced_change"
+
+
+@pytest.mark.parametrize("live", [GUIDE], indirect=True)
+def test_dates_named_by_the_guide_need_no_repair(live):
+    h = live
+
+    def named(c, req):
+        start, end = _moved(c).split("..")
+        cheapest = min(c["default_plan"]["variants"], key=lambda v: v["total_rub"])
+        return reply(f"Сдвинул поездку на {G.span_ru(start, end)} — так дешевле: {cheapest['total_rub']} ₽.",
+                     rec=cheapest["id"])
+
+    r, s = _early_then_cheaper(h, named)
+    g = guide_trace(r)
+    assert g["used"] is True and "repaired" not in g and r["message"].startswith("Сдвинул поездку на ")
+
+
+def _plan_ctx(dates_seen, start, end, patch=None):
+    from types import SimpleNamespace
+    v = SimpleNamespace(id="cheapest", facts={"check_in_date": start, "check_out_date": end}, steps=[])
+    plan = SimpleNamespace(show="variants", variants=[v], rec="cheapest")
+    ctx = SimpleNamespace(patch=patch or {"set": {}, "unset": []})
+    ctx.__dict__["guide_screen"] = {"variants": [{"id": "cheapest", "dates": d} for d in dates_seen]}
+    return ctx, plan
+
+
+def test_unannounced_change_unit():
+    ctx, plan = _plan_ctx(["2026-12-05..2026-12-09"], "2026-12-08", "2026-12-12")
+    [i] = G.unannounced_change(ctx, plan, "Самый дешёвый — 60 140 ₽, отель 8 400 ₽.")
+    assert i["code"] == "unannounced_change" and i["data"]["say"] == "Даты теперь 8–12 декабря."
+    assert G.unannounced_change(ctx, plan, "С 8 по 12 декабря дешевле.") == []
+    assert G.unannounced_change(ctx, plan, "Заезд 8 декабря, выезд 12-го.") == []
+    # the person asked to move the dates this turn: nothing to announce
+    ctx2, plan2 = _plan_ctx(["2026-12-05..2026-12-09"], "2026-12-08", "2026-12-12",
+                            patch={"set": {"dates.start": "2026-12-08"}, "unset": []})
+    assert G.unannounced_change(ctx2, plan2, "Советую «Дешевле».") == []
+    # one night fewer from the same day: «3 ночи» is enough; else code says both
+    ctx3, plan3 = _plan_ctx(["2026-12-05..2026-12-09"], "2026-12-05", "2026-12-08")
+    assert G.unannounced_change(ctx3, plan3, "3 ночи вместо 4 — 59 110 ₽.") == []
+    [i3] = G.unannounced_change(ctx3, plan3, "Дешевле всего — 59 110 ₽.")
+    assert i3["data"]["say"] == "Даты теперь 5–8 декабря — 3 ночи вместо 4."
+    # same dates as on the screen, or nothing on the screen: no issue
+    assert G.unannounced_change(*_plan_ctx(["2026-12-05..2026-12-09"], "2026-12-05", "2026-12-09"), "Ок.") == []
+    assert G.unannounced_change(*_plan_ctx([], "2026-12-08", "2026-12-12"), "Ок.") == []
+    assert G.names_dates("с 18 по 22 декабря", "2026-12-08", "2026-12-12") is False
+    assert G.span_ru("2026-12-30", "2027-01-03") == "30 декабря – 3 января"
