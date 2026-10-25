@@ -209,6 +209,7 @@
               ]
             },
             "constraints.add": {
+              "description": "Hard constraint tokens, only: pet:dog, pet:cat, accessible, crib, kitchen, no_hostel (the user refused hostels).",
               "type": "array",
               "items": {
                 "type": "string",

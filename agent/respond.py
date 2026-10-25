@@ -250,14 +250,35 @@ def _variants_text(ctx, update=False):
     others = [f"«{_title(v)}» — {P.fmt_rub(v.totals.rub)}" for v in variants if v.id != best.id][:2]
     if others:
         text += " Ещё " + " и ".join(others) + "."
-    return text
+    return text + _other_places_text(ctx)
+
+
+def _place_price(p):
+    way = f" {p['transport_ru']}" if p.get("transport_ru") == "поездом" else ""
+    return f"{p['name']}{way} — от {P.fmt_rub(p['price_from_rub'])}"
+
+
+def _other_places_text(ctx):
+    """The other places code priced for this trip (steps.offer_other_places), one sentence."""
+    places = getattr(ctx, "other_places", None)
+    if places is None:
+        return ""
+    budget = ((ctx.session.brief.values().get("budget_rub") or {}).get("max"))
+    fits = [p for p in places if p.get("within_budget") is not False]
+    if fits:
+        head = f" В {P.fmt_rub(budget)} укладываются и другие места: " if budget else " Можно и в другое место: "
+        return head + ", ".join(_place_price(p) for p in fits) + " — кнопки ниже."
+    if places:
+        return (f" В бюджет не укладывается ни одно другое место, ближе всего {_place_price(places[0])}.")
+    return " Других мест в этот бюджет не нашёл."
 
 
 def _destinations_text(ctx):
     items = list(ctx.destination_items or [])[:3]
     if not items:
         return "Подходящих направлений не нашлось — расскажите чуть больше, что хочется, и я подберу."
-    parts = [f"{i['name']} — от {P.fmt_rub(i['price_from_rub'])}" if i.get("price_from_rub") else i["name"]
+    way = lambda i: " поездом" if (i.get("facts") or {}).get("transport") == "train" else ""  # noqa: E731
+    parts = [f"{i['name']}{way(i)} — от {P.fmt_rub(i['price_from_rub'])}" if i.get("price_from_rub") else i["name"]
              for i in items]
     return "Куда можно поехать: " + ", ".join(parts) + ". Выберите направление — подберу варианты поездки."
 
@@ -272,6 +293,7 @@ def _compare_text(ctx):
 
 
 INFO_TOPICS = (
+    ("price", re.compile(r"входит\s+в\s+(?:эт\w+\s+)?цен|что\s+в\s+цен|из\s+чего\s+(?:складыва|состо)|цен\w*\s+включ", re.I)),
     ("transfer", re.compile(r"трансфер|такси|машин|забер|встрет", re.I)),
     ("refund", re.compile(r"возврат|вернут|сдать|обмен|поменять билет", re.I)),
     ("cancel", re.compile(r"отмен", re.I)),
@@ -394,6 +416,17 @@ def _info_text(ctx):
         if data.get("sea_c") is not None:
             text += f", море около {data['sea_c']}°"
         return text + "."
+    dests = next((f for f in facts if f.get("kind") == "destinations" and f.get("items")), None)
+    if dests is not None and topic in ("price", None):
+        priced = [i for i in dests["items"] if i.get("price_from_rub")]
+        if priced:
+            fits = [i for i in priced if i.get("within_budget")]
+            text = f"В цену «от» входит {priced[0].get('price_includes') or 'дорога и отель'}."
+            if fits:
+                text += " В бюджет укладываются: " + ", ".join(
+                    f"{i['name']}{' поездом' if i.get('transport_ru') == 'поездом' else ''} — от "
+                    f"{P.fmt_rub(i['price_from_rub'])}" for i in fits[:3]) + "."
+            return text
     warn = next((f for f in facts if f.get("kind") == "warnings" and f.get("items")), None)
     if warn is not None:
         return "Обратите внимание: " + str(warn["items"][0]).rstrip(".") + "."

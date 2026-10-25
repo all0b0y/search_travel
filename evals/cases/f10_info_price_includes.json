@@ -1,0 +1,210 @@
+{
+  "id": "f10_info_price_includes",
+  "category": "F",
+  "card": "present.info",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Екатеринбург",
+        "iata": []
+      },
+      "destination": null,
+      "traits": null,
+      "dates": {
+        "start": null,
+        "end": null,
+        "month": 11,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "solo",
+        "adults": 1,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": {
+        "max": 25000
+      },
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "walkable",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.month",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [],
+    "question": "Что входит в цены направлений?",
+    "facts": [
+      {
+        "kind": "destinations",
+        "budget_rub": 25000,
+        "items": [
+          {
+            "id": "kazan",
+            "name": "Казань",
+            "price_from_rub": 16550,
+            "nights": 3,
+            "transport_ru": "поездом",
+            "price_includes": "поезд туда и обратно на одного по самым дешёвым билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+            "within_budget": true
+          },
+          {
+            "id": "samara",
+            "name": "Самара",
+            "price_from_rub": 13590,
+            "nights": 3,
+            "transport_ru": "поездом",
+            "price_includes": "поезд туда и обратно на одного по самым дешёвым билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+            "within_budget": true
+          },
+          {
+            "id": "bukhara",
+            "name": "Бухара",
+            "price_from_rub": 32990,
+            "nights": 3,
+            "transport_ru": "самолётом",
+            "price_includes": "перелёт туда и обратно на одного по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+            "within_budget": false
+          },
+          {
+            "id": "adler",
+            "name": "Адлер (Сириус)",
+            "price_from_rub": 36030,
+            "nights": 3,
+            "transport_ru": "самолётом",
+            "price_includes": "перелёт туда и обратно на одного по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+            "within_budget": false
+          },
+          {
+            "id": "sochi",
+            "name": "Сочи",
+            "price_from_rub": 36910,
+            "nights": 3,
+            "transport_ru": "самолётом",
+            "price_includes": "перелёт туда и обратно на одного по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+            "within_budget": false
+          },
+          {
+            "id": "baku",
+            "name": "Баку",
+            "price_from_rub": 37960,
+            "nights": 3,
+            "transport_ru": "самолётом",
+            "price_includes": "перелёт туда и обратно на одного по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+            "within_budget": false
+          }
+        ]
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 0
+    },
+    {
+      "type": "predicate",
+      "name": "max_chars",
+      "args": {
+        "n": 600
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "none_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "predicate",
+            "name": "admits_no_data"
+          }
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "трансфер"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "отел"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "поезд|перел[её]т|туда[- ]и[- ]обратно|туда-обратно"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 0
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "h10 t2: «что входит в эти цены?» at the inspiration stage is answered from the `destinations` record: facts.price_includes (the cheapest round trip for one and 3 nights in a 3–4 star hotel, transfers not included) and the places within 25 000 ₽; never «нет данных»."
+}

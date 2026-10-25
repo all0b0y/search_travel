@@ -126,6 +126,10 @@ class Ctx:
     image_question: Optional[Question] = None
     destination_recs: list = field(default_factory=list)
     destination_items: list = field(default_factory=list)
+    destination_train_recs: list = field(default_factory=list)   # budget-led inspiration: train-reachable places
+    destination_rank: dict = field(default_factory=dict)          # find_destinations order (id -> index)
+    other_places: Optional[list] = None                    # places that fit the budget, offered at selection
+    ask_other_place: bool = False                          # «или в другом городе» next to another rebuild wish
     insight: Optional[dict] = None
     results: Optional[dict] = None
     districts: dict = field(default_factory=dict)
@@ -224,9 +228,12 @@ def params_key(tool, payload):
 
 
 def store_result(session, record):
+    """Cache a record; above RESULTS_CAP the oldest tool results go (engine:* records — the shown places, the
+    near point — are state, never evicted)."""
     session.results[record.key] = record
     if len(session.results) > RESULTS_CAP:
-        oldest = sorted(session.results.values(), key=lambda r: r.fetched_at)[: len(session.results) - RESULTS_CAP]
+        pool = [r for r in session.results.values() if not r.key.startswith("engine:")]
+        oldest = sorted(pool, key=lambda r: r.fetched_at)[: len(session.results) - RESULTS_CAP]
         for r in oldest:
             session.results.pop(r.key, None)
 
@@ -457,13 +464,50 @@ def profile_party(ctx, brief):
     return party if party["adults"] >= 1 else None
 
 
+HOSTEL_WORD_RE = re.compile(r"хостел|hostel")
+NO_HOSTEL = "no_hostel"
+
+
+def hostel_refused(rooms, text):
+    """True when the message refuses hostels: a rules.json `rooms.no_hostel_cues` phrase, or «хостел» with a
+    negation close before it (same clause) or after it (same sentence): «хостел в нашем возрасте как-то не
+    очень», «хостел нам не подходит», «не хочу жить в хостеле»."""
+    text = (text or "").casefold()
+    if _cue_in(text, rooms.get("no_hostel_cues")):
+        return True
+    wb, wa = int(rooms.get("no_hostel_window_before", 18)), int(rooms.get("no_hostel_window_after", 45))
+    before_negs, after_negs = rooms.get("no_hostel_before") or [], rooms.get("no_hostel_after") or []
+    except_ = rooms.get("no_hostel_except") or []
+    for m in HOSTEL_WORD_RE.finditer(text):
+        before = re.split(r"[.!?;,:—]", text[max(0, m.start() - wb):m.start()])[-1]
+        after = re.split(r"[.!?;]", text[m.end():m.end() + wa])[0]
+        if any(x in after or x in before for x in except_):
+            continue   # «хостел или отель — нет разницы», «хостел — не проблема»
+        if any(n in f" {before}" for n in before_negs) or any(n in after for n in after_negs):
+            return True
+    return False
+
+
 def room_cues(ctx, brief):
-    """rules.json `rooms` on the user's message: «отдельный номер», «не хостел» -> constraint no_dorm (dorm
-    beds never offered); «хостел» -> constraint hostel (dorm beds may be any variant). The user's own
-    words, read by code (understand.md has no room for them)."""
+    """rules.json `rooms` on the user's message: «хостел не подходит», «без хостелов» -> constraint no_hostel
+    (no hotel of kind hostel, no dorm bed anywhere; «можно и хостел» drops it); «отдельный номер», «не хостел»
+    -> constraint no_dorm (dorm beds never offered); «хостел» -> constraint hostel (dorm beds may be any
+    variant). The user's own words, read by code as a safety net next to understand."""
     rooms = (ctx.rules or {}).get("rooms") or {}
     text = (ctx.text or "").casefold()
     have = set(brief.values().get("constraints") or [])
+    if _cue_in(text, rooms.get("allow_hostel_cues")):
+        if NO_HOSTEL in have:
+            brief, _ = apply_patch(brief, {"set": {"constraints.remove": [NO_HOSTEL]}, "unset": []})
+        return brief
+    if hostel_refused(rooms, text):
+        if NO_HOSTEL in have and "hostel" not in have:
+            return brief
+        patch = {"set": {"constraints.add": [NO_HOSTEL]}, "unset": []}
+        if "hostel" in have:
+            patch["set"]["constraints.remove"] = ["hostel"]
+        new, _ = apply_patch(brief, patch)
+        return new
     if _cue_in(text, rooms.get("private_cues")):
         add, drop = "no_dorm", "hostel"
     elif _cue_in(text, rooms.get("dorm_cues")):
@@ -609,6 +653,11 @@ def normalize_brief(ctx, brief):
         swap = ("flights", "trains") if transport == "train" else ("trains", "flights")
         if swap[0] in scope and swap[1] not in scope:
             brief = assume(brief, "scope", [swap[1] if s == swap[0] else s for s in scope], "default")
+    elif brief.source_of("scope") != "user" and (transport or "any") == "any":
+        # back to any transport (a place quoted by plane after a train choice): the assumed scope is the full one
+        scope = list(brief.values().get("scope") or [])
+        if "trains" in scope and "flights" not in scope:
+            brief = assume(brief, "scope", ["flights" if s == "trains" else s for s in scope], "default")
     return brief
 
 
@@ -680,6 +729,7 @@ def step_resolve_refs(ctx):
         if kind == "destination":
             ctx.destination_hint = item.id
             ctx.patch.setdefault("set", {})["destination.name"] = item.title
+            transport_of_choice(ctx, item.id)
             ctx.patch_applied = False
         elif kind == "variant" and item.id not in ctx.variant_ids:
             ctx.variant_ids.append(item.id)
@@ -811,6 +861,11 @@ def _month(brief):
 #   with >= DEST_BUDGET_ENOUGH fitting items, items above DEST_BUDGET_FAR x budget and unpriced ones are
 #   dropped; with none fitting, the cheapest come first and every item has facts.within_budget false
 #   (present/destinations.md then says so plainly).
+# - budget_rub.max set, the transport not fixed (prefs.transport any) and an origin with a station: the
+#   train-reachable domestic places are quoted by train too (DEST_TRAIN_POOL_X x limit of them, the same train
+#   path as above); per place the cheaper of the flight and the train quote is kept, so the budget rule puts
+#   the places that fit first. Every item carries facts.transport ("plane" | "train"), facts.transport_ru
+#   («самолётом» | «поездом») and facts.price_includes (what the quote priced, ready Russian).
 DEST_POOL = 40            # quote_destinations takes at most 40 ids
 DEST_ALL = 10_000         # rank the whole catalog before filtering (find_destinations scores every place anyway)
 DEST_BUDGET_POOL_X = 3    # with a budget, quote limit x 3 candidates to find ones that fit
@@ -822,6 +877,18 @@ DEST_BUDGET_ENOUGH = 3
 def _dest_prefs(brief):
     prefs = brief.values().get("prefs") or {}
     return prefs.get("transport") == "train", bool(prefs.get("domestic"))
+
+
+def _mixed_trains_origin(ctx, brief):
+    """The origin place when a budget-led inspiration also quotes trains: budget_rub.max set, the user did not
+    fix the transport, the origin is known with a station (the mock's train rule needs one at both ends)."""
+    b = brief.values()
+    if not (b.get("budget_rub") or {}).get("max") or ((b.get("prefs") or {}).get("transport") or "any") != "any":
+        return None
+    origin = _origin_place(ctx, brief)
+    if not origin or not origin.get("stations") or origin.get("lat") is None or origin.get("lon") is None:
+        return None
+    return origin
 
 
 def _origin_place(ctx, brief):
@@ -858,6 +925,13 @@ def step_find_destinations(ctx):
         gone = ctx.dropped_destination
         recs = [r for r in recs if r["id"] != gone.get("id") and not (
             ctx.other_country and gone.get("country_code") and r.get("country_code") == gone["country_code"])]
+    ctx.destination_rank = {r["id"]: i for i, r in enumerate(recs)}
+    origin_t = None if train else _mixed_trains_origin(ctx, ctx.brief)
+    if origin_t is not None:
+        by_train = [r for r in recs if r["id"] != origin_t.get("id") and train_reachable(origin_t, r)]
+        ctx.destination_train_recs = by_train[:min(limit * DEST_TRAIN_POOL_X, DEST_POOL)]
+        ctx.trace["notes"].append(f"destinations: budget, any transport -> {len(ctx.destination_train_recs)} "
+                                  f"train candidates")
     if narrowed:
         origin = _origin_place(ctx, ctx.brief)
         recs = [r for r in recs if _passes_dest_prefs(r, origin, train, domestic)]
@@ -909,12 +983,14 @@ def _weather(value):
             "rain_days": rain if isinstance(rain, (int, float)) and rain >= 0 else 0}
 
 
-def quote_payload(ctx, brief, ids):
+def quote_payload(ctx, brief, ids, dates_override=None):
     b = brief.values()
     dates = b.get("dates") or {}
     payload = {"destination_ids": list(ids), "origin_city": (b.get("origin") or {}).get("city") or "",
                "party": _party_payload(brief), "today": ctx.session.today().isoformat()}
-    if dates.get("start") and dates.get("end"):
+    if dates_override:
+        payload["dates"] = {"check_in": str(dates_override[0])[:10], "check_out": str(dates_override[1])[:10]}
+    elif dates.get("start") and dates.get("end"):
         payload["dates"] = {"check_in": dates["start"], "check_out": dates["end"]}
     else:
         payload["month"] = _month(brief) or (ctx.session.today() + timedelta(days=30)).month
@@ -940,19 +1016,45 @@ def _train_round_trip(ctx, brief, rec, check_in, check_out):
     return int(price), round(min(o["duration_min"] for o in out_offers) / 60, 1)
 
 
-def destination_prices(ctx, brief, recs):
+TRANSPORT_RU = {"train": "поездом", "plane": "самолётом"}
+MID_STARS_NOTE = "3–4★"   # quote_destinations notes this when no 3-4 star hotel had rooms
+
+
+def price_includes_ru(brief, transport, nights, mid_stars=True):
+    """What a destination's «от … ₽» quote priced, as a ready Russian line (facts.price_includes): the cheapest
+    round trip for the party (basic fare: cabin bag only / the cheapest train seats) and the nights in the
+    cheapest 3-4 star hotel; transfers are not in it."""
+    party = _party_payload(brief)
+    n = party["adults"] + len(party["children_ages"])
+    who = f"на {PEOPLE_RU[n]}" if n in PEOPLE_RU else f"на {n} человек"
+    road = (f"поезд туда и обратно {who} по самым дешёвым билетам" if transport == "train"
+            else f"перелёт туда и обратно {who} по самому дешёвому тарифу (только ручная кладь)")
+    stay = f"{nights} {P.plural(nights, 'ночь', 'ночи', 'ночей')} " + (
+        "в самом недорогом отеле на 3–4 звезды" if mid_stars else "в самом недорогом из свободных отелей")
+    return f"{road} и {stay}; трансферы в цену не входят"
+
+
+def destination_prices(ctx, brief, recs, train=None, dates_override=None):
     """Per destination id: {"price", "facts", "nights", "travel_h", "reachable"} for the brief's transport
-    (flight + stay from quote_destinations; with prefs.transport == "train", train + stay)."""
+    (flight + stay from quote_destinations; with prefs.transport == "train" — or `train` True — train + stay).
+    `dates_override` (check_in, check_out) quotes those dates instead of the brief's."""
     b = brief.values()
     dates = b.get("dates") or {}
-    train, _ = _dest_prefs(brief)
-    out = tool(ctx, "quote_destinations", quote_payload(ctx, brief, [r["id"] for r in recs]))
+    if train is None:
+        train, _ = _dest_prefs(brief)
+    if not recs:
+        return {}
+    payload = quote_payload(ctx, brief, [r["id"] for r in recs], dates_override)
+    if train:
+        payload["stay_only"] = True   # the fares come from search_trains: no flights searched for these
+    out = tool(ctx, "quote_destinations", payload)
     quotes = {q["destination_id"]: q for q in out.get("quotes") or []}
     prices = {}
     for rec in recs:
         q = quotes.get(rec["id"]) or {}
         entry = {"price": None, "facts": {}, "nights": int(q.get("nights") or dates.get("nights") or 7),
                  "travel_h": None, "reachable": True}
+        mid = not any(MID_STARS_NOTE in str(n) for n in q.get("notes") or [])
         if train:
             stay = q.get("stay_price_rub")
             fare, hours = (_train_round_trip(ctx, brief, rec, q["check_in"], q["check_out"])
@@ -960,15 +1062,20 @@ def destination_prices(ctx, brief, recs):
             entry["reachable"], entry["travel_h"] = fare is not None, hours
             if fare is not None and stay is not None:
                 entry["price"] = fare + int(stay)
-            entry["facts"] = {"transport": "train"}
+            entry["facts"] = {"transport": "train", "transport_ru": TRANSPORT_RU["train"]}
             entry["facts"].update({k: v for k, v in (("train_price_rub", fare), ("stay_price_rub", stay),
                                                      ("check_in", q.get("check_in")), ("check_out", q.get("check_out")))
                                    if v is not None and fare is not None})
+            if entry["price"] is not None:
+                entry["facts"]["price_includes"] = price_includes_ru(brief, "train", entry["nights"], mid)
         else:
             ok = q.get("available")
             entry["price"] = q.get("total_rub") if ok else None
-            entry["facts"] = {k: q.get(k) for k in ("flight_price_rub", "stay_price_rub", "check_in", "check_out")
-                              if ok and q.get(k) is not None}
+            entry["facts"] = {"transport": "plane", "transport_ru": TRANSPORT_RU["plane"]}
+            entry["facts"].update({k: q.get(k) for k in ("flight_price_rub", "stay_price_rub", "check_in", "check_out")
+                                   if ok and q.get(k) is not None})
+            if entry["price"] is not None:
+                entry["facts"]["price_includes"] = price_includes_ru(brief, "plane", entry["nights"], mid)
         if q.get("currency_notes"):
             entry["facts"]["currency_notes"] = q["currency_notes"]
         prices[rec["id"]] = entry
@@ -1000,13 +1107,18 @@ def step_quote_destinations(ctx):
     limit = int(ctx.rules.get("max_destinations", 6))
     train, _ = _dest_prefs(brief)
     prices = destination_prices(ctx, brief, ctx.destination_recs)
+    by_train = destination_prices(ctx, brief, ctx.destination_train_recs, train=True)
+    known = {r["id"] for r in ctx.destination_recs}
+    recs = list(ctx.destination_recs) + [r for r in ctx.destination_train_recs if r["id"] not in known]
+    if ctx.destination_train_recs:   # one ranking for both pools: the budget rule then keeps the rank order
+        recs.sort(key=lambda r: ctx.destination_rank.get(r["id"], len(ctx.destination_rank)))
     month = _month(brief) or (ctx.session.today() + timedelta(days=30)).month
     plabel = P.party_label(b.get("party"))
     traits = set(b.get("traits") or [])
     items = []
-    for rec in ctx.destination_recs:
-        e = prices[rec["id"]]
-        if train and not e["reachable"]:
+    for rec in recs:
+        e = _cheaper_quote(prices.get(rec["id"]), by_train.get(rec["id"]))
+        if e is None or (e["facts"].get("transport") == "train" and not e["reachable"]):
             continue   # no train there or back on these dates: not a train destination
         facts = dict(e["facts"])
         if rec.get("kind"):
@@ -1014,7 +1126,7 @@ def step_quote_destinations(ctx):
         if rec.get("description"):
             facts["description"] = rec["description"]
         match = rec.get("match") or [t for t in rec.get("tags") or [] if t in traits]
-        if train:
+        if facts.get("transport") == "train":
             travel = e["travel_h"]
         elif rec.get("travel_time_h") is not None:
             travel = _travel_hours(rec.get("travel_time_h"))
@@ -1037,6 +1149,69 @@ def step_quote_destinations(ctx):
     for i in items:
         i["label"] = labels[i["id"]]
     ctx.destination_items = items
+    remember_destinations(ctx.session, items, replace=True)
+
+
+def _cheaper_quote(flight, train):
+    """Per place, the quote to show: the train one when it is priced and not dearer than the flight one."""
+    t_ok = bool(train) and train["reachable"] and train["price"] is not None
+    if t_ok and (not flight or flight["price"] is None or train["price"] <= flight["price"]):
+        return train
+    return flight
+
+
+DEST_ITEMS_KEY = "engine:destination_items"
+DEST_ITEM_KEYS = ("name", "price_from_rub", "nights", "transport", "transport_ru", "price_includes", "within_budget")
+
+
+def remember_destinations(session, items, replace=False):
+    """The shown destination items by id (name, price, transport, what the price includes) in session.results,
+    so a later choose_destination knows the transport and an inspiration-stage question about the prices is
+    answered from them."""
+    rec = session.results.get(DEST_ITEMS_KEY)
+    known = {} if replace or rec is None or not isinstance(rec.data, dict) else dict(rec.data.get("items") or {})
+    order = [] if replace or rec is None or not isinstance(rec.data, dict) else list(rec.data.get("order") or [])
+    for i in items:
+        f = i.get("facts") or {}
+        known[i["id"]] = {"name": i.get("name"), "price_from_rub": i.get("price_from_rub"), "nights": i.get("nights"),
+                          **{k: f.get(k) for k in DEST_ITEM_KEYS[3:]}}
+        if i["id"] not in order:
+            order.append(i["id"])
+    store_result(session, CachedResult(key=DEST_ITEMS_KEY, kind="destination_items", params={},
+                                       fetched_at=session.clock(), data={"items": known, "order": order}))
+
+
+TRANSPORT_CHOICE_KEY = "engine:transport_from_choice"
+
+
+def transport_of_choice(ctx, dest_id):
+    """A shown place quoted by train (budget-led inspiration) builds train variants: prefs.transport train, so
+    the variants keep the quoted price; a place quoted by plane after such a choice goes back to any transport
+    (a train the user asked for in words is never undone: then no place is quoted by plane)."""
+    s = ctx.session
+    item = next((i for i in remembered_destinations(s) if i["id"] == dest_id), None)
+    if item is None or item.get("transport") not in ("train", "plane"):
+        return
+    have = (s.brief.values().get("prefs") or {}).get("transport") or "any"
+    sets = ctx.patch.setdefault("set", {})
+    if item["transport"] == "train" and have != "train":
+        sets["prefs.transport"] = "train"
+        store_result(s, CachedResult(key=TRANSPORT_CHOICE_KEY, kind="transport_choice", params={},
+                                     fetched_at=s.clock(), data={"destination_id": dest_id}))
+        ctx.trace["notes"].append(f"choose {dest_id}: quoted by train -> prefs.transport train")
+    elif item["transport"] == "plane" and have == "train" and s.results.get(TRANSPORT_CHOICE_KEY) is not None:
+        sets["prefs.transport"] = "any"
+        s.results.pop(TRANSPORT_CHOICE_KEY, None)
+        ctx.trace["notes"].append(f"choose {dest_id}: quoted by plane -> prefs.transport any")
+
+
+def remembered_destinations(session):
+    """[{id, name, price_from_rub, nights, transport, transport_ru, price_includes, within_budget}] in the order shown."""
+    rec = session.results.get(DEST_ITEMS_KEY)
+    if rec is None or not isinstance(rec.data, dict):
+        return []
+    items = rec.data.get("items") or {}
+    return [{"id": i, **items[i]} for i in rec.data.get("order") or [] if i in items]
 
 
 # ---------------------------------------------------------------- search (entries B-E)
@@ -1423,7 +1598,13 @@ def _hotel_filters(brief):
         f["stars_min"] = prefs["stars_min"]
     if party.get("pets") or any(str(c).startswith("pet:") for c in v.get("constraints") or []):
         f["pets"] = True
+    if NO_HOSTEL in (v.get("constraints") or []):
+        f["kinds"] = list(NON_HOSTEL_KINDS)   # the mock drops hostels before its top-`limit` cut
     return f
+
+
+# catalog hotels.kind values other than hostel (constraint no_hostel searches only these)
+NON_HOSTEL_KINDS = ("hotel", "apartment", "guest_house", "motel", "resort", "chalet")
 
 
 def _cheapest(offers, price="price_rub"):
@@ -1854,6 +2035,7 @@ def step_build_variants(ctx):
         ctx.variants = rescue_dates(ctx)
     if ctx.variants:
         ctx.variants = fit_budget(ctx, ctx.variants)
+        offer_other_places(ctx)
     ctx.session.variants = ctx.variants
     if not ctx.variants:
         ctx.extra_actions = other_destination_actions(ctx)
@@ -2049,7 +2231,7 @@ def fit_budget(ctx, variants):
     pick = found or (best if best is not None and best[0] < low and target is not None else None)
     if pick is None:
         status = "not_found" if (over or ctx.ask_cheaper) else "other_dates_not_found"
-        _mark_budget(variants, status, budget, low, [])
+        _mark_budget(variants, status, budget, low, [], no_hostel=_no_hostel(brief))
         ctx.trace["notes"].append(f"budget fit ({reason}): nothing found (±{BUDGET_SHIFT_DAYS} days"
                                   + (", cheaper hotels)" if target is not None else ")"))
         return variants
@@ -2067,13 +2249,17 @@ def fit_budget(ctx, variants):
         ctx.changes.append({"field": p, "before": before, "after": (moved.values().get("prefs") or {}).get(
             p.split(".", 1)[1])})
     status = label if found is not None else "not_found"
-    _mark_budget(out, status, budget, _low(out), dropped)
+    _mark_budget(out, status, budget, _low(out), dropped, no_hostel=_no_hostel(moved))
     ctx.trace["notes"].append(f"budget fit ({reason}): {label} {base_in}->{ci} low {low}->{_low(out)}"
                               + ("" if found is not None else " (closest, still over)"))
     return out
 
 
-def _mark_budget(variants, status, budget, low, dropped):
+def _no_hostel(brief):
+    return NO_HOSTEL in (brief.values().get("constraints") or [])
+
+
+def _mark_budget(variants, status, budget, low, dropped, no_hostel=False):
     """facts.budget_fit (dates|hotel|dates_and_hotel|not_found), facts.budget_rub, facts.budget_dropped_prefs and a
     `budget_fit` risk note the update card can say («сдвинул на 8–16 декабря — так укладываемся в 180 000 ₽»)."""
     if not status:
@@ -2091,7 +2277,8 @@ def _mark_budget(variants, status, budget, low, dropped):
         fits = bool(budget) and v.totals.rub <= budget
         tail = f" — так укладываемся в {P.fmt_rub(budget)}" if fits else ""
         if status == "not_found":
-            text = f"Пробовал другие числа (±{BUDGET_SHIFT_DAYS} дня) и отели попроще — дешевле {P.fmt_rub(low)} "
+            text = (f"Пробовал другие числа (±{BUDGET_SHIFT_DAYS} дня) и отели попроще"
+                    + (" без хостелов" if no_hostel else "") + f" — дешевле {P.fmt_rub(low)} ")
             text += (f"не выходит, это выше бюджета {P.fmt_rub(budget)}" if budget and low > budget
                      else "не нашлось")
         elif status == "other_dates_not_found":
@@ -2107,6 +2294,88 @@ def _mark_budget(variants, status, budget, low, dropped):
         v.risks = [n for n in v.risks if n.code != "dates_shifted"] if status in ("dates", "dates_and_hotel") else v.risks
         v.risks.insert(0, _risk_note("budget_fit", text, status=status, budget=int(budget) if budget else None,
                                      fits=fits))
+
+
+OTHER_PLACES_MAX = 3
+
+
+def offer_other_places(ctx):
+    """The budget is still not reached here (after fit_budget), or the user asked for another place next to
+    another wish («в другие даты или в другом городе»): the places that fit the budget become
+    `choose_destination` actions and the card input key `other_places` (name, «от» price, transport) — from the
+    places already shown, re-quoted for the brief's dates and party, else from a fresh destinations search."""
+    budget = (ctx.session.brief.values().get("budget_rub") or {}).get("max")
+    low = _low(ctx.variants)
+    over = bool(budget) and low is not None and low > budget
+    if not (over or ctx.ask_other_place):
+        return
+    t0 = time.perf_counter()
+    places = other_places(ctx, budget, keep_over=ctx.ask_other_place)
+    ctx.other_places = places
+    actions = [{"type": "choose_destination", "label": f"Смотреть {p['name']}",
+                "payload": {"destination_id": p["id"]}} for p in places]
+    ctx.extra_actions = actions + [a for a in ctx.extra_actions if a not in actions]
+    ctx.trace["notes"].append(f"other places ({'over budget' if over else 'asked'}): "
+                              f"{[(p['id'], p['price_from_rub']) for p in places]} in "
+                              f"{round((time.perf_counter() - t0) * 1000)} ms")
+
+
+def other_places(ctx, budget, keep_over=False):
+    """[{id, name, price_from_rub, nights, transport_ru, within_budget, price_includes}]: other places priced
+    for this trip's dates and party (the shown ones, else a fresh search), the ones within the budget first by
+    price; places above it only when the user asked for another place (the two cheapest)."""
+    s = ctx.session
+    brief = s.brief
+    b = brief.values()
+    current = (b.get("destination") or {}).get("id")
+    res = ctx.results or {}
+    dates = (res["check_in"], res["check_out"]) if res.get("check_in") and res.get("check_out") else None
+    train_only, domestic = _dest_prefs(brief)
+    shown = [i for i in remembered_destinations(s) if i["id"] != current]
+    if shown:
+        recs = [r for r in (destination_record(ctx, dest_id=i["id"]) for i in shown) if r]
+        by_train = {i["id"] for i in shown if i.get("transport") == "train"}
+        plane = [] if train_only else [r for r in recs if r["id"] not in by_train]
+        trains = recs if train_only else [r for r in recs if r["id"] in by_train]
+    else:
+        limit = int(ctx.rules.get("max_destinations", 6))
+        found = od(ctx, "find_destinations", traits=b.get("traits") or [], month=_month(brief),
+                   origin_city=(b.get("origin") or {}).get("city"), budget=budget,
+                   max_travel_hours=(b.get("prefs") or {}).get("max_travel_hours"),
+                   segment=(b.get("party") or {}).get("segment"), limit=DEST_ALL)
+        recs = [r for r in (norm_destination(x) for x in found or []) if r and r.get("id") and r["id"] != current]
+        origin = _origin_place(ctx, brief)
+        recs = [r for r in recs if _passes_dest_prefs(r, origin, train_only, domestic)]
+        plane = [] if train_only else recs[:limit * DEST_BUDGET_POOL_X]
+        origin_t = None if train_only else _mixed_trains_origin(ctx, brief)
+        trains = recs[:limit * DEST_TRAIN_POOL_X] if train_only else [
+            r for r in recs if origin_t is not None and r["id"] != origin_t.get("id")
+            and train_reachable(origin_t, r)][:limit * DEST_TRAIN_POOL_X]
+    p_prices = destination_prices(ctx, brief, plane, train=False, dates_override=dates)
+    t_prices = destination_prices(ctx, brief, trains, train=True, dates_override=dates)
+    out = []
+    for rec in {r["id"]: r for r in plane + trains}.values():
+        e = _cheaper_quote(p_prices.get(rec["id"]), t_prices.get(rec["id"]))
+        if e is None or e["price"] is None:
+            continue
+        f = e["facts"]
+        out.append({"id": rec["id"], "name": rec["name"], "price_from_rub": int(e["price"]), "nights": e["nights"],
+                    "transport_ru": f.get("transport_ru"), "within_budget": (e["price"] <= budget) if budget else None,
+                    "price_includes": f.get("price_includes"), "transport": f.get("transport")})
+    out.sort(key=lambda p: p["price_from_rub"])
+    fits = [p for p in out if p["within_budget"] is not False]
+    picked = fits[:OTHER_PLACES_MAX] or (out[:2] if keep_over else [])
+    if picked:
+        remember_destinations(s, [{"id": p["id"], "name": p["name"], "price_from_rub": p["price_from_rub"],
+                                   "nights": p["nights"], "facts": p} for p in picked])
+        from .state import ShownItem
+        have = {i.id for i in s.shown.destinations}
+        for p in picked:
+            if p["id"] not in have:
+                s.shown.destinations.append(ShownItem(label=str(len(s.shown.destinations) + 1), kind="destination",
+                                                      id=p["id"], title=p["name"]))
+    return [{k: p[k] for k in ("id", "name", "price_from_rub", "nights", "transport_ru", "within_budget",
+                               "price_includes")} for p in picked]
 
 
 def other_destination_actions(ctx):
@@ -2137,6 +2406,8 @@ def no_build_message(ctx, results):
     want_transport = bool(scope & {"flights", "trains"})
     if "stay" in scope and not res.get("hotels"):
         reason = f"на {when} в «{dest}» свободных отелей под ваши условия не нашлось"
+        if NO_HOSTEL in (v.get("constraints") or []):   # never silently keep a hostel: say what is left
+            reason = f"на {when} в «{dest}» свободных отелей без хостелов под ваши условия не нашлось"
     elif want_transport and not outs:
         reason = f"по маршруту {origin} — {dest} на {when} нет {word} туда"
     elif want_transport and not backs:
@@ -2708,7 +2979,25 @@ def step_info_lookup(ctx):
     warnings = open_warnings(ctx)
     if warnings:
         facts.append({"kind": "warnings", "items": warnings})
+    dest_fact = destinations_fact(ctx)
+    if dest_fact is not None:
+        facts.append(dest_fact)
     ctx.info_facts = facts
+
+
+def destinations_fact(ctx):
+    """At the inspiration stage (places shown, no variants yet) the shown places with their «от» price, transport
+    and what that price includes (facts.price_includes, made by code from the quote) — «что входит в цену?»."""
+    s = ctx.session
+    if s.stage != "inspiration" or s.variants:
+        return None
+    items = remembered_destinations(s)
+    if not items:
+        return None
+    budget = (s.brief.values().get("budget_rub") or {}).get("max")
+    return {"kind": "destinations", "budget_rub": int(budget) if budget else None,
+            "items": [{k: i.get(k) for k in ("id", "name", "price_from_rub", "nights", "transport_ru",
+                                             "price_includes", "within_budget")} for i in items[:6]]}
 
 
 def pet_context(ctx):

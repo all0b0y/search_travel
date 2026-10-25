@@ -1,0 +1,748 @@
+{
+  "id": "e13_update_other_city_places",
+  "category": "E",
+  "card": "present.update",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Новосибирск",
+        "iata": [
+          "OVB"
+        ]
+      },
+      "destination": {
+        "id": "dubai",
+        "name": "Дубай",
+        "country": "ОАЭ"
+      },
+      "traits": [
+        "warm"
+      ],
+      "dates": {
+        "start": "2026-12-07",
+        "end": "2026-12-15",
+        "month": 12,
+        "window": null,
+        "nights": 8,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": {
+        "max": 180000
+      },
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": [
+        "no_hostel"
+      ],
+      "mood": null
+    },
+    "assumed": [
+      "dates.start",
+      "dates.end",
+      "scope"
+    ],
+    "assumptions": [
+      {
+        "field": "dates.start",
+        "label": "7–15 декабря"
+      },
+      {
+        "field": "scope",
+        "label": "перелёт + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 159790,
+          "door_to_door_hours": 22.0,
+          "out_hours": 10.8,
+          "back_hours": 11.2
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "OVB",
+            "to": "DXB",
+            "start": "2026-12-07T13:05:00+07:00",
+            "end": "2026-12-07T18:51:00+04:00",
+            "carrier": "S7 Airlines",
+            "price_rub": 50970
+          },
+          {
+            "type": "transfer",
+            "from": "DXB",
+            "to": "ajmal race course",
+            "start": "2026-12-07T19:36:00+04:00",
+            "end": "2026-12-07T21:41:00+04:00",
+            "carrier": null,
+            "price_rub": 500
+          },
+          {
+            "type": "stay",
+            "from": "ajmal race course",
+            "to": "ajmal race course",
+            "start": "2026-12-07T21:41:00+04:00",
+            "end": "2026-12-15T03:35:00+04:00",
+            "carrier": null,
+            "price_rub": 68240
+          },
+          {
+            "type": "transfer",
+            "from": "ajmal race course",
+            "to": "DXB",
+            "start": "2026-12-15T03:35:00+04:00",
+            "end": "2026-12-15T04:45:00+04:00",
+            "carrier": null,
+            "price_rub": 2760
+          },
+          {
+            "type": "flight",
+            "from": "DXB",
+            "to": "OVB",
+            "start": "2026-12-15T07:45:00+04:00",
+            "end": "2026-12-15T20:46:00+07:00",
+            "carrier": "Uzbekistan Airways",
+            "price_rub": 37320
+          }
+        ],
+        "hotel": {
+          "name": "ajmal race course",
+          "stars": 2,
+          "rating": 7.7,
+          "district": {
+            "labels": [
+              "тихий район"
+            ],
+            "counts": {
+              "bar": 0,
+              "beach": 0,
+              "cafe": 0,
+              "convenience": 0,
+              "fast_food": 0,
+              "nightclub": 0,
+              "park": 0,
+              "pedestrian": 0,
+              "pharmacy": 0,
+              "playground": 0,
+              "pub": 0,
+              "restaurant": 0,
+              "station": 0,
+              "stop": 0,
+              "supermarket": 0
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 159790,
+          "door_to_door_hours": 22.0,
+          "price_stay_rub": 68240,
+          "nights": 8,
+          "check_in_date": "2026-12-07",
+          "check_out_date": "2026-12-15",
+          "check_in_time": "14:00",
+          "check_out_time": "11:00",
+          "hotel_name": "ajmal race course",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 2,
+          "hotel_rating": 7.7,
+          "hotel_reviews": 2,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-12-06",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 68240,
+          "distance_beach_m": 3355,
+          "distance_center_m": 4756,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": false,
+          "out_kind": "flight",
+          "out_price_rub": 50970,
+          "out_from": "OVB",
+          "out_to": "DXB",
+          "out_date": "2026-12-07",
+          "out_dep_time": "13:05",
+          "out_arr_time": "18:51",
+          "out_arr_date": "2026-12-07",
+          "out_duration_min": 526,
+          "out_duration_hours": 8.8,
+          "out_stops": 1,
+          "out_carrier": "S7 Airlines",
+          "out_number": "S75218",
+          "out_baggage": false,
+          "out_refundable": false,
+          "out_fare": "basic",
+          "out_layover_min": 165,
+          "out_door_hours": 10.8,
+          "back_kind": "flight",
+          "back_price_rub": 37320,
+          "back_from": "DXB",
+          "back_to": "OVB",
+          "back_date": "2026-12-15",
+          "back_dep_time": "07:45",
+          "back_arr_time": "20:46",
+          "back_arr_date": "2026-12-15",
+          "back_duration_min": 601,
+          "back_duration_hours": 10.0,
+          "back_stops": 1,
+          "back_carrier": "Uzbekistan Airways",
+          "back_number": "HY2299",
+          "back_baggage": false,
+          "back_refundable": false,
+          "back_fare": "basic",
+          "back_layover_min": 240,
+          "back_door_hours": 11.2,
+          "transfer_out_min": 102,
+          "transfer_out_price_rub": 500,
+          "transfer_out_kind": "public",
+          "transfer_back_min": 56,
+          "transfer_back_price_rub": 2760,
+          "transfer_back_kind": "taxi",
+          "price_transfers_rub": 3260,
+          "price_transport_rub": 88290,
+          "arrival_at_hotel_time": "21:41",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "03:35",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.0,
+          "district_quiet": 1.0,
+          "district_family": 0.0,
+          "district_walkable": 0.01,
+          "poi_bar": 0,
+          "poi_beach": 0,
+          "poi_cafe": 0,
+          "poi_convenience": 0,
+          "poi_fast_food": 0,
+          "poi_nightclub": 0,
+          "poi_park": 0,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 0,
+          "poi_playground": 0,
+          "poi_pub": 0,
+          "poi_restaurant": 0,
+          "poi_station": 0,
+          "poi_stop": 0,
+          "poi_supermarket": 0,
+          "nearest_beach_m": 3355,
+          "nearest_centre_m": 4756,
+          "nearest_major_road_m": 901,
+          "nearest_station_m": 2111,
+          "nearest_stop_m": 1023,
+          "district_fit": 0.455,
+          "center_fit": 0.061,
+          "comfort_score": 0.3529,
+          "ref_min_rub": 159790,
+          "delta_rub_vs_cheapest": 0,
+          "ref_min_hours": 13.1,
+          "delta_hours_vs_fastest": 8.9,
+          "budget_fit": "hotel",
+          "budget_rub": 180000,
+          "budget_dropped_prefs": "район"
+        },
+        "sacrifices": [
+          {
+            "code": "slower",
+            "text": "+8,9 ч в пути",
+            "data": {
+              "delta_hours": 8.9
+            }
+          },
+          {
+            "code": "stops",
+            "text": "С пересадкой",
+            "data": {
+              "stops": 2
+            }
+          },
+          {
+            "code": "center_farther",
+            "text": "До центра 4 756 м",
+            "data": {
+              "distance_m": 4756
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "budget_fit",
+            "text": "Взял отели попроще — так укладываемся в 180 000 ₽ (без условий: район)",
+            "data": {
+              "status": "hotel",
+              "budget": 180000,
+              "fits": true
+            }
+          },
+          {
+            "code": "non_refundable",
+            "text": "Невозвратные билеты без обмена",
+            "data": {
+              "directions": "out,back"
+            }
+          },
+          {
+            "code": "long_transfer",
+            "text": "Дорога до отеля 102 мин",
+            "data": {
+              "minutes": 102,
+              "direction": "out"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "quiet_no_nightlife",
+            "text": "Тихо и почти нет баров — не для тех, кто хочет вечерней движухи",
+            "data": {
+              "quiet": 1.0
+            }
+          },
+          {
+            "code": "not_walkable",
+            "text": "До кафе и магазинов не пешком — без такси неудобно",
+            "data": {
+              "walkable": 0.012
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.639,
+          "breakdown": {
+            "budget": 1.0,
+            "time": 0.595,
+            "district": 0.454,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "center": 0.061,
+            "constraints": 1.0,
+            "rating": 0.77
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "Быстрее",
+        "totals": {
+          "rub": 199010,
+          "door_to_door_hours": 13.1,
+          "out_hours": 6.6,
+          "back_hours": 6.6
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "OVB",
+            "to": "DXB",
+            "start": "2026-12-07T06:05:00+07:00",
+            "end": "2026-12-07T08:34:00+04:00",
+            "carrier": "S7 Airlines",
+            "price_rub": 61050
+          },
+          {
+            "type": "transfer",
+            "from": "DXB",
+            "to": "LaVie.rent",
+            "start": "2026-12-07T09:19:00+04:00",
+            "end": "2026-12-07T10:24:00+04:00",
+            "carrier": null,
+            "price_rub": 4610
+          },
+          {
+            "type": "stay",
+            "from": "LaVie.rent",
+            "to": "LaVie.rent",
+            "start": "2026-12-07T15:00:00+04:00",
+            "end": "2026-12-15T11:00:00+04:00",
+            "carrier": null,
+            "price_rub": 79150
+          },
+          {
+            "type": "transfer",
+            "from": "LaVie.rent",
+            "to": "DXB",
+            "start": "2026-12-15T18:25:00+04:00",
+            "end": "2026-12-15T19:30:00+04:00",
+            "carrier": null,
+            "price_rub": 4610
+          },
+          {
+            "type": "flight",
+            "from": "DXB",
+            "to": "OVB",
+            "start": "2026-12-15T22:30:00+04:00",
+            "end": "2026-12-16T06:59:00+07:00",
+            "carrier": "S7 Airlines",
+            "price_rub": 49590
+          }
+        ],
+        "hotel": {
+          "name": "LaVie.rent",
+          "stars": 2,
+          "rating": 7.3,
+          "district": {
+            "labels": [
+              "движ",
+              "семейный район",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 6,
+              "beach": 1,
+              "cafe": 11,
+              "convenience": 2,
+              "fast_food": 8,
+              "nightclub": 0,
+              "park": 2,
+              "pedestrian": 13,
+              "pharmacy": 4,
+              "playground": 3,
+              "pub": 1,
+              "restaurant": 28,
+              "station": 0,
+              "stop": 1,
+              "supermarket": 2
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 199010,
+          "door_to_door_hours": 13.1,
+          "price_stay_rub": 79150,
+          "nights": 8,
+          "check_in_date": "2026-12-07",
+          "check_out_date": "2026-12-15",
+          "check_in_time": "15:00",
+          "check_out_time": "11:00",
+          "hotel_name": "LaVie.rent",
+          "hotel_kind": "apartment",
+          "hotel_stars": 2,
+          "hotel_rating": 7.3,
+          "hotel_reviews": 16,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-12-04",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 79150,
+          "distance_beach_m": 72,
+          "distance_center_m": 153,
+          "room_name": "Студия",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "paid",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 2700,
+          "out_kind": "flight",
+          "out_price_rub": 61050,
+          "out_from": "OVB",
+          "out_to": "DXB",
+          "out_date": "2026-12-07",
+          "out_dep_time": "06:05",
+          "out_arr_time": "08:34",
+          "out_arr_date": "2026-12-07",
+          "out_duration_min": 329,
+          "out_duration_hours": 5.5,
+          "out_stops": 0,
+          "out_carrier": "S7 Airlines",
+          "out_number": "S79594",
+          "out_baggage": false,
+          "out_refundable": false,
+          "out_fare": "basic",
+          "out_door_hours": 6.6,
+          "back_kind": "flight",
+          "back_price_rub": 49590,
+          "back_from": "DXB",
+          "back_to": "OVB",
+          "back_date": "2026-12-15",
+          "back_dep_time": "22:30",
+          "back_arr_time": "06:59",
+          "back_arr_date": "2026-12-16",
+          "back_duration_min": 329,
+          "back_duration_hours": 5.5,
+          "back_stops": 0,
+          "back_carrier": "S7 Airlines",
+          "back_number": "S78757",
+          "back_baggage": false,
+          "back_refundable": false,
+          "back_fare": "basic",
+          "back_door_hours": 6.6,
+          "transfer_out_min": 52,
+          "transfer_out_price_rub": 4610,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 52,
+          "transfer_back_price_rub": 4610,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 9220,
+          "price_transport_rub": 110640,
+          "arrival_at_hotel_time": "10:24",
+          "wait_before_checkin_min": 276,
+          "leave_hotel_time": "18:25",
+          "wait_after_checkout_min": 445,
+          "district_lively": 0.75,
+          "district_quiet": 0.38,
+          "district_family": 0.65,
+          "district_walkable": 0.78,
+          "poi_bar": 6,
+          "poi_beach": 1,
+          "poi_cafe": 11,
+          "poi_convenience": 2,
+          "poi_fast_food": 8,
+          "poi_nightclub": 0,
+          "poi_park": 2,
+          "poi_pedestrian": 13,
+          "poi_pharmacy": 4,
+          "poi_playground": 3,
+          "poi_pub": 1,
+          "poi_restaurant": 28,
+          "poi_station": 0,
+          "poi_stop": 1,
+          "poi_supermarket": 2,
+          "nearest_beach_m": 72,
+          "nearest_centre_m": 153,
+          "nearest_major_road_m": 275,
+          "nearest_station_m": 1081,
+          "nearest_stop_m": 388,
+          "district_fit": 0.596,
+          "center_fit": 1.0,
+          "comfort_score": 0.6708,
+          "ref_min_rub": 159790,
+          "delta_rub_vs_cheapest": 39220,
+          "ref_min_hours": 13.1,
+          "delta_hours_vs_fastest": 0.0,
+          "also_comfort": true,
+          "coincide_note": "Самый быстрый вариант оказался и самым комфортным — отдельной карточки нет.",
+          "budget_fit": "hotel",
+          "budget_rub": 180000,
+          "budget_dropped_prefs": "район"
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+39 220 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 39220
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "budget_fit",
+            "text": "Взял отели попроще (без условий: район)",
+            "data": {
+              "status": "hotel",
+              "budget": 180000,
+              "fits": false
+            }
+          },
+          {
+            "code": "early_departure",
+            "text": "Ранний вылет — в 06:05",
+            "data": {
+              "time": "06:05",
+              "direction": "out"
+            }
+          },
+          {
+            "code": "non_refundable",
+            "text": "Невозвратные билеты без обмена",
+            "data": {
+              "directions": "out,back"
+            }
+          },
+          {
+            "code": "wait_before_checkin",
+            "text": "Приезд в 10:24, а заселение с 15:00 — ждать 4,6 ч",
+            "data": {
+              "minutes": 276,
+              "arrival": "10:24",
+              "check_in": "15:00"
+            }
+          },
+          {
+            "code": "wait_after_checkout",
+            "text": "После выезда из отеля 7,4 ч до отправления",
+            "data": {
+              "minutes": 445
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.75
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.816,
+          "breakdown": {
+            "budget": 0.789,
+            "time": 1.0,
+            "district": 0.596,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "center": 1.0,
+            "constraints": 1.0,
+            "rating": 0.73
+          }
+        },
+        "diff_rub": 39220,
+        "diff_word": "дороже",
+        "over_budget_rub": 19010
+      }
+    ],
+    "recommended_hint": "cheapest",
+    "questions": [],
+    "upsell_candidates": [],
+    "changes": [
+      {
+        "field": "prefs.district",
+        "before": "quiet",
+        "after": "any"
+      },
+      {
+        "field": "totals.cheapest.rub",
+        "before": 171010,
+        "after": 159790,
+        "delta_rub": 11220,
+        "delta_word": "дешевле"
+      },
+      {
+        "field": "totals.fastest.rub",
+        "before": 221840,
+        "after": 199010,
+        "delta_rub": 22830,
+        "delta_word": "дешевле"
+      }
+    ],
+    "rebuilt": [
+      "flights",
+      "stay",
+      "transfers"
+    ],
+    "request": "Хостел нам всё равно не подходит, а бюджет поднимать я не хочу. Может, есть нормальный отель в пределах 180 тысяч в другие даты декабря или в другом городе? Объясните попроще.",
+    "other_places": [
+      {
+        "id": "bangkok",
+        "name": "Бангкок",
+        "price_from_rub": 139990,
+        "nights": 8,
+        "transport_ru": "самолётом",
+        "within_budget": true,
+        "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 8 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "Бангк"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "убрал\\w*\\s+(все\\s+)?хостел"
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "другие города не (ищу|подбираю)|про другой город"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 0
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "h01 t4: «в другие даты декабря или в другом городе?» — the date search ran in Dubai and code priced other places for the trip (`other_places`: Бангкок); the card names them with their price (buttons below) and never repeats «убрал хостелы» (no constraints row this turn)."
+}

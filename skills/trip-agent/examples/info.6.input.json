@@ -1,0 +1,74 @@
+{
+  "today": "2026-10-25",
+  "stage": "inspiration",
+  "brief": {
+    "origin": {
+      "city": "Екатеринбург",
+      "iata": []
+    },
+    "destination": null,
+    "traits": null,
+    "dates": {
+      "start": null,
+      "end": null,
+      "month": 11,
+      "window": null,
+      "nights": 3,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "solo",
+      "adults": 1,
+      "children": 0,
+      "children_ages": null,
+      "pets": []
+    },
+    "budget_rub": {
+      "max": 25000
+    },
+    "scope": null,
+    "prefs": null,
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [
+    "dates.month"
+  ],
+  "assumptions": [],
+  "question": "Что входит в эти цены?",
+  "facts": [
+    {
+      "kind": "destinations",
+      "budget_rub": 25000,
+      "items": [
+        {
+          "id": "kazan",
+          "name": "Казань",
+          "price_from_rub": 16480,
+          "nights": 3,
+          "transport_ru": "поездом",
+          "price_includes": "поезд туда и обратно на одного по самым дешёвым билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "within_budget": true
+        },
+        {
+          "id": "samara",
+          "name": "Самара",
+          "price_from_rub": 13540,
+          "nights": 3,
+          "transport_ru": "поездом",
+          "price_includes": "поезд туда и обратно на одного по самым дешёвым билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "within_budget": true
+        },
+        {
+          "id": "bukhara",
+          "name": "Бухара",
+          "price_from_rub": 32620,
+          "nights": 3,
+          "transport_ru": "самолётом",
+          "price_includes": "перелёт туда и обратно на одного по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "within_budget": false
+        }
+      ]
+    }
+  ]
+}

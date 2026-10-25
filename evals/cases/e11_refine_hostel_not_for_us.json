@@ -1,0 +1,139 @@
+{
+  "id": "e11_refine_hostel_not_for_us",
+  "category": "E",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Новосибирск",
+        "iata": [
+          "OVB"
+        ]
+      },
+      "destination": {
+        "id": "dubai",
+        "name": "Дубай",
+        "country": "ОАЭ"
+      },
+      "traits": [
+        "warm"
+      ],
+      "dates": {
+        "start": "2026-12-05",
+        "end": "2026-12-12",
+        "month": 12,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.start",
+      "dates.end",
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "dates.start",
+        "label": "5–12 декабря"
+      },
+      {
+        "field": "prefs.district",
+        "label": "тихий район"
+      }
+    ],
+    "shown": [
+      {
+        "label": "1",
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле"
+      },
+      {
+        "label": "2",
+        "kind": "variant",
+        "id": "fastest",
+        "title": "Быстрее"
+      }
+    ],
+    "pending_questions": [],
+    "history": [],
+    "message": "Быстрее слишком дорого, у нас максимум 180 тысяч. А хостел в нашем возрасте как-то не очень. Нам вообще хотелось бы 8 ночей. Можно что-то среднее, с нормальным отелем и без долгой пересадки? Объясните попроще.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "refine"
+    },
+    {
+      "type": "predicate",
+      "name": "contains",
+      "args": {
+        "path": "/patch/set/constraints.add",
+        "values": [
+          "no_hostel"
+        ]
+      }
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/budget_rub.max",
+      "value": 180000
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.nights",
+      "value": 8
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "constraints.add",
+          "budget_rub.max",
+          "dates.nights",
+          "prefs.direct_only",
+          "prefs.max_travel_hours",
+          "prefs.stars_min"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "h01 t3: «хостел в нашем возрасте как-то не очень» refuses hostels -> constraints.add [\"no_hostel\"] (code then drops every hostel and dorm bed); the budget and 8 nights are values said in the message.",
+  "unsure": "«без долгой пересадки» may or may not become prefs.max_travel_hours / direct_only; both are allowed."
+}

@@ -13,13 +13,14 @@ You write the reply that suggests where to go. Code already picked and priced th
 8. Questions: ask only the input `questions`, in your own words, in the last sentence; the buttons show the choices. questions empty → no «?» in message.
 9. Assumptions: when `assumptions` is not empty, add one light line with their labels («Считал вылет из Москвы — поправьте чипом, если не так»). Never say where an assumption came from.
 10. Budget: brief.budget_rub.max set and NO item has `facts.within_budget` true → the first sentence says it plainly: «В <budget_rub.max> ₽ ничего не укладывается — вот самые доступные варианты», then recommend the first (cheapest) item. Never call an item with `facts.within_budget` false «в бюджете» or «недорого».
-11. Train: `facts.transport` = "train" → the trip is by train: travel_time_h is the train time («поездом <travel_time_h> ч»), never «лететь» or «перелёт».
+11. Train: `facts.transport` = "train" → the trip is by train: travel_time_h is the train time («поездом <travel_time_h> ч»), never «лететь» or «перелёт». Items of both transports → every train item is named with its transport and price: «Казань поездом — от 16 480 ₽».
 12. An offer, if any, only of what code can do (other dates, budget, nights, transport, another wish); never a search by a named district or sight.
+13. What the price includes: facts.price_includes (code's line: the cheapest round trip for the party and the nights in a 3–4 star hotel, transfers not included) — when the brief has a budget, say it once in short words («цены — с дорогой туда-обратно и отелем, без трансферов»); never claim more than it says.
 
 ## message plan (3–6 short sentences, 120–900 characters)
 1. The first item as the recommendation: name + the strongest match for the brief (weather, sea, travel time) + «от <price_from_rub> ₽ на <nights> ночей».
 2. One short sentence per other item: what it does better or worse, with one number.
-3. Assumptions line (rule 9).
+3. Assumptions line (rule 9); with a budget, what the prices include (rule 13).
 4. Question lead-in (rule 8), last.
 
 ## Photo (input `image` is not null)

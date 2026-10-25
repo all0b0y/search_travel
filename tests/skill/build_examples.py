@@ -678,6 +678,29 @@ write("present.destinations", 3, d_input(SKI, [
                D("gudauri", "Горы, лыжи и снег.", "Цены пока нет — уточню, когда выберете даты")],
      "recommended_id": "sheregesh", "upsell": []})
 
+W_KZN, W_SMR, W_BHK = w(0.1, None, 10.9), w(1.7, None, 9.1), w(14.1, None, 3.4)
+write("present.destinations", 4, d_input(STUDENT_D := brief(
+    {"budget_rub.max": 25000, "dates.nights": 3, "party.segment": "solo", "party.adults": 1,
+     "origin.city": "Екатеринбург"}, [("dates.month", 11, "default")]), [
+    dest("kazan", "1", "Казань", "Россия", 16480, 3, "1 взрослый", W_KZN, 12.8, [], transport="train",
+         transport_ru="поездом", within_budget=True, price_includes="поезд туда и обратно на одного по самым дешёвым "
+         "билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"),
+    dest("samara", "2", "Самара", "Россия", 13540, 3, "1 взрослый", W_SMR, 13.9, [], transport="train",
+         transport_ru="поездом", within_budget=True, price_includes="поезд туда и обратно на одного по самым дешёвым "
+         "билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"),
+    dest("bukhara", "3", "Бухара", "Узбекистан", 32620, 3, "1 взрослый", W_BHK, 5.9, [], transport="plane",
+         transport_ru="самолётом", within_budget=False, price_includes="перелёт туда и обратно на одного по самому "
+         "дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят")],
+    assumptions=[{"field": "dates.month", "label": "в ноябре"}]),
+    {"message": "В 25 000 ₽ укладываются две поездки поездом: Казань поездом — от 16 480 ₽ на 3 ночи, Кремль и Волга, "
+                "и Самара поездом — от 13 540 ₽, самая доступная. Бухара теплее — днём 14,1°, но самолётом выходит от "
+                "32 620 ₽, это дороже бюджета. Цены — с дорогой туда-обратно и отелем, без трансферов. Поставил ноябрь — "
+                "поправьте чипом, если не так.",
+     "items": [D("kazan", "В бюджете: поездом от 16 480 ₽ на 3 ночи.", "Поездом 12,8 ч; 10,9 дождливых дней"),
+               D("samara", "Самая доступная: поездом от 13 540 ₽.", "Поездом 13,9 ч; 9,1 дождливых дней"),
+               D("bukhara", "Теплее всех: днём 14,1°.", "Дороже бюджета: от 32 620 ₽; лететь 5,9 ч")],
+     "recommended_id": "kazan", "upsell": []})
+
 # ---------------------------------------------------------------- info
 def i_input(b, stage, question, facts, assumptions=()):
     d = common(b, stage, list(assumptions))
@@ -743,6 +766,24 @@ write("present.info", 5, i_input(SPB_DOG, "selection", "А с корги в Са
       I("Да, если корги помещается в переноску: в «Сапсане» собак везут только в переноске до 180 см по сумме трёх "
         "сторон, на местах для пассажиров с животными, крупных собак не берут. Провоз 720 ₽ туда и 770 ₽ обратно — "
         "всего 1 490 ₽, они уже в цене «Дешевле»."))
+
+# a budget-led inspiration with train places that fit (held-out h10): «что входит в эти цены?» from price_includes
+STUDENT = brief({"budget_rub.max": 25000, "dates.nights": 3, "party.segment": "solo", "party.adults": 1,
+                 "origin.city": "Екатеринбург"}, [("dates.month", 11, "default")])
+INC_TRAIN = ("поезд туда и обратно на одного по самым дешёвым билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; "
+             "трансферы в цену не входят")
+INC_PLANE = ("перелёт туда и обратно на одного по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом "
+             "недорогом отеле на 3–4 звезды; трансферы в цену не входят")
+write("present.info", 6, i_input(STUDENT, "inspiration", "Что входит в эти цены?", [
+    {"kind": "destinations", "budget_rub": 25000, "items": [
+        {"id": "kazan", "name": "Казань", "price_from_rub": 16480, "nights": 3, "transport_ru": "поездом",
+         "price_includes": INC_TRAIN, "within_budget": True},
+        {"id": "samara", "name": "Самара", "price_from_rub": 13540, "nights": 3, "transport_ru": "поездом",
+         "price_includes": INC_TRAIN, "within_budget": True},
+        {"id": "bukhara", "name": "Бухара", "price_from_rub": 32620, "nights": 3, "transport_ru": "самолётом",
+         "price_includes": INC_PLANE, "within_budget": False}]}]),
+      I("В цену входит дорога туда и обратно на одного по самому дешёвому тарифу и 3 ночи в недорогом отеле на 3–4 "
+        "звезды, трансферы — нет. В 25 000 ₽ укладываются Казань поездом — от 16 480 ₽ и Самара поездом — от 13 540 ₽."))
 
 # ---------------------------------------------------------------- aftercare
 ORDER = {"order_id": "o_ex_sochi", "status": "paid", "title": "Сочи, 12–19 ноября, вдвоём", "total_rub": 90300,

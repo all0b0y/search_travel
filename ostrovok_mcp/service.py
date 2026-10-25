@@ -20,7 +20,7 @@ __all__ = ["call", "ServiceError", "reset_caches", *TOOL_NAMES]
 def _quote_destinations(r) -> dict:
     return {"quotes": quotes.quote(r.destination_ids, r.origin_city, r.month,
                                    r.dates.model_dump() if r.dates else None, r.nights, r.party.adults,
-                                   list(r.party.children_ages), r.today), "synthetic": True}
+                                   list(r.party.children_ages), r.today, stay_only=r.stay_only), "synthetic": True}
 
 
 def _search_hotels(r) -> dict:

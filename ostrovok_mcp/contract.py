@@ -83,6 +83,7 @@ class QuoteDestinationsIn(Model):
     nights: Optional[int] = PField(default=None, ge=1, le=60)  # used with `month`; mock default 7
     party: Party
     today: Date
+    stay_only: bool = False     # True: only the stay is priced (no flights; the caller adds its own train fares)
 
     @model_validator(mode="after")
     def _month_or_dates(self):

@@ -54,6 +54,31 @@ ITEM_TEXT_KEYS = ("why", "sacrifices", "risks", "not_for", "watch_out")
 LATIN_WORD = re.compile(r"[A-Za-zА-Яа-яЁё][A-Za-zА-Яа-яЁё'’\-]*")
 LATIN_OK = {"wi-fi", "wifi", "spa", "ok", "all", "inclusive", "ultra", "check-in", "check-out", "sup", "vip"}
 ID_KEYS = {"id", "candidate_id", "recommended_id", "offer_id", "hotel_id", "destination_id", "rule_id"}
+# «убрал хостелы» is a claim about what code changed: only with a changes row that added constraint no_hostel;
+# «без хостелов» only when the brief has no_hostel (the search and ranking then drop every hostel)
+HOSTEL_REMOVED_RE = re.compile(r"(?:убрал|убрали|убраны|исключил|исключены|отсеял|выкинул)\w*\s+(?:все\s+|из\s+подборки\s+)?хостел",
+                               re.I)
+HOSTEL_WITHOUT_RE = re.compile(r"\bбез\s+хостел", re.I)
+
+
+def hostel_claim_issues(card, card_input, message):
+    if card not in ("present.update", "present.variants") or "хостел" not in message.casefold():
+        return []
+    added = any(isinstance(r, dict) and r.get("field") == "constraints" and "no_hostel" in (r.get("after") or [])
+                and "no_hostel" not in (r.get("before") or []) for r in card_input.get("changes") or [])
+    has = "no_hostel" in ((card_input.get("brief") or {}).get("constraints") or [])
+    out = []
+    m = HOSTEL_REMOVED_RE.search(message)
+    if m and not added:
+        out.append(_issue("hostel_claim", "block", f"«{m.group(0)}» — код хостелы в этот раз не убирал",
+                          phrase=m.group(0)))
+    m = HOSTEL_WITHOUT_RE.search(message)
+    if m and not has:
+        out.append(_issue("hostel_claim", "block", f"«{m.group(0)}» — в запросе нет условия «без хостелов»",
+                          phrase=m.group(0)))
+    return out
+
+
 MONEY_WORDS = re.compile(r"₽|руб|\bцен|стоим|отмен|штраф|невозврат|риск|стыковк|опозда|доплат", re.I)
 JOKE_WORDS = re.compile(r"шучу|хаха|ахах|хех|\bлол\b|😄|😂|🤣|😅|😜|😉|🙃|😏|😎|🤪", re.I)
 SMILEY = re.compile(r"[:;]-?\)|\){2,}|\(\s*:")
@@ -426,6 +451,7 @@ def check_card_output(card, card_input: dict, output: dict, rules: dict):
         if phrase.casefold() in low:
             found.append(_issue("banned_phrase", "block", f"Запрещённая фраза «{phrase}»", phrase=phrase))
     found += latin_issues(output, card_input, g)
+    found += hostel_claim_issues(card, card_input, message)
     emo = emoji_count(all_text)
     if emo > g["max_emoji"]:
         found.append(_issue("too_many_emoji", "warn", "Слишком много эмодзи", count=emo, limit=g["max_emoji"]))

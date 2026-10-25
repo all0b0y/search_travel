@@ -23,8 +23,10 @@ CARD_KEYS = {
     "present.fallback": ("message", "reason"),
 }
 # keys a card input may carry only when they apply (absent otherwise): `question` = a question asked inside a
-# search / refine message ({text, facts}, steps.search_question) that the card answers first
-OPTIONAL_KEYS = {"present.variants": ("question",), "present.update": ("question",)}
+# search / refine message ({text, facts}, steps.search_question) that the card answers first; `other_places` =
+# other places priced for this trip (steps.offer_other_places: the budget is not reached here, or the user asked
+# for another place) — each one a choose_destination action the card names with its price
+OPTIONAL_KEYS = {"present.variants": ("question", "other_places"), "present.update": ("question", "other_places")}
 CARDS = tuple(CARD_KEYS)
 UPSELL_KINDS = ("transfer", "early_checkin", "room_upgrade", "meal_upgrade", "flexible_fare")  # decision 8
 
@@ -92,6 +94,13 @@ UPSELL_CANDIDATE = _obj(["candidate_id", "variant_id", "kind", "label", "price_r
 
 SEARCH_QUESTION = _obj(["text", "facts"], {"text": {"type": "string", "minLength": 1},
                                           "facts": {"type": "array", "items": {"type": "object"}}})
+OTHER_PLACES = {"type": "array", "maxItems": 3, "items": _obj(
+    ["id", "name", "price_from_rub", "nights", "transport_ru", "within_budget", "price_includes"], {
+        "id": {"type": "string"}, "name": {"type": "string", "minLength": 1},
+        "price_from_rub": {"type": "integer", "minimum": 1}, "nights": {"type": "integer", "minimum": 1},
+        "transport_ru": {"enum": ["поездом", "самолётом", None]}, "within_budget": {"type": ["boolean", "null"]},
+        "price_includes": {"type": ["string", "null"]}})}
+OPTIONAL_PROPS = {"question": SEARCH_QUESTION, "other_places": OTHER_PLACES}
 _COMMON_PROPS = {
     "today": DATE,
     "stage": {"enum": list(STAGES)},
@@ -151,7 +160,7 @@ def card_input_schema(card):
     props = dict(_COMMON_PROPS)
     props.update(_CARD_PROPS[card])
     for key in OPTIONAL_KEYS.get(card, ()):
-        props[key] = SEARCH_QUESTION
+        props[key] = OPTIONAL_PROPS[key]
     return _obj(sorted(input_keys(card)), props)
 
 

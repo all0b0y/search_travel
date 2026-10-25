@@ -8,7 +8,7 @@ Decisions of skill content v0 (rule — why). The owner may change any of them; 
 4. «с ребёнком» → `party.children 1` but no adults; «с женой» → `couple` only — the engine fills adults from `segments.json` (Foundation decision 2).
 5. «с мамой / с подругой» → segment `other` + 2 adults — `couple` implies a romantic pair (district weights, room types).
 6. Pets go to both `party.pets` and `constraints.add pet:<kind>` — the hotel filter reads constraints, the party is shown to the user.
-7. Closed constraint vocabulary: pet:dog, pet:cat, accessible, no_night_flights, crib, kitchen — free tokens would never match a filter.
+7. Closed constraint vocabulary: pet:dog, pet:cat, accessible, no_night_flights, crib, kitchen, no_hostel — free tokens would never match a filter.
 8. Fixed holiday windows: «на майские» = May 1–4, «на новогодние» = Dec 31 – Jan 8, «на выходные» = next Sat–Sun — a table is more predictable than letting the model guess.
 9. «первая линия» = `beach_max_m 150` — a fixed mapping, not a guess per message.
 10. Photo «туда, где так же» → `image.place` null even when the place is recognised — otherwise the engine (confidence ≥ 0.8) would route to that exact place (decision 3) instead of similar ones.

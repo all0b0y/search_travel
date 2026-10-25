@@ -1,0 +1,114 @@
+{
+  "today": "2026-10-25",
+  "stage": "inspiration",
+  "brief": {
+    "origin": {
+      "city": "Екатеринбург",
+      "iata": []
+    },
+    "destination": null,
+    "traits": null,
+    "dates": {
+      "start": null,
+      "end": null,
+      "month": 11,
+      "window": null,
+      "nights": 3,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "solo",
+      "adults": 1,
+      "children": 0,
+      "children_ages": null,
+      "pets": []
+    },
+    "budget_rub": {
+      "max": 25000
+    },
+    "scope": null,
+    "prefs": null,
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [
+    "dates.month"
+  ],
+  "assumptions": [
+    {
+      "field": "dates.month",
+      "label": "в ноябре"
+    }
+  ],
+  "items": [
+    {
+      "id": "kazan",
+      "label": "1",
+      "name": "Казань",
+      "country": "Россия",
+      "price_from_rub": 16480,
+      "nights": 3,
+      "party_label": "1 взрослый",
+      "weather": {
+        "air_max_c": 0.1,
+        "sea_c": null,
+        "rain_days": 10.9
+      },
+      "travel_time_h": 12.8,
+      "match": [],
+      "facts": {
+        "transport": "train",
+        "transport_ru": "поездом",
+        "within_budget": true,
+        "price_includes": "поезд туда и обратно на одного по самым дешёвым билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+      }
+    },
+    {
+      "id": "samara",
+      "label": "2",
+      "name": "Самара",
+      "country": "Россия",
+      "price_from_rub": 13540,
+      "nights": 3,
+      "party_label": "1 взрослый",
+      "weather": {
+        "air_max_c": 1.7,
+        "sea_c": null,
+        "rain_days": 9.1
+      },
+      "travel_time_h": 13.9,
+      "match": [],
+      "facts": {
+        "transport": "train",
+        "transport_ru": "поездом",
+        "within_budget": true,
+        "price_includes": "поезд туда и обратно на одного по самым дешёвым билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+      }
+    },
+    {
+      "id": "bukhara",
+      "label": "3",
+      "name": "Бухара",
+      "country": "Узбекистан",
+      "price_from_rub": 32620,
+      "nights": 3,
+      "party_label": "1 взрослый",
+      "weather": {
+        "air_max_c": 14.1,
+        "sea_c": null,
+        "rain_days": 3.4
+      },
+      "travel_time_h": 5.9,
+      "match": [],
+      "facts": {
+        "transport": "plane",
+        "transport_ru": "самолётом",
+        "within_budget": false,
+        "price_includes": "перелёт туда и обратно на одного по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+      }
+    }
+  ],
+  "questions": [],
+  "image": null,
+  "insight": null
+}

@@ -379,7 +379,7 @@ def upsell_item(c):
 
 
 def variants_input(session, variant_items, recommended_hint, questions, upsell, chips=(), changes=None, rebuilt=None,
-                   request=None, question=None):
+                   request=None, question=None, other_places=None):
     """present.variants; with `changes` it is present.update, which also gets `request` (the user's words,
     so a wish that is no filter can be named honestly). `question` ({text, facts}, only when the search /
     refine message also asked something — steps.search_question): the card answers it first, from its facts."""
@@ -394,6 +394,8 @@ def variants_input(session, variant_items, recommended_hint, questions, upsell, 
         payload["request"] = request or ""
     if question:
         payload["question"] = {"text": str(question.get("text") or ""), "facts": list(question.get("facts") or [])}
+    if other_places is not None:   # the budget is not reached here, or another place was asked for
+        payload["other_places"] = [dict(p) for p in other_places]
     return payload
 
 

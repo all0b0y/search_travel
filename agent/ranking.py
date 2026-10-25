@@ -368,6 +368,8 @@ def _party_ok(h, brief):
         return False   # a bed in a shared dorm is not a stay for a couple or a family
     if _is_dorm(room) and DORM_NEVER in (brief.constraints.value or []):
         return False   # «отдельный номер», «не хостел» (steps.room_cues)
+    if refuses_hostel(brief) and (h.get("kind") == "hostel" or _is_dorm(room)):
+        return False   # «хостел нам не подходит»: no hostel at all (private rooms too), no dorm bed anywhere
     if is_gendered_room(room):
         return False   # men-/women-only room: the traveller's gender is never known
     return True
@@ -375,10 +377,15 @@ def _party_ok(h, brief):
 
 DORM_OK = "hostel"       # constraint: the user asked for a hostel / a dorm bed (steps.room_cues)
 DORM_NEVER = "no_dorm"   # constraint: the user asked for a private room
+NO_HOSTEL = "no_hostel"  # constraint: the user refused hostels (implies no_dorm; steps.room_cues / understand)
+
+
+def refuses_hostel(brief) -> bool:
+    return NO_HOSTEL in (brief.constraints.value or [])
 
 
 def wants_dorm(brief) -> bool:
-    return DORM_OK in (brief.constraints.value or [])
+    return DORM_OK in (brief.constraints.value or []) and not refuses_hostel(brief)
 
 
 def _hotel_is_dorm(h) -> bool:
@@ -1428,7 +1435,8 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     - Rooms: men-/women-only rooms are never offered (is_gendered_room; the gender is never known);
       shared dorms never for couples/families. Dorm beds (unless the user asked for a hostel, constraint
       `hostel`) never crowd out private rooms (ranking.max_dorm_hotels), only «Дешевле» may be one (risk
-      `dorm_bed`, facts.dorm_bed, fit x ranking.dorm_fit_factor); constraint `no_dorm` drops them.
+      `dorm_bed`, facts.dorm_bed, fit x ranking.dorm_fit_factor); constraint `no_dorm` drops them, constraint
+      `no_hostel` drops every hotel of kind hostel and every dorm bed.
       Constraint `crib`: hotels with a guaranteed cot
       (kids_policy.infant_cot free/paid; free scores higher in comfort) — a relaxable hotel pref like
       stars/meals/cancellation/beach; when no hotel meets them all, the fewest prefs are dropped

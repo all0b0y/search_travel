@@ -80,8 +80,8 @@ A greeting plus a request is the request. An answer plus extra details → inten
 | «тихо», «тишина», «спокойно» / «всё рядом», «гулять пешком» | prefs.district "quiet" + mood.add ["relax"] / prefs.district "walkable" |
 | «тусовки», «движ», «ночная жизнь» | prefs.district "lively" + mood.add ["party"] + traits.add ["nightlife"] |
 | «для детей», «анимация» | prefs.district "family" + mood.add ["kids_fun"] |
-| «коляска», «без лестниц» / «детская кроватка» / «с кухней» | constraints.add ["accessible"] / ["crib"] / ["kitchen"] |
-constraints tokens: ONLY pet:dog, pet:cat, accessible, crib, kitchen.
+| «коляска», «без лестниц» / «детская кроватка» / «с кухней» / «хостел не подходит», «не хочу хостел», «без хостелов», «хостел как-то не очень», «нормальный отель, не хостел» | constraints.add ["accessible"] / ["crib"] / ["kitchen"] / ["no_hostel"]; «можно и хостел» → constraints.remove ["no_hostel"] |
+constraints tokens: ONLY pet:dog, pet:cat, accessible, crib, kitchen, no_hostel.
 
 ## Wishes → traits.add / mood.add (enum values only)
 | «тёплое море», «к тёплому морю» | traits ["sea", "warm"] | «на море», «к морю» | ["sea"] | «пляж» | ["beach"] |

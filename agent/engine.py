@@ -35,7 +35,7 @@ from .sessions import SessionStore
 from .state import (ALLOWED_PATCH_PATHS, ALLOWED_UNSET_PATHS, CachedResult, PatchError, Session, apply_patch)
 from .steps import (STEP_REGISTRY, Ctx, Domain, StepError, after_travellers_hook, check_variants_hook,
                     destination_record, merge_prefetched, prepare_brief, recommended_hint, run_image_match,
-                    run_search, resolve_dates, step_log_event, store_result)
+                    run_search, resolve_dates, step_log_event, store_result, transport_of_choice)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 REQUEST_SCHEMA = json.loads((REPO_ROOT / "agent/contracts/request.schema.json").read_text(encoding="utf-8"))
@@ -312,6 +312,7 @@ class Engine:
             item = s.find_shown("destination", p["destination_id"])
             ctx.destination_hint = p["destination_id"]
             sets["destination.name"] = item.title if item else p["destination_id"]
+            transport_of_choice(ctx, p["destination_id"])
         elif kind in ("choose_variant", "add_to_cart"):
             ctx.variant_ids = [p["variant_id"]]
             ctx.extras = list(p.get("extras") or [])
@@ -633,6 +634,12 @@ class Engine:
                 why = f"prefs.transport train: no train to {dest['id']} from {(origin or {}).get('id')}"
         if why is None and ctx.text:
             m = OTHER_PLACE_RE.search(ctx.text)
+            if m and (wants_other_dates(ctx.text) or wants_cheaper(ctx.text)):
+                # «в другие даты или в другом городе»: the trip is rebuilt here (other dates, the budget fit)
+                # and the places that fit the budget are offered next to it (steps.offer_other_places)
+                ctx.ask_other_place = True
+                ctx.trace["notes"].append(f"«{m.group(0)}» with another rebuild wish -> other places offered")
+                return False
             if m:
                 why = f"«{m.group(0)}» without a name"
                 ctx.other_country = "стран" in m.group(0).casefold()
@@ -759,7 +766,7 @@ class Engine:
             from .steps import search_question
             return P.variants_input(s, items, hint, ctx.questions, ctx.upsell[:cap],
                                     ctx.chips, changes, rebuilt, request=ctx.text if ctx.action is None else "",
-                                    question=search_question(ctx))
+                                    question=search_question(ctx), other_places=ctx.other_places)
         if card == "present.compare":
             labels = {i.id: i.label for i in s.shown.variants}
             labels = {v.id: labels.get(v.id, str(n + 1)) for n, v in enumerate(ctx.variants)}
@@ -861,8 +868,11 @@ OTHER_DATES_RE = re.compile(r"(?:друг|ин)(?:ие|ую|ой|ое|ими|и�
 # «подешевле», «попроще», «что-нибудь дешевле» (not the variant title «Дешевле» alone)
 CHEAPER_RE = re.compile(r"подешевл|попроще|поскромнее|(?:что-нибудь|что-то|ещё|еще|вариант\w*|отел\w*)\s+дешевле|"
                         r"дешевле\s+(?:есть|найд|можно|бы|вариант|отел)", re.I)
-# «другую страну / другой город / другое направление» without naming one
-OTHER_PLACE_RE = re.compile(r"(?:друг|ин)(?:ая|ую|ой|ое|ие|ого)\s+(?:стран|город|направлен|мест[оа]|курорт)", re.I)
+# «другую страну / другой город / в другом городе / другое направление / куда-нибудь ещё / другие варианты мест»
+# without naming one
+OTHER_PLACE_RE = re.compile(r"(?:друг|ин)(?:ая|ую|ой|ое|ие|ого|ом|их|ими)\s+(?:стран|город|направлен|мест[оаеах]|курорт)|"
+                            r"куда-?(?:нибудь|то)\s+(?:ещё|еще|в\s+друго)|варианты?\s+(?:других\s+)?мест\b|"
+                            r"(?:ещё|еще)\s+(?:какие-?(?:то|нибудь)\s+)?(?:места|направлени|город)", re.I)
 
 
 def wants_other_dates(text):

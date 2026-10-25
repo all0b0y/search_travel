@@ -26,9 +26,10 @@ def test_counts_and_categories():
     # 40 v0 cases + 7 for the L3-fix understand rules (seasons, wishes, ranges, prefs, new_dates)
     # + 5 present.info pet cases (evals/authoring/cases_pets.py)
     # + 12 location / best-time / named-place cases (evals/authoring/cases_location.py)
-    assert len(CASES) == 64
+    # + 5 held-out-2 cases: no_hostel, trains in a budget, price_includes, other places (cases_holdout2.py)
+    assert len(CASES) == 69
     cats = Counter(load(p)["category"] for p in CASES)
-    assert cats == {"A": 8, "A_photo": 5, "B": 10, "C": 3, "D": 3, "E": 10, "F": 9, "segments": 4, "edge": 7, "tone": 5}
+    assert cats == {"A": 9, "A_photo": 5, "B": 10, "C": 3, "D": 3, "E": 13, "F": 10, "segments": 4, "edge": 7, "tone": 5}
     assert len(SCENARIOS) == 25
     assert len(HOLDOUT) == 10
 

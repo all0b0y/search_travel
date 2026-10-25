@@ -6,6 +6,7 @@ check-out day, any origin airport x destination airport, direct or 1 stop) plus 
 With `month`: check-in is the first Saturday on/after max(1st of the month, today + 7) in that
 month (next year's month when this year's has passed); nights = `nights` or 7.
 Missing parts give `available: false` with the reason in `notes` (Russian); `currency_notes` is only for currency conversions.
+`stay_only`: flights are not searched; `available` / `total_rub` then mean the stay alone (a train quote adds fares).
 """
 from __future__ import annotations
 
@@ -38,7 +39,7 @@ def flight_party(ages: list[int], adults: int) -> tuple[int, int, int]:
 
 
 def quote_one(dest_id: str, origin: geo.City | None, origin_name: str, ci: date, co: date, adults: int,
-              ages: list[int], today: date) -> dict:
+              ages: list[int], today: date, stay_only: bool = False) -> dict:
     nights = (co - ci).days
     out = {"destination_id": dest_id, "available": False, "nights": nights, "check_in": ci.isoformat(),
            "check_out": co.isoformat(), "flight_price_rub": None, "stay_price_rub": None, "total_rub": None,
@@ -49,7 +50,9 @@ def quote_one(dest_id: str, origin: geo.City | None, origin_name: str, ci: date,
     if dest is None:
         notes.append("Направления нет в демо-каталоге")
         return out
-    if origin is None:
+    if stay_only:
+        pass
+    elif origin is None:
         notes.append(f"Город вылета «{origin_name}» не найден в демо-каталоге")
     elif not origin.iata:
         notes.append(f"В городе вылета «{origin.name_ru}» нет аэропорта в каталоге")
@@ -79,17 +82,17 @@ def quote_one(dest_id: str, origin: geo.City | None, origin_name: str, ci: date,
             notes.append("Нет свободных отелей 3–4★, взят самый доступный из найденных")
     else:
         notes.append("Нет свободных отелей для этого состава на эти даты")
-    if out["flight_price_rub"] is not None and out["stay_price_rub"] is not None:
+    if out["stay_price_rub"] is not None and (stay_only or out["flight_price_rub"] is not None):
         out["available"] = True
-        out["total_rub"] = out["flight_price_rub"] + out["stay_price_rub"]
+        out["total_rub"] = (out["flight_price_rub"] or 0) + out["stay_price_rub"]
     return out
 
 
 def quote(dest_ids: list[str], origin_city: str, month: int | None, dates: dict | None, nights: int | None,
-          adults: int, ages: list[int], today: date) -> list[dict]:
+          adults: int, ages: list[int], today: date, stay_only: bool = False) -> list[dict]:
     if dates:
         ci, co = date.fromisoformat(str(dates["check_in"])), date.fromisoformat(str(dates["check_out"]))
     else:
         ci, co = month_dates(int(month), nights or DEFAULT_NIGHTS, today)
     origin = geo.resolve_city(origin_city)
-    return [quote_one(d, origin, origin_city, ci, co, adults, ages, today) for d in dest_ids]
+    return [quote_one(d, origin, origin_city, ci, co, adults, ages, today, stay_only) for d in dest_ids]
