@@ -508,6 +508,8 @@ class Engine:
         record.update(ok=True, model=res.model, provider=res.provider, tokens=res.usage, latency_ms=res.latency_ms,
                       cost=res.usage.get("cost_usd"), retries=res.retries)
         ctx.trace["calls"].append(record)
+        if card.startswith("present."):
+            ctx.trace["notes"].extend(repair_output_ids(res.data, payload))
         return res.data
 
     # ------------------------------------------------------------ 7. present
@@ -779,6 +781,37 @@ _MONTH_STEMS = ("январ", "феврал", "март", "апрел", "ма[й
 _DAY_HINT_RE = re.compile(r"\d{1,2}(?:\s*[-–—]\s*\d{1,2})?\s*(?:январ|феврал|март|апрел|ма[йяе]|июн|июл|август|сентябр|"
                           r"октябр|ноябр|декабр)|\d{1,2}[./]\d{1,2}|\d{1,2}\s*-?\s*(?:го|е)(?![а-яё])|числ|"
                           r"начал|середин|конц|кон[её]ц|выходн|праздник|новогод", re.I)
+
+
+def repair_output_ids(out, payload):
+    """Ids in a present card's reply that miss exactly one input id by a typo («ras-al-khaima» for
+    «ras-al-khaimah») are repaired by code before the guard; changes `out` in place, returns trace notes."""
+    import difflib
+    if not isinstance(out, dict) or not isinstance(payload, dict):
+        return []
+    item_ids = [i["id"] for i in payload.get("items") or [] if isinstance(i, dict) and isinstance(i.get("id"), str)]
+    cand_ids = [c["candidate_id"] for c in payload.get("upsell_candidates") or []
+                if isinstance(c, dict) and isinstance(c.get("candidate_id"), str)]
+    notes = []
+
+    def fix(value, ids):
+        if not isinstance(value, str) or not ids or value in ids:
+            return value
+        close = difflib.get_close_matches(value, ids, n=2, cutoff=0.85)
+        if len(close) == 1:
+            notes.append(f"id {value} -> {close[0]} (typo repaired)")
+            return close[0]
+        return value
+
+    for item in out.get("items") or []:
+        if isinstance(item, dict) and "id" in item:
+            item["id"] = fix(item["id"], item_ids)
+    if out.get("recommended_id") is not None:
+        out["recommended_id"] = fix(out["recommended_id"], item_ids)
+    for u in out.get("upsell") or []:
+        if isinstance(u, dict) and "candidate_id" in u:
+            u["candidate_id"] = fix(u["candidate_id"], cand_ids)
+    return notes
 
 
 def normalize_understand(out, payload):

@@ -31,9 +31,11 @@
           "name": "order_paid"
         },
         {
-          "name": "order_action_done",
+          "name": "cart_has_kinds",
           "args": {
-            "kind": "add_transfer"
+            "kinds": [
+              "transfer"
+            ]
           }
         }
       ],

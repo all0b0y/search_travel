@@ -224,3 +224,13 @@ def test_normalize_understand_fixes_ref_kind_and_month():
            "refs": []}
     normalize_understand(out, {"message": "в январе на 10 ночей к морю", "shown": []})
     assert out["patch"]["set"] == {"dates.month": 1, "dates.nights": 10}
+
+
+def test_repair_output_ids_fixes_a_single_near_miss_only():
+    from agent.engine import repair_output_ids
+    payload = {"items": [{"id": "ras-al-khaimah"}, {"id": "dubai"}, {"id": "custom-1"}, {"id": "custom-2"}]}
+    out = {"items": [{"id": "ras-al-khaima"}, {"id": "custom-3"}], "recommended_id": "ras-al-khaima"}
+    notes = repair_output_ids(out, payload)
+    assert out["items"][0]["id"] == "ras-al-khaimah" and out["recommended_id"] == "ras-al-khaimah"
+    assert out["items"][1]["id"] == "custom-3"      # close to two ids: left for the guard
+    assert len(notes) == 2
