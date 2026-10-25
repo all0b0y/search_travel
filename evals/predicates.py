@@ -130,6 +130,11 @@ def _transport_steps(state):
 
 
 def _stay_step(state):
+    # after an after-purchase change (dates moved) the order is the truth; the chosen variant keeps the old dates
+    if state.order and state.order.get("status") == "changed":
+        item = next((i for i in state.order.get("items") or [] if i.get("kind") == "hotel"), None)
+        if item:
+            return {"type": "stay", "start": item.get("start"), "end": item.get("end"), "title": item.get("title") or ""}
     if state.chosen:
         stay = next((s for s in state.chosen["steps"] if s["type"] == "stay"), None)
         if stay:
