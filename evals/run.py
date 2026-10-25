@@ -511,7 +511,8 @@ def run_scenario(scenario, run_index, engine, persona, run_dir, set_name, lookup
     summary = {
         "scenario_id": scenario["id"], "packet": packet or scenario["id"], "category": scenario["category"],
         "set": set_name, "run_index": run_index, "turns": len(responses), "end_reason": end_reason,
-        "paid": (state.order or {}).get("status") == "paid",
+        # a paid order whose dates were then changed is still a completed purchase (status `changed`)
+        "paid": (state.order or {}).get("status") in ("paid", "changed"),
         "first_rec": bool(cards.get("destinations") or cards.get("variants")),
         "touches_to_cart": touches_to_cart, "touches_total": touches,
         "must": must, "must_ok": sum(1 for m in must if m["ok"]), "must_total": len(must),
