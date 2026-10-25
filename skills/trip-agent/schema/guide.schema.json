@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "guide",
+  "description": "Guide mode (AGENT_PLAN.md decisions 23-26): either tool calls (code runs them and asks again) or the reply.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["calls", "reply"],
+  "properties": {
+    "calls": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tool", "args"],
+        "properties": {
+          "tool": {"enum": ["rebuild", "find_savings", "check_road", "find_destinations", "place_info", "compare"]},
+          "args": {"type": "object"}
+        }
+      }
+    },
+    "reply": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["message", "show", "recommended_id", "question"],
+      "properties": {
+        "message": {"type": "string", "minLength": 1, "maxLength": 1600},
+        "show": {"enum": ["variants", "destinations", "comparison", "none"]},
+        "recommended_id": {"type": ["string", "null"]},
+        "question": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["text", "choices"],
+          "properties": {
+            "text": {"type": "string", "minLength": 1, "maxLength": 200},
+            "field": {"type": ["string", "null"]},
+            "choices": {
+              "type": "array",
+              "maxItems": 4,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["label"],
+                "properties": {"label": {"type": "string", "minLength": 1, "maxLength": 40}, "value": {}}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

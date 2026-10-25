@@ -89,11 +89,16 @@ class SkillPackage:
     lessons: str = ""
     readme: str = field(default="", repr=False)
     place_confirm: dict = field(default_factory=dict)   # questions.json "place_confirm" (photo place question)
+    # cards outside turns.json routes: `guide` (guide mode, decisions 23-26) — prompt guide.md, schema
+    # schema/guide.schema.json, thinking / temperature / max_tokens from rules.json "guide"
+    extra_cards: dict = field(default_factory=dict)
 
     def card(self, name) -> Card:
-        if name not in self.cards:
-            raise KeyError(f"unknown card: {name}")
-        return self.cards[name]
+        if name in self.cards:
+            return self.cards[name]
+        if name in self.extra_cards:
+            return self.extra_cards[name]
+        raise KeyError(f"unknown card: {name}")
 
     def system_prompt(self, name):
         """Card prompt + voice.md (when the card has voice) + the output schema reminder."""
@@ -344,6 +349,29 @@ def _check_rules(data):
         _fail(f, "sensitivity.price_delta_pct must be a number")
 
 
+GUIDE_DEFAULTS = {"thinking": "low", "temperature": None, "max_tokens": 1800}
+
+
+def _load_guide_card(root, rules):
+    """The `guide` card (agent/guide.py) when guide.md and its schema exist; settings from rules.json "guide"."""
+    if not (root / "guide.md").is_file():
+        return {}
+    spec = {**GUIDE_DEFAULTS, **{k: v for k, v in (rules.get("guide") or {}).items() if k in GUIDE_DEFAULTS}}
+    if spec["thinking"] not in THINKING:
+        _fail("rules.json", f"guide.thinking must be one of {THINKING}")
+    temp = spec["temperature"]
+    if temp is not None and (isinstance(temp, bool) or not isinstance(temp, (int, float)) or not 0 <= temp <= 2):
+        _fail("rules.json", "guide.temperature must be a number in 0..2")
+    if not isinstance(spec["max_tokens"], int) or spec["max_tokens"] <= 0:
+        _fail("rules.json", "guide.max_tokens must be a positive integer")
+    schema = _read_json(root, "schema/guide.schema.json")
+    _check_schema("schema/guide.schema.json", schema)
+    return {"guide": Card(name="guide", prompt_file="guide.md", prompt=_read_text(root, "guide.md", "guide"),
+                          schema_file="schema/guide.schema.json", schema=schema, thinking=spec["thinking"],
+                          max_tokens=spec["max_tokens"], voice=True,
+                          temperature=float(temp) if temp is not None else None)}
+
+
 def load_skill(path="skills/trip-agent", step_names=STEP_NAMES) -> SkillPackage:
     """Load the package. A relative path is tried from the cwd, then from the repository root."""
     root = Path(path)
@@ -369,4 +397,5 @@ def load_skill(path="skills/trip-agent", step_names=STEP_NAMES) -> SkillPackage:
     readme = (root / "README.md").read_text(encoding="utf-8") if (root / "README.md").is_file() else ""
     return SkillPackage(root=root, cards=cards, routes=routes, voice=voice, questions=questions["questions"],
                         segments=segments["segments"], upsell=upsell, rules=rules, lessons=lessons, readme=readme,
-                        place_confirm=questions.get("place_confirm") or {})
+                        place_confirm=questions.get("place_confirm") or {},
+                        extra_cards=_load_guide_card(root, rules))

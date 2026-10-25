@@ -272,5 +272,23 @@
     "ничего\\s+(?:больше|кроме)",
     "^\\s*(?:только|лишь)\\s+(?:машин|авто|виз|страхов|экскурс|круиз)",
     "\\bтолько\\s+(?:машин|авто|виз|страхов|экскурс|круиз)\\w*\\b"
-  ]
+  ],
+  "guide": {
+    "thinking": "low",
+    "temperature": 0.6,
+    "max_tokens": 1800,
+    "turn_budget_s": 15,
+    "fallback_reserve_s": 3,
+    "max_tool_rounds": 2,
+    "max_calls_per_round": 3,
+    "max_context_chars": 24000,
+    "history_exchanges": 4,
+    "agent_text_chars": 300,
+    "message_chars": [40, 1100],
+    "max_questions": 1,
+    "savings_shift_days": 3,
+    "savings_places": 3,
+    "auto_tools": {"cheaper": "find_savings"},
+    "cards": ["present.variants", "present.update", "present.destinations", "present.compare", "present.info", "present.fallback"]
+  }
 }

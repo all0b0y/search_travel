@@ -188,6 +188,7 @@ class Engine:
         ctx.__dict__["sig_before"] = variant_signature(session.variants)
         ctx.trace["stage_path"].append(session.stage)
         ctx.trace["flags"] = self.flags.as_dict()
+        ctx.__dict__["turn_started"] = started
         try:
             self._run_turn(ctx)
         except StepError as exc:
@@ -219,6 +220,9 @@ class Engine:
 
     def _run_turn(self, ctx):
         s = ctx.session
+        if getattr(self.flags, "guide", False) and not ctx.action and ctx.text:
+            from .guide import screen_snapshot   # guide mode: what the person saw before this turn
+            ctx.__dict__["guide_screen"] = screen_snapshot(s)
         merge_prefetched(ctx)
         route_kw = {}
         if ctx.action:
@@ -271,19 +275,47 @@ class Engine:
         ctx.trace["route"] = route.id or f"routes[{route.index}]"
         if route.present == "present.fallback":
             ctx.fallback_reason = ctx.intent if ctx.intent in ("smalltalk", "out_of_scope") else "unknown"
+        guide_on = False
+        if getattr(self.flags, "guide", False):
+            from .guide import eligible
+            guide_on = eligible(self, ctx, route)
+        failure = None
         for name in route.steps:
             if ctx.stop:
                 break
             t0 = time.perf_counter()
-            STEP_REGISTRY[name](ctx)
+            try:
+                STEP_REGISTRY[name](ctx)
+            except StepError as exc:
+                if not guide_on or exc.code != "no_data":
+                    raise
+                failure = exc   # guide mode: a dead end of the default plan is the guide's to solve
+                ctx.trace["notes"].append(f"default plan failed at {name}: {exc.message[:120]}")
+                break
             ctx.trace["steps"].append(name)
             ctx.trace["timings_ms"][name] = round((time.perf_counter() - t0) * 1000, 1)
-        if ctx.present == "present.update" and not ctx.stop:
+        if ctx.present == "present.update" and not ctx.stop and failure is None:
             self._check_noop_rebuild(ctx)
-        if ctx.present and not ctx.message and not ctx.stop:
+        if guide_on and not ctx.stop:
+            self._guide(ctx, failure)
+        elif ctx.present and not ctx.message and not ctx.stop:
             self._present(ctx)
         if ctx.present in STAGE_OF_CARD and not ctx.error and (ctx.variants or ctx.destination_items):
             s.stage = STAGE_OF_CARD[ctx.present]
+
+    def _guide(self, ctx, failure):
+        """Guide mode (agent/guide.py) on the default plan's results; on any guide failure the pipeline path:
+        the default plan's code answer, its dead end (the StepError again) or its present card."""
+        from .guide import run_guide
+        code_message = ctx.message
+        ctx.message = None
+        if run_guide(self, ctx, failure=failure, code_message=code_message):
+            return
+        ctx.message = code_message
+        if failure is not None:
+            raise failure
+        if ctx.present and not ctx.message:
+            self._present(ctx)
 
     # ------------------------------------------------------------ 1. actions
     def _map_action(self, ctx):
@@ -842,7 +874,8 @@ class Engine:
         s.add_trace({"turn": s.turn, "route": t["route"], "stage_path": t["stage_path"], "steps": t["steps"],
                      "calls": t["calls"], "budget": t["budget"], "hooks": t["hooks"], "jev": t["jev"],
                      "tools": t["tools"], "timings_ms": t["timings_ms"], "notes": t["notes"], "errors": t["errors"],
-                     "degraded": ctx.degraded, "error": ctx.error})
+                     "degraded": ctx.degraded, "error": ctx.error,
+                     **({"guide": t["guide"]} if t.get("guide") is not None else {})})
         self.store.put(s)
 
 

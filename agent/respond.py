@@ -696,7 +696,7 @@ def debug_out(ctx):
             "flags": {k: v for k, v in ctx.flags.as_dict().items()},
             "route": t.get("route"), "steps": list(t["steps"]), "tools": list(t["tools"]),
             "budget": dict(t["budget"]), "notes": list(t["notes"]), "errors": list(t["errors"]),
-            "degraded": ctx.degraded}
+            "degraded": ctx.degraded, **({"guide": t["guide"]} if t.get("guide") is not None else {})}
 
 
 def build_response(ctx):
