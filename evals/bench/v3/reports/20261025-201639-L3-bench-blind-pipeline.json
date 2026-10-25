@@ -1,0 +1,2125 @@
+{
+  "run_id": "20261025-201639-L3-bench-blind-pipeline",
+  "level": 3,
+  "set": "bench",
+  "model": "flash",
+  "flags": "stage1",
+  "flags_enabled": [],
+  "dry_run": false,
+  "persona": "claude",
+  "started_at": "2026-10-25T20:16:39+03:00",
+  "run_dir": "evals/bench/v3/runs/20261025-201639-L3-bench-blind-pipeline",
+  "argv": [
+    "--level",
+    "3",
+    "--set",
+    "bench",
+    "--bench",
+    "evals/bench/v3",
+    "--flags",
+    "stage1",
+    "--model",
+    "flash",
+    "--parallel",
+    "3",
+    "--tag",
+    "blind-pipeline"
+  ],
+  "policy": {},
+  "tag": "blind-pipeline",
+  "scenarios": [
+    {
+      "scenario_id": "bench_01_nursery",
+      "packet": "bench_01_nursery",
+      "category": "family",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 8,
+      "end_reason": "persona_stop_failed",
+      "paid": false,
+      "first_rec": true,
+      "touches_to_cart": 5,
+      "touches_total": 8,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: pending_payment"
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Светлогорск"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2,
+            "children_ages": [
+              5,
+              0
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "brief_has_constraint",
+          "args": {
+            "token": "crib"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "brief_has_constraint",
+          "args": {
+            "token": "kitchen"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 5,
+      "connection_errors": 3,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        3,
+        2
+      ],
+      "latencies_ms": [
+        6260,
+        6242,
+        3382,
+        4865,
+        18,
+        14,
+        12666,
+        5636
+      ],
+      "cost_usd": 0.009464466000000001,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 13
+      },
+      "served_providers": {
+        "DeepSeek": 13
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 8
+      },
+      "persona_ms_p50": 4910.0,
+      "persona_cost_usd": 0.501482,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 200120,
+        "chosen_variant": "comfort",
+        "stage": "selection"
+      }
+    },
+    {
+      "scenario_id": "bench_02_decembersea",
+      "packet": "bench_02_decembersea",
+      "category": "couple",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 7,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 5,
+      "touches_total": 7,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Хургада",
+              "Рас-эль-Хайма"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "direct_flights_only",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 220000
+          },
+          "ok": true,
+          "detail": "total 132350"
+        },
+        {
+          "name": "brief_traits_any",
+          "args": {
+            "traits": [
+              "sea",
+              "beach"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        6246,
+        5363,
+        4393,
+        9119,
+        63,
+        57,
+        9
+      ],
+      "cost_usd": 0.003729456,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 8
+      },
+      "served_providers": {
+        "DeepSeek": 8
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 6
+      },
+      "persona_ms_p50": 4429.5,
+      "persona_cost_usd": 0.261975,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 132350,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_03_pskovdeal",
+      "packet": "bench_03_pskovdeal",
+      "category": "budget",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 7,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 7,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Псков"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 60000
+          },
+          "ok": true,
+          "detail": "total 5960"
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "train"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "brief_has_constraint",
+          "args": {
+            "token": "no_hostel"
+          },
+          "ok": false,
+          "detail": "constraint no_hostel missing"
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        0,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        6460,
+        10451,
+        16,
+        10479,
+        45,
+        13,
+        11
+      ],
+      "cost_usd": 0.005310354,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 1,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 6
+      },
+      "served_providers": {
+        "DeepSeek": 6
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 6
+      },
+      "persona_ms_p50": 4581.0,
+      "persona_cost_usd": 0.322922,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 5960,
+        "chosen_variant": "custom-2",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_04_snowmates",
+      "packet": "bench_04_snowmates",
+      "category": "friends",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 4,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Архыз"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 5,
+            "children_ages": []
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "direct_flights_only",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "brief_has_constraint",
+          "args": {
+            "token": "no_dorm"
+          },
+          "ok": false,
+          "detail": "constraint no_dorm missing"
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        10456,
+        7348,
+        4390,
+        18,
+        15,
+        16
+      ],
+      "cost_usd": 0.003418104,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 6
+      },
+      "served_providers": {
+        "DeepSeek": 6
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 10288,
+      "persona_cost_usd": 0.193032,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 235140,
+        "chosen_variant": "comfort",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_05_workvisit",
+      "packet": "bench_05_workvisit",
+      "category": "business",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 5,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 5,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Москва"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "direct_flights_only",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "stay_starts_on",
+          "args": {
+            "day": "2027-01-18"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "free_cancellation",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        4662,
+        7458,
+        9,
+        7,
+        6
+      ],
+      "cost_usd": 0.001205526,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 4
+      },
+      "served_providers": {
+        "DeepSeek": 4
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 4
+      },
+      "persona_ms_p50": 6299.0,
+      "persona_cost_usd": 0.092823,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 84780,
+        "chosen_variant": "comfort",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_06_basenjitrain",
+      "packet": "bench_06_basenjitrain",
+      "category": "pets",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 7,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 4,
+      "touches_total": 7,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Казань"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "train"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "hotel_allows_pets",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "brief_has_constraint",
+          "args": {
+            "token": "pet:dog"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        2,
+        0,
+        2,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        6094,
+        4061,
+        5430,
+        17,
+        3733,
+        13,
+        11
+      ],
+      "cost_usd": 0.005155134,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 8
+      },
+      "served_providers": {
+        "DeepSeek": 8
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 6
+      },
+      "persona_ms_p50": 6904.0,
+      "persona_cost_usd": 0.283411,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 33340,
+        "chosen_variant": "comfort",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_07_catweekend",
+      "packet": "bench_07_catweekend",
+      "category": "pets",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 5,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 5,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Кострома"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "train"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "hotel_allows_pets",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "brief_has_constraint",
+          "args": {
+            "token": "pet:cat"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        5089,
+        4117,
+        15,
+        11,
+        10
+      ],
+      "cost_usd": 0.002028876,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 4
+      },
+      "served_providers": {
+        "DeepSeek": 4
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 4
+      },
+      "persona_ms_p50": 6235.5,
+      "persona_cost_usd": 0.119883,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 27630,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_08_stepfreerest",
+      "packet": "bench_08_stepfreerest",
+      "category": "seniors",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 5,
+      "end_reason": "persona_stop_failed",
+      "paid": false,
+      "first_rec": true,
+      "touches_to_cart": null,
+      "touches_total": 5,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: no order"
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Кисловодск"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "brief_has_constraint",
+          "args": {
+            "token": "accessible"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "breakfast"
+          },
+          "ok": false,
+          "detail": "no data: meals of the chosen hotel"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2,
+            "children_ages": []
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "latencies_ms": [
+        6214,
+        5937,
+        5743,
+        5252,
+        5347
+      ],
+      "cost_usd": 0.007789548000000001,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 10
+      },
+      "served_providers": {
+        "DeepSeek": 10
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 5920,
+      "persona_cost_usd": 0.333376,
+      "profile_injected": true,
+      "final": {
+        "total_rub": null,
+        "chosen_variant": null,
+        "stage": "selection"
+      }
+    },
+    {
+      "scenario_id": "bench_09_junelake",
+      "packet": "bench_09_junelake",
+      "category": "solo",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 10,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 8,
+      "touches_total": 10,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Байкал (Листвянка)"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "direct_flights_only",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "brief_traits_any",
+          "args": {
+            "traits": [
+              "lake",
+              "forest",
+              "nature"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "dates_within",
+          "args": {
+            "start": "2027-06-01",
+            "end": "2027-06-30"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        1,
+        2,
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        5437,
+        3648,
+        6079,
+        6309,
+        10370,
+        5695,
+        5501,
+        47,
+        16,
+        21
+      ],
+      "cost_usd": 0.011387861999999999,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 13
+      },
+      "served_providers": {
+        "DeepSeek": 13
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 9
+      },
+      "persona_ms_p50": 5299,
+      "persona_cost_usd": 0.755447,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 55430,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_10_firstmountains",
+      "packet": "bench_10_firstmountains",
+      "category": "other",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 4,
+      "end_reason": "persona_stop_failed",
+      "paid": false,
+      "first_rec": true,
+      "touches_to_cart": null,
+      "touches_total": 4,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: no order"
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Домбай",
+              "Архыз"
+            ]
+          },
+          "ok": false,
+          "detail": "no data: destination in the brief"
+        },
+        {
+          "name": "direct_flights_only",
+          "args": {},
+          "ok": false,
+          "detail": "no data: no flight steps in the chosen variant"
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 4,
+            "max": 6
+          },
+          "ok": false,
+          "detail": "7 nights not in 4..6"
+        },
+        {
+          "name": "dates_within",
+          "args": {
+            "start": "2027-02-08",
+            "end": "2027-02-28"
+          },
+          "ok": false,
+          "detail": "no data: stay dates"
+        }
+      ],
+      "must_ok": 0,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        3,
+        2,
+        2,
+        2
+      ],
+      "latencies_ms": [
+        11834,
+        5752,
+        10920,
+        5936
+      ],
+      "cost_usd": 0.005433078,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 1,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 9
+      },
+      "served_providers": {
+        "DeepSeek": 9
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 4
+      },
+      "persona_ms_p50": 4526.5,
+      "persona_cost_usd": 0.146745,
+      "profile_injected": true,
+      "final": {
+        "total_rub": null,
+        "chosen_variant": null,
+        "stage": "inspiration"
+      }
+    },
+    {
+      "scenario_id": "bench_11_springtaste",
+      "packet": "bench_11_springtaste",
+      "category": "couple",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 4,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Ереван",
+              "Дилижан"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "direct_flights_only",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 160000
+          },
+          "ok": true,
+          "detail": "total 108170"
+        },
+        {
+          "name": "dates_within",
+          "args": {
+            "start": "2027-04-01",
+            "end": "2027-04-30"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        1,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        5797,
+        3950,
+        4900,
+        16,
+        18,
+        10
+      ],
+      "cost_usd": 0.003952626000000001,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 5
+      },
+      "served_providers": {
+        "DeepSeek": 5
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 4245,
+      "persona_cost_usd": 0.237625,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 108170,
+        "chosen_variant": "comfort",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_12_islandrethink",
+      "packet": "bench_12_islandrethink",
+      "category": "budget",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 12,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": false,
+      "touches_to_cart": 10,
+      "touches_total": 12,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Владимир"
+            ]
+          },
+          "ok": false,
+          "detail": "destination 'Нижний Новгород' not in ['Владимир']"
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 65000
+          },
+          "ok": true,
+          "detail": "total 28990"
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "train"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 2,
+            "max": 3
+          },
+          "ok": true,
+          "detail": "2 nights"
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        1,
+        2,
+        2,
+        1,
+        1,
+        1,
+        2,
+        1,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        2236,
+        3176,
+        6516,
+        1423,
+        1822,
+        1154,
+        4620,
+        4352,
+        5785,
+        56,
+        81,
+        60
+      ],
+      "cost_usd": 0.006361482,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 4,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 13
+      },
+      "served_providers": {
+        "DeepSeek": 13
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 11
+      },
+      "persona_ms_p50": 3588,
+      "persona_cost_usd": 0.484035,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 28990,
+        "chosen_variant": "cheapest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_13_movedorder",
+      "packet": "bench_13_movedorder",
+      "category": "aftercare",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "persona_stop_done",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Ярославль"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "train"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "dates_within",
+          "args": {
+            "start": "2027-03-11",
+            "end": "2027-03-16"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "order_action_done",
+          "args": {
+            "kind": "change_dates"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        0,
+        0,
+        2,
+        2
+      ],
+      "latencies_ms": [
+        5026,
+        9,
+        8,
+        7,
+        3311,
+        2684
+      ],
+      "cost_usd": 0.0025811399999999996,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 6
+      },
+      "served_providers": {
+        "DeepSeek": 6
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 6
+      },
+      "persona_ms_p50": 4561.0,
+      "persona_cost_usd": 0.213694,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 17060,
+        "chosen_variant": "fastest",
+        "stage": "aftercare"
+      }
+    },
+    {
+      "scenario_id": "bench_14_shorternizhny",
+      "packet": "bench_14_shorternizhny",
+      "category": "budget",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 5,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 5,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Нижний Новгород"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "train"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 75000
+          },
+          "ok": true,
+          "detail": "total 21190"
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 3,
+            "max": 3
+          },
+          "ok": true,
+          "detail": "3 nights"
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        5027,
+        4922,
+        15,
+        11,
+        13
+      ],
+      "cost_usd": 0.0033794100000000002,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 4
+      },
+      "served_providers": {
+        "DeepSeek": 4
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 4
+      },
+      "persona_ms_p50": 3874.5,
+      "persona_cost_usd": 0.159536,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 21190,
+        "chosen_variant": "comfort",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_15_earlyminsk",
+      "packet": "bench_15_earlyminsk",
+      "category": "aftercare",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 5,
+      "end_reason": "persona_stop_done",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 5,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Минск"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "free_cancellation",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2,
+            "children_ages": []
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "order_action_done",
+          "args": {
+            "kind": "early_checkin"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        0,
+        0,
+        1
+      ],
+      "latencies_ms": [
+        5226,
+        8,
+        6,
+        6,
+        1495
+      ],
+      "cost_usd": 0.00160668,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 3
+      },
+      "served_providers": {
+        "DeepSeek": 3
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 2853,
+      "persona_cost_usd": 0.155574,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 120730,
+        "chosen_variant": "comfort",
+        "stage": "aftercare"
+      }
+    },
+    {
+      "scenario_id": "bench_16_tashkentpickup",
+      "packet": "bench_16_tashkentpickup",
+      "category": "aftercare",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 7,
+      "end_reason": "persona_stop_failed",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 7,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Ташкент"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "direct_flights_only",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "has_transfer",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "order_action_done",
+          "args": {
+            "kind": "add_transfer"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "latencies_ms": [
+        5379,
+        7,
+        6,
+        5,
+        1725,
+        1263,
+        1568
+      ],
+      "cost_usd": 0.002212992,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 5
+      },
+      "served_providers": {
+        "DeepSeek": 5
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 7
+      },
+      "persona_ms_p50": 3583,
+      "persona_cost_usd": 0.245107,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 39080,
+        "chosen_variant": "custom-2",
+        "stage": "aftercare"
+      }
+    },
+    {
+      "scenario_id": "bench_17_tbilisiconnection",
+      "packet": "bench_17_tbilisiconnection",
+      "category": "couple",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 4,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Тбилиси"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "flight"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "agent_said",
+          "args": {
+            "pattern": "пересад|стыков"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "cart_has_kinds",
+          "args": {
+            "kinds": [
+              "flight",
+              "hotel"
+            ],
+            "exactly": false
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        1,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        4502,
+        3067,
+        3020,
+        12,
+        17,
+        15
+      ],
+      "cost_usd": 0.0027266639999999997,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 5
+      },
+      "served_providers": {
+        "DeepSeek": 5
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 9105,
+      "persona_cost_usd": 0.156552,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 89590,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_18_railfamily",
+      "packet": "bench_18_railfamily",
+      "category": "family",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 7,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 7,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Иркутск"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "train"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2,
+            "children_ages": [
+              15,
+              7
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "dates_within",
+          "args": {
+            "start": "2027-06-05",
+            "end": "2027-06-18"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        0,
+        0,
+        2,
+        2,
+        0
+      ],
+      "latencies_ms": [
+        5589,
+        4828,
+        24,
+        18,
+        11918,
+        12745,
+        20
+      ],
+      "cost_usd": 0.004675998,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 8
+      },
+      "served_providers": {
+        "DeepSeek": 8
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 6
+      },
+      "persona_ms_p50": 9642.0,
+      "persona_cost_usd": 0.28706,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 105440,
+        "chosen_variant": "cheapest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_19_arcticbaggage",
+      "packet": "bench_19_arcticbaggage",
+      "category": "solo",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 9,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 9,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Териберка"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "flight"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "free_cancellation",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "agent_said",
+          "args": {
+            "pattern": "багаж|ручн\\w*\\s+клад"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        2,
+        2,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        5218,
+        14,
+        15717,
+        11935,
+        6663,
+        5834,
+        12,
+        13,
+        11
+      ],
+      "cost_usd": 0.004804566,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 10
+      },
+      "served_providers": {
+        "DeepSeek": 10
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 8
+      },
+      "persona_ms_p50": 10386.5,
+      "persona_cost_usd": 0.360477,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 45300,
+        "chosen_variant": "custom-2",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "bench_20_bukharareschedule",
+      "packet": "bench_20_bukharareschedule",
+      "category": "couple",
+      "set": "bench",
+      "run_index": 0,
+      "turns": 5,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 5,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "Бухара"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "flight"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "dates_within",
+          "args": {
+            "start": "2027-05-17",
+            "end": "2027-05-23"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 4,
+            "max": 4
+          },
+          "ok": true,
+          "detail": "4 nights"
+        }
+      ],
+      "must_ok": 5,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        14641,
+        14592,
+        32,
+        33,
+        30
+      ],
+      "cost_usd": 0.0030576600000000002,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 4
+      },
+      "served_providers": {
+        "DeepSeek": 4
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 4
+      },
+      "persona_ms_p50": 8783.0,
+      "persona_cost_usd": 0.155732,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 96390,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    }
+  ],
+  "metrics": {
+    "scenarios": 20,
+    "completion_rate": 0.85,
+    "first_rec_rate": 0.95,
+    "reached_cart_rate": 0.9,
+    "touches_to_cart_mean": 3.888888888888889,
+    "touches_to_cart_p50": 3.0,
+    "touches_to_cart_max": 10,
+    "hidden_must_rate": 0.89,
+    "scenarios_all_must_rate": 0.7,
+    "connection_errors_total": 3,
+    "calls_per_turn_mean": 1.0909090909090908,
+    "calls_per_turn_max": 3,
+    "latency_p50_ms": 3121.5,
+    "latency_p95_ms": 11871.800000000001,
+    "cost_usd_total": 0.09028162199999999,
+    "persona_cost_usd_total": 5.466488,
+    "jev_calls": 0,
+    "jev_fallback_rate": null,
+    "fallback_card_rate": 0.0,
+    "response_schema_error_turns": 0,
+    "degraded_turns": 2,
+    "error_response_turns": 4,
+    "end_reasons": {
+      "persona_stop_failed": 4,
+      "paid": 14,
+      "persona_stop_done": 2
+    },
+    "profiles_injected": 20,
+    "served_models": {
+      "deepseek/deepseek-v4.1-flash-1017": 144
+    },
+    "served_providers": {
+      "DeepSeek": 144
+    },
+    "persona_models": {
+      "claude-sonnet-5-5": 118
+    }
+  },
+  "finished_at": "2026-10-25T20:25:12+03:00",
+  "notes": [],
+  "thresholds": [
+    {
+      "metric": "first_rec_rate",
+      "label": "первая рекомендация в первом ответе ≥ 80 %",
+      "value": 0.95,
+      "op": ">=",
+      "threshold": 0.8,
+      "pass": true
+    },
+    {
+      "metric": "touches_to_cart_mean",
+      "label": "касаний до готовой корзины ≤ 4 (среднее)",
+      "value": 3.888888888888889,
+      "op": "<=",
+      "threshold": 4.0,
+      "pass": true
+    },
+    {
+      "metric": "hidden_must_rate",
+      "label": "скрытые требования персон ≥ 90 %",
+      "value": 0.89,
+      "op": ">=",
+      "threshold": 0.9,
+      "pass": false
+    },
+    {
+      "metric": "connection_errors_total",
+      "label": "ошибки стыковок = 0",
+      "value": 3,
+      "op": "<=",
+      "threshold": 0,
+      "pass": false
+    }
+  ],
+  "green": false,
+  "report_paths": {
+    "json": "evals/bench/v3/reports/20261025-201639-L3-bench-blind-pipeline.json",
+    "md": "evals/bench/v3/reports/20261025-201639-L3-bench-blind-pipeline.md"
+  }
+}

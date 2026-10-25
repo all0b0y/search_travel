@@ -1,0 +1,535 @@
+{
+  "run_id": "20261025-201546-L2-bench-blind",
+  "level": 2,
+  "set": "bench",
+  "model": "flash",
+  "flags": "stage1",
+  "flags_enabled": [],
+  "dry_run": false,
+  "persona": null,
+  "started_at": "2026-10-25T20:15:46+03:00",
+  "run_dir": "evals/bench/v3/runs/20261025-201546-L2-bench-blind",
+  "argv": [
+    "--level",
+    "2",
+    "--set",
+    "bench",
+    "--bench",
+    "evals/bench/v3",
+    "--model",
+    "flash",
+    "--parallel",
+    "6",
+    "--tag",
+    "blind"
+  ],
+  "policy": {},
+  "tag": "blind",
+  "cases": [
+    {
+      "id": "bu_01_fortythousand",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 7245,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_02_perperson",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1322,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_03_babyvoice",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1261,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_04_whippet",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1151,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_05_devonstay",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1237,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_06_nosteps",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1212,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_07_ownstove",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1364,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_08_threemeals",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1336,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_09_twomeals",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1144,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_10_nomeals",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1427,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_11_flexiblerate",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1284,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_12_nonstopday",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 1411,
+      "failures": [
+        "run 0: path_equals /patch/set/prefs.transport: /patch/set/prefs.transport is absent",
+        "run 1: path_equals /patch/set/prefs.transport: /patch/set/prefs.transport is absent",
+        "run 2: path_equals /patch/set/prefs.transport: /patch/set/prefs.transport is absent",
+        "run 3: path_equals /patch/set/prefs.transport: /patch/set/prefs.transport is absent",
+        "run 4: path_equals /patch/set/prefs.transport: /patch/set/prefs.transport is absent"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "bu_13_railslang",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1214,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_14_namedmosque",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1156,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_15_centerwalk",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1252,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_16_russiabeach",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1249,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_17_arrivalclock",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1307,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_18_monthboundary",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1525,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_19_fortnight",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1034,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_20_mayholidays",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1319,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_21_afternewyear",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1385,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_22_wiggleroom",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1307,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_23_winterwish",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1432,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_24_hotelonly",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1276,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_25_visacar",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1485,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_26_cruise",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1069,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_27_twodaysearlier",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1067,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_28_shortenbudget",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1307,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_29_junenotmay",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1346,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_30_secondcard",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1177,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_31_comparecards",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1195,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_32_baggagequestion",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1291,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_33_cancelquestion",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1236,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_34_simplerhotel",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1389,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_35_railsinstead",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1326,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_36_changedplace",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 3,
+      "full_pass": false,
+      "latency_p50_ms": 1309,
+      "failures": [
+        "run 1: path_equals /intent: /intent = 'new_trip', want 'refine'",
+        "run 3: path_equals /intent: /intent = 'new_trip', want 'refine'"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "bu_37_teenisachild",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1598,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_38_putincart",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 1182,
+      "failures": [
+        "run 0: path_equals /intent: /intent = 'choose', want 'cart'",
+        "run 1: path_equals /intent: /intent = 'choose', want 'cart'",
+        "run 2: path_equals /intent: /intent = 'choose', want 'cart'",
+        "run 3: path_equals /intent: /intent = 'choose', want 'cart'",
+        "run 4: path_equals /intent: /intent = 'choose', want 'cart'"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "bu_39_sightdistance",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1370,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_40_multicitytour",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 1301,
+      "failures": [
+        "run 0: path_equals /intent: /intent = 'new_trip', want 'out_of_scope'",
+        "run 1: path_equals /intent: /intent = 'new_trip', want 'out_of_scope'",
+        "run 2: path_equals /intent: /intent = 'new_trip', want 'out_of_scope'",
+        "run 3: path_equals /intent: /intent = 'new_trip', want 'out_of_scope'",
+        "run 4: path_equals /intent: /intent = 'new_trip', want 'out_of_scope'"
+      ],
+      "unsure": null
+    }
+  ],
+  "metrics": {
+    "cases_total": 40,
+    "cases_full_pass": 36,
+    "cases_full_pass_rate": 0.9,
+    "runs_total": 200,
+    "runs_passed": 183,
+    "runs_pass_rate": 0.915,
+    "llm_errors": 0,
+    "input_errors": 0,
+    "retries_total": 0,
+    "guard_reruns": 0,
+    "guard_rerun_reasons": [],
+    "latency_p50_ms": 1299.0,
+    "latency_p95_ms": 1984.9500000000005,
+    "input_tokens": 1562085,
+    "output_tokens": 12671,
+    "cost_usd_total": 0.02007470999999997,
+    "served_models": {
+      "deepseek/deepseek-v4.1-flash-1017": 200
+    },
+    "served_providers": {
+      "DeepSeek": 200
+    },
+    "by_category": {
+      "bench": "36/40"
+    }
+  },
+  "finished_at": "2026-10-25T20:16:38+03:00",
+  "notes": [],
+  "thresholds": [
+    {
+      "metric": "cases_full_pass_rate",
+      "label": "фазовые кейсы 5/5 (каждый кейс прошёл все прогоны)",
+      "value": 0.9,
+      "op": ">=",
+      "threshold": 1.0,
+      "pass": false
+    }
+  ],
+  "green": false,
+  "report_paths": {
+    "json": "evals/bench/v3/reports/20261025-201546-L2-bench-blind.json",
+    "md": "evals/bench/v3/reports/20261025-201546-L2-bench-blind.md"
+  }
+}
