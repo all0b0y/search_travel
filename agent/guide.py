@@ -300,6 +300,7 @@ class ToolSet:
 class GuideState:
     default_variants: list
     default_brief: object
+    screen_variants: list = field(default_factory=list)   # the session's variants (an info turn builds none)
     sets: list = field(default_factory=list)
     next_id: int = FIRST_TOOL_ID
     calls: int = 0
@@ -310,7 +311,8 @@ class GuideState:
         return vid
 
     def variant(self, vid):
-        for v in self.default_variants:
+        """-> (variant, its set: a ToolSet, or None for the default plan's / the screen's) or (None, None)."""
+        for v in self.default_variants or self.screen_variants:
             if v.id == vid:
                 return v, None
         for t in reversed(self.sets):
@@ -318,6 +320,9 @@ class GuideState:
                 if v.id == vid:
                     return v, t
         return None, None
+
+    def base_variants(self):
+        return self.default_variants or self.screen_variants
 
 
 def _sub_ctx(ctx, brief=None):
@@ -350,7 +355,7 @@ def _patch_of(args, allowed_set=ALLOWED_PATCH_PATHS):
 
 
 def _base_dates(state):
-    vs = state.default_variants
+    vs = state.base_variants()
     for v in vs:
         a, b = _dates_of(v)
         if a and b:
@@ -491,10 +496,10 @@ def tool_find_savings(engine, ctx, args, state, call):
         base_v, tset = state.variant(str(args["from_id"]))
         if base_v is None:
             raise ArgError(f"unknown variant id {args['from_id']}")
-        pool = tset.variants if tset else state.default_variants
+        pool = tset.variants if tset else state.base_variants()
         brief = (tset.briefs.get(base_v.id) or tset.brief) if tset else state.default_brief
     else:
-        pool = state.default_variants or list(ctx.session.variants)
+        pool = state.base_variants()
         brief = state.default_brief
     pool = [v for v in pool if not v.facts.get("no_transport")] or pool
     if not pool:
@@ -1023,6 +1028,11 @@ def _call(engine, ctx, payload, deadline, g, round_label, rerun_issues=None):
                           latency_ms=exc.latency_ms or round((time.perf_counter() - t0) * 1000))
             ctx.trace["calls"].append(record)
             raise GuideFailed(f"llm: {str(exc)[:200]}") from exc
+        except Exception as exc:   # noqa: BLE001 - a transport failure of the backend: the pipeline answers
+            record.update(ok=False, error=f"{type(exc).__name__}: {str(exc)[:200]}",
+                          latency_ms=round((time.perf_counter() - t0) * 1000))
+            ctx.trace["calls"].append(record)
+            raise GuideFailed(f"llm: {type(exc).__name__}: {str(exc)[:200]}") from exc
     finally:
         ex.shutdown(wait=False)
     record.update(ok=True, model=res.model, provider=res.provider, tokens=res.usage, latency_ms=res.latency_ms,
@@ -1063,8 +1073,8 @@ def resolve_show(ctx, reply, state, default_card):
                 return Plan(show, card), [issue("unknown_recommended", f"recommended_id {rec} is not a variant of "
                                                                        f"the default plan or a tool result")]
         else:
-            tset = None if state.default_variants else next((t for t in reversed(state.sets) if t.variants), None)
-        variants = tset.variants if tset is not None else state.default_variants
+            tset = None if state.base_variants() else next((t for t in reversed(state.sets) if t.variants), None)
+        variants = tset.variants if tset is not None else state.base_variants()
         if tset is not None and tset.tool == "find_savings" and rec:
             first = next(v for v in variants if v.id == rec)
             variants = [first] + [v for v in variants if v.id != rec][:2]
@@ -1252,13 +1262,14 @@ def run_guide(engine, ctx, failure=None, code_message=None):
     ctx.trace["guide"] = g
     screen = ctx.__dict__.get("guide_screen") or {"stage": ctx.session.stage}
     default_card = ctx.present
-    state = GuideState(default_variants=list(ctx.variants), default_brief=ctx.session.brief)
+    state = GuideState(default_variants=list(ctx.variants), default_brief=ctx.session.brief,
+                       screen_variants=list(ctx.session.variants))
     try:
         default = default_plan(engine, ctx, failure, code_message)
         tool_results = []
         # a wish whose tool is certain («подешевле» -> find_savings) runs before round 1: one model round less
         auto = [{"tool": t, "args": {}} for w, t in (cfg.get("auto_tools") or {}).items()
-                if w in (default.get("wishes") or []) and t in TOOL_FUNCS and state.default_variants]
+                if w in (default.get("wishes") or []) and t in TOOL_FUNCS and state.base_variants()]
         if auto:
             tool_results += [dict(r, auto=True) for r in run_tools(engine, ctx, auto[:1], state, deadline, g)]
         rounds = int(cfg["max_tool_rounds"])
