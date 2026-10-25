@@ -86,8 +86,8 @@
         "totals": {
           "rub": 44420,
           "door_to_door_hours": 47.1,
-          "out_hours": 23.0,
-          "back_hours": 24.1
+          "out_hours": null,
+          "back_hours": null
         },
         "steps": [
           {
@@ -231,10 +231,12 @@
           "back_car_class": "platzkart",
           "back_door_hours": 24.1,
           "out_days_before_checkin": 1,
+          "out_leave_ru": "выезд 9 июля — за день до заезда",
           "out_long_train": true,
           "out_on_road_ru": "23 ч",
           "out_road_ru": "туда поездом: отправление 9 июля в 06:05, прибытие 10 июля в 04:51, в пути 23 ч — выезжаете за день до заезда в отель",
           "back_days_after_checkout": 1,
+          "back_home_ru": "дома 18 июля",
           "back_long_train": true,
           "back_on_road_ru": "1 сутки",
           "back_road_ru": "обратно поездом: отправление 17 июля в 22:25, прибытие 18 июля в 21:58, в пути 1 сутки — дома на следующий день после выезда из отеля",
@@ -383,8 +385,8 @@
         "totals": {
           "rub": 46740,
           "door_to_door_hours": 46.7,
-          "out_hours": 23.0,
-          "back_hours": 23.7
+          "out_hours": null,
+          "back_hours": null
         },
         "steps": [
           {
@@ -528,10 +530,12 @@
           "back_car_class": "platzkart",
           "back_door_hours": 23.7,
           "out_days_before_checkin": 1,
+          "out_leave_ru": "выезд 9 июля — за день до заезда",
           "out_long_train": true,
           "out_on_road_ru": "23 ч",
           "out_road_ru": "туда поездом: отправление 9 июля в 06:05, прибытие 10 июля в 04:51, в пути 23 ч — выезжаете за день до заезда в отель",
           "back_days_after_checkout": 1,
+          "back_home_ru": "дома 18 июля",
           "back_long_train": true,
           "back_on_road_ru": "1 сутки",
           "back_road_ru": "обратно поездом: отправление 17 июля в 22:25, прибытие 18 июля в 21:58, в пути 1 сутки — дома на следующий день после выезда из отеля",
@@ -680,8 +684,8 @@
         "totals": {
           "rub": 77640,
           "door_to_door_hours": 46.6,
-          "out_hours": 22.9,
-          "back_hours": 23.7
+          "out_hours": null,
+          "back_hours": null
         },
         "steps": [
           {
@@ -828,10 +832,12 @@
           "back_car_class": "coupe",
           "back_door_hours": 23.7,
           "out_days_before_checkin": 1,
+          "out_leave_ru": "выезд 9 июля — за день до заезда",
           "out_long_train": true,
           "out_on_road_ru": "23 ч",
           "out_road_ru": "туда поездом: отправление 9 июля в 06:05, прибытие 10 июля в 04:51, в пути 23 ч — выезжаете за день до заезда в отель",
           "back_days_after_checkout": 1,
+          "back_home_ru": "дома 18 июля",
           "back_long_train": true,
           "back_on_road_ru": "1 сутки",
           "back_road_ru": "обратно поездом: отправление 17 июля в 22:25, прибытие 18 июля в 21:58, в пути 1 сутки — дома на следующий день после выезда из отеля",

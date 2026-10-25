@@ -98,7 +98,7 @@ def cases():
               pred("at_most_one_joke"), pred("money_risks_plain"), a("max_items", path="/upsell", max=0),
               a("path_equals", path="/recommended_id", value=insp["items"][0]["id"]),
               pred("mentions_any", words=[r"поезд"]), pred("mentions_any", words=[names]),
-              pred("mentions_any", words=[r"в\s+пути\s+(" + "|".join(long_road) + ")"]),
+              pred("mentions_any", words=[r"в\s+пути\s+(" + "|".join(long_road) + r"|больше\s+суток|более\s+суток)"]),
               a("regex_absent", path="/message", pattern=DECIMAL_ROAD),
               a("regex_absent", path="/message", pattern=r"ничего не укладывается"),
               pred("asks_at_most", n=len(insp.get("questions") or []))],

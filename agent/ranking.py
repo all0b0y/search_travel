@@ -1185,10 +1185,13 @@ def _long_leg_facts(f, c: Combo, check_in=None, check_out=None):
         if direction == "out" and check_in is not None and leg.dep.date() < check_in.date():
             n = (check_in.date() - leg.dep.date()).days
             f["out_days_before_checkin"] = n
+            # short ready clause the card copies as is (a long line gets paraphrased and loses the day)
+            f["out_leave_ru"] = f"выезд {day_month_ru(leg.dep)} — за {_days_word(n)} до заезда"
             line += f" — выезжаете за {_days_word(n)} до заезда в отель"
         if direction == "back" and check_out is not None and leg.arr.date() > check_out.date():
             n = (leg.arr.date() - check_out.date()).days
             f["back_days_after_checkout"] = n
+            f["back_home_ru"] = f"дома {day_month_ru(leg.arr)}"
             line += (" — дома на следующий день после выезда из отеля" if n == 1
                      else f" — дома через {_days_word(n)} после выезда из отеля")
         f[f"{direction}_long_train"] = True

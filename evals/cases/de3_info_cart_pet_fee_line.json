@@ -300,11 +300,11 @@
       },
       {
         "kind": "cart",
-        "id": "c_66771a942108",
+        "id": "c_7f10deefb482",
         "total_rub": 52130,
         "items": [
           {
-            "item_id": "ci_6ddb2c551008",
+            "item_id": "ci_98a21a8d6d23",
             "kind": "flight",
             "title": "Перелёт DME → AER, UN7545",
             "price_rub": 17990,
@@ -312,25 +312,25 @@
             "includes_ru": "в т.ч. собака в салоне — 2 250 ₽"
           },
           {
-            "item_id": "ci_acf98cff9a2a",
+            "item_id": "ci_6868f10773c4",
             "kind": "transfer",
             "title": "Трансфер (общественный транспорт): AER → «МореСолнцеАпарт»",
             "price_rub": 120
           },
           {
-            "item_id": "ci_4d4d8016021d",
+            "item_id": "ci_8055f779a060",
             "kind": "hotel",
             "title": "МореСолнцеАпарт: Студия, 3 ноч., без питания",
             "price_rub": 14890
           },
           {
-            "item_id": "ci_c74ef629bdef",
+            "item_id": "ci_c0ddd306748d",
             "kind": "transfer",
             "title": "Трансфер (такси): «МореСолнцеАпарт» → AER",
             "price_rub": 1370
           },
           {
-            "item_id": "ci_71dd7612eb5f",
+            "item_id": "ci_f7a23997f7a7",
             "kind": "flight",
             "title": "Перелёт AER → VKO, UN4865",
             "price_rub": 17760,
