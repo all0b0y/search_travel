@@ -154,7 +154,8 @@ def _fact(state, *names):
 # ---------------------------------------------------------------- predicates
 
 def order_paid(state):
-    if state.order and state.order.get("status") == "paid":
+    # "changed": a paid order after an after-purchase change (dates moved) is still paid
+    if state.order and state.order.get("status") in ("paid", "changed"):
         return _res(True)
     return _res(False, f"order status: {(state.order or {}).get('status', 'no order')}")
 

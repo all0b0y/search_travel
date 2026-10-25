@@ -493,7 +493,8 @@ class Engine:
         budget.update(flash_calls=ctx.flash_calls, limit=limit)
         system = rerun_system(self.skill.system_prompt(card), rerun_issues)
         req = LLMRequest(card=card, system=system, user=json.dumps(payload, ensure_ascii=False, default=str),
-                         schema=spec.schema, images=list(images), thinking=spec.thinking, max_tokens=spec.max_tokens)
+                         schema=spec.schema, images=list(images), thinking=spec.thinking, max_tokens=spec.max_tokens,
+                         temperature=getattr(spec, "temperature", None))
         record = {"card": card, "rerun": rerun_issues is not None}
         t0 = time.perf_counter()
         try:

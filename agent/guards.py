@@ -61,6 +61,7 @@ _SPACES = dict.fromkeys(map(ord, "\u00a0\u202f\u2009\u2007\u2002\u2003"), " ")
 _SCALES = [(re.compile(r"(?<![\d.,])(\d+(?:[.,]\d+)?)\s*(?:млн\.?|миллион\w*)", re.I), 1_000_000),
            (re.compile(r"(?<![\d.,])(\d+(?:[.,]\d+)?)(?:\s*(?:тыс\.?|тысяч\w*)|(?:к|k)\b)", re.I), 1_000)]
 _TIME = re.compile(r"(?<![\d:])([01]?\d|2[0-3]):([0-5]\d)(?![\d:])")
+_ISO_TIME = re.compile(r"(?<=\d)T([01]\d|2[0-3]):([0-5]\d)(?::[0-5]\d(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?")
 _DM = re.compile(r"(?<![\d.,])(\d{1,2})\.(\d{2})(?:\.(\d{4}|\d{2}))?(?!\d|[.,]\d)")
 _ISO_DATE = re.compile(r"(\d{4})-(\d{2})-(\d{2})")
 _GROUPED = re.compile(r"(?<![\d.,])\d{1,3}(?: \d{3})+(?![\d])(?![.,]\d)")
@@ -111,6 +112,7 @@ def tokens(text):
     def time_(m):
         out.append(("time", (int(m.group(1)), int(m.group(2))), m.group(0)))
         return blank(m)
+    text = _ISO_TIME.sub(time_, text)   # «…T07:55:00+02:00»: the clock time, not the seconds or the offset
     text = _TIME.sub(time_, text)
 
     def iso(m):

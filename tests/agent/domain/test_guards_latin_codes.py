@@ -7,3 +7,10 @@ def test_lowercase_enum_codes_from_input_are_not_names():
     out = {"message": "Отель Ushba Guest house в районе walkable", "items": []}
     found = str(latin_issues(out, card_input))
     assert "walkable" in found and "Ushba" not in found and "house" not in found
+
+
+def test_clock_time_inside_iso_datetime_with_seconds_is_allowed():
+    from agent.guards import Allowed
+    a = Allowed()
+    a.add_text("2026-11-24T07:55:00+02:00")
+    assert (7, 55) in a.times and (2, 0) not in a.times

@@ -20,7 +20,7 @@ from .steps_spec import STEP_NAMES
 DEFAULT_SKILL_PATH = Path(__file__).resolve().parent.parent / "skills" / "trip-agent"
 DRAFT7_IDS = ("http://json-schema.org/draft-07/schema#", "http://json-schema.org/draft-07/schema")
 THINKING = ("off", "low", "high")
-CARD_KEYS = {"prompt", "schema", "thinking", "max_tokens", "voice"}
+CARD_KEYS = {"prompt", "schema", "thinking", "max_tokens", "voice", "temperature"}
 ROUTE_KEYS = {"id", "when", "steps", "present"}
 WHEN_KEYS = {"intent", "has", "missing", "stage", "action"}
 UPSELL_KINDS = ("transfer", "early_checkin", "room_upgrade", "meal_upgrade", "flexible_fare")  # what the mock sells
@@ -47,6 +47,7 @@ class Card:
     thinking: str
     max_tokens: int
     voice: bool = False
+    temperature: Optional[float] = None   # None: the backend default (OpenRouter/DeepSeek 1.0)
 
 
 @dataclass(frozen=True)
@@ -174,12 +175,16 @@ def _load_cards(root, raw):
             _fail("turns.json", f"{where}: max_tokens must be a positive integer")
         if "voice" in spec and not isinstance(spec["voice"], bool):
             _fail("turns.json", f"{where}: voice must be a boolean")
+        temp = spec.get("temperature")
+        if temp is not None and (isinstance(temp, bool) or not isinstance(temp, (int, float)) or not 0 <= temp <= 2):
+            _fail("turns.json", f"{where}: temperature must be a number in 0..2")
         prompt = _read_text(root, spec["prompt"], f"turns.json {where}")
         schema = _read_json(root, spec["schema"])
         _check_schema(spec["schema"], schema)
         cards[name] = Card(name=name, prompt_file=spec["prompt"], prompt=prompt, schema_file=spec["schema"],
                            schema=schema, thinking=spec["thinking"], max_tokens=spec["max_tokens"],
-                           voice=bool(spec.get("voice", False)))
+                           voice=bool(spec.get("voice", False)),
+                           temperature=float(temp) if temp is not None else None)
     if "understand" not in cards:
         _fail("turns.json", "cards: missing the understand card")
     return cards
