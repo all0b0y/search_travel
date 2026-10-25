@@ -1,0 +1,220 @@
+{
+  "id": "g3_guide_dead_end_acts",
+  "category": "guide",
+  "card": "guide",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Екатеринбург",
+        "iata": [
+          "SVX"
+        ]
+      },
+      "destination": {
+        "id": "krasnodar",
+        "name": "Краснодар",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2027-08-01",
+        "end": "2027-08-08",
+        "month": 8,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "plane",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.start",
+      "dates.end",
+      "prefs.district"
+    ],
+    "assumptions": [],
+    "home_city": "Москва",
+    "screen": {
+      "stage": "inspiration"
+    },
+    "history": [],
+    "message": "Летим вдвоём из Екатеринбурга в Краснодар в августе на неделю, нужны только билеты",
+    "reading": {
+      "intent": "new_trip",
+      "patch": {
+        "set": {
+          "origin.city": "Екатеринбург",
+          "destination.name": "Краснодар",
+          "dates.month": 8,
+          "dates.nights": 7,
+          "party.segment": "couple",
+          "party.adults": 2,
+          "scope": [
+            "flights"
+          ],
+          "prefs.transport": "plane"
+        },
+        "unset": []
+      }
+    },
+    "default_plan": {
+      "route": "bcd.variants",
+      "card": "present.variants",
+      "status": "failed",
+      "failure": "Рейсов по маршруту Екатеринбург — Краснодар в данных нет — ни прямых, ни с пересадкой. Поездом та же поездка — от 21 310 ₽: нажмите «Поехать поездом», и я соберу её. Похожие места, куда можно добраться: Казань — от 77 950 ₽, Москва — от 109 710 ₽, Сочи — от 134 870 ₽ — кнопки ниже.",
+      "changes": [
+        {
+          "field": "dates.month",
+          "after": 8
+        },
+        {
+          "field": "dates.nights",
+          "after": 7
+        },
+        {
+          "field": "destination.country",
+          "after": "Россия"
+        },
+        {
+          "field": "destination.id",
+          "after": "krasnodar"
+        },
+        {
+          "field": "destination.name",
+          "after": "Краснодар"
+        },
+        {
+          "field": "origin.city",
+          "after": "Екатеринбург"
+        }
+      ],
+      "transport_gap": "Самолётов по маршруту Екатеринбург — Краснодар в данных нет; поездом поездка — от 21 310 ₽",
+      "other_places": [
+        {
+          "id": "kazan",
+          "name": "Казань",
+          "price_from_rub": 77950,
+          "nights": 7,
+          "transport_ru": "самолётом",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+        },
+        {
+          "id": "moscow",
+          "name": "Москва",
+          "price_from_rub": 109710,
+          "nights": 7,
+          "transport_ru": "самолётом",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+        },
+        {
+          "id": "sochi",
+          "name": "Сочи",
+          "price_from_rub": 134870,
+          "nights": 7,
+          "transport_ru": "самолётом",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+        }
+      ],
+      "buttons": [
+        "Поехать поездом",
+        "Смотреть Казань",
+        "Смотреть Москва",
+        "Смотреть Сочи"
+      ]
+    },
+    "round": 1
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_calls",
+      "args": {
+        "tools": [
+          "check_road",
+          "rebuild",
+          "find_destinations"
+        ],
+        "reply_ok": true
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/reply/message",
+      "pattern": "не\\s+получилось|не\\s+удалось\\s+собрать"
+    },
+    {
+      "type": "numbers_subset",
+      "path": "/reply"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_recommended_shown"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_one_question"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "russian_only"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "tone_no_bureaucratese"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "at_most_one_joke"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "money_risks_plain"
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Tickets only, plane fixed, no flight Екатеринбург — Краснодар: the default plan failed. The guide checks the road or rebuilds (by train), or replies with the way out from the failure text — never «не получилось» again."
+}

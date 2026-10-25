@@ -1,0 +1,306 @@
+{
+  "id": "g4_guide_vague_wish_places",
+  "category": "guide",
+  "card": "guide",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": []
+      },
+      "destination": null,
+      "traits": [
+        "sea",
+        "warm"
+      ],
+      "dates": {
+        "start": null,
+        "end": null,
+        "month": 2,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.nights",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [],
+    "home_city": "Москва",
+    "screen": {
+      "stage": "inspiration"
+    },
+    "history": [],
+    "message": "Хочу к тёплому морю в феврале, вдвоём, не знаю куда",
+    "reading": {
+      "intent": "new_trip",
+      "patch": {
+        "set": {
+          "origin.city": "Москва",
+          "traits.add": [
+            "sea",
+            "warm"
+          ],
+          "dates.month": 2,
+          "party.segment": "couple",
+          "party.adults": 2
+        },
+        "unset": []
+      }
+    },
+    "default_plan": {
+      "route": "a.destinations",
+      "card": "present.destinations",
+      "status": "ok",
+      "changes": [
+        {
+          "field": "dates.month",
+          "after": 2
+        },
+        {
+          "field": "dates.nights",
+          "after": 7
+        },
+        {
+          "field": "origin.city",
+          "after": "Москва"
+        },
+        {
+          "field": "origin.iata"
+        },
+        {
+          "field": "party.adults",
+          "before": 1,
+          "after": 2
+        },
+        {
+          "field": "party.segment",
+          "before": "other",
+          "after": "couple"
+        }
+      ],
+      "destinations": [
+        {
+          "id": "goa",
+          "name": "Гоа",
+          "country": "Индия",
+          "price_from_rub": 127720,
+          "nights": 7,
+          "travel_time_h": 7.7,
+          "weather": {
+            "air_max_c": 32.3,
+            "sea_c": 28.4,
+            "rain_days": 0.0
+          },
+          "match": [
+            "sea",
+            "warm"
+          ],
+          "transport_ru": "самолётом",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "description": "Штат Индии на побережье Аравийского моря; популярная курортная зона — Калангут на севере."
+        },
+        {
+          "id": "dubai",
+          "name": "Дубай",
+          "country": "ОАЭ",
+          "price_from_rub": 165100,
+          "nights": 7,
+          "travel_time_h": 5.4,
+          "weather": {
+            "air_max_c": 25.3,
+            "sea_c": 21.7,
+            "rain_days": 2.1
+          },
+          "match": [
+            "sea",
+            "warm"
+          ],
+          "transport_ru": "самолётом",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "description": "Крупный город на побережье Персидского залива с небоскрёбом Бурдж-Халифа."
+        },
+        {
+          "id": "ras-al-khaimah",
+          "name": "Рас-эль-Хайма",
+          "country": "ОАЭ",
+          "price_from_rub": 151270,
+          "nights": 7,
+          "travel_time_h": 5.4,
+          "weather": {
+            "air_max_c": 24.3,
+            "sea_c": 22.5,
+            "rain_days": 2.0
+          },
+          "match": [
+            "sea",
+            "warm"
+          ],
+          "transport_ru": "самолётом",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "description": "Северный эмират ОАЭ с пляжами на Персидском заливе и горами Хаджар."
+        },
+        {
+          "id": "muscat",
+          "name": "Маскат",
+          "country": "Оман",
+          "price_from_rub": 149410,
+          "nights": 7,
+          "travel_time_h": 8.3,
+          "weather": {
+            "air_max_c": 25.8,
+            "sea_c": 23.9,
+            "rain_days": 1.3
+          },
+          "match": [
+            "sea",
+            "warm"
+          ],
+          "transport_ru": "самолётом",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "description": "Столица Омана между Оманским заливом и горами Хаджар."
+        },
+        {
+          "id": "salalah",
+          "name": "Салала",
+          "country": "Оман",
+          "price_from_rub": 157080,
+          "nights": 7,
+          "travel_time_h": 9.0,
+          "weather": {
+            "air_max_c": 27.5,
+            "sea_c": 25.9,
+            "rain_days": 0.5
+          },
+          "match": [
+            "sea",
+            "warm"
+          ],
+          "transport_ru": "самолётом",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "description": "Город на юге Омана, где летом идут муссонные дожди (сезон хариф)."
+        },
+        {
+          "id": "abu-dhabi",
+          "name": "Абу-Даби",
+          "country": "ОАЭ",
+          "price_from_rub": 153770,
+          "nights": 7,
+          "travel_time_h": 5.4,
+          "weather": {
+            "air_max_c": 24.9,
+            "sea_c": 21.4,
+            "rain_days": 1.4
+          },
+          "match": [
+            "sea",
+            "warm"
+          ],
+          "transport_ru": "самолётом",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "description": "Столица ОАЭ с мечетью шейха Зайда и музеем Лувр Абу-Даби."
+        }
+      ]
+    },
+    "round": 1
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_calls",
+      "args": {
+        "tools": [
+          "find_destinations"
+        ],
+        "reply_ok": true
+      }
+    },
+    {
+      "type": "path_in",
+      "path": "/reply/show",
+      "values": [
+        "destinations"
+      ]
+    },
+    {
+      "type": "numbers_subset",
+      "path": "/reply"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_recommended_shown"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_one_question"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "russian_only"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "tone_no_bureaucratese"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "at_most_one_joke"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "money_risks_plain"
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "A vague wish (warm sea in February, no place): places from the default plan or find_destinations, one recommended with its «от» price."
+}

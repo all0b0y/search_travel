@@ -1,0 +1,713 @@
+{
+  "id": "g5_guide_weather_plain_answer",
+  "category": "guide",
+  "card": "guide",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "VKO",
+          "SVO",
+          "ZIA",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "kazan",
+        "name": "Казань",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-20",
+        "end": "2026-11-23",
+        "month": 11,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "friends",
+        "adults": 3,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "lively",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.nights",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [],
+    "home_city": "Москва",
+    "screen": {
+      "stage": "selection",
+      "variants": [
+        {
+          "label": "1",
+          "id": "cheapest",
+          "title": "Дешевле",
+          "total_rub": 46610,
+          "dates": "2026-11-20..2026-11-23",
+          "nights": 3,
+          "out": {
+            "kind": "flight",
+            "carrier": "Аэрофлот",
+            "stops": 0,
+            "date": "2026-11-20",
+            "dep": "14:20",
+            "arr": "15:46",
+            "on_board_hours": 1.4,
+            "door_hours": 3.4,
+            "price_rub": 18310
+          },
+          "back": {
+            "kind": "flight",
+            "carrier": "Аэрофлот",
+            "stops": 0,
+            "date": "2026-11-23",
+            "dep": "23:10",
+            "arr": "00:36",
+            "on_board_hours": 1.4,
+            "door_hours": 3.4,
+            "price_rub": 15310,
+            "arr_date": "2026-11-24"
+          },
+          "hotel": {
+            "name": "Майдан",
+            "stars": 1,
+            "rating": 7.8,
+            "meals": "без питания",
+            "free_cancellation": true,
+            "center_m": 3439,
+            "district": [
+              "тихий район"
+            ]
+          },
+          "facts": {
+            "dorm_bed": true,
+            "back_night": true,
+            "infant_cot": "none",
+            "price_stay_rub": 12630
+          },
+          "risks": [
+            "Это койка в общем номере хостела, а не отдельный номер",
+            "Вылет ночью, в 23:10",
+            "Невозвратные билеты без обмена"
+          ]
+        },
+        {
+          "label": "2",
+          "id": "custom-2",
+          "title": "Свой номер подешевле",
+          "total_rub": 51350,
+          "dates": "2026-11-20..2026-11-23",
+          "nights": 3,
+          "out": {
+            "kind": "flight",
+            "carrier": "Аэрофлот",
+            "stops": 0,
+            "date": "2026-11-20",
+            "dep": "14:20",
+            "arr": "15:46",
+            "on_board_hours": 1.4,
+            "door_hours": 3.4,
+            "price_rub": 18310
+          },
+          "back": {
+            "kind": "flight",
+            "carrier": "Аэрофлот",
+            "stops": 0,
+            "date": "2026-11-23",
+            "dep": "23:10",
+            "arr": "00:36",
+            "on_board_hours": 1.4,
+            "door_hours": 3.4,
+            "price_rub": 15310,
+            "arr_date": "2026-11-24"
+          },
+          "hotel": {
+            "name": "Гаяз Исхаки",
+            "stars": 2,
+            "rating": 8.9,
+            "meals": "без питания",
+            "free_cancellation": false,
+            "center_m": 821,
+            "district": [
+              "движ",
+              "пешком до всего"
+            ]
+          },
+          "facts": {
+            "back_night": true,
+            "infant_cot": "none",
+            "price_stay_rub": 17370
+          },
+          "risks": [
+            "Вылет ночью, в 23:10",
+            "Невозвратные билеты без обмена",
+            "Отель без бесплатной отмены: штраф 100% — 17 370 ₽"
+          ]
+        },
+        {
+          "label": "3",
+          "id": "comfort",
+          "title": "Комфортнее",
+          "total_rub": 102000,
+          "dates": "2026-11-20..2026-11-23",
+          "nights": 3,
+          "out": {
+            "kind": "flight",
+            "carrier": "S7 Airlines",
+            "stops": 0,
+            "date": "2026-11-20",
+            "dep": "17:40",
+            "arr": "19:04",
+            "on_board_hours": 1.4,
+            "door_hours": 2.2,
+            "price_rub": 22260
+          },
+          "back": {
+            "kind": "flight",
+            "carrier": "Аэрофлот",
+            "stops": 0,
+            "date": "2026-11-23",
+            "dep": "23:10",
+            "arr": "00:36",
+            "on_board_hours": 1.4,
+            "door_hours": 2.3,
+            "price_rub": 22200,
+            "arr_date": "2026-11-24"
+          },
+          "hotel": {
+            "name": "Cho",
+            "stars": 4,
+            "rating": 9.2,
+            "meals": "без питания",
+            "free_cancellation": true,
+            "center_m": 1138,
+            "district": [
+              "движ",
+              "пешком до всего"
+            ]
+          },
+          "facts": {
+            "back_night": true,
+            "kitchen": true,
+            "infant_cot": "free",
+            "price_stay_rub": 52540
+          },
+          "risks": [
+            "Вылет ночью, в 23:10",
+            "Невозвратный билет туда",
+            "После выезда из отеля 8,3 ч до отправления"
+          ]
+        }
+      ]
+    },
+    "history": [
+      {
+        "role": "user",
+        "text": "Казань на выходные 20–23 ноября, нас трое"
+      },
+      {
+        "role": "agent",
+        "text": "Вот варианты — советую тот, что отмечен."
+      }
+    ],
+    "message": "А какая там погода будет в эти дни?",
+    "reading": {
+      "intent": "info",
+      "patch": {
+        "set": {},
+        "unset": []
+      },
+      "info_question": "А какая там погода будет в эти дни?"
+    },
+    "default_plan": {
+      "route": "f.info",
+      "card": "present.info",
+      "status": "ok",
+      "info_facts": [
+        {
+          "kind": "variant",
+          "id": "cheapest",
+          "title": "Дешевле",
+          "total_rub": 46610,
+          "legs": [
+            {
+              "type": "flight",
+              "from": "SVO",
+              "to": "KZN",
+              "carrier": "Аэрофлот",
+              "dep_date": "2026-11-20",
+              "dep_time": "14:20",
+              "arr_date": "2026-11-20",
+              "arr_time": "15:46",
+              "price_rub": 18310,
+              "flight_no": "SU5082",
+              "duration_min": 86,
+              "direct": true,
+              "baggage_cabin_kg": 10,
+              "fare": "basic"
+            },
+            {
+              "type": "transfer",
+              "from": "KZN",
+              "to": "Майдан",
+              "dep_date": "2026-11-20",
+              "dep_time": "16:31",
+              "arr_date": "2026-11-20",
+              "arr_time": "18:31",
+              "price_rub": 180,
+              "kind": "public",
+              "duration_min": 98,
+              "meeting_point": "Остановка общественного транспорта у аэропорта Kazan International Airport"
+            },
+            {
+              "type": "transfer",
+              "from": "Майдан",
+              "to": "KZN",
+              "dep_date": "2026-11-23",
+              "dep_time": "19:10",
+              "arr_date": "2026-11-23",
+              "arr_time": "21:10",
+              "price_rub": 180,
+              "kind": "public",
+              "duration_min": 98,
+              "meeting_point": "Ближайшая к отелю «Майдан» остановка"
+            },
+            {
+              "type": "flight",
+              "from": "KZN",
+              "to": "SVO",
+              "carrier": "Аэрофлот",
+              "dep_date": "2026-11-23",
+              "dep_time": "23:10",
+              "arr_date": "2026-11-24",
+              "arr_time": "00:36",
+              "price_rub": 15310,
+              "flight_no": "SU4687",
+              "duration_min": 86,
+              "direct": true,
+              "baggage_cabin_kg": 10,
+              "fare": "basic"
+            }
+          ],
+          "stay": {
+            "name": "Майдан",
+            "stars": 1,
+            "rating": 7.8,
+            "meals": "none",
+            "room": "3 номера: Место в общем номере",
+            "check_in_date": "2026-11-20",
+            "check_in_time": "18:31",
+            "check_out_date": "2026-11-23",
+            "check_out_time": "12:00",
+            "cancellation": {
+              "free_until": "2026-11-18T23:59:00+03:00",
+              "penalty_pct": 100,
+              "free": true
+            },
+            "early_checkin": {
+              "available": true,
+              "price_rub": 900
+            },
+            "distance_center_m": 3439
+          }
+        },
+        {
+          "kind": "variant",
+          "id": "custom-2",
+          "title": "Свой номер подешевле",
+          "total_rub": 51350,
+          "legs": [
+            {
+              "type": "flight",
+              "from": "SVO",
+              "to": "KZN",
+              "carrier": "Аэрофлот",
+              "dep_date": "2026-11-20",
+              "dep_time": "14:20",
+              "arr_date": "2026-11-20",
+              "arr_time": "15:46",
+              "price_rub": 18310,
+              "flight_no": "SU5082",
+              "duration_min": 86,
+              "direct": true,
+              "baggage_cabin_kg": 10,
+              "fare": "basic"
+            },
+            {
+              "type": "transfer",
+              "from": "KZN",
+              "to": "Гаяз Исхаки",
+              "dep_date": "2026-11-20",
+              "dep_time": "16:31",
+              "arr_date": "2026-11-20",
+              "arr_time": "18:26",
+              "price_rub": 180,
+              "kind": "public",
+              "duration_min": 92,
+              "meeting_point": "Остановка общественного транспорта у аэропорта Kazan International Airport"
+            },
+            {
+              "type": "transfer",
+              "from": "Гаяз Исхаки",
+              "to": "KZN",
+              "dep_date": "2026-11-23",
+              "dep_time": "19:15",
+              "arr_date": "2026-11-23",
+              "arr_time": "21:10",
+              "price_rub": 180,
+              "kind": "public",
+              "duration_min": 92,
+              "meeting_point": "Ближайшая к отелю «Гаяз Исхаки» остановка"
+            },
+            {
+              "type": "flight",
+              "from": "KZN",
+              "to": "SVO",
+              "carrier": "Аэрофлот",
+              "dep_date": "2026-11-23",
+              "dep_time": "23:10",
+              "arr_date": "2026-11-24",
+              "arr_time": "00:36",
+              "price_rub": 15310,
+              "flight_no": "SU4687",
+              "duration_min": 86,
+              "direct": true,
+              "baggage_cabin_kg": 10,
+              "fare": "basic"
+            }
+          ],
+          "stay": {
+            "name": "Гаяз Исхаки",
+            "stars": 2,
+            "rating": 8.9,
+            "meals": "none",
+            "room": "Трёхместный номер",
+            "check_in_date": "2026-11-20",
+            "check_in_time": "18:26",
+            "check_out_date": "2026-11-23",
+            "check_out_time": "12:00",
+            "cancellation": {
+              "penalty_pct": 100
+            },
+            "pets_allowed": true,
+            "early_checkin": {
+              "available": true,
+              "price_rub": 2100
+            },
+            "distance_center_m": 821
+          }
+        },
+        {
+          "kind": "variant",
+          "id": "comfort",
+          "title": "Комфортнее",
+          "total_rub": 102000,
+          "legs": [
+            {
+              "type": "flight",
+              "from": "DME",
+              "to": "KZN",
+              "carrier": "S7 Airlines",
+              "dep_date": "2026-11-20",
+              "dep_time": "17:40",
+              "arr_date": "2026-11-20",
+              "arr_time": "19:04",
+              "price_rub": 22260,
+              "flight_no": "S79329",
+              "duration_min": 84,
+              "direct": true,
+              "baggage_checked_kg": 23,
+              "baggage_cabin_kg": 10,
+              "fare": "standard",
+              "exchange_allowed": true,
+              "exchange_fee_rub": 7500
+            },
+            {
+              "type": "transfer",
+              "from": "KZN",
+              "to": "Cho",
+              "dep_date": "2026-11-20",
+              "dep_time": "20:19",
+              "arr_date": "2026-11-20",
+              "arr_time": "21:09",
+              "price_rub": 2500,
+              "kind": "private",
+              "duration_min": 41,
+              "meeting_point": "Зона прилёта аэропорта Kazan International Airport: водитель с табличкой с вашим именем"
+            },
+            {
+              "type": "transfer",
+              "from": "Cho",
+              "to": "KZN",
+              "dep_date": "2026-11-23",
+              "dep_time": "20:20",
+              "arr_date": "2026-11-23",
+              "arr_time": "21:10",
+              "price_rub": 2500,
+              "kind": "private",
+              "duration_min": 41,
+              "meeting_point": "Лобби отеля «Cho»: водитель с табличкой"
+            },
+            {
+              "type": "flight",
+              "from": "KZN",
+              "to": "SVO",
+              "carrier": "Аэрофлот",
+              "dep_date": "2026-11-23",
+              "dep_time": "23:10",
+              "arr_date": "2026-11-24",
+              "arr_time": "00:36",
+              "price_rub": 22200,
+              "flight_no": "SU4687",
+              "duration_min": 86,
+              "direct": true,
+              "baggage_checked_kg": 23,
+              "baggage_cabin_kg": 10,
+              "refundable": true,
+              "fare": "flex",
+              "exchange_allowed": true
+            }
+          ],
+          "stay": {
+            "name": "Cho",
+            "stars": 4,
+            "rating": 9.2,
+            "meals": "none",
+            "room": "Апартаменты с двумя спальнями",
+            "check_in_date": "2026-11-20",
+            "check_in_time": "21:09",
+            "check_out_date": "2026-11-23",
+            "check_out_time": "12:00",
+            "cancellation": {
+              "free_until": "2026-11-06T23:59:00+03:00",
+              "penalty_pct": 100,
+              "free": true
+            },
+            "pets_allowed": true,
+            "distance_center_m": 1138,
+            "kitchen": true
+          }
+        },
+        {
+          "kind": "hotel",
+          "id": "h_n12990512272",
+          "data": {
+            "destination_id": "kazan",
+            "name": "Cho",
+            "kind": "apartment",
+            "stars": 4,
+            "rating": 9.2,
+            "reviews": 737,
+            "distance_center_m": 1138,
+            "policies": {
+              "check_in_from": "15:00",
+              "check_out_until": "12:00",
+              "pets_allowed": true,
+              "kids_policy": {
+                "children_allowed": true,
+                "infant_cot": "free"
+              },
+              "cancellation_note": "Бесплатная отмена до 14 дн. до заезда, позже штраф 100 %"
+            },
+            "rooms": [
+              {
+                "room_id": "h_n12990512272_r0",
+                "name": "Студия",
+                "capacity_adults": 2,
+                "capacity_children": 1,
+                "bed": "double",
+                "kitchen": true
+              },
+              {
+                "room_id": "h_n12990512272_r1",
+                "name": "Апартаменты с одной спальней",
+                "capacity_adults": 2,
+                "capacity_children": 2,
+                "bed": "double+sofa",
+                "kitchen": true
+              },
+              {
+                "room_id": "h_n12990512272_r2",
+                "name": "Апартаменты с двумя спальнями",
+                "capacity_adults": 4,
+                "capacity_children": 2,
+                "bed": "double+twin",
+                "kitchen": true
+              }
+            ],
+            "accessibility": {
+              "synthetic": true
+            }
+          }
+        },
+        {
+          "kind": "district",
+          "id": "node/12990512272",
+          "data": {
+            "destination_id": "kazan",
+            "labels": [
+              "lively",
+              "walkable"
+            ],
+            "scores": {
+              "lively": 1.0,
+              "quiet": 0.3,
+              "family": 0.3,
+              "walkable": 0.8
+            },
+            "counts": {
+              "bar": 12,
+              "cafe": 29,
+              "convenience": 12,
+              "fast_food": 5,
+              "nightclub": 1,
+              "park": 5,
+              "pharmacy": 7,
+              "playground": 6,
+              "restaurant": 10,
+              "stop": 22,
+              "supermarket": 1
+            },
+            "nearest_m": {
+              "beach": 1669,
+              "centre": 1138,
+              "major_road": 1340,
+              "railway": 2029,
+              "station": 1209,
+              "stop": 144
+            }
+          }
+        },
+        {
+          "kind": "climate",
+          "id": "kazan",
+          "month": 11,
+          "data": {
+            "destination_id": "kazan",
+            "month": 11,
+            "air_max_c": 0.1,
+            "air_min_c": -4.1,
+            "rain_days": 10.9,
+            "sunny_days": 4.7
+          }
+        }
+      ],
+      "question_facts": {
+        "text": "А какая там погода будет в эти дни?",
+        "facts": [
+          {
+            "kind": "climate",
+            "id": "kazan",
+            "month": 11,
+            "data": {
+              "destination_id": "kazan",
+              "month": 11,
+              "air_max_c": 0.1,
+              "air_min_c": -4.1,
+              "rain_days": 10.9,
+              "sunny_days": 4.7
+            }
+          }
+        ]
+      }
+    },
+    "round": 1
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_replies"
+    },
+    {
+      "type": "path_in",
+      "path": "/reply/show",
+      "values": [
+        "none",
+        "variants"
+      ]
+    },
+    {
+      "type": "regex_absent",
+      "path": "/reply/message",
+      "pattern": "нет\\s+данных|не\\s+знаю"
+    },
+    {
+      "type": "numbers_subset",
+      "path": "/reply"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_recommended_shown"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_one_question"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "russian_only"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "tone_no_bureaucratese"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "at_most_one_joke"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "money_risks_plain"
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "A weather question on a shown Kazan trip: the climate facts are in the default plan — a plain answer, no tools, numbers from the facts."
+}

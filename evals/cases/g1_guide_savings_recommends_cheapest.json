@@ -1,0 +1,935 @@
+{
+  "id": "g1_guide_savings_recommends_cheapest",
+  "category": "guide",
+  "card": "guide",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "VKO",
+          "SVO",
+          "ZIA",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "sochi",
+        "name": "Сочи",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-12-14",
+        "end": "2026-12-19",
+        "month": 12,
+        "window": null,
+        "nights": 5,
+        "flexible_days": 3
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.nights",
+      "dates.flexible_days",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [],
+    "home_city": "Москва",
+    "screen": {
+      "stage": "selection",
+      "variants": [
+        {
+          "label": "1",
+          "id": "cheapest",
+          "title": "Дешевле",
+          "total_rub": 61370,
+          "dates": "2026-12-14..2026-12-19",
+          "nights": 5,
+          "out": {
+            "kind": "flight",
+            "carrier": "Трансаэро",
+            "stops": 0,
+            "date": "2026-12-14",
+            "dep": "08:00",
+            "arr": "10:12",
+            "on_board_hours": 2.2,
+            "door_hours": 4.2,
+            "price_rub": 15270
+          },
+          "back": {
+            "kind": "flight",
+            "carrier": "Трансаэро",
+            "stops": 0,
+            "date": "2026-12-19",
+            "dep": "21:50",
+            "arr": "00:02",
+            "on_board_hours": 2.2,
+            "door_hours": 3.3,
+            "price_rub": 17340,
+            "arr_date": "2026-12-20"
+          },
+          "hotel": {
+            "name": "Утомленные солнцем",
+            "stars": 2,
+            "rating": 7.8,
+            "meals": "без питания",
+            "free_cancellation": true,
+            "center_m": 1794,
+            "district": [
+              "тихий район",
+              "семейный район"
+            ]
+          },
+          "facts": {
+            "back_night": true,
+            "infant_cot": "free",
+            "price_stay_rub": 27280
+          },
+          "risks": [
+            "Невозвратные билеты без обмена",
+            "Дорога до отеля 100 мин",
+            "После выезда из отеля 6,8 ч до отправления"
+          ]
+        },
+        {
+          "label": "2",
+          "id": "fastest",
+          "title": "Быстрее",
+          "total_rub": 66150,
+          "dates": "2026-12-14..2026-12-19",
+          "nights": 5,
+          "out": {
+            "kind": "flight",
+            "carrier": "Трансаэро",
+            "stops": 0,
+            "date": "2026-12-14",
+            "dep": "08:00",
+            "arr": "10:12",
+            "on_board_hours": 2.2,
+            "door_hours": 3.0,
+            "price_rub": 15270
+          },
+          "back": {
+            "kind": "flight",
+            "carrier": "Трансаэро",
+            "stops": 0,
+            "date": "2026-12-19",
+            "dep": "21:50",
+            "arr": "00:02",
+            "on_board_hours": 2.2,
+            "door_hours": 3.0,
+            "price_rub": 17340,
+            "arr_date": "2026-12-20"
+          },
+          "hotel": {
+            "name": "ЖК \"Дом у рощи\"",
+            "stars": 3,
+            "rating": 8.6,
+            "meals": "без питания",
+            "free_cancellation": true,
+            "center_m": 3821,
+            "district": [
+              "тихий район"
+            ]
+          },
+          "facts": {
+            "back_night": true,
+            "infant_cot": "free",
+            "price_stay_rub": 28540
+          },
+          "risks": [
+            "Невозвратные билеты без обмена",
+            "Приезд в 11:42, а заселение с 15:00 — ждать 3,3 ч",
+            "После выезда из отеля 7,1 ч до отправления"
+          ]
+        },
+        {
+          "label": "3",
+          "id": "comfort",
+          "title": "Комфортнее",
+          "total_rub": 119490,
+          "dates": "2026-12-14..2026-12-19",
+          "nights": 5,
+          "out": {
+            "kind": "flight",
+            "carrier": "Трансаэро",
+            "stops": 0,
+            "date": "2026-12-14",
+            "dep": "08:00",
+            "arr": "10:12",
+            "on_board_hours": 2.2,
+            "door_hours": 3.2,
+            "price_rub": 22140
+          },
+          "back": {
+            "kind": "flight",
+            "carrier": "S7 Airlines",
+            "stops": 0,
+            "date": "2026-12-19",
+            "dep": "07:10",
+            "arr": "09:20",
+            "on_board_hours": 2.2,
+            "door_hours": 3.2,
+            "price_rub": 25950
+          },
+          "hotel": {
+            "name": "Пушкин",
+            "stars": 4,
+            "rating": 9.2,
+            "meals": "без питания",
+            "free_cancellation": true,
+            "center_m": 2304,
+            "district": [
+              "тихий район",
+              "семейный район"
+            ]
+          },
+          "facts": {
+            "lift": true,
+            "infant_cot": "on_request",
+            "price_stay_rub": 66400
+          }
+        }
+      ]
+    },
+    "history": [
+      {
+        "role": "user",
+        "text": "Москва — Сочи, 14–19 декабря, вдвоём"
+      },
+      {
+        "role": "agent",
+        "text": "Вот варианты — советую тот, что отмечен."
+      }
+    ],
+    "message": "Дороговато выходит, а можно подешевле?",
+    "reading": {
+      "intent": "refine",
+      "patch": {
+        "set": {},
+        "unset": []
+      }
+    },
+    "default_plan": {
+      "route": "e.rebuild",
+      "card": "present.update",
+      "status": "ok",
+      "variants": [
+        {
+          "id": "cheapest",
+          "title": "Дешевле",
+          "total_rub": 59900,
+          "vs_recommended": "дешевле на 5170",
+          "dates": "2026-12-17..2026-12-22",
+          "nights": 5,
+          "out": {
+            "kind": "flight",
+            "carrier": "Трансаэро",
+            "stops": 0,
+            "date": "2026-12-17",
+            "dep": "10:40",
+            "arr": "12:52",
+            "on_board_hours": 2.2,
+            "door_hours": 4.0,
+            "price_rub": 14550
+          },
+          "back": {
+            "kind": "flight",
+            "carrier": "S7 Airlines",
+            "stops": 0,
+            "date": "2026-12-22",
+            "dep": "12:20",
+            "arr": "14:30",
+            "on_board_hours": 2.2,
+            "door_hours": 3.2,
+            "price_rub": 17060
+          },
+          "hotel": {
+            "name": "Векар",
+            "stars": 3,
+            "rating": 7.8,
+            "meals": "без питания",
+            "free_cancellation": true,
+            "center_m": 3544,
+            "district": [
+              "тихий район",
+              "семейный район"
+            ]
+          },
+          "facts": {
+            "budget_fit": "dates",
+            "dates_shifted_days": 3,
+            "infant_cot": "on_request",
+            "price_stay_rub": 27010
+          },
+          "risks": [
+            "Сдвинул на 17–22 декабря",
+            "Невозвратные билеты без обмена"
+          ],
+          "gives_up": [
+            "+1,2 ч в пути",
+            "Без багажа в тарифе",
+            "Отель попроще: 3★"
+          ]
+        },
+        {
+          "id": "fastest",
+          "title": "Быстрее",
+          "total_rub": 65070,
+          "dates": "2026-12-17..2026-12-22",
+          "nights": 5,
+          "out": {
+            "kind": "flight",
+            "carrier": "Трансаэро",
+            "stops": 0,
+            "date": "2026-12-17",
+            "dep": "10:40",
+            "arr": "12:52",
+            "on_board_hours": 2.2,
+            "door_hours": 3.0,
+            "price_rub": 14550
+          },
+          "back": {
+            "kind": "flight",
+            "carrier": "S7 Airlines",
+            "stops": 0,
+            "date": "2026-12-22",
+            "dep": "12:20",
+            "arr": "14:30",
+            "on_board_hours": 2.2,
+            "door_hours": 2.9,
+            "price_rub": 17060
+          },
+          "hotel": {
+            "name": "ЖК \"Дом у рощи\"",
+            "stars": 3,
+            "rating": 8.6,
+            "meals": "без питания",
+            "free_cancellation": true,
+            "center_m": 3821,
+            "district": [
+              "тихий район"
+            ]
+          },
+          "facts": {
+            "budget_fit": "dates",
+            "dates_shifted_days": 3,
+            "infant_cot": "free",
+            "price_stay_rub": 28460
+          },
+          "risks": [
+            "Сдвинул на 17–22 декабря",
+            "Невозвратные билеты без обмена"
+          ],
+          "gives_up": [
+            "+5 170 ₽ к самому дешёвому",
+            "Без багажа в тарифе",
+            "Отель попроще: 3★"
+          ]
+        },
+        {
+          "id": "comfort",
+          "title": "Комфортнее",
+          "total_rub": 117830,
+          "vs_recommended": "дороже на 52760",
+          "dates": "2026-12-17..2026-12-22",
+          "nights": 5,
+          "out": {
+            "kind": "flight",
+            "carrier": "Трансаэро",
+            "stops": 0,
+            "date": "2026-12-17",
+            "dep": "10:40",
+            "arr": "12:52",
+            "on_board_hours": 2.2,
+            "door_hours": 3.2,
+            "price_rub": 21090
+          },
+          "back": {
+            "kind": "flight",
+            "carrier": "S7 Airlines",
+            "stops": 0,
+            "date": "2026-12-22",
+            "dep": "12:20",
+            "arr": "14:30",
+            "on_board_hours": 2.2,
+            "door_hours": 3.2,
+            "price_rub": 24730
+          },
+          "hotel": {
+            "name": "Пушкин",
+            "stars": 4,
+            "rating": 9.2,
+            "meals": "без питания",
+            "free_cancellation": true,
+            "center_m": 2304,
+            "district": [
+              "тихий район",
+              "семейный район"
+            ]
+          },
+          "facts": {
+            "budget_fit": "dates",
+            "dates_shifted_days": 3,
+            "lift": true,
+            "infant_cot": "on_request",
+            "price_stay_rub": 67010
+          },
+          "risks": [
+            "Сдвинул на 17–22 декабря"
+          ],
+          "gives_up": [
+            "+57 930 ₽ к самому дешёвому",
+            "+0,5 ч в пути"
+          ]
+        }
+      ],
+      "recommended_id": "fastest",
+      "changes": [
+        {
+          "field": "dates.start",
+          "before": "2026-12-14",
+          "after": "2026-12-17"
+        },
+        {
+          "field": "dates.end",
+          "before": "2026-12-19",
+          "after": "2026-12-22"
+        }
+      ],
+      "questions": [
+        {
+          "field": "budget_rub.max",
+          "text": "Какой бюджет на всех, примерно?",
+          "choices": [
+            {
+              "label": "до 80 000 ₽",
+              "value": 80000
+            },
+            {
+              "label": "до 150 000 ₽",
+              "value": 150000
+            },
+            {
+              "label": "до 250 000 ₽",
+              "value": 250000
+            },
+            {
+              "label": "без ограничений",
+              "value": null
+            }
+          ]
+        },
+        {
+          "field": "dates.nights",
+          "text": "На сколько ночей?",
+          "choices": [
+            {
+              "label": "3 ночи",
+              "value": 3
+            },
+            {
+              "label": "5 ночей",
+              "value": 5
+            },
+            {
+              "label": "7 ночей",
+              "value": 7
+            },
+            {
+              "label": "10 ночей",
+              "value": 10
+            }
+          ]
+        }
+      ],
+      "wishes": [
+        "cheaper"
+      ]
+    },
+    "round": 1,
+    "tool_results": [
+      {
+        "call": 1,
+        "tool": "find_savings",
+        "args": {},
+        "result": {
+          "ok": true,
+          "current": {
+            "id": "cheapest",
+            "title": "Дешевле",
+            "total_rub": 59900,
+            "nights": 5,
+            "dates": "2026-12-17..2026-12-22",
+            "price_parts": {
+              "tickets_rub": 31610,
+              "stay_rub": 27010,
+              "transfers_rub": 1280
+            }
+          },
+          "levers": [
+            {
+              "lever": "train",
+              "variant_id": "custom-11",
+              "total_rub": 39380,
+              "saving_rub": 20520,
+              "change_ru": "поездом вместо самолёта, выезд 16 декабря — за день до заезда",
+              "gives_up_ru": "дорога дольше: туда 1 сутки 4 ч, обратно 1 сутки 5 ч",
+              "variant": {
+                "id": "custom-11",
+                "title": "Поездом",
+                "total_rub": 39380,
+                "dates": "2026-12-17..2026-12-22",
+                "nights": 5,
+                "out": {
+                  "kind": "train",
+                  "carrier": "ФПК",
+                  "stops": 0,
+                  "date": "2026-12-16",
+                  "dep": "07:55",
+                  "arr": "11:48",
+                  "on_board_hours": 27.9,
+                  "door_hours": 28.6,
+                  "price_rub": 5660,
+                  "arr_date": "2026-12-17"
+                },
+                "back": {
+                  "kind": "train",
+                  "carrier": "ФПК",
+                  "stops": 0,
+                  "date": "2026-12-22",
+                  "dep": "12:00",
+                  "arr": "16:34",
+                  "on_board_hours": 28.6,
+                  "door_hours": 29.2,
+                  "price_rub": 6470,
+                  "arr_date": "2026-12-23"
+                },
+                "hotel": {
+                  "name": "Векар",
+                  "stars": 3,
+                  "rating": 7.8,
+                  "meals": "без питания",
+                  "free_cancellation": true,
+                  "center_m": 3544,
+                  "district": [
+                    "тихий район",
+                    "семейный район"
+                  ]
+                },
+                "facts": {
+                  "out_road_ru": "туда поездом: отправление 16 декабря в 07:55, прибытие 17 декабря в 11:48, в пути 1 сутки 4 ч — выезжаете за день до заезда в отель",
+                  "back_road_ru": "обратно поездом: отправление 22 декабря в 12:00, прибытие 23 декабря в 16:34, в пути 1 сутки 5 ч — дома на следующий день после выезда из отеля",
+                  "out_on_road_ru": "1 сутки 4 ч",
+                  "back_on_road_ru": "1 сутки 5 ч",
+                  "out_long_train": true,
+                  "back_long_train": true,
+                  "out_leave_ru": "выезд 16 декабря — за день до заезда",
+                  "back_home_ru": "дома 23 декабря",
+                  "out_days_before_checkin": 1,
+                  "out_night": true,
+                  "back_night": true,
+                  "infant_cot": "on_request",
+                  "price_stay_rub": 27010,
+                  "lever": "train",
+                  "saving_rub": 20520
+                },
+                "gives_up": [
+                  "+0,8 ч в пути",
+                  "Без питания",
+                  "Рейтинг 7,8 — ниже остальных"
+                ]
+              }
+            },
+            {
+              "lever": "nights_hotel",
+              "variant_id": "custom-12",
+              "total_rub": 45830,
+              "saving_rub": 14070,
+              "change_ru": "4 ночи вместо 5 и отель «Пеликан»",
+              "gives_up_ru": "на ночь меньше; отель на 1 звезду вместо 3",
+              "variant": {
+                "id": "custom-12",
+                "title": "Короче и проще",
+                "total_rub": 45830,
+                "dates": "2026-12-17..2026-12-21",
+                "nights": 4,
+                "out": {
+                  "kind": "flight",
+                  "carrier": "Трансаэро",
+                  "stops": 0,
+                  "date": "2026-12-17",
+                  "dep": "10:40",
+                  "arr": "12:52",
+                  "on_board_hours": 2.2,
+                  "door_hours": 3.9,
+                  "price_rub": 14550
+                },
+                "back": {
+                  "kind": "flight",
+                  "carrier": "Трансаэро",
+                  "stops": 0,
+                  "date": "2026-12-21",
+                  "dep": "09:50",
+                  "arr": "12:02",
+                  "on_board_hours": 2.2,
+                  "door_hours": 3.1,
+                  "price_rub": 16810
+                },
+                "hotel": {
+                  "name": "Пеликан",
+                  "stars": 1,
+                  "rating": 8.5,
+                  "meals": "завтраки",
+                  "free_cancellation": true,
+                  "center_m": 3815,
+                  "district": [
+                    "тихий район"
+                  ]
+                },
+                "facts": {
+                  "nights_changed_from": 5,
+                  "infant_cot": "free",
+                  "price_stay_rub": 13200,
+                  "lever": "nights_hotel",
+                  "saving_rub": 14070
+                },
+                "risks": [
+                  "Невозвратные билеты без обмена"
+                ],
+                "gives_up": [
+                  "+1 ч в пути",
+                  "Без багажа в тарифе",
+                  "Отель попроще: 1★"
+                ]
+              }
+            },
+            {
+              "lever": "nights_2",
+              "variant_id": "custom-13",
+              "total_rub": 48880,
+              "saving_rub": 11020,
+              "change_ru": "3 ночи вместо 5, обратно 20 декабря",
+              "gives_up_ru": "на 2 ночи меньше",
+              "variant": {
+                "id": "custom-13",
+                "title": "На 2 ночи короче",
+                "total_rub": 48880,
+                "dates": "2026-12-17..2026-12-20",
+                "nights": 3,
+                "out": {
+                  "kind": "flight",
+                  "carrier": "Трансаэро",
+                  "stops": 0,
+                  "date": "2026-12-17",
+                  "dep": "10:40",
+                  "arr": "12:52",
+                  "on_board_hours": 2.2,
+                  "door_hours": 4.0,
+                  "price_rub": 14550
+                },
+                "back": {
+                  "kind": "flight",
+                  "carrier": "S7 Airlines",
+                  "stops": 0,
+                  "date": "2026-12-20",
+                  "dep": "17:15",
+                  "arr": "19:25",
+                  "on_board_hours": 2.2,
+                  "door_hours": 3.2,
+                  "price_rub": 18030
+                },
+                "hotel": {
+                  "name": "Виктор",
+                  "stars": 2,
+                  "rating": 8.5,
+                  "meals": "без питания",
+                  "free_cancellation": true,
+                  "center_m": 2081,
+                  "district": [
+                    "тихий район",
+                    "семейный район"
+                  ]
+                },
+                "facts": {
+                  "nights_changed_from": 5,
+                  "infant_cot": "on_request",
+                  "price_stay_rub": 14960,
+                  "lever": "nights_2",
+                  "saving_rub": 11020
+                },
+                "risks": [
+                  "Невозвратные билеты без обмена"
+                ],
+                "gives_up": [
+                  "+1,3 ч в пути",
+                  "Без багажа в тарифе",
+                  "Отель попроще: 2★"
+                ]
+              }
+            },
+            {
+              "lever": "hotel",
+              "variant_id": "custom-14",
+              "total_rub": 49230,
+              "saving_rub": 10670,
+              "change_ru": "отель «Пеликан» вместо «Векар»",
+              "gives_up_ru": "отель на 1 звезду вместо 3",
+              "variant": {
+                "id": "custom-14",
+                "title": "Отель попроще",
+                "total_rub": 49230,
+                "dates": "2026-12-17..2026-12-22",
+                "nights": 5,
+                "out": {
+                  "kind": "flight",
+                  "carrier": "Трансаэро",
+                  "stops": 0,
+                  "date": "2026-12-17",
+                  "dep": "10:40",
+                  "arr": "12:52",
+                  "on_board_hours": 2.2,
+                  "door_hours": 3.9,
+                  "price_rub": 14550
+                },
+                "back": {
+                  "kind": "flight",
+                  "carrier": "S7 Airlines",
+                  "stops": 0,
+                  "date": "2026-12-22",
+                  "dep": "12:20",
+                  "arr": "14:30",
+                  "on_board_hours": 2.2,
+                  "door_hours": 3.1,
+                  "price_rub": 17060
+                },
+                "hotel": {
+                  "name": "Пеликан",
+                  "stars": 1,
+                  "rating": 8.5,
+                  "meals": "завтраки",
+                  "free_cancellation": true,
+                  "center_m": 3815,
+                  "district": [
+                    "тихий район"
+                  ]
+                },
+                "facts": {
+                  "infant_cot": "free",
+                  "price_stay_rub": 16350,
+                  "lever": "hotel",
+                  "saving_rub": 10670
+                },
+                "risks": [
+                  "Невозвратные билеты без обмена"
+                ],
+                "gives_up": [
+                  "+1 ч в пути",
+                  "Без багажа в тарифе",
+                  "Отель попроще: 1★"
+                ]
+              }
+            },
+            {
+              "lever": "nights_1",
+              "variant_id": "custom-15",
+              "total_rub": 52710,
+              "saving_rub": 7190,
+              "change_ru": "4 ночи вместо 5, обратно 21 декабря",
+              "gives_up_ru": "на 1 ночь меньше",
+              "variant": {
+                "id": "custom-15",
+                "title": "На ночь короче",
+                "total_rub": 52710,
+                "dates": "2026-12-17..2026-12-21",
+                "nights": 4,
+                "out": {
+                  "kind": "flight",
+                  "carrier": "Трансаэро",
+                  "stops": 0,
+                  "date": "2026-12-17",
+                  "dep": "10:40",
+                  "arr": "12:52",
+                  "on_board_hours": 2.2,
+                  "door_hours": 4.0,
+                  "price_rub": 14550
+                },
+                "back": {
+                  "kind": "flight",
+                  "carrier": "Трансаэро",
+                  "stops": 0,
+                  "date": "2026-12-21",
+                  "dep": "09:50",
+                  "arr": "12:02",
+                  "on_board_hours": 2.2,
+                  "door_hours": 3.2,
+                  "price_rub": 16810
+                },
+                "hotel": {
+                  "name": "Виктор",
+                  "stars": 2,
+                  "rating": 8.5,
+                  "meals": "без питания",
+                  "free_cancellation": true,
+                  "center_m": 2081,
+                  "district": [
+                    "тихий район",
+                    "семейный район"
+                  ]
+                },
+                "facts": {
+                  "nights_changed_from": 5,
+                  "infant_cot": "on_request",
+                  "price_stay_rub": 20010,
+                  "lever": "nights_1",
+                  "saving_rub": 7190
+                },
+                "risks": [
+                  "Невозвратные билеты без обмена"
+                ],
+                "gives_up": [
+                  "+1,3 ч в пути",
+                  "Без багажа в тарифе",
+                  "Отель попроще: 2★"
+                ]
+              }
+            }
+          ],
+          "cheapest_lever_id": "custom-11",
+          "places": [
+            {
+              "id": "zelenogradsk",
+              "name": "Зеленоградск",
+              "price_from_rub": 26540,
+              "saving_rub": 33360,
+              "nights": 5,
+              "transport_ru": "поездом",
+              "price_includes": "поезд туда и обратно на двоих по самым дешёвым билетам и 5 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+            },
+            {
+              "id": "lazarevskoe",
+              "name": "Лазаревское",
+              "price_from_rub": 30940,
+              "saving_rub": 28960,
+              "nights": 5,
+              "transport_ru": "поездом",
+              "price_includes": "поезд туда и обратно на двоих по самым дешёвым билетам и 5 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+            },
+            {
+              "id": "svetlogorsk",
+              "name": "Светлогорск",
+              "price_from_rub": 33290,
+              "saving_rub": 26610,
+              "nights": 5,
+              "transport_ru": "поездом",
+              "price_includes": "поезд туда и обратно на двоих по самым дешёвым билетам и 5 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+            }
+          ],
+          "not_cheaper": [
+            "Другие даты"
+          ]
+        },
+        "auto": true
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_replies"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_cheapest_option"
+    },
+    {
+      "type": "path_equals",
+      "path": "/reply/show",
+      "value": "variants"
+    },
+    {
+      "type": "regex_absent",
+      "path": "/reply/message",
+      "pattern": "дешевле\\s+(\\S+\\s+){0,2}(не\\s+нашл|нет\\b|не\\s+найт)|не\\s+нашл\\w*\\s+(\\S+\\s+){0,2}дешевле|ничего\\s+дешевле"
+    },
+    {
+      "type": "numbers_subset",
+      "path": "/reply"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_recommended_shown"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_one_question"
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "russian_only"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "tone_no_bureaucratese"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "at_most_one_joke"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "guide_on_reply",
+      "args": {
+        "check": "money_risks_plain"
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«Дороговато, а можно подешевле?» on a Sochi trip: code already ran find_savings (auto); the guide recommends a lever and names the cheapest option's total with what it costs, never «дешевле не нашлось»."
+}

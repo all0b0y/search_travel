@@ -477,7 +477,103 @@ def no_unbacked_claims(output, inp, card="present.variants"):
     return _res(not found, "; ".join(found[:3]))
 
 
+# ---------------------------------------------------------------- guide card (agent/guide.py)
+
+def _guide_reply(output):
+    return (output or {}).get("reply") if isinstance(output, dict) else None
+
+
+def guide_ids(inp):
+    """Every id the guide may recommend: the default plan's and the screen's variants and places, and every variant /
+    place / lever a tool returned."""
+    ids = set()
+    dp, screen = inp.get("default_plan") or {}, inp.get("screen") or {}
+    for key in ("variants", "destinations"):
+        ids |= {x.get("id") for x in dp.get(key) or [] if isinstance(x, dict)}
+        ids |= {x.get("id") for x in screen.get(key) or [] if isinstance(x, dict)}
+    for t in inp.get("tool_results") or []:
+        r = t.get("result") or {}
+        ids |= {x.get("id") for x in (r.get("variants") or []) + (r.get("destinations") or []) if isinstance(x, dict)}
+        ids |= {x.get("variant_id") for x in r.get("levers") or [] if isinstance(x, dict)}
+    return {i for i in ids if i}
+
+
+def guide_replies(output, inp):
+    """A reply (not more calls): the input already holds what the turn needs."""
+    rep = _guide_reply(output)
+    ok = isinstance(rep, dict) and not (output.get("calls") or [])
+    return _res(ok, "no reply" if rep is None else "calls next to a reply" if not ok else "")
+
+
+def guide_calls(output, inp, tools, reply_ok=False):
+    """The guide calls one of `tools` (reply_ok: a reply instead is also fine, judged by the other assertions)."""
+    called = {c.get("tool") for c in output.get("calls") or [] if isinstance(c, dict)}
+    if called & set(tools):
+        return _res(True)
+    if reply_ok and _guide_reply(output) and not called:
+        return _res(True)
+    return _res(False, f"calls {sorted(called) or 'none'}; expected one of {list(tools)}")
+
+
+def guide_recommended_shown(output, inp):
+    """recommended_id is an id from the input (a variant for show variants, a place for destinations); null only
+    with show none."""
+    rep = _guide_reply(output)
+    if not isinstance(rep, dict):
+        return _res(True)
+    rec, show = rep.get("recommended_id"), rep.get("show")
+    if rec is None:
+        return _res(show in ("none", "comparison"), f"recommended_id null with show {show}")
+    return _res(rec in guide_ids(inp), f"recommended_id {rec!r} not among input ids")
+
+
+def guide_one_question(output, inp, n=1):
+    """At most `n` questions in the whole reply (message «?» groups + the question object when not in the text)."""
+    rep = _guide_reply(output)
+    if not isinstance(rep, dict):
+        return _res(True)
+    msg = rep.get("message") or ""
+    q = rep.get("question")
+    count = len(re.findall(r"\?+", msg)) + (1 if q and (q.get("text") or "").strip() not in msg else 0)
+    return _res(count <= n, f"{count} questions")
+
+
+def guide_on_reply(output, inp, check, args=None):
+    """A message predicate (russian_only, tone_no_bureaucratese, at_most_one_joke, money_risks_plain, …) on the
+    reply's message and question."""
+    rep = _guide_reply(output)
+    if not isinstance(rep, dict):
+        return _res(True)
+    q = rep.get("question") or {}
+    out = {"message": (rep.get("message") or "") + (" " + q["text"] if q.get("text") else "")}
+    return PREDICATES[check](out, inp, **(args or {}))
+
+
+def guide_cheapest_option(output, inp, strict=False):
+    """After find_savings (in tool_results): the reply recommends a lever and names the cheapest lever's total
+    (strict: recommends exactly the cheapest lever). No lever found → passes (judged elsewhere)."""
+    rep = _guide_reply(output)
+    levers = [lv for t in inp.get("tool_results") or [] if t.get("tool") == "find_savings"
+              for lv in (t.get("result") or {}).get("levers") or []]
+    if not levers or not isinstance(rep, dict):
+        return _res(True)
+    cheapest = min(levers, key=lambda lv: lv["total_rub"])
+    rec = rep.get("recommended_id")
+    if strict and rec != cheapest["variant_id"]:
+        return _res(False, f"recommended {rec}, the cheapest lever is {cheapest['variant_id']}")
+    if rec not in {lv["variant_id"] for lv in levers}:
+        return _res(False, f"recommended {rec} is no savings lever")
+    named = any(same_number(n, cheapest["total_rub"]) for n in numbers_in_text(rep.get("message") or ""))
+    return _res(named, f"the cheapest option {cheapest['total_rub']} is not named")
+
+
 PREDICATES = {
+    "guide_replies": guide_replies,
+    "guide_calls": guide_calls,
+    "guide_recommended_shown": guide_recommended_shown,
+    "guide_one_question": guide_one_question,
+    "guide_on_reply": guide_on_reply,
+    "guide_cheapest_option": guide_cheapest_option,
     "no_unbacked_claims": no_unbacked_claims,
     "patch_has_no_assumptions": patch_has_no_assumptions,
     "patch_empty": patch_empty,

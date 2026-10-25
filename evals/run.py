@@ -206,6 +206,21 @@ def run_case_once(case, run_index, backend, skill, policy=None):
             if isinstance(res.data, dict):
                 repair_output_ids(res.data, case["input"])
                 fix_star_glyphs(res.data)
+    if case["card"] == "guide" and isinstance(res.data, dict):
+        # like the engine: a reply the guards block gets one fix-up round with the reasons (agent/guide.py)
+        from agent.guide import offline_issues
+        issues = blocking(offline_issues(case["input"], res.data, skill.rules))
+        if issues:
+            rerun = {"issues": [f"{i['code']}: {i['message']}" for i in issues], "first_output": res.data}
+            req2 = LLMRequest(card=case["card"], system=rerun_system(req.system, issues), user=req.user,
+                              schema=card.schema, images=images, thinking=thinking, max_tokens=card.max_tokens,
+                              temperature=temperature)
+            try:
+                res = backend.complete(req2)
+            except LLMError as exc:
+                rec.update(error=f"LLMError on rerun: {exc}", rerun=rerun,
+                           latency_ms=int((time.monotonic() - started) * 1000))
+                return rec
     data = polish_output(res.data)
     if case["card"] == "understand" and isinstance(data, dict):
         # like the engine: deterministic code-side normalisation of the reply before it reaches the brief
@@ -525,6 +540,11 @@ def run_scenario(scenario, run_index, engine, persona, run_dir, set_name, lookup
         "fallback_turns": fallback_turns, "schema_error_turns": schema_errors,
         "degraded_turns": sum(1 for r in responses if (r.get("debug") or {}).get("degraded")),
         "error_turns": sum(1 for r in responses if r.get("error")),
+        # guide mode (--flags guide): turns the guide answered / fell back from (with the reasons)
+        "guide_turns": sum(1 for r in responses if (r.get("debug") or {}).get("guide")),
+        "guide_used": sum(1 for r in responses if ((r.get("debug") or {}).get("guide") or {}).get("used")),
+        "guide_fallbacks": [g["fallback"] for g in ((r.get("debug") or {}).get("guide") for r in responses)
+                            if g and g.get("fallback")],
         "served_models": dict(Counter(c.get("model") for c in model_calls if c.get("model"))),
         "served_providers": dict(Counter(c.get("provider") for c in model_calls if c.get("provider"))),
         "persona_models": dict(persona_models), "persona_ms_p50": percentile(persona_ms, 50),
@@ -604,6 +624,10 @@ def summarize_level3(rows):
         "fallback_card_rate": sum(r["fallback_turns"] for r in rows) / turns if turns else None,
         "response_schema_error_turns": sum(r["schema_error_turns"] for r in rows),
         "degraded_turns": sum(r["degraded_turns"] for r in rows),
+        "guide_turns": sum(r.get("guide_turns") or 0 for r in rows),
+        "guide_fallback_rate": (sum(len(r.get("guide_fallbacks") or []) for r in rows)
+                                / sum(r.get("guide_turns") or 0 for r in rows))
+        if sum(r.get("guide_turns") or 0 for r in rows) else None,
         "error_response_turns": sum(r["error_turns"] for r in rows),
         "end_reasons": dict(Counter(r["end_reason"] for r in rows)),
         "profiles_injected": sum(1 for r in rows if r["profile_injected"]),

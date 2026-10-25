@@ -7,8 +7,8 @@
   "required": ["id", "category", "card", "input", "image", "expect", "runs", "notes"],
   "properties": {
     "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_\\-]*$"},
-    "category": {"enum": ["A", "A_photo", "B", "C", "D", "E", "F", "segments", "edge", "tone"]},
-    "card": {"enum": ["understand", "present.destinations", "present.variants", "present.update", "present.compare", "present.info", "present.aftercare", "present.fallback"]},
+    "category": {"enum": ["A", "A_photo", "B", "C", "D", "E", "F", "segments", "edge", "tone", "guide"]},
+    "card": {"enum": ["understand", "present.destinations", "present.variants", "present.update", "present.compare", "present.info", "present.aftercare", "present.fallback", "guide"]},
     "input": {"type": "object"},
     "image": {"type": ["string", "null"], "pattern": "^evals/images/[^/]+\\.(jpg|jpeg|png|webp)$"},
     "expect": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/assertion"}},

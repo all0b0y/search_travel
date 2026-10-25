@@ -21,6 +21,8 @@ CARD_KEYS = {
     "present.info": ("question", "facts"),
     "present.aftercare": ("order", "result"),
     "present.fallback": ("message", "reason"),
+    # guide mode (AGENT_PLAN.md decisions 23-26, agent/guide.build_context): the whole turn, compacted
+    "guide": ("home_city", "screen", "history", "message", "reading", "default_plan", "round"),
 }
 # keys a card input may carry only when they apply (absent otherwise): `question` = a question asked inside a
 # search / refine message ({text, facts}, steps.search_question) that the card answers first; `other_places` =
@@ -29,7 +31,8 @@ CARD_KEYS = {
 # `offers` = what this answer's buttons really do (steps.response_offers: add_road, connecting, train, plane, place) —
 # the card promises a button only from it
 OPTIONAL_KEYS = {"present.variants": ("question", "other_places", "offers"),
-                 "present.update": ("question", "other_places", "offers")}
+                 "present.update": ("question", "other_places", "offers"),
+                 "guide": ("tool_results",)}   # results of earlier tool rounds (or the auto find_savings)
 CARDS = tuple(CARD_KEYS)
 UPSELL_KINDS = ("transfer", "early_checkin", "room_upgrade", "meal_upgrade", "flexible_fare")  # decision 8
 
@@ -106,7 +109,12 @@ OTHER_PLACES = {"type": "array", "maxItems": 3, "items": _obj(
         "road_ru": {"type": "string", "minLength": 1}})}   # optional: a long-distance train («поездом, в пути …»)
 OFFERS = {"type": "array", "minItems": 1, "items": _obj(["kind", "label"], {
     "kind": {"enum": ["add_road", "connecting", "train", "plane", "place"]}, "label": {"type": "string", "minLength": 1}})}
-OPTIONAL_PROPS = {"question": SEARCH_QUESTION, "other_places": OTHER_PLACES, "offers": OFFERS}
+TOOL_RESULTS = {"type": "array", "items": _obj(["call", "tool", "args", "result"], {
+    "call": {"type": "integer"}, "tool": {"enum": ["rebuild", "find_savings", "check_road", "find_destinations",
+                                                   "place_info", "compare"]},
+    "args": {"type": "object"}, "result": {"type": "object"}, "auto": {"type": "boolean"}})}
+OPTIONAL_PROPS = {"question": SEARCH_QUESTION, "other_places": OTHER_PLACES, "offers": OFFERS,
+                  "tool_results": TOOL_RESULTS}
 _COMMON_PROPS = {
     "today": DATE,
     "stage": {"enum": list(STAGES)},
@@ -147,6 +155,17 @@ _CARD_PROPS = {
     "present.aftercare": {"order": {"type": "object"}, "result": {"type": "object"}},
     "present.fallback": {"message": {"type": "string"},
                          "reason": {"enum": ["smalltalk", "out_of_scope", "unknown"]}},
+    "guide": {
+        "home_city": {"type": ["string", "null"]},
+        "screen": _obj(["stage"], {"stage": {"enum": list(STAGES)}}, extra=True),
+        "history": {"type": "array", "items": _obj(["role", "text"], {"role": {"enum": ["user", "agent"]},
+                                                                      "text": {"type": "string"}})},
+        "message": {"type": "string", "minLength": 1},
+        "reading": {"type": "object"},
+        "default_plan": _obj(["route", "card", "status"], {
+            "status": {"enum": ["ok", "failed", "code_answer"]}}, extra=True),
+        "round": {"type": ["integer", "string"]},
+    },
 }
 # changes rows: brief paths (dates.shift_days, dates.start, party.pets, ...) and per-variant totals
 # `totals.<variant_id>.rub` (after null = the variant is gone) with the ready gap delta_rub = |after - before| and

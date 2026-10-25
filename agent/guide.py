@@ -54,6 +54,7 @@ LEVER_TITLES = {"dates": "Другие даты", "nights_1": "На ночь к�
 # variant facts the guide sees (truthy values only, except the ones whose false matters)
 VARIANT_FACT_KEYS = ("budget_fit", "budget_rub", "budget_dropped_prefs", "dates_shifted_days", "nights_changed_from",
                      "transport_gap_ru", "out_road_ru", "back_road_ru", "out_on_road_ru", "back_on_road_ru",
+                     "out_long_train", "back_long_train", "out_leave_ru", "back_home_ru", "out_days_before_checkin",
                      "out_pets_rule", "back_pets_rule", "price_pets_rub", "near_name", "distance_near_m", "dorm_bed",
                      "out_night", "back_night", "out_high_speed", "back_high_speed", "kitchen", "lift", "step_free",
                      "infant_cot", "no_transport", "price_stay_rub", "lever", "saving_rub")
@@ -452,7 +453,9 @@ def _gives_up_hotel(base, v):
     out = []
     if base.hotel is not None and v.hotel is not None:
         if (v.hotel.stars or 0) < (base.hotel.stars or 0):
-            out.append(f"звёзд {v.hotel.stars or 'нет'} вместо {base.hotel.stars}")
+            n = v.hotel.stars
+            out.append(f"отель на {n} {P.plural(n, 'звезду', 'звезды', 'звёзд')} вместо {base.hotel.stars}" if n
+                       else f"отель без звёзд вместо {base.hotel.stars}")
         if v.hotel.rating is not None and base.hotel.rating is not None and v.hotel.rating < base.hotel.rating:
             out.append(f"рейтинг {v.hotel.rating} вместо {base.hotel.rating}")
     if bf.get("meals") not in (None, "none", "any") and f.get("meals") != bf.get("meals"):
@@ -461,13 +464,27 @@ def _gives_up_hotel(base, v):
         out.append("без бесплатной отмены")
     bc, c = bf.get("distance_center_m"), f.get("distance_center_m")
     if isinstance(bc, (int, float)) and isinstance(c, (int, float)) and c - bc >= 1000:
-        out.append(f"до центра {round(c / 1000, 1)} км вместо {round(bc / 1000, 1)}")
+        out.append(f"до центра {_km(c)} км вместо {_km(bc)}")
     return out
+
+
+def _km(metres):
+    return f"{round(metres / 1000, 1):.1f}".replace(".", ",")
 
 
 def _road_hours(v):
     t = v.totals
     return t.out_hours, t.back_hours
+
+
+def _road_words(v):
+    """«туда 3,1 ч, обратно 2,9 ч»; a long train in code's words («1 сутки 4 ч»), never decimal hours."""
+    f, (oh, bh) = v.facts, _road_hours(v)
+    out = f.get("out_on_road_ru") if f.get("out_long_train") else (P.fmt_hours(oh) if oh else None)
+    back = f.get("back_on_road_ru") if f.get("back_long_train") else (P.fmt_hours(bh) if bh else None)
+    if out and back:
+        return f"туда {out}, обратно {back}"
+    return out or back or ""
 
 
 def _lever_variant(v, state, lever, base_total, change_ru, gives_up):
@@ -599,9 +616,8 @@ def tool_find_savings(engine, ctx, args, state, call):
         v = build_on(sub, b2, ci, co)
         if v is None:
             return None
-        oh, bh = _road_hours(v)
-        return ("connecting", v, b2, "рейсы с пересадкой",
-                [f"с пересадкой: туда {P.fmt_hours(oh)}, обратно {P.fmt_hours(bh)}" if oh and bh else "с пересадкой"])
+        road = _road_words(v)
+        return ("connecting", v, b2, "рейсы с пересадкой", [f"с пересадкой: {road}" if road else "с пересадкой"])
 
     def lever_train(sub):
         if "flight" not in road_kinds or prefs.get("transport") == "plane" or not S.train_reachable(origin, rec):
@@ -610,9 +626,10 @@ def tool_find_savings(engine, ctx, args, state, call):
         v = build_on(sub, b2, ci, co)
         if v is None:
             return None
-        oh, bh = _road_hours(v)
-        return ("train", v, b2, "поездом вместо самолёта",
-                [f"дорога дольше: туда {P.fmt_hours(oh)}, обратно {P.fmt_hours(bh)}" if oh and bh else "поезд"])
+        road = _road_words(v)
+        leave = v.facts.get("out_leave_ru")
+        return ("train", v, b2, "поездом вместо самолёта" + (f", {leave}" if leave else ""),
+                [f"дорога дольше: {road}" if road else "поезд"])
 
     def places(sub):
         """Similar places (the destination's tags as wishes; its country first) priced for the same dates and
@@ -1157,6 +1174,45 @@ def check_reply(engine, ctx, reply, plan, pool, tool_results):
         issues.append(issue("savings_claim", f"«{m.group(0)}» — find_savings нашёл дешевле: "
                                              + ", ".join(str(x.get("total_rub") or x.get("price_from_rub"))
                                                          for x in cheaper[:3])))
+    return issues
+
+
+def offline_issues(card_input, output, rules):
+    """The guards a level-2 run applies to one guide output (evals/run.py; the engine checks against the real shown
+    set): numbers / Latin / claims against the whole input, recommended_id among the input ids, ≤ 1 question, the
+    message length, no «дешевле не нашлось» after find_savings found cheaper. A tool round (reply null) passes."""
+    from .guards import check_card_output, question_count
+    reply = (output or {}).get("reply")
+    if not isinstance(reply, dict):
+        return []
+    cfg = settings(rules)
+    ids = set()
+    dp, screen = card_input.get("default_plan") or {}, card_input.get("screen") or {}
+    for key in ("variants", "destinations"):
+        ids |= {x.get("id") for x in (dp.get(key) or []) + (screen.get(key) or []) if isinstance(x, dict)}
+    for t in card_input.get("tool_results") or []:
+        r = t.get("result") or {}
+        ids |= {x.get("id") for x in (r.get("variants") or []) + (r.get("destinations") or []) if isinstance(x, dict)}
+        ids |= {x.get("variant_id") for x in r.get("levers") or [] if isinstance(x, dict)}
+    pool = dict(card_input, items=[{"id": i} for i in sorted(i for i in ids if i)])
+    msg = reply.get("message") or ""
+    q = reply.get("question")
+    text = msg + (f"\n{q['text']} " + " ".join(c.get("label", "") for c in q.get("choices") or []) if q else "")
+    out = {"message": text, "items": [], "recommended_id": reply.get("recommended_id"), "upsell": []}
+    issues = [as_issue(i) for i in check_card_output("present.info", pool, out, rules) or []
+              if i.get("code") not in GUARD_DROP]
+    lo, hi = cfg["message_chars"]
+    if len(msg) > int(hi * 1.2):
+        issues.append(issue("message_long", f"Сообщение {len(msg)} знаков — сократите до {hi}"))
+    asked = question_count(msg) + (1 if q and q["text"].strip() not in msg else 0)
+    if asked > int(cfg["max_questions"]):
+        issues.append(issue("too_many_questions", f"Вопросов {asked} — оставьте не больше {cfg['max_questions']}"))
+    tools = [{"tool": t.get("tool"), "result": t.get("result") or {}} for t in card_input.get("tool_results") or []]
+    savings = [t["result"] for t in tools if t["tool"] == "find_savings" and t["result"].get("ok")]
+    cheaper = [x for r in savings for x in (r.get("levers") or []) + (r.get("places") or [])]
+    m = NOT_FOUND_CHEAPER_RE.search(msg)
+    if m and cheaper:
+        issues.append(issue("savings_claim", f"«{m.group(0)}» — find_savings нашёл дешевле"))
     return issues
 
 

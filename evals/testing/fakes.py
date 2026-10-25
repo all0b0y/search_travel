@@ -149,6 +149,8 @@ def fake_card_reply(req):
     if req.card == "understand":
         return {"intent": "new_trip", "patch": {"set": {}, "unset": []}, "refs": [], "image": None,
                 "info_question": None, "post_purchase": None}
+    if req.card == "guide":
+        return {"calls": [], "reply": {"message": "Готово.", "show": "none", "recommended_id": None, "question": None}}
     return _present_output(req.card, payload)
 
 
