@@ -352,8 +352,12 @@ def variant_item(variant, label, district_counts=None, base_rub=None, budget_max
                  # Russian words, not the codes: a cheap model copies «walkable» into the text otherwise
                  "district": {"labels": [DISTRICT_RU.get(lb, lb) for lb in variant.hotel.district.labels],
                               "counts": district_counts or {}}}
+    totals = variant.totals.model_dump(mode="json")
+    for way in ("out", "back"):   # a long train: the card says out|back_on_road_ru; decimal hours are bait to copy
+        if variant.facts.get(f"{way}_long_train"):
+            totals[f"{way}_hours"] = None
     return {"id": variant.id, "label": label, "title": variant.title or VARIANT_TITLES.get(variant.id, variant.id),
-            "totals": variant.totals.model_dump(mode="json"), "steps": [step_item(s) for s in variant.steps],
+            "totals": totals, "steps": [step_item(s) for s in variant.steps],
             "hotel": hotel, "facts": dict(variant.facts), "sacrifices": [_note(n) for n in variant.sacrifices],
             "risks": [_note(n) for n in variant.risks], "not_for": [_note(n) for n in variant.not_for],
             "fit": variant.fit.model_dump(mode="json") if variant.fit else None,
