@@ -17,6 +17,8 @@ at startup and never rewrites it while running. Contract: `AGENT_PLAN.md`, secti
   The system prompt of a card = prompt + `voice.md` (when `voice: true`) + the output schema.
 - `schema/` — draft-07 JSON Schemas of card outputs. The patch path enum in
   `understand.schema.json` equals `agent.state.ALLOWED_PATCH_PATHS` (tested).
+- `guide.md` + `schema/guide.schema.json` — the `guide` card of guide mode (flag `guide`, `agent/guide.py`):
+  not in `turns.json`; thinking / temperature / max_tokens and the loop's limits come from `rules.json` `guide`.
 - `questions.json` — askable fields: Russian question text, `hint` (when to ask), choices with
   `chip` labels (text of the chip when the engine assumes the value), recommendation rule.
   `place_confirm` — the photo confirmation question (`{place}` template) for

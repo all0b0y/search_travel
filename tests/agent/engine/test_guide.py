@@ -438,3 +438,44 @@ def test_flag_off_and_guide_fallback_answer_the_same(live, monkeypatch):
     assert all((t.get("guide") or {}).get("fallback") for t in h.session().trace)   # the guide ran and fell back
     assert off == on
 
+
+
+@pytest.mark.parametrize("live", [GUIDE], indirect=True)
+def test_rebuild_to_another_place_and_an_unknown_one(live):
+    h = live
+    first_turn(h)
+    got = {}
+
+    def second(c, req):
+        got.update({t["args"]["set"]["destination.name"]: t["result"] for t in c["tool_results"]})
+        res = got["Анталья"]
+        return reply(f"В Анталью на те же даты — от {min(v['total_rub'] for v in res['variants'])} ₽.",
+                     rec=res["recommended_id"])
+
+    Script(h, calls(("rebuild", {"set": {"destination.name": "Анталья"}}),
+                    ("rebuild", {"set": {"destination.name": "Атлантида-Сити"}})), second)
+    h.understand(u(intent="refine"))
+    r = h.turn("а если не Стамбул, а Анталья?")
+    assert got["Атлантида-Сити"] == {"ok": False, "why": "«Атлантида-Сити» нет в каталоге"}
+    assert got["Анталья"]["ok"] and guide_trace(r)["used"] is True
+    assert h.session().brief.values()["destination"]["name"] == "Анталья"
+    assert all(c["id"].startswith("custom-") for c in r["cards"]["variants"])
+
+
+@pytest.mark.parametrize("live", [GUIDE], indirect=True)
+def test_a_cheaper_place_named_in_the_reply_is_one_tap_away(live):
+    h = live
+
+    def pick(c, req):
+        res = c["tool_results"][0]["result"]
+        assert res["places"], res
+        p, lv = res["places"][0], res["levers"][0]
+        return reply(f"Дешевле всего — {lv['change_ru']}: {lv['total_rub']} ₽. Совсем бюджетно — {p['name']}: от "
+                     f"{p['price_from_rub']} ₽ за ту же поездку.", rec=lv["variant_id"])
+
+    r, s, _, _ = _savings_turn(h, pick)
+    place = s.ctx()["tool_results"][0]["result"]["places"][0]
+    assert {"type": "choose_destination", "label": f"Смотреть {place['name']}",
+            "payload": {"destination_id": place["id"]}} in r["actions"]
+    r2 = h.turn(action={"type": "choose_destination", "payload": {"destination_id": place["id"]}})
+    assert r2.get("error") is None and r2["cards"]["variants"]

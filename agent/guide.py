@@ -364,6 +364,15 @@ def _base_dates(state):
     return None
 
 
+def _known_destination(sub, patch):
+    """A destination named in tool args must be in the catalog already: a tool never starts the network lazy-city
+    build (up to a minute) inside the 15 s turn. -> None when fine, else the unknown name."""
+    name = (patch.get("set") or {}).get("destination.name")
+    if not name or S.wish_traits(str(name)) is not None:   # «море» is a wish: apply_patch turns it into traits
+        return None
+    return None if S.resolve_destination(sub, str(name), allow_lazy=False) is not None else str(name)
+
+
 def _reconcile(patch, brief, state):
     sets, unsets = patch["set"], patch["unset"]
     k = sets.pop("dates.shift_days", None)
@@ -408,6 +417,9 @@ def _variants_result(brief, variants, extra=None):
 def tool_rebuild(engine, ctx, args, state, call):
     patch = _patch_of(args)
     sub = _sub_ctx(ctx)
+    unknown = _known_destination(sub, patch)
+    if unknown:
+        return {"ok": False, "why": f"«{unknown}» нет в каталоге"}, None, sub
     sub.patch = _reconcile(patch, sub.session.brief, state)
     S.STEP_REGISTRY["apply_patch"](sub)
     if not sub.session.brief.has("destination"):
@@ -633,7 +645,7 @@ def tool_find_savings(engine, ctx, args, state, call):
 
     def places(sub):
         """Similar places (the destination's tags as wishes; its country first) priced for the same dates and
-        party, cheaper than the trip: a small pool (8 by plane, 4 by train) keeps it fast."""
+        party, cheaper than the trip: a small pool (6 by plane, 3 by train) keeps it fast."""
         b = brief.values()
         traits = [t for t in S._json_list(rec.get("tags")) if isinstance(t, str)]
         found = S.od(sub, "find_destinations", traits=traits, month=ci.month, origin_city=(b.get("origin") or {}).get(
@@ -644,8 +656,8 @@ def tool_find_savings(engine, ctx, args, state, call):
         recs = [r for r in recs if S._passes_dest_prefs(r, origin, train_only, domestic, sub, nights)]
         recs.sort(key=lambda r: r.get("country_code") != rec.get("country_code"))
         dates = (ci.isoformat(), co.isoformat())
-        plane = [] if train_only else [r for r in recs if S._json_list(r.get("airports"))][:8]
-        trains = [r for r in recs if origin and S.train_reachable(origin, r)][:4]
+        plane = [] if train_only else [r for r in recs if S._json_list(r.get("airports"))][:6]
+        trains = [r for r in recs if origin and S.train_reachable(origin, r)][:3]
         p_prices = S.destination_prices(sub, brief, plane, train=False, dates_override=dates)
         t_prices = S.destination_prices(sub, brief, trains, train=True, dates_override=dates)
         out = []
@@ -832,6 +844,9 @@ def tool_check_road(engine, ctx, args, state, call):
 def tool_find_destinations(engine, ctx, args, state, call):
     patch = _patch_of(args)
     sub = _sub_ctx(ctx)
+    unknown = _known_destination(sub, patch)
+    if unknown:
+        return {"ok": False, "why": f"«{unknown}» нет в каталоге"}, None, sub
     if "destination.name" not in patch["set"] and "destination.name" not in patch["unset"]:
         patch["unset"].append("destination.name")
     sub.patch = patch
