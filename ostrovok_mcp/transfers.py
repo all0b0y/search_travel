@@ -100,10 +100,15 @@ def build(params: dict) -> dict | None:
     if kind not in KINDS:
         return None
     speed, overhead, cap = KINDS[kind]
-    local_min = at.hour * 60 + at.minute
+    duration = max(1, int(round(km / speed * 60 + overhead)))
+    # service hours are local to the place: `at` may come with any offset (a UTC 20:53 is 23:53 in Minsk,
+    # where public transport no longer runs), and a public ride must also end before midnight
+    tz = geo.destination_tz(dest) if dest else None
+    at_local = at.astimezone(tz) if tz is not None and at.tzinfo is not None else at
+    local_min = at_local.hour * 60 + at_local.minute
     if kind == "shuttle" and (pt["form"] != "iata" or km > 80 or not 360 <= local_min <= 1410):
         return None
-    if kind == "public" and (km > 60 or not 360 <= local_min <= 1380):
+    if kind == "public" and (km > 60 or not 360 <= local_min <= 1380 or local_min + duration > 1440):
         return None
     if km > 400:
         return None
@@ -117,7 +122,6 @@ def build(params: dict) -> dict | None:
         price = pax * (sb + skm * km)
     else:
         price = pax * pub
-    duration = max(1, int(round(km / speed * 60 + overhead)))
     side = "hotel" if reverse else pt["form"]
     template = MEETING.get((side, kind)) or MEETING[(side, "taxi")]
     meeting = template.format(place=pt["place"], hotel=h["name"])
