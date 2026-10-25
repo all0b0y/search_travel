@@ -354,6 +354,49 @@ class OpenData:
     def districts_for(self, osm_ids):
         return {o: p for o in osm_ids if (p := self.district_profile(o)) is not None}
 
+    # ------------------------------------------------------------ named places (pois)
+
+    def pois_rows(self, dest_id):
+        """Sights and named districts of a destination (table `pois`, one indexed query) -> [row]; [] when the
+        destination has none (yet)."""
+        rows = self._query("SELECT destination_id, osm_id, kind, name, name_ru, name_en, names, lat, lon, "
+                           "dist_center_m, wikidata, sitelinks, rank FROM pois WHERE destination_id = ?", (dest_id,))
+        return self._dedupe(rows, ("destination_id", "osm_id"))
+
+    def _poi_index(self, dest_id):
+        from .places import PoiIndex
+        cache = self.__dict__.setdefault("_poi_cache", {})
+        index = cache.get(dest_id)
+        if index is None:
+            index = PoiIndex(self.pois_rows(dest_id))
+            if len(cache) > 64:
+                cache.clear()
+            cache[dest_id] = index
+        return index
+
+    def has_pois(self, dest_id):
+        return bool(dest_id) and bool(self._poi_index(dest_id).rows)
+
+    def find_poi(self, dest_id, text):
+        """The sight / district of `dest_id` a text names («Айя-Софией», «Султанахмет», «Sultan Ahmet») ->
+        {name, kind, lat, lon, dist_center_m, wikidata, sitelinks, osm_id, score, ...} or None (agent.places:
+        case endings, ё/е, punctuation, Latin/Cyrillic; generic words alone never match; ties -> more
+        sitelinks). The destination's index is built once per OpenData instance."""
+        if not dest_id or not str(text or "").strip():
+            return None
+        return self._poi_index(dest_id).find(text)
+
+    def find_poi_in_text(self, dest_id, text, cues):
+        """The first phrase after a cue («рядом с X», «в районе X», «от X») that names a poi of `dest_id` ->
+        (poi, phrase) | (None, first phrase or None)."""
+        from .places import near_phrases
+        phrases = near_phrases(text, cues)
+        for ph in phrases:
+            poi = self.find_poi(dest_id, ph)
+            if poi is not None:
+                return poi, ph
+        return None, (phrases[0] if phrases else None)
+
     # ------------------------------------------------------------ airports and routes
 
     def airport(self, iata):

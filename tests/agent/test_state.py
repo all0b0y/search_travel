@@ -121,7 +121,7 @@ def test_every_allowed_path_is_applicable():
         "party.adults": 3, "party.children": 1, "party.children_ages": [7], "party.pets": ["dog"],
         "budget_rub.max": 150000, "prefs.meals": "breakfast", "prefs.free_cancellation": True,
         "prefs.stars_min": 4, "prefs.direct_only": True, "prefs.max_travel_hours": 6.5, "prefs.district": "quiet",
-        "prefs.beach_max_m": 500, "prefs.center_max_m": 1500, "prefs.transport": "plane", "prefs.arrive_before": "14:00",
+        "prefs.beach_max_m": 500, "prefs.center_max_m": 1500, "prefs.near": "Айя-София", "prefs.transport": "plane", "prefs.arrive_before": "14:00",
         "prefs.no_night_flights": True, "prefs.domestic": True, "constraints.add": ["accessible"],
         "constraints.remove": ["accessible"], "traits.add": ["sea"], "mood.add": ["relax"],
         "origin.city": "Казань", "scope": ["stay"],

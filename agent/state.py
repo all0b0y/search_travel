@@ -78,7 +78,8 @@ ALLOWED_PATCH_PATHS = (
     "party.segment", "party.adults", "party.children", "party.children_ages", "party.pets",
     "budget_rub.max",
     "prefs.meals", "prefs.free_cancellation", "prefs.stars_min", "prefs.direct_only",
-    "prefs.max_travel_hours", "prefs.district", "prefs.beach_max_m", "prefs.center_max_m", "prefs.transport",
+    "prefs.max_travel_hours", "prefs.district", "prefs.beach_max_m", "prefs.center_max_m", "prefs.near",
+    "prefs.transport",
     "prefs.arrive_before", "prefs.no_night_flights", "prefs.domestic",
     "constraints.add", "constraints.remove",
     "traits.add", "mood.add",
@@ -174,6 +175,9 @@ class Prefs(Model):
     # metres from the destination's centre point (opendata destinations lat/lon, the catalog's
     # distance_center_m): a relaxable hotel filter; «в центре» 1500, «в самом центре» 800
     center_max_m: Optional[int] = PField(default=None, ge=0)
+    # the place the user wants to stay near, as they named it («Айя-София», «Султанахмет», «Диснейленд»): code
+    # resolves it in the destination's pois (opendata) and filters / ranks hotels by the distance to that point
+    near: Optional[str] = PField(default=None, min_length=1, max_length=80)
     transport: Transport = "any"
     # "HH:MM", local time at the destination: the outbound leg must arrive at or before it
     arrive_before: Optional[str] = PField(default=None, pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
@@ -659,6 +663,8 @@ class VariantHotel(Model):
     stars: Optional[int] = None
     rating: Optional[float] = None
     district: DistrictProfile = PField(default_factory=DistrictProfile)
+    lat: Optional[float] = None   # the hotel's point: distances to a named place (prefs.near, «далеко ли от X?»)
+    lon: Optional[float] = None
 
 
 class Variant(Model):

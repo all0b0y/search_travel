@@ -306,9 +306,12 @@ def test_location_understand_cases_golden():
     assert _run_case("e7_refine_closer_historic_center", _und(sets={"prefs.center_max_m": 1500}))[0]
     ok, failed, _ = _run_case("e7_refine_closer_historic_center", _und(sets={"prefs.district": "walkable"}))
     assert not ok                                               # the s04 slip fails the case
-    assert _run_case("x7_near_disneyland_no_center", _und("new_trip", {"destination.name": "Париж"}))[0]
+    assert _run_case("x7_near_disneyland_no_center",
+                     _und("new_trip", {"destination.name": "Париж", "prefs.near": "Диснейленд"}))[0]
+    assert not _run_case("x7_near_disneyland_no_center", _und("new_trip", {"destination.name": "Париж"}))[0]
     assert not _run_case("x7_near_disneyland_no_center",
-                         _und("new_trip", {"destination.name": "Париж", "prefs.center_max_m": 1500}))[0]
+                         _und("new_trip", {"destination.name": "Париж", "prefs.near": "Диснейленд",
+                                           "prefs.center_max_m": 1500}))[0]
 
 
 def test_location_present_cases_golden():

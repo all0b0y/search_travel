@@ -12,6 +12,7 @@
       "country": "Турция",
       "confidence": 0.95
     },
+    "landmark": "Айя-София",
     "traits": {
       "landscape": [
         "old_town"

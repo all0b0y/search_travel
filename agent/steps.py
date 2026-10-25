@@ -639,6 +639,7 @@ def prepare_brief(ctx, brief, patch, allow_lazy=True):
             unknown = dest["name"]
             new, _ = apply_patch(new, {"unset": ["destination.name"]})
             new.destination.source = brief.destination.source
+    new = clear_near_on_new_destination(brief, new, patch)
     new = normalize_brief(ctx, new)
     return new, changed_paths(brief, new), unknown
 
@@ -749,6 +750,7 @@ def run_image_match(ctx):
     if want == "here" and rec is not None and conf >= place_min and not user_dest:
         ctx.session.brief = set_destination(brief, rec, source="inferred", confidence=conf)
         ctx.trace["notes"].append(f"image: here, place {rec['id']} at {conf:.2f} -> destination")
+        image_landmark(ctx, image, rec, conf)
         return
     traits, moods = image_traits(image)
     if traits and brief.source_of("traits") != "user":
@@ -765,6 +767,26 @@ def run_image_match(ctx):
                                   + (" + confirm" if want == "here" else ""))
     else:
         ctx.trace["notes"].append(f"image: {want}, traits only ({conf:.2f})")
+
+
+def image_landmark(ctx, image, rec, conf):
+    """A photo of a sight («Айя-София») whose place became the destination: when the landmark resolves in that
+    destination's pois, prefs.near is assumed (source inferred, a chip «отель рядом: …»), so the first answer
+    already has hotels next to it. Not found -> nothing (the centre logic applies, nothing is claimed)."""
+    landmark = str((image or {}).get("landmark") or "").strip()
+    sets = ctx.patch.get("set") or {}
+    if not landmark or "prefs.near" in sets or "prefs.center_max_m" in sets:
+        return
+    brief = ctx.session.brief
+    if brief.source_of("prefs.near") == "user" and (brief.values().get("prefs") or {}).get("near"):
+        return
+    poi = od(ctx, "find_poi", rec["id"], landmark)
+    if poi is None:
+        ctx.trace["notes"].append(f"image: landmark «{landmark}» not in {rec['id']} pois -> centre")
+        return
+    ctx.session.brief = assume(brief, "prefs.near", landmark[:80], "inferred", conf)
+    ctx.trace["notes"].append(f"image: landmark «{landmark}» -> prefs.near ({poi['name']}, {poi['dist_center_m']} m "
+                              f"from the centre)")
 
 
 def step_image_match(ctx):
@@ -1085,6 +1107,143 @@ def center_search_m(ctx, brief, dest):
     return int(mx if mx is not None else rr["center_search_m"])
 
 
+NEAR_KEY = "engine:near_point"
+
+
+def _loc_rules(rules):
+    return (rules or {}).get("location") or {}
+
+
+def clear_near_on_new_destination(before, new, patch):
+    """prefs.near belongs to its destination: another (or no) destination drops it unless set in the same patch."""
+    near = (new.values().get("prefs") or {}).get("near")
+    if not near or "prefs.near" in ((patch or {}).get("set") or {}):
+        return new
+    old_id = (before.values().get("destination") or {}).get("id")
+    new_id = (new.values().get("destination") or {}).get("id")
+    if old_id and old_id != new_id:
+        return assume(new, "prefs.near", None, "default")
+    return new
+
+
+def resolve_place(ctx, dest_id, text):
+    """A place name of the user -> the poi point of `dest_id` (opendata pois) or None."""
+    if not dest_id or not str(text or "").strip():
+        return None
+    poi = od(ctx, "find_poi", dest_id, text)
+    if not poi:
+        return None
+    return {"query": str(text).strip(), "name": poi["name"], "kind": poi.get("kind"), "lat": poi["lat"],
+            "lon": poi["lon"], "dist_center_m": poi.get("dist_center_m"), "osm_id": poi.get("osm_id"),
+            "wikidata": poi.get("wikidata"), "sitelinks": poi.get("sitelinks"), "destination_id": dest_id}
+
+
+def near_point(ctx, brief=None):
+    """The resolved point of the brief's prefs.near in its destination (kept in session.results under NEAR_KEY,
+    refreshed every turn, re-resolved when the destination or the words change) -> point dict or None."""
+    brief = brief or ctx.session.brief
+    v = brief.values()
+    q = (v.get("prefs") or {}).get("near")
+    dest_id = (v.get("destination") or {}).get("id")
+    if not q or not dest_id:
+        return None
+    s = ctx.session
+    with ctx.lock:
+        rec = s.results.get(NEAR_KEY)
+        data = rec.data if rec is not None and isinstance(rec.data, dict) else {}
+    if data.get("destination_id") == dest_id and data.get("query") == q:
+        point = data.get("point")
+    else:
+        point = resolve_place(ctx, dest_id, q)
+    with ctx.lock:
+        s.results.pop(NEAR_KEY, None)
+        store_result(s, CachedResult(key=NEAR_KEY, kind="near_point", params={"destination_id": dest_id, "query": q},
+                                     fetched_at=s.clock(), data={"destination_id": dest_id, "query": q,
+                                                                 "point": point}))
+    return point
+
+
+def near_cue_phrase(ctx, dest_id, text, cue_key="near_cues"):
+    """(poi, phrase) for the first «рядом с X» / «в районе X» in the text whose X names a poi of dest_id."""
+    if not dest_id or not text:
+        return None, None
+    found = od(ctx, "find_poi_in_text", dest_id, text, _loc_rules(ctx.rules).get(cue_key) or [])
+    return tuple(found) if found else (None, None)
+
+
+def near_drop_cue(rules, text):
+    return _cue_in((text or "").casefold().replace("ё", "е"),
+                   [str(c).replace("ё", "е") for c in _loc_rules(rules).get("near_drop_cues") or []])
+
+
+def near_search_cue(rules, text):
+    """«есть что-то рядом с X?», «подберите у X»: a question that asks for other hotels, not a distance."""
+    low = (text or "").casefold().replace("ё", "е")
+    return any(str(c).replace("ё", "е") in low for c in _loc_rules(rules).get("near_search_cues") or [])
+
+
+def _hotel_point(ctx, v):
+    """(lat, lon) of a variant's hotel: kept on the variant, else from its offer, else from get_hotel."""
+    if v.hotel is None:
+        return None
+    if v.hotel.lat is not None and v.hotel.lon is not None:
+        return v.hotel.lat, v.hotel.lon
+    offer = find_offer(ctx, v.hotel.offer_id) if v.hotel.offer_id else None
+    if not offer or offer.get("lat") is None:
+        offer = tool_safe(ctx, "get_hotel", {"hotel_id": v.hotel.hotel_id})
+    if offer and offer.get("lat") is not None and offer.get("lon") is not None:
+        return float(offer["lat"]), float(offer["lon"])
+    return None
+
+
+def near_distance_fact(ctx, variants, texts):
+    """«Далеко ли отель от Айя-Софии?»: the place a question names (a poi of the destination after «от / до /
+    рядом с …»), else the resolved prefs.near when the question is about location -> {"kind": "near_distance",
+    "place", "found": true, "place_distance_center_m", "items": [{id, title, hotel, distance_near_m,
+    distance_center_m}]} with metres computed by code per variant; a capitalised name that is no poi ->
+    {"kind": "near_distance", "place", "found": false, "items": []}; None when no place is asked about."""
+    from .ranking import near_distance_m
+    dest_id = (ctx.session.brief.values().get("destination") or {}).get("id")
+    texts = [t for t in texts if t]
+    if not dest_id or not texts:
+        return None
+    point, phrase = None, None
+    for t in texts:
+        poi, ph = near_cue_phrase(ctx, dest_id, t, "question_cues")
+        if poi is not None:
+            point = resolve_place(ctx, dest_id, ph)
+            break
+        if ph and phrase is None and ph[:1].isupper():
+            phrase = ph
+    if point is None and phrase is None and any(LOCATION_Q_RE.search(t) for t in texts):
+        point = near_point(ctx)
+    if point is None:
+        if phrase is None or od(ctx, "find_poi", dest_id, phrase) is not None:
+            return None
+        from .opendata import name_score
+        from .places import is_generic, norm
+        dest_name = (ctx.session.brief.values().get("destination") or {}).get("name") or ""
+        if all(is_generic(w) for w in norm(phrase).split()) or name_score(phrase, dest_name) >= 0.85:
+            return None          # «от центра», «от Стамбула»: not a place inside the destination
+        return {"kind": "near_distance", "place": phrase, "found": False, "items": []}
+    rows = []
+    for v in variants or []:
+        if v.hotel is None:
+            continue
+        f = v.facts or {}
+        if f.get("near_name") == point["name"] and f.get("distance_near_m") is not None:
+            d = int(f["distance_near_m"])
+        else:
+            pt = _hotel_point(ctx, v)
+            d = near_distance_m({"lat": pt[0], "lon": pt[1]}, point) if pt else None
+        if d is None:
+            continue
+        rows.append({"id": v.id, "title": v.title, "hotel": v.hotel.name, "distance_near_m": d,
+                     "distance_center_m": f.get("distance_center_m")})
+    return {"kind": "near_distance", "place": point["name"], "found": True, "place_kind": point.get("kind"),
+            "place_distance_center_m": point.get("dist_center_m"), "items": rows}
+
+
 def location_cue(rules, text):
     """rules.json `location` on the user's words -> metres for prefs.center_max_m («в центре» 1500, «в самом
     центре» 800) or None (no cue, or «не в центре»)."""
@@ -1211,7 +1370,8 @@ def center_distance_fact(variants):
 def search_question(ctx):
     """A question inside a search / refine message (understand info_question, or a best-time cue): never dropped.
     -> {"text", "facts"} for present.variants / present.update, or None. facts: best_time (when asked), the
-    distance to the centre of each variant's hotel, the climate of the trip month."""
+    distance to the centre of each variant's hotel, the distance to a named place (near_distance), the climate
+    of the trip month."""
     if ctx.action is not None:
         return None
     text = ((ctx.understand or {}).get("info_question") or "").strip()
@@ -1228,6 +1388,9 @@ def search_question(ctx):
     cd = center_distance_fact(ctx.variants)
     if cd is not None:
         facts.append(cd)
+    nd = near_distance_fact(ctx, ctx.variants, [text, ctx.text])
+    if nd is not None:
+        facts.append(nd)
     dest = ctx.session.brief.values().get("destination") or {}
     month = _month(ctx.session.brief)
     if dest.get("id") and month:
@@ -1425,7 +1588,18 @@ def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None, hotel_ca
                                             or hotel_cap is not None else 20,
                                             "today": today, **({"hotel_id": hotel_id, "all_rooms": True}
                                                                if hotel_id else {})})
-    if "hotels" in jobs and not hotel_id:
+    near = near_point(ctx, brief) if "stay" in scope else None
+    near_m = int(_ranking_rule(ctx, "near_max_m", 1500))
+    if near is not None and "hotels" in jobs:
+        # a named place (prefs.near): every offer carries its distance, and an extra search filtered by the
+        # radius around it (applied before the mock's top-`limit` cut) brings the hotels next to it
+        name, payload = jobs["hotels"]
+        point = {"lat": near["lat"], "lon": near["lon"]}
+        jobs["hotels"] = (name, {**payload, "filters": {**payload["filters"], "near": point}})
+        if not hotel_id:
+            jobs["hotels.near"] = (name, {**payload, "limit": 20, "filters": {**payload["filters"], "near": point,
+                                                                              "max_distance_near_m": near_m}})
+    elif "hotels" in jobs and not hotel_id:
         center_m = center_search_m(ctx, brief, dest)
         if center_m is not None:
             # the mock returns its top `limit` hotels by rating / stars / price: central hotels reach the ranking
@@ -1434,9 +1608,17 @@ def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None, hotel_ca
             jobs["hotels.center"] = (name, {**payload, "limit": 20,
                                             "filters": {**payload["filters"], "max_distance_center_m": center_m}})
     out = _parallel(ctx, jobs)
-    if out.get("hotels.center") is not None:
+    if "hotels.near" in jobs and not (out.get("hotels.near") or {}).get("offers"):
+        # no hotel within the radius: one wider search finds the nearest ones (ranking relaxes and says so)
+        name, payload = jobs["hotels.near"]
+        wide = int(_ranking_rule(ctx, "near_wide_m", 6000))
+        out["hotels.near"] = tool_safe(ctx, name, {**payload, "filters": {**payload["filters"],
+                                                                          "max_distance_near_m": wide}})
+    for extra_key in ("hotels.near", "hotels.center"):
+        if out.get(extra_key) is None:
+            continue
         seen = {o["offer_id"] for o in (out.get("hotels") or {}).get("offers") or []}
-        extra = [o for o in out["hotels.center"].get("offers") or [] if o["offer_id"] not in seen]
+        extra = [o for o in out[extra_key].get("offers") or [] if o["offer_id"] not in seen]
         base = out.get("hotels") or {"offers": [], "total_found": 0}
         out["hotels"] = {**base, "offers": extra + list(base.get("offers") or [])}
     if "flights.out" in jobs and "stay" in scope:
@@ -1462,6 +1644,9 @@ def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None, hotel_ca
                              + (out.get("trains.out") or {}).get("offers", []),
                "trains_back": (out.get("trains.back") or {}).get("offers", []),
                "hotels": (out.get("hotels") or {}).get("offers", []), "transfers_out": {}, "transfers_back": {}}
+    if near is not None and "stay" in scope:
+        results["near"] = {"name": near["name"], "query": near.get("query"), "lat": near["lat"], "lon": near["lon"],
+                           "kind": near.get("kind"), "dist_center_m": near.get("dist_center_m"), "radius_m": near_m}
     if "transfers" in scope and results["hotels"]:
         # One transfer quote per hotel and per arrival/departure point that any offered leg uses
         # (a destination can have several airports, e.g. Antalya AYT and Alanya GZP): ranking pairs each
@@ -2509,9 +2694,13 @@ def step_info_lookup(ctx):
         bt = best_time_fact(ctx)
         if bt is not None:
             facts.append(bt)
-    cd = center_distance_fact(_info_variants(ctx)) if LOCATION_Q_RE.search(ctx.info_question or "") else None
+    nd = near_distance_fact(ctx, _info_variants(ctx), [ctx.info_question, ctx.text])
+    asked_where = LOCATION_Q_RE.search(ctx.info_question or "") or (nd is not None and not nd["found"])
+    cd = center_distance_fact(_info_variants(ctx)) if asked_where else None
     if cd is not None:
         facts.append(cd)
+    if nd is not None:
+        facts.append(nd)
     if pet_context(ctx):
         lines = ((ctx.rules or {}).get("pets") or {}).get("general_ru") or []
         if lines:

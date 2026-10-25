@@ -1,7 +1,9 @@
 """Level-2 cases for hotel location and the best time to go (level-3 s04_photo_landmark: the question «Когда
 лучше поехать?» was dropped, «поближе к историческому центру» became district walkable and changed nothing,
-the card offered a search «в районе Султанахмет» the engine cannot do). Adds 8 files to evals/cases/ and
-deletes nothing.
+the card offered a search «в районе Султанахмет» the engine could not do). Since the `pois` table the engine
+measures distances to the very place the user names or shows: «рядом с X» / «в районе X» is prefs.near (never a
+centre patch), a photo of a sight carries image.landmark, and the cards say «до Айя-Софии 450 м» from
+facts.distance_near_m / the near_distance fact. Writes 12 files to evals/cases/ and deletes nothing.
 
     .venv/bin/python -m evals.authoring.cases_location
 
@@ -25,9 +27,11 @@ MSK = timezone(timedelta(hours=3))
 NOW = datetime(2026, 10, 25, 12, 0, tzinfo=MSK)
 HAGIA = "evals/images/landmark_hagia_sophia.jpg"
 
-# a district / sight search offered as an action (the engine filters by the distance to the centre only)
-DISTRICT_OFFER_RE = (r"(поищ|подбер|найд|посмотр)\w*\s+(отел\w*\s+)?(в\s+районе|рядом\s+с|возле|у\s+)\s*"
-                     r"(Султанахмет|Айя|Галат|Таксим|Диснейленд)")
+# a district / sight search offered as an action for a place that is not in the input (the engine searches near
+# the place of facts.near_name / a found near_distance fact, else by the distance to the centre only)
+OFFER_RE = (r"(поищ|поиск|подбер|подобр|найд|найт|посмотр)\w*\s+(отел\w*\s+)?(в\s+районе|рядом\s+с|возле|у\s+)\s*")
+DISTRICT_OFFER_RE = OFFER_RE + r"(Султанахмет|Айя|Галат|Таксим|Диснейленд)"
+OTHER_PLACE_OFFER_RE = OFFER_RE + r"(Султанахмет|Галат|Таксим|Диснейленд|Голуб)"
 PRESENT_COMMON = [
     a("ids_subset"), a("numbers_subset"),
     pred("russian_only"), pred("tone_no_bureaucratese"), pred("at_most_one_joke"), pred("money_risks_plain"),
@@ -68,17 +72,43 @@ UNDERSTAND = [
                           b=ist_shown, shown=SHOWN, assumed=["origin.city"],
                           assumptions=[("origin.city", "из Москвы")]),
          [a("path_in", path="/intent", values=["refine", "info"]),
-          a("path_in", path="/patch/set/prefs.center_max_m", values=[800, 1500]),
+          pred("matches", path="/patch/set/prefs.near", pattern=r"айя|софи|ayasofya|hagia"),
+          pred("none_of", assertions=[a("path_equals", path="/patch/set/prefs.center_max_m", value=2500)]),
           a("path_absent", path="/patch/set/prefs.district")],
-         "«рядом с Айя-Софией» = a sight of the historic centre -> prefs.center_max_m (L3 s04 t6).",
-         unsure="info with the patch is accepted: route_intent / the update card still rebuild with the pref."),
+         "«рядом с Айя-Софией» = prefs.near «Айя-София» (code measures the hotels' distance to that very place); "
+         "«2,5 км от центра» describes the shown hotel and is never a centre patch (L3 s04 t6).",
+         unsure="info with prefs.near is accepted: route_intent turns it into a refine before payment."),
+    case("e10_refine_district_sultanahmet", "E", "understand",
+         understand_input("А можно отель в районе Султанахмет?", stage="selection", b=ist_shown, shown=SHOWN,
+                          assumed=["origin.city"], assumptions=[("origin.city", "из Москвы")]),
+         [a("path_in", path="/intent", values=["refine", "info"]),
+          pred("matches", path="/patch/set/prefs.near", pattern=r"султанахмет|sultan\s*ahmet"),
+          a("path_absent", path="/patch/set/prefs.center_max_m"),
+          a("path_absent", path="/patch/set/prefs.district")],
+         "L3 s04 t7: «в районе Султанахмет» is a named district -> prefs.near (resolved by code in the "
+         "destination's pois), never prefs.district or a centre distance.",
+         unsure="info with prefs.near is accepted: route_intent turns it into a refine before payment."),
     case("x7_near_disneyland_no_center", "edge", "understand",
          understand_input("Париж на 3 ночи в январе, вдвоём с ребёнком, отель рядом с Диснейлендом"),
          [a("path_equals", path="/intent", value="new_trip"),
           a("path_equals", path="/patch/set/destination.name", value="Париж", casefold=True),
+          pred("matches", path="/patch/set/prefs.near", pattern=r"диснейленд|disney"),
           a("path_absent", path="/patch/set/prefs.center_max_m")],
-         "Disneyland Paris is ~30 km out of the centre: no centre pref (the card says plainly that hotels are "
-         "picked by the distance to the centre only)."),
+         "Disneyland Paris is ~30 km out of the centre: prefs.near «Диснейленд» (any named place, also outside the "
+         "centre), never a centre pref; when code does not find it in the pois the reply says so and picks "
+         "hotels by the distance to the centre."),
+    case("ap5_photo_landmark", "A_photo", "understand",
+         understand_input("Хочу сюда!", has_image=True),
+         [a("path_equals", path="/intent", value="new_trip"),
+          a("path_equals", path="/image/want", value="here"),
+          pred("matches", path="/image/place/name", pattern="стамбул|istanbul"),
+          pred("matches", path="/image/landmark", pattern=r"айя|софи|ayasofya|hagia"),
+          a("path_absent", path="/patch/set/prefs.near"),
+          a("path_absent", path="/patch/set/prefs.center_max_m")],
+         "A photo of Hagia Sophia: image.place is the city (Стамбул) and image.landmark the sight in Russian "
+         "(«Айя-София»); code resolves the landmark in Istanbul's pois and assumes prefs.near itself, the patch "
+         "stays empty (image findings never go into the patch).",
+         image=HAGIA),
     case("ap4_photo_when_to_go", "A_photo", "understand",
          understand_input("Хочу сюда! Когда лучше поехать?", has_image=True),
          [a("path_equals", path="/intent", value="new_trip"),
@@ -160,12 +190,31 @@ def build_present_inputs():
         engine.handle(sid, {"session_id": sid,
                             "text": "Да, пересоберите, пожалуйста, чтобы отель был поближе к историческому центру"})
         out["center"] = _last_input(backend, "present.update")
+        # a photo of the landmark: hotels next to it, facts.near_name / distance_near_m
+        sid = engine.new_session(profile_id="demo", now=NOW)
+        backend.add("understand", _u(image=dict(photo, landmark="Айя-София")))
+        engine.handle(sid, {"session_id": sid, "text": "Хочу сюда!", "image": "data:image/jpeg;base64,AAAA"})
+        out["photo_landmark"] = _last_input(backend, "present.variants")
+
+        # Saint Petersburg, then «далеко ли от Эрмитажа?» -> near_distance facts with metres per variant
+        sid = engine.new_session(profile_id="demo", now=NOW)
+        backend.add("understand", _u(set_={"destination.name": "Санкт-Петербург", "dates.start": "2026-12-01",
+                                           "dates.end": "2026-12-04", "party.segment": "couple"}))
+        engine.handle(sid, {"session_id": sid, "text": "Питер, 1–4 декабря, вдвоём"})
+        backend.add("understand", _u(intent="info", info="Далеко ли отель от Эрмитажа?"))
+        engine.handle(sid, {"session_id": sid, "text": "А далеко ли отель от Эрмитажа?"})
+        out["info_hermitage"] = _last_input(backend, "present.info")
     for name, card in (("photo", "present.variants"), ("dates_question", "present.variants"),
-                       ("center", "present.update")):
+                       ("center", "present.update"), ("photo_landmark", "present.variants"),
+                       ("info_hermitage", "present.info")):
         errors = validate_card_input(card, out[name])
         assert not errors, (name, errors)
     assert out["photo"].get("question") and out["dates_question"].get("question"), "question key missing"
     assert any(c["field"] == "prefs.center_max_m" for c in out["center"]["changes"]), out["center"]["changes"]
+    assert all(i["facts"].get("near_name") and i["facts"].get("distance_near_m") is not None
+               for i in out["photo_landmark"]["items"]), "near facts missing"
+    nd = next(f for f in out["info_hermitage"]["facts"] if f["kind"] == "near_distance")
+    assert nd["found"] and nd["items"], nd
     return out
 
 
@@ -176,7 +225,35 @@ def present_cases():
     month_re = "|".join(m["month_ru"][:-1] if m["month_ru"].endswith(("ь", "й")) else m["month_ru"]
                         for m in best["months"])
     first_sentence = r"^[^.!]*(" + month_re + r")"
+    landmark = inp["photo_landmark"]
+    hermitage = inp["info_hermitage"]
+    near_name = landmark["items"][0]["facts"]["near_name"]
+    info_common = [a("ids_subset"), a("numbers_subset"), pred("russian_only"), pred("tone_no_bureaucratese"),
+                   pred("at_most_one_joke"), pred("asks_at_most", n=0),
+                   a("regex_absent", path="$text", pattern=OTHER_PLACE_OFFER_RE)]
+    near_present = [a("ids_subset"), a("numbers_subset"), pred("russian_only"), pred("tone_no_bureaucratese"),
+                    pred("at_most_one_joke"), pred("money_risks_plain"), pred("no_upsell_without_candidate"),
+                    a("max_items", path="/upsell", max=2), pred("recommended_in_items"),
+                    a("regex_absent", path="$text", pattern=OTHER_PLACE_OFFER_RE)]
     return [
+        case("b10_variants_near_landmark", "B", "present.variants", landmark,
+             near_present + [
+                 pred("mentions_any", words=[r"(Айя|Софи)[^.!?]{0,60}\d[\d  ]*\s*м\b",
+                                             r"\d[\d  ]*\s*м\b[^.!?]{0,60}(Айя|Софи)"]),
+                 a("regex_absent", path="/message", pattern=r"только по расстоянию до центра|по удал\w+ от центра"),
+                 pred("asks_at_most", n=len(landmark.get("questions") or []))],
+             f"A photo of Hagia Sophia (image.landmark): code assumed prefs.near and every item carries "
+             f"facts.near_name «{near_name}» and distance_near_m; the reply says how far the recommended hotel is "
+             f"from it («до Айя-Софии 450 м», metres copied from the input), never «only by the distance to the "
+             f"centre»; an offer to search near this place is allowed, near any other place is not."),
+        case("b11_info_far_from_hermitage", "B", "present.info", hermitage,
+             info_common + [
+                 pred("matches", path="/message", pattern=r"^[^.!?]*\d[\d  ]*\s*м\b"),
+                 pred("mentions_any", words=[r"Эрмитаж"]),
+                 a("regex_absent", path="/message", pattern=r"нет данных|не знаю|только до центра")],
+             "«Далеко ли отель от Эрмитажа?»: the facts carry near_distance (found, metres per shown variant "
+             "computed by code); the first sentence answers with those metres for the hotel(s), never «нет данных» "
+             "or «distances are known to the centre only»."),
         case("b8_variants_answer_best_time", "B", "present.variants", photo,
              PRESENT_COMMON + [
                  pred("matches", path="/message", pattern=first_sentence),

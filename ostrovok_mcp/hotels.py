@@ -12,9 +12,11 @@ hotel|room|night) x n_rooms (x0.85 for a single adult) + meals + extra beds.
 Meals per person-night = base x MEAL_SHARE[meals] / 2 (children 2-11 at half).
 Availability: a room type is sold out when any night draws < 1.2 % (x3 in peak nights, season
 factor >= 1.25), seeded by hotel|room|night.
-Filters (meals, free_cancellation, stars_min, pets, kinds, max_distance_center_m, max_price_total) apply
-before the top-`limit` cut, so a filtered search reaches hotels the unfiltered top would not show
-(max_distance_center_m: distance_center_m from the destination's centre point, «в центре»).
+Filters (meals, free_cancellation, stars_min, pets, kinds, max_distance_center_m, max_distance_near_m,
+max_price_total) apply before the top-`limit` cut, so a filtered search reaches hotels the unfiltered top would
+not show (max_distance_center_m: distance_center_m from the destination's centre point, «в центре»;
+`near` {lat, lon}: a point the user wants to stay near — every offer then carries distance_near_m, and
+max_distance_near_m keeps only the hotels that close to it, «рядом с Айя-Софией»).
 Sorting: stable score = 0.45 rating + 0.20 stars + 0.15 reviews volume + 0.20 price rank.
 """
 from __future__ import annotations
@@ -149,6 +151,12 @@ def _distance_center(h: dict, dest: dict | None) -> int:
     return 0
 
 
+def _distance_near(h: dict, near: dict | None) -> int | None:
+    if not near:
+        return None
+    return int(round(geo.haversine_km(h["lat"], h["lon"], float(near["lat"]), float(near["lon"])) * 1000))
+
+
 def _room_out(room: dict, n: int) -> dict:
     name = room["name"] if n == 1 else f"{n} номера: {room['name']}"
     return {"room_id": room["room_id"], "name": name, "capacity_adults": room["capacity_adults"] * n,
@@ -206,6 +214,7 @@ def search(dest_id: str, ci: date, co: date, adults: int, ages: list[int], filte
     prof = dest_profile(dest)
     tz = geo.destination_tz(dest) if dest else None
     meals_f = filters.get("meals")
+    near = filters.get("near") or None
     found = []
     for h in hotels_of(dest_id):
         if hotel_ids is not None and h["hotel_id"] not in hotel_ids:
@@ -219,6 +228,10 @@ def search(dest_id: str, ci: date, co: date, adults: int, ages: list[int], filte
             continue
         if filters.get("max_distance_center_m") is not None and \
                 _distance_center(h, dest) > int(filters["max_distance_center_m"]):
+            continue
+        near_m = _distance_near(h, near)
+        if near_m is not None and filters.get("max_distance_near_m") is not None and \
+                near_m > int(filters["max_distance_near_m"]):
             continue
         if filters.get("free_cancellation") and cancellation(pol, ci, tz or geo.zone(None, None, h["lon"]),
                                                              today)["free_until"] is None:
@@ -246,7 +259,10 @@ def search(dest_id: str, ci: date, co: date, adults: int, ages: list[int], filte
         for price, room, fit, meals in (sorted(every, key=lambda e: (e[0], e[1]["room_id"])) if all_rooms else [best]):
             if filters.get("max_price_total") is not None and price > filters["max_price_total"]:
                 continue
-            found.append(_offer(h, room, fit[0], fit[1], meals, adults, ages, ci, co, today, dest, pol, price))
+            offer = _offer(h, room, fit[0], fit[1], meals, adults, ages, ci, co, today, dest, pol, price)
+            if near_m is not None:
+                offer["distance_near_m"] = near_m
+            found.append(offer)
     if not found:
         return [], 0
     prices = sorted(o["price_total_rub"] for o in found)

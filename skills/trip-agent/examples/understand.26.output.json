@@ -3,7 +3,7 @@
   "patch": {
     "set": {
       "destination.name": "Стамбул",
-      "prefs.center_max_m": 1500
+      "prefs.near": "Айя-София"
     },
     "unset": []
   },

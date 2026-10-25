@@ -25,10 +25,10 @@ def load(p):
 def test_counts_and_categories():
     # 40 v0 cases + 7 for the L3-fix understand rules (seasons, wishes, ranges, prefs, new_dates)
     # + 5 present.info pet cases (evals/authoring/cases_pets.py)
-    # + 8 location / best-time cases (evals/authoring/cases_location.py)
-    assert len(CASES) == 60
+    # + 12 location / best-time / named-place cases (evals/authoring/cases_location.py)
+    assert len(CASES) == 64
     cats = Counter(load(p)["category"] for p in CASES)
-    assert cats == {"A": 8, "A_photo": 4, "B": 8, "C": 3, "D": 3, "E": 9, "F": 9, "segments": 4, "edge": 7, "tone": 5}
+    assert cats == {"A": 8, "A_photo": 5, "B": 10, "C": 3, "D": 3, "E": 10, "F": 9, "segments": 4, "edge": 7, "tone": 5}
     assert len(SCENARIOS) == 25
     assert len(HOLDOUT) == 10
 

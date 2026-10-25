@@ -50,6 +50,7 @@
         "district": "quiet",
         "beach_max_m": null,
         "center_max_m": null,
+        "near": null,
         "transport": "any",
         "arrive_before": null,
         "no_night_flights": null,
@@ -1017,7 +1018,7 @@
     {
       "type": "regex_absent",
       "path": "$text",
-      "pattern": "(поищ|подбер|найд|посмотр)\\w*\\s+(отел\\w*\\s+)?(в\\s+районе|рядом\\s+с|возле|у\\s+)\\s*(Султанахмет|Айя|Галат|Таксим|Диснейленд)"
+      "pattern": "(поищ|поиск|подбер|подобр|найд|найт|посмотр)\\w*\\s+(отел\\w*\\s+)?(в\\s+районе|рядом\\s+с|возле|у\\s+)\\s*(Султанахмет|Айя|Галат|Таксим|Диснейленд)"
     },
     {
       "type": "predicate",

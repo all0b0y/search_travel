@@ -37,6 +37,7 @@
       "district": "any",
       "beach_max_m": null,
       "center_max_m": null,
+      "near": null,
       "transport": "train",
       "arrive_before": null,
       "no_night_flights": null,

@@ -10,6 +10,7 @@
   "image": {
     "want": "similar",
     "place": null,
+    "landmark": null,
     "traits": {
       "landscape": [
         "beach"

@@ -1,0 +1,595 @@
+{
+  "id": "b11_info_far_from_hermitage",
+  "category": "B",
+  "card": "present.info",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "DME",
+          "VKO"
+        ]
+      },
+      "destination": {
+        "id": "saint-petersburg",
+        "name": "Санкт-Петербург",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-12-01",
+        "end": "2026-12-04",
+        "month": 12,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "origin.city",
+      "dates.nights",
+      "party.adults",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [],
+    "question": "Далеко ли отель от Эрмитажа?",
+    "facts": [
+      {
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле",
+        "total_rub": 34940,
+        "legs": [
+          {
+            "type": "flight",
+            "from": "DME",
+            "to": "LED",
+            "carrier": "S7 Airlines",
+            "dep_date": "2026-12-01",
+            "dep_time": "09:00",
+            "arr_date": "2026-12-01",
+            "arr_time": "10:20",
+            "price_rub": 11020,
+            "flight_no": "S71139",
+            "duration_min": 80,
+            "direct": true,
+            "stops": 0,
+            "baggage_cabin_kg": 10,
+            "refundable": false,
+            "fare": "basic",
+            "exchange_allowed": false
+          },
+          {
+            "type": "transfer",
+            "from": "LED",
+            "to": "Исаакиевская площадь",
+            "dep_date": "2026-12-01",
+            "dep_time": "11:05",
+            "arr_date": "2026-12-01",
+            "arr_time": "12:25",
+            "price_rub": 120,
+            "kind": "public",
+            "duration_min": 66,
+            "meeting_point": "Остановка общественного транспорта у аэропорта Pulkovo Airport"
+          },
+          {
+            "type": "transfer",
+            "from": "Исаакиевская площадь",
+            "to": "LED",
+            "dep_date": "2026-12-04",
+            "dep_time": "18:45",
+            "arr_date": "2026-12-04",
+            "arr_time": "19:30",
+            "price_rub": 910,
+            "kind": "taxi",
+            "duration_min": 36,
+            "meeting_point": "У входа в отель «Исаакиевская площадь»"
+          },
+          {
+            "type": "flight",
+            "from": "LED",
+            "to": "SVO",
+            "carrier": "Аэрофлот",
+            "dep_date": "2026-12-04",
+            "dep_time": "21:30",
+            "arr_date": "2026-12-04",
+            "arr_time": "22:45",
+            "price_rub": 12040,
+            "flight_no": "SU5157",
+            "duration_min": 75,
+            "direct": true,
+            "stops": 0,
+            "baggage_cabin_kg": 10,
+            "refundable": false,
+            "fare": "basic",
+            "exchange_allowed": false
+          }
+        ],
+        "stay": {
+          "name": "Исаакиевская площадь",
+          "stars": 1,
+          "rating": 6.8,
+          "meals": "none",
+          "room": "Двухместный номер",
+          "check_in_date": "2026-12-01",
+          "check_in_time": "13:00",
+          "check_out_date": "2026-12-04",
+          "check_out_time": "12:00",
+          "cancellation": {
+            "free_until": "2026-11-29T23:59:00+03:00",
+            "penalty_pct": 100,
+            "free": true
+          },
+          "pets_allowed": true,
+          "early_checkin": {
+            "available": true,
+            "price_rub": 1300
+          },
+          "distance_center_m": 1082
+        }
+      },
+      {
+        "kind": "variant",
+        "id": "fastest",
+        "title": "Быстрее",
+        "total_rub": 43660,
+        "legs": [
+          {
+            "type": "flight",
+            "from": "VKO",
+            "to": "LED",
+            "carrier": "Аэрофлот",
+            "dep_date": "2026-12-01",
+            "dep_time": "14:40",
+            "arr_date": "2026-12-01",
+            "arr_time": "15:57",
+            "price_rub": 11900,
+            "flight_no": "SU9523",
+            "duration_min": 77,
+            "direct": true,
+            "stops": 0,
+            "baggage_cabin_kg": 10,
+            "refundable": false,
+            "fare": "basic",
+            "exchange_allowed": false
+          },
+          {
+            "type": "transfer",
+            "from": "LED",
+            "to": "Невский 3",
+            "dep_date": "2026-12-01",
+            "dep_time": "16:42",
+            "arr_date": "2026-12-01",
+            "arr_time": "17:17",
+            "price_rub": 2500,
+            "kind": "private",
+            "duration_min": 29,
+            "meeting_point": "Зона прилёта аэропорта Pulkovo Airport: водитель с табличкой с вашим именем"
+          },
+          {
+            "type": "transfer",
+            "from": "Невский 3",
+            "to": "LED",
+            "dep_date": "2026-12-04",
+            "dep_time": "18:55",
+            "arr_date": "2026-12-04",
+            "arr_time": "19:30",
+            "price_rub": 2500,
+            "kind": "private",
+            "duration_min": 29,
+            "meeting_point": "Лобби отеля «Невский 3»: водитель с табличкой"
+          },
+          {
+            "type": "flight",
+            "from": "LED",
+            "to": "SVO",
+            "carrier": "Аэрофлот",
+            "dep_date": "2026-12-04",
+            "dep_time": "21:30",
+            "arr_date": "2026-12-04",
+            "arr_time": "22:45",
+            "price_rub": 12040,
+            "flight_no": "SU5157",
+            "duration_min": 75,
+            "direct": true,
+            "stops": 0,
+            "baggage_cabin_kg": 10,
+            "refundable": false,
+            "fare": "basic",
+            "exchange_allowed": false
+          }
+        ],
+        "stay": {
+          "name": "Невский 3",
+          "stars": 2,
+          "rating": 8.4,
+          "meals": "breakfast",
+          "room": "Двухместный номер",
+          "check_in_date": "2026-12-01",
+          "check_in_time": "17:17",
+          "check_out_date": "2026-12-04",
+          "check_out_time": "12:00",
+          "cancellation": {
+            "free_until": "2026-11-30T23:59:00+03:00",
+            "penalty_pct": 100,
+            "free": true
+          },
+          "pets_allowed": false,
+          "early_checkin": {
+            "available": true,
+            "price_rub": 1500
+          },
+          "distance_center_m": 307
+        }
+      },
+      {
+        "kind": "variant",
+        "id": "comfort",
+        "title": "Комфортнее",
+        "total_rub": 69260,
+        "legs": [
+          {
+            "type": "flight",
+            "from": "DME",
+            "to": "LED",
+            "carrier": "S7 Airlines",
+            "dep_date": "2026-12-01",
+            "dep_time": "09:00",
+            "arr_date": "2026-12-01",
+            "arr_time": "10:20",
+            "price_rub": 11020,
+            "flight_no": "S71139",
+            "duration_min": 80,
+            "direct": true,
+            "stops": 0,
+            "baggage_cabin_kg": 10,
+            "refundable": false,
+            "fare": "basic",
+            "exchange_allowed": false
+          },
+          {
+            "type": "transfer",
+            "from": "LED",
+            "to": "Art Hermitage",
+            "dep_date": "2026-12-01",
+            "dep_time": "11:05",
+            "arr_date": "2026-12-01",
+            "arr_time": "11:45",
+            "price_rub": 2500,
+            "kind": "private",
+            "duration_min": 30,
+            "meeting_point": "Зона прилёта аэропорта Pulkovo Airport: водитель с табличкой с вашим именем"
+          },
+          {
+            "type": "transfer",
+            "from": "Art Hermitage",
+            "to": "LED",
+            "dep_date": "2026-12-04",
+            "dep_time": "18:40",
+            "arr_date": "2026-12-04",
+            "arr_time": "19:30",
+            "price_rub": 960,
+            "kind": "taxi",
+            "duration_min": 38,
+            "meeting_point": "У входа в отель «Art Hermitage»"
+          },
+          {
+            "type": "flight",
+            "from": "LED",
+            "to": "SVO",
+            "carrier": "Аэрофлот",
+            "dep_date": "2026-12-04",
+            "dep_time": "21:30",
+            "arr_date": "2026-12-04",
+            "arr_time": "22:45",
+            "price_rub": 14210,
+            "flight_no": "SU5157",
+            "duration_min": 75,
+            "direct": true,
+            "stops": 0,
+            "baggage_checked_kg": 23,
+            "baggage_cabin_kg": 10,
+            "refundable": false,
+            "fare": "standard",
+            "exchange_allowed": true,
+            "exchange_fee_rub": 5000
+          }
+        ],
+        "stay": {
+          "name": "Art Hermitage",
+          "stars": 4,
+          "rating": 7.8,
+          "meals": "breakfast",
+          "room": "Стандартный двухместный",
+          "check_in_date": "2026-12-01",
+          "check_in_time": "15:00",
+          "check_out_date": "2026-12-04",
+          "check_out_time": "11:00",
+          "cancellation": {
+            "free_until": "2026-11-24T23:59:00+03:00",
+            "penalty_pct": 100,
+            "free": true
+          },
+          "pets_allowed": false,
+          "early_checkin": {
+            "available": false,
+            "price_rub": null
+          },
+          "distance_center_m": 364
+        }
+      },
+      {
+        "kind": "hotel",
+        "id": "h_n4807287785",
+        "data": {
+          "hotel_id": "h_n4807287785",
+          "destination_id": "saint-petersburg",
+          "name": "Исаакиевская площадь",
+          "kind": "guest_house",
+          "stars": 1,
+          "rating": 6.8,
+          "reviews": 145,
+          "address": null,
+          "distance_beach_m": null,
+          "distance_center_m": 1082,
+          "policies": {
+            "check_in_from": "13:00",
+            "check_out_until": "12:00",
+            "pets_allowed": true,
+            "kids_policy": {
+              "children_allowed": true,
+              "min_child_age": null,
+              "infant_cot": "on_request",
+              "extra_bed_price_rub": 900
+            },
+            "early_checkin": {
+              "available": true,
+              "price_rub": 1300
+            },
+            "cancellation_note": "Бесплатная отмена до 2 дн. до заезда, позже штраф 100 %"
+          },
+          "rooms": [
+            {
+              "room_id": "h_n4807287785_r0",
+              "name": "Двухместный номер",
+              "capacity_adults": 2,
+              "capacity_children": 1,
+              "bed": "double"
+            },
+            {
+              "room_id": "h_n4807287785_r1",
+              "name": "Трёхместный номер",
+              "capacity_adults": 3,
+              "capacity_children": 1,
+              "bed": "double+single"
+            },
+            {
+              "room_id": "h_n4807287785_r2",
+              "name": "Семейный номер",
+              "capacity_adults": 2,
+              "capacity_children": 2,
+              "bed": "double+sofa"
+            },
+            {
+              "room_id": "h_n4807287785_r3",
+              "name": "Одноместный",
+              "capacity_adults": 1,
+              "capacity_children": 0,
+              "bed": "single"
+            }
+          ]
+        }
+      },
+      {
+        "kind": "district",
+        "id": "node/4807287785",
+        "data": {
+          "osm_id": "node/4807287785",
+          "destination_id": "saint-petersburg",
+          "labels": [
+            "lively",
+            "walkable"
+          ],
+          "scores": {
+            "lively": 1.0,
+            "quiet": 0.3,
+            "family": 0.3,
+            "walkable": 0.796
+          },
+          "counts": {
+            "bar": 14,
+            "beach": 0,
+            "cafe": 37,
+            "convenience": 6,
+            "fast_food": 5,
+            "nightclub": 0,
+            "park": 8,
+            "pedestrian": 0,
+            "pharmacy": 4,
+            "playground": 7,
+            "pub": 0,
+            "restaurant": 35,
+            "station": 0,
+            "stop": 26,
+            "supermarket": 4
+          },
+          "nearest_m": {
+            "beach": 1901,
+            "centre": 1082,
+            "major_road": 538,
+            "railway": 1931,
+            "station": 785,
+            "stop": 71
+          },
+          "source": "overpass",
+          "fetched_at": "2026-10-24T22:12:28Z"
+        }
+      },
+      {
+        "kind": "climate",
+        "id": "saint-petersburg",
+        "month": 12,
+        "data": {
+          "destination_id": "saint-petersburg",
+          "month": 12,
+          "air_max_c": -0.6,
+          "air_min_c": -4.2,
+          "sea_c": null,
+          "rain_days": 15.1,
+          "sunny_days": 0.0
+        }
+      },
+      {
+        "kind": "center_distance",
+        "items": [
+          {
+            "id": "cheapest",
+            "title": "Дешевле",
+            "hotel": "Исаакиевская площадь",
+            "distance_center_m": 1082,
+            "distance_center_km": 1.1
+          },
+          {
+            "id": "fastest",
+            "title": "Быстрее",
+            "hotel": "Невский 3",
+            "distance_center_m": 307,
+            "distance_center_km": 0.3
+          },
+          {
+            "id": "comfort",
+            "title": "Комфортнее",
+            "hotel": "Art Hermitage",
+            "distance_center_m": 364,
+            "distance_center_km": 0.4
+          }
+        ]
+      },
+      {
+        "kind": "near_distance",
+        "place": "Государственный Эрмитаж",
+        "found": true,
+        "place_kind": "museum",
+        "place_distance_center_m": 244,
+        "items": [
+          {
+            "id": "cheapest",
+            "title": "Дешевле",
+            "hotel": "Исаакиевская площадь",
+            "distance_near_m": 1293,
+            "distance_center_m": 1082
+          },
+          {
+            "id": "fastest",
+            "title": "Быстрее",
+            "hotel": "Невский 3",
+            "distance_near_m": 540,
+            "distance_center_m": 307
+          },
+          {
+            "id": "comfort",
+            "title": "Комфортнее",
+            "hotel": "Art Hermitage",
+            "distance_near_m": 287,
+            "distance_center_m": 364
+          }
+        ]
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 0
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "(поищ|поиск|подбер|подобр|найд|найт|посмотр)\\w*\\s+(отел\\w*\\s+)?(в\\s+районе|рядом\\s+с|возле|у\\s+)\\s*(Султанахмет|Галат|Таксим|Диснейленд|Голуб)"
+    },
+    {
+      "type": "predicate",
+      "name": "matches",
+      "args": {
+        "path": "/message",
+        "pattern": "^[^.!?]*\\d[\\d  ]*\\s*м\\b"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "Эрмитаж"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "нет данных|не знаю|только до центра"
+    }
+  ],
+  "runs": 5,
+  "notes": "«Далеко ли отель от Эрмитажа?»: the facts carry near_distance (found, metres per shown variant computed by code); the first sentence answers with those metres for the hotel(s), never «нет данных» or «distances are known to the centre only»."
+}

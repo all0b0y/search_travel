@@ -176,6 +176,12 @@
               ],
               "minimum": 0
             },
+            "prefs.near": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "description": "The place to stay near, as the user named it, Russian nominative: «рядом с Айя-Софией» -> «Айя-София»."
+            },
             "prefs.transport": {
               "enum": [
                 "any",
@@ -306,6 +312,7 @@
               "prefs.district",
               "prefs.beach_max_m",
               "prefs.center_max_m",
+              "prefs.near",
               "prefs.transport",
               "prefs.arrive_before",
               "prefs.no_night_flights",
@@ -467,6 +474,14 @@
               }
             }
           ]
+        },
+        "landmark": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 80,
+          "description": "The specific sight in the photo, in Russian («Айя-София», «Эрмитаж»); null for a generic view."
         },
         "traits": {
           "type": "object",

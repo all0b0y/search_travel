@@ -98,12 +98,25 @@
       ]
     },
     {
-      "type": "path_in",
-      "path": "/patch/set/prefs.center_max_m",
-      "values": [
-        800,
-        1500
-      ]
+      "type": "predicate",
+      "name": "matches",
+      "args": {
+        "path": "/patch/set/prefs.near",
+        "pattern": "айя|софи|ayasofya|hagia"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "none_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "path_equals",
+            "path": "/patch/set/prefs.center_max_m",
+            "value": 2500
+          }
+        ]
+      }
     },
     {
       "type": "path_absent",
@@ -111,6 +124,6 @@
     }
   ],
   "runs": 5,
-  "notes": "«рядом с Айя-Софией» = a sight of the historic centre -> prefs.center_max_m (L3 s04 t6).",
-  "unsure": "info with the patch is accepted: route_intent / the update card still rebuild with the pref."
+  "notes": "«рядом с Айя-Софией» = prefs.near «Айя-София» (code measures the hotels' distance to that very place); «2,5 км от центра» describes the shown hotel and is never a centre patch (L3 s04 t6).",
+  "unsure": "info with prefs.near is accepted: route_intent turns it into a refine before payment."
 }

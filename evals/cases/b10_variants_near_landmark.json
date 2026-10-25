@@ -1,0 +1,948 @@
+{
+  "id": "b10_variants_near_landmark",
+  "category": "B",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "DME",
+          "VKO"
+        ]
+      },
+      "destination": {
+        "id": "istanbul",
+        "name": "Стамбул",
+        "country": "Турция"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-07",
+        "end": "2026-11-14",
+        "month": 11,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": "Айя-София",
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "origin.city",
+      "destination.name",
+      "dates.start",
+      "dates.end",
+      "dates.month",
+      "dates.nights",
+      "party.segment",
+      "party.adults",
+      "scope",
+      "prefs.district",
+      "prefs.near"
+    ],
+    "assumptions": [
+      {
+        "field": "origin.city",
+        "label": "Москва"
+      },
+      {
+        "field": "dates.start",
+        "label": "7–14 ноября"
+      },
+      {
+        "field": "prefs.near",
+        "label": "отель рядом: Айя-София"
+      },
+      {
+        "field": "dates.nights",
+        "label": "7 ночей"
+      },
+      {
+        "field": "party.adults",
+        "label": "2 взрослых"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 74160,
+          "door_to_door_hours": 21.1,
+          "out_hours": 11.1,
+          "back_hours": 9.9
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "SAW",
+            "start": "2026-11-07T06:50:00+03:00",
+            "end": "2026-11-07T15:32:00+03:00",
+            "carrier": "Аэрофлот",
+            "price_rub": 21760
+          },
+          {
+            "type": "transfer",
+            "from": "SAW",
+            "to": "Ersoy Han",
+            "start": "2026-11-07T16:17:00+03:00",
+            "end": "2026-11-07T18:42:00+03:00",
+            "carrier": null,
+            "price_rub": 300
+          },
+          {
+            "type": "stay",
+            "from": "Ersoy Han",
+            "to": "Ersoy Han",
+            "start": "2026-11-07T18:42:00+03:00",
+            "end": "2026-11-14T05:10:00+03:00",
+            "carrier": null,
+            "price_rub": 27620
+          },
+          {
+            "type": "transfer",
+            "from": "Ersoy Han",
+            "to": "SAW",
+            "start": "2026-11-14T05:10:00+03:00",
+            "end": "2026-11-14T06:30:00+03:00",
+            "carrier": null,
+            "price_rub": 2850
+          },
+          {
+            "type": "flight",
+            "from": "SAW",
+            "to": "SVO",
+            "start": "2026-11-14T09:30:00+03:00",
+            "end": "2026-11-14T18:06:00+03:00",
+            "carrier": "МАУ",
+            "price_rub": 21630
+          }
+        ],
+        "hotel": {
+          "name": "Ersoy Han",
+          "stars": 2,
+          "rating": 7.7,
+          "district": {
+            "labels": [
+              "движ",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 5,
+              "beach": 0,
+              "cafe": 56,
+              "convenience": 13,
+              "fast_food": 38,
+              "nightclub": 0,
+              "park": 12,
+              "pedestrian": 119,
+              "pharmacy": 6,
+              "playground": 0,
+              "pub": 1,
+              "restaurant": 89,
+              "station": 0,
+              "stop": 26,
+              "supermarket": 12
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 74160,
+          "door_to_door_hours": 21.1,
+          "price_stay_rub": 27620,
+          "nights": 7,
+          "check_in_date": "2026-11-07",
+          "check_out_date": "2026-11-14",
+          "check_in_time": "15:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Ersoy Han",
+          "hotel_kind": "motel",
+          "hotel_stars": 2,
+          "hotel_rating": 7.7,
+          "hotel_reviews": 47,
+          "meals": "breakfast",
+          "meals_ru": "завтраки",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-10-31",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 27620,
+          "distance_center_m": 1583,
+          "room_name": "Номер с двумя кроватями",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": true,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": false,
+          "out_kind": "flight",
+          "out_price_rub": 21760,
+          "out_from": "SVO",
+          "out_to": "SAW",
+          "out_date": "2026-11-07",
+          "out_dep_time": "06:50",
+          "out_arr_time": "15:32",
+          "out_arr_date": "2026-11-07",
+          "out_duration_min": 522,
+          "out_duration_hours": 8.7,
+          "out_stops": 1,
+          "out_carrier": "Аэрофлот",
+          "out_number": "SU3735",
+          "out_baggage": false,
+          "out_refundable": false,
+          "out_fare": "basic",
+          "out_layover_min": 325,
+          "out_door_hours": 11.1,
+          "back_kind": "flight",
+          "back_price_rub": 21630,
+          "back_from": "SAW",
+          "back_to": "SVO",
+          "back_date": "2026-11-14",
+          "back_dep_time": "09:30",
+          "back_arr_time": "18:06",
+          "back_arr_date": "2026-11-14",
+          "back_duration_min": 516,
+          "back_duration_hours": 8.6,
+          "back_stops": 1,
+          "back_carrier": "МАУ",
+          "back_number": "PS153",
+          "back_baggage": false,
+          "back_refundable": false,
+          "back_fare": "basic",
+          "back_layover_min": 320,
+          "back_door_hours": 9.9,
+          "transfer_out_min": 118,
+          "transfer_out_price_rub": 300,
+          "transfer_out_kind": "public",
+          "transfer_back_min": 65,
+          "transfer_back_price_rub": 2850,
+          "transfer_back_kind": "taxi",
+          "price_transfers_rub": 3150,
+          "price_transport_rub": 43390,
+          "arrival_at_hotel_time": "18:42",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "05:10",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.7,
+          "district_quiet": 0.31,
+          "district_family": 0.47,
+          "district_walkable": 0.97,
+          "poi_bar": 5,
+          "poi_beach": 0,
+          "poi_cafe": 56,
+          "poi_convenience": 13,
+          "poi_fast_food": 38,
+          "poi_nightclub": 0,
+          "poi_park": 12,
+          "poi_pedestrian": 119,
+          "poi_pharmacy": 6,
+          "poi_playground": 0,
+          "poi_pub": 1,
+          "poi_restaurant": 89,
+          "poi_station": 0,
+          "poi_stop": 26,
+          "poi_supermarket": 12,
+          "nearest_centre_m": 1583,
+          "nearest_major_road_m": 146,
+          "nearest_railway_m": 477,
+          "nearest_station_m": 664,
+          "nearest_stop_m": 162,
+          "district_fit": 0.474,
+          "near_name": "Собор Святой Софии",
+          "distance_near_m": 1335,
+          "near_fit": 0.666,
+          "comfort_score": 0.5281,
+          "ref_min_rub": 74160,
+          "delta_rub_vs_cheapest": 0,
+          "ref_min_hours": 7.8,
+          "delta_hours_vs_fastest": 13.3
+        },
+        "sacrifices": [
+          {
+            "code": "near_farther",
+            "text": "До места «Собор Святой Софии» 1 335 м",
+            "data": {
+              "distance_m": 1335
+            }
+          },
+          {
+            "code": "slower",
+            "text": "+13,3 ч в пути",
+            "data": {
+              "delta_hours": 13.3
+            }
+          },
+          {
+            "code": "stops",
+            "text": "С пересадкой",
+            "data": {
+              "stops": 2
+            }
+          },
+          {
+            "code": "no_baggage",
+            "text": "Без багажа в тарифе",
+            "data": {}
+          }
+        ],
+        "risks": [
+          {
+            "code": "early_departure",
+            "text": "Ранний вылет — в 06:50",
+            "data": {
+              "time": "06:50",
+              "direction": "out"
+            }
+          },
+          {
+            "code": "non_refundable",
+            "text": "Невозвратные билеты без обмена",
+            "data": {
+              "directions": "out,back"
+            }
+          },
+          {
+            "code": "long_transfer",
+            "text": "Дорога до отеля 118 мин",
+            "data": {
+              "minutes": 118,
+              "direction": "out"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.7
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.684,
+          "breakdown": {
+            "budget": 1.0,
+            "time": 0.37,
+            "district": 0.471,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "near": 0.666,
+            "rating": 0.77
+          }
+        },
+        "diff_rub": 16620,
+        "diff_word": "дешевле",
+        "over_budget_rub": null
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "Быстрее",
+        "totals": {
+          "rub": 90780,
+          "door_to_door_hours": 7.8,
+          "out_hours": 3.9,
+          "back_hours": 3.9
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "VKO",
+            "to": "IST",
+            "start": "2026-11-07T15:55:00+03:00",
+            "end": "2026-11-07T18:33:00+03:00",
+            "carrier": "Трансаэро",
+            "price_rub": 25770
+          },
+          {
+            "type": "transfer",
+            "from": "IST",
+            "to": "Terace Guesthouse",
+            "start": "2026-11-07T19:18:00+03:00",
+            "end": "2026-11-07T20:33:00+03:00",
+            "carrier": null,
+            "price_rub": 4800
+          },
+          {
+            "type": "stay",
+            "from": "Terace Guesthouse",
+            "to": "Terace Guesthouse",
+            "start": "2026-11-07T20:33:00+03:00",
+            "end": "2026-11-14T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 29820
+          },
+          {
+            "type": "transfer",
+            "from": "Terace Guesthouse",
+            "to": "IST",
+            "start": "2026-11-14T11:40:00+03:00",
+            "end": "2026-11-14T12:55:00+03:00",
+            "carrier": null,
+            "price_rub": 4800
+          },
+          {
+            "type": "flight",
+            "from": "IST",
+            "to": "VKO",
+            "start": "2026-11-14T15:55:00+03:00",
+            "end": "2026-11-14T18:33:00+03:00",
+            "carrier": "Turkish Airlines",
+            "price_rub": 25590
+          }
+        ],
+        "hotel": {
+          "name": "Terace Guesthouse",
+          "stars": 2,
+          "rating": 8.5,
+          "district": {
+            "labels": [
+              "движ",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 2,
+              "beach": 0,
+              "cafe": 40,
+              "convenience": 16,
+              "fast_food": 7,
+              "nightclub": 0,
+              "park": 5,
+              "pedestrian": 59,
+              "pharmacy": 2,
+              "playground": 0,
+              "pub": 5,
+              "restaurant": 132,
+              "station": 1,
+              "stop": 6,
+              "supermarket": 2
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 90780,
+          "door_to_door_hours": 7.8,
+          "price_stay_rub": 29820,
+          "nights": 7,
+          "check_in_date": "2026-11-07",
+          "check_out_date": "2026-11-14",
+          "check_in_time": "14:00",
+          "check_out_time": "11:00",
+          "hotel_name": "Terace Guesthouse",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 2,
+          "hotel_rating": 8.5,
+          "hotel_reviews": 42,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-06",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 29820,
+          "distance_center_m": 331,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 2300,
+          "out_kind": "flight",
+          "out_price_rub": 25770,
+          "out_from": "VKO",
+          "out_to": "IST",
+          "out_date": "2026-11-07",
+          "out_dep_time": "15:55",
+          "out_arr_time": "18:33",
+          "out_arr_date": "2026-11-07",
+          "out_duration_min": 158,
+          "out_duration_hours": 2.6,
+          "out_stops": 0,
+          "out_carrier": "Трансаэро",
+          "out_number": "UN8411",
+          "out_baggage": false,
+          "out_refundable": false,
+          "out_fare": "basic",
+          "out_door_hours": 3.9,
+          "back_kind": "flight",
+          "back_price_rub": 25590,
+          "back_from": "IST",
+          "back_to": "VKO",
+          "back_date": "2026-11-14",
+          "back_dep_time": "15:55",
+          "back_arr_time": "18:33",
+          "back_arr_date": "2026-11-14",
+          "back_duration_min": 158,
+          "back_duration_hours": 2.6,
+          "back_stops": 0,
+          "back_carrier": "Turkish Airlines",
+          "back_number": "TK7469",
+          "back_baggage": false,
+          "back_refundable": false,
+          "back_fare": "basic",
+          "back_door_hours": 3.9,
+          "transfer_out_min": 62,
+          "transfer_out_price_rub": 4800,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 62,
+          "transfer_back_price_rub": 4800,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 9600,
+          "price_transport_rub": 51360,
+          "arrival_at_hotel_time": "20:33",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "11:40",
+          "wait_after_checkout_min": 40,
+          "district_lively": 0.75,
+          "district_quiet": 0.29,
+          "district_family": 0.44,
+          "district_walkable": 0.97,
+          "poi_bar": 2,
+          "poi_beach": 0,
+          "poi_cafe": 40,
+          "poi_convenience": 16,
+          "poi_fast_food": 7,
+          "poi_nightclub": 0,
+          "poi_park": 5,
+          "poi_pedestrian": 59,
+          "poi_pharmacy": 2,
+          "poi_playground": 0,
+          "poi_pub": 5,
+          "poi_restaurant": 132,
+          "poi_station": 1,
+          "poi_stop": 6,
+          "poi_supermarket": 2,
+          "nearest_centre_m": 331,
+          "nearest_major_road_m": 282,
+          "nearest_railway_m": 182,
+          "nearest_station_m": 251,
+          "nearest_stop_m": 245,
+          "district_fit": 0.457,
+          "near_name": "Собор Святой Софии",
+          "distance_near_m": 289,
+          "near_fit": 1.0,
+          "comfort_score": 0.695,
+          "ref_min_rub": 74160,
+          "delta_rub_vs_cheapest": 16620,
+          "ref_min_hours": 7.8,
+          "delta_hours_vs_fastest": 0.0
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+16 620 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 16620
+            }
+          },
+          {
+            "code": "meals_less",
+            "text": "Без питания",
+            "data": {
+              "meals": "none"
+            }
+          },
+          {
+            "code": "no_baggage",
+            "text": "Без багажа в тарифе",
+            "data": {}
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 2★",
+            "data": {
+              "stars": 2
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "non_refundable",
+            "text": "Невозвратные билеты без обмена",
+            "data": {
+              "directions": "out,back"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.75
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.808,
+          "breakdown": {
+            "budget": 0.817,
+            "time": 1.0,
+            "district": 0.46,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "near": 1.0,
+            "rating": 0.85
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      },
+      {
+        "id": "comfort",
+        "label": "3",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 146740,
+          "door_to_door_hours": 8.0,
+          "out_hours": 3.9,
+          "back_hours": 4.1
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "VKO",
+            "to": "IST",
+            "start": "2026-11-07T15:55:00+03:00",
+            "end": "2026-11-07T18:33:00+03:00",
+            "carrier": "Трансаэро",
+            "price_rub": 37370
+          },
+          {
+            "type": "transfer",
+            "from": "IST",
+            "to": "Senatus Hotel",
+            "start": "2026-11-07T19:48:00+03:00",
+            "end": "2026-11-07T21:03:00+03:00",
+            "carrier": null,
+            "price_rub": 4810
+          },
+          {
+            "type": "stay",
+            "from": "Senatus Hotel",
+            "to": "Senatus Hotel",
+            "start": "2026-11-07T21:03:00+03:00",
+            "end": "2026-11-14T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 71160
+          },
+          {
+            "type": "transfer",
+            "from": "Senatus Hotel",
+            "to": "IST",
+            "start": "2026-11-14T11:25:00+03:00",
+            "end": "2026-11-14T12:55:00+03:00",
+            "carrier": null,
+            "price_rub": 3210
+          },
+          {
+            "type": "flight",
+            "from": "IST",
+            "to": "VKO",
+            "start": "2026-11-14T15:55:00+03:00",
+            "end": "2026-11-14T18:33:00+03:00",
+            "carrier": "Turkish Airlines",
+            "price_rub": 30190
+          }
+        ],
+        "hotel": {
+          "name": "Senatus Hotel",
+          "stars": 4,
+          "rating": 8.2,
+          "district": {
+            "labels": [
+              "движ",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 2,
+              "beach": 0,
+              "cafe": 33,
+              "convenience": 16,
+              "fast_food": 7,
+              "nightclub": 0,
+              "park": 5,
+              "pedestrian": 57,
+              "pharmacy": 2,
+              "playground": 0,
+              "pub": 3,
+              "restaurant": 122,
+              "station": 1,
+              "stop": 6,
+              "supermarket": 2
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 146740,
+          "door_to_door_hours": 8.0,
+          "price_stay_rub": 71160,
+          "nights": 7,
+          "check_in_date": "2026-11-07",
+          "check_out_date": "2026-11-14",
+          "check_in_time": "14:00",
+          "check_out_time": "11:00",
+          "hotel_name": "Senatus Hotel",
+          "hotel_kind": "hotel",
+          "hotel_stars": 4,
+          "hotel_rating": 8.2,
+          "hotel_reviews": 79,
+          "meals": "breakfast",
+          "meals_ru": "завтраки",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-05",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 71160,
+          "distance_center_m": 349,
+          "room_name": "Стандартный двухместный",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 5400,
+          "out_kind": "flight",
+          "out_price_rub": 37370,
+          "out_from": "VKO",
+          "out_to": "IST",
+          "out_date": "2026-11-07",
+          "out_dep_time": "15:55",
+          "out_arr_time": "18:33",
+          "out_arr_date": "2026-11-07",
+          "out_duration_min": 158,
+          "out_duration_hours": 2.6,
+          "out_stops": 0,
+          "out_carrier": "Трансаэро",
+          "out_number": "UN8411",
+          "out_baggage": true,
+          "out_refundable": true,
+          "out_fare": "flex",
+          "out_door_hours": 3.9,
+          "back_kind": "flight",
+          "back_price_rub": 30190,
+          "back_from": "IST",
+          "back_to": "VKO",
+          "back_date": "2026-11-14",
+          "back_dep_time": "15:55",
+          "back_arr_time": "18:33",
+          "back_arr_date": "2026-11-14",
+          "back_duration_min": 158,
+          "back_duration_hours": 2.6,
+          "back_stops": 0,
+          "back_carrier": "Turkish Airlines",
+          "back_number": "TK7469",
+          "back_baggage": true,
+          "back_refundable": false,
+          "back_fare": "standard",
+          "back_door_hours": 4.1,
+          "transfer_out_min": 62,
+          "transfer_out_price_rub": 4810,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 73,
+          "transfer_back_price_rub": 3210,
+          "transfer_back_kind": "taxi",
+          "price_transfers_rub": 8020,
+          "price_transport_rub": 67560,
+          "arrival_at_hotel_time": "21:03",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "11:25",
+          "wait_after_checkout_min": 25,
+          "district_lively": 0.65,
+          "district_quiet": 0.39,
+          "district_family": 0.51,
+          "district_walkable": 0.97,
+          "poi_bar": 2,
+          "poi_beach": 0,
+          "poi_cafe": 33,
+          "poi_convenience": 16,
+          "poi_fast_food": 7,
+          "poi_nightclub": 0,
+          "poi_park": 5,
+          "poi_pedestrian": 57,
+          "poi_pharmacy": 2,
+          "poi_playground": 0,
+          "poi_pub": 3,
+          "poi_restaurant": 122,
+          "poi_station": 1,
+          "poi_stop": 6,
+          "poi_supermarket": 2,
+          "nearest_centre_m": 349,
+          "nearest_major_road_m": 250,
+          "nearest_railway_m": 153,
+          "nearest_station_m": 219,
+          "nearest_stop_m": 213,
+          "district_fit": 0.525,
+          "near_name": "Собор Святой Софии",
+          "distance_near_m": 304,
+          "near_fit": 1.0,
+          "comfort_score": 0.8056,
+          "ref_min_rub": 74160,
+          "delta_rub_vs_cheapest": 72580,
+          "ref_min_hours": 7.8,
+          "delta_hours_vs_fastest": 0.2
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+72 580 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 72580
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "non_refundable",
+            "text": "Невозвратный билет обратно",
+            "data": {
+              "directions": "back"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.65
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.765,
+          "breakdown": {
+            "budget": 0.505,
+            "time": 0.975,
+            "district": 0.526,
+            "cancellation": 1.0,
+            "stars": 0.8,
+            "near": 1.0,
+            "rating": 0.82
+          }
+        },
+        "diff_rub": 55960,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      }
+    ],
+    "recommended_hint": "fastest",
+    "questions": [
+      {
+        "id": "q_party",
+        "text": "Кто едет?"
+      },
+      {
+        "id": "q_budget",
+        "text": "Какой бюджет на всех, примерно?"
+      }
+    ],
+    "upsell_candidates": []
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "(поищ|поиск|подбер|подобр|найд|найт|посмотр)\\w*\\s+(отел\\w*\\s+)?(в\\s+районе|рядом\\s+с|возле|у\\s+)\\s*(Султанахмет|Галат|Таксим|Диснейленд|Голуб)"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "(Айя|Софи)[^.!?]{0,60}\\d[\\d  ]*\\s*м\\b",
+          "\\d[\\d  ]*\\s*м\\b[^.!?]{0,60}(Айя|Софи)"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "только по расстоянию до центра|по удал\\w+ от центра"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 2
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "A photo of Hagia Sophia (image.landmark): code assumed prefs.near and every item carries facts.near_name «Собор Святой Софии» and distance_near_m; the reply says how far the recommended hotel is from it («до Айя-Софии 450 м», metres copied from the input), never «only by the distance to the centre»; an offer to search near this place is allowed, near any other place is not."
+}

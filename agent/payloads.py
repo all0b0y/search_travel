@@ -24,8 +24,10 @@ TRANSPORT_RU = {"any": "самолёт или поезд", "plane": "самол�
 SCOPE_FULL = ["flights", "stay", "transfers"]
 SCOPE_RU = {"flights": "перелёт", "trains": "поезд", "stay": "отель", "transfers": "трансфер"}
 VARIANT_TITLES = {"cheapest": "Дешевле", "fastest": "Быстрее", "comfort": "Комфортнее"}
-CHIP_ORDER = ("origin.city", "dates.start", "dates.month", "dates.nights", "party.segment", "party.adults",
-              "party.children_ages", "prefs.district", "prefs.center_max_m", "prefs.meals", "scope", "budget_rub.max")
+# prefs.near assumed from a photo («отель рядом: Айя-София») is a big guess: shown right after the dates
+CHIP_ORDER = ("origin.city", "dates.start", "dates.month", "prefs.near", "dates.nights", "party.segment",
+              "party.adults", "party.children_ages", "prefs.district", "prefs.center_max_m", "prefs.meals", "scope",
+              "budget_rub.max")
 MAX_CHIPS = 5
 
 
@@ -73,6 +75,11 @@ def center_label(metres):
     """«до центра ≤ 1,5 км» / «до центра ≤ 800 м» (prefs.center_max_m)."""
     m = int(metres)
     return f"до центра ≤ {fmt_int(m)} м" if m < 1000 else "до центра ≤ " + f"{m / 1000:.1f}".rstrip("0").rstrip(".").replace(".", ",") + " км"
+
+
+def near_label(name):
+    """«отель рядом: Айя-София» (prefs.near; the name as the user or the photo gave it, never declined by code)."""
+    return f"отель рядом: {name}"
 
 
 def party_label(party):
@@ -190,6 +197,9 @@ def chip_for(skill, brief, path):
     elif path == "prefs.center_max_m":
         label = center_label(value)
         options = [ChipOption(label=center_label(m), value=m) for m in (800, 1500, 3000)]
+    elif path == "prefs.near":
+        label = near_label(value)
+        options = [ChipOption(label=near_label(value), value=value), ChipOption(label="где угодно", value=None)]
     else:
         return None
     return Chip(field=path, label=str(label), value=value, options=options)
@@ -432,6 +442,8 @@ def compare_dimensions(brief):
         first.append("cancellation")
     if prefs.get("district") not in (None, "any"):
         first.append("district")
+    if (v.get("prefs") or {}).get("near"):
+        first.append("near")
     if prefs.get("center_max_m"):
         first.append("center")
     if prefs.get("stars_min"):

@@ -115,6 +115,12 @@ class QuoteDestinationsOut(Model):
 
 # ---------------------------------------------------------------- hotels
 
+class NearPoint(Model):
+    """A point the user wants to stay near (a sight or a district resolved by the engine)."""
+    lat: float = PField(ge=-90, le=90)
+    lon: float = PField(ge=-180, le=180)
+
+
 class HotelFilters(Model):
     meals: Optional[MealsCode] = None
     free_cancellation: Optional[bool] = None
@@ -123,6 +129,9 @@ class HotelFilters(Model):
     pets: Optional[bool] = None
     kinds: Optional[list[str]] = None
     max_distance_center_m: Optional[int] = PField(default=None, ge=0)   # applied before the top-`limit` cut
+    # offers carry distance_near_m (metres to `near`); max_distance_near_m (needs `near`) applies before the cut
+    near: Optional[NearPoint] = None
+    max_distance_near_m: Optional[int] = PField(default=None, ge=0)
 
 
 class SearchHotelsIn(Model):
@@ -191,6 +200,7 @@ class HotelOffer(Model):
     check_out: IsoDateTime      # latest regular check-out on the last day
     distance_beach_m: Optional[int] = PField(default=None, ge=0)
     distance_center_m: int = PField(ge=0)
+    distance_near_m: Optional[int] = PField(default=None, ge=0)   # to filters.near, only when it was given
     synthetic: bool = True      # price, availability, rating, policies are synthetic
 
 

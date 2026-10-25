@@ -67,10 +67,10 @@ RANKING_DEFAULTS = {
     "budget_zero_over_pct": 50,       # fit: budget score reaches 0 at +50 % over the budget
     "max_notes": 4,                   # per list (sacrifices / risks / not_for)
     "fit_weights": {"budget": 0.25, "time": 0.15, "district": 0.15, "meals": 0.1, "cancellation": 0.07,
-                    "stars": 0.08, "beach": 0.1, "constraints": 0.05, "rating": 0.05, "center": 0.15},
+                    "stars": 0.08, "beach": 0.1, "constraints": 0.05, "rating": 0.05, "center": 0.15, "near": 0.2},
     "comfort_weights": {"stars": 0.2, "rating": 0.25, "meals": 0.15, "cancellation": 0.1, "direct": 0.1,
                         "fare": 0.05, "transfer": 0.05, "district": 0.1, "car_class": 0.1, "cot": 0.15,
-                        "center": 0.3},
+                        "center": 0.3, "near": 0.35},
     "comfort_legs": 2,                # extra transport offers kept per direction for comfort (fare, class)
     "unused_night_penalty": 0.05,     # comfort minus this when arriving after midnight (first night unused)
     "max_hours_relax_tolerance_h": 1.0,   # nothing within max_travel_hours: keep journeys this close to the best
@@ -88,6 +88,14 @@ RANKING_DEFAULTS = {
     "center_card_min_score": 0.9,     # «Удачнее по району» for a city stay: a hotel this central ...
     "center_card_price_ratio": 1.3,   # ... within this x the cheapest private-room trip ...
     "center_card_max_gain_h": 1.0,    # ... replaces «Быстрее» when that saves less than this door to door
+    # a named place (prefs.near resolved in the destination's pois, results["near"]): the `near` component
+    # replaces `center` — full up to near_full_m, zero from near_zero_m; near_max_m is the relaxable hard radius
+    "near_full_m": 500,
+    "near_zero_m": 3000,
+    "near_max_m": 1500,
+    "near_wide_m": 6000,              # steps: no hotel within near_max_m -> one wider search to find the nearest
+    "near_relax_tolerance_m": 700,    # prefs.near relaxed: hotels this close to the nearest one kept
+    "sacrifice_near_delta_m": 400,
 }
 SENSITIVITY_DEFAULTS = {"price_delta_pct": 10, "top_changes": True, "max_reruns": 12}
 
@@ -414,12 +422,17 @@ def _free_cancel(h) -> bool:
     return bool(c.get("free_until")) or c.get("penalty_pct", 100) == 0
 
 
-def _pref_fails(h, brief) -> list[str]:
-    """User-given prefs this hotel does not meet (hard filters, relaxed only when nothing is left)."""
+def _pref_fails(h, brief, near=None) -> list[str]:
+    """User-given prefs this hotel does not meet (hard filters, relaxed only when nothing is left). `near`: the
+    resolved place of prefs.near (results["near"] with radius_m): farther hotels fail "prefs.near"."""
     prefs = brief.prefs.value
     bad = []
     if wants_crib(brief) and _infant_cot(h) not in GUARANTEED_COT:
         bad.append(CRIB)
+    if near is not None and near.get("radius_m") is not None:
+        d = h.get("distance_near_m")
+        if d is None or d > int(near["radius_m"]):
+            bad.append("prefs.near")
     if prefs is None:
         return bad
     if _user(brief, "prefs.stars_min") and prefs.stars_min and (h.get("stars") or 0) < prefs.stars_min:
@@ -475,11 +488,51 @@ def center_score(brief, distance_m, rr) -> Optional[float]:
     return round(1.0 if d <= full else max(0.0, 1 - (d - full) / max(1.0, zero - full)), 3)
 
 
+def near_score(distance_m, rr) -> Optional[float]:
+    """0..1 by the distance to the named place (None without a distance): 1 up to near_full_m, 0 from near_zero_m."""
+    if distance_m is None:
+        return None
+    d, full, zero = float(distance_m), rr["near_full_m"], rr["near_zero_m"]
+    return round(1.0 if d <= full else max(0.0, 1 - (d - full) / max(1.0, zero - full)), 3)
+
+
+def near_distance_m(h, near) -> Optional[int]:
+    """Metres from a hotel offer to the named place: the mock's distance_near_m, else from the offer's lat/lon."""
+    if h is None or not near:
+        return None
+    if h.get("lat") is not None and h.get("lon") is not None:
+        return int(round(_haversine_km(float(h["lat"]), float(h["lon"]), float(near["lat"]), float(near["lon"])) * 1000))
+    d = h.get("distance_near_m")
+    return int(d) if d is not None else None
+
+
+def _km_text(metres) -> str:
+    """«1,5 км» / «800 м» for a radius."""
+    m = int(metres)
+    return f"{fmt_int(m)} м" if m < 1000 else f"{m / 1000:.1f}".rstrip("0").rstrip(".").replace(".", ",") + " км"
+
+
+def _haversine_km(lat1, lon1, lat2, lon2):
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp, dl = p2 - p1, math.radians(lon2 - lon1)
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * 6371.0 * math.asin(math.sqrt(a))
+
+
+def _loc_score(h, brief, rr) -> Optional[float]:
+    """The location score of a hotel: by the distance to the named place when one is resolved (rr["near"]),
+    else by the distance to the centre."""
+    if rr.get("near"):
+        return near_score(h.get("distance_near_m"), rr)
+    return center_score(brief, h.get("distance_center_m"), rr)
+
+
 def _center_of(h, brief, rr) -> float:
-    """The centre score of a hotel offer when the centre counts for this trip (rr["center_on"]), else 0."""
+    """The location score of a hotel offer when the location counts for this trip (rr["center_on"]: a city
+    stay, prefs.center_max_m or a resolved prefs.near), else 0."""
     if not rr.get("center_on") or h is None:
         return 0.0
-    return center_score(brief, h.get("distance_center_m"), rr) or 0.0
+    return _loc_score(h, brief, rr) or 0.0
 
 
 def _center_card(picked, private, ref, brief, rr, limit):
@@ -512,14 +565,14 @@ def _center_card(picked, private, ref, brief, rr, limit):
     picked.append(("custom-1", best))
 
 
-def _nearest_hotels(hotels, rr):
-    """prefs.center_max_m relaxed: only the hotels within center_relax_tolerance_m of the nearest one
-    («показываем ближайшие»)."""
-    ds = [h.get("distance_center_m") for h in hotels if h.get("distance_center_m") is not None]
+def _nearest_hotels(hotels, rr, key="distance_center_m", tolerance="center_relax_tolerance_m"):
+    """prefs.center_max_m (prefs.near: key distance_near_m) relaxed: only the hotels within the tolerance of the
+    nearest one («показываем ближайшие»)."""
+    ds = [h.get(key) for h in hotels if h.get(key) is not None]
     if not ds:
         return hotels
-    cap = min(ds) + rr["center_relax_tolerance_m"]
-    return [h for h in hotels if h.get("distance_center_m") is not None and h["distance_center_m"] <= cap]
+    cap = min(ds) + rr[tolerance]
+    return [h for h in hotels if h.get(key) is not None and h[key] <= cap]
 
 
 CRIB = "constraints.crib"          # relaxed marker: no hotel with a guaranteed cot
@@ -527,8 +580,8 @@ GUARANTEED_COT = ("free", "paid")  # ostrovok KidsPolicy.infant_cot; on_request 
 COT_COMFORT = {"free": 1.0, "paid": 0.6, "on_request": 0.2, "none": 0.0}
 # hotel prefs in relaxation order: when no hotel meets them all, the smallest set is dropped, the
 # earliest paths in this list first (a cot for a toddler is dropped last)
-RELAX_ORDER = ("prefs.center_max_m", "prefs.beach_max_m", "prefs.stars_min", "prefs.meals", "prefs.free_cancellation",
-               CRIB)
+RELAX_ORDER = ("prefs.center_max_m", "prefs.near", "prefs.beach_max_m", "prefs.stars_min", "prefs.meals",
+               "prefs.free_cancellation", CRIB)
 
 
 def wants_crib(brief) -> bool:
@@ -539,12 +592,12 @@ def _infant_cot(h):
     return (h.get("kids_policy") or {}).get("infant_cot")
 
 
-def _relax_hotels(hotels, brief):
+def _relax_hotels(hotels, brief, near=None):
     """Hotels that meet the user's hotel prefs -> (hotels, relaxed paths). When none meets them all, the
     smallest set of prefs is dropped (ties: earlier in RELAX_ORDER first); the paths reported are those
     the kept hotels actually miss."""
     from itertools import combinations
-    fails = [(h, set(_pref_fails(h, brief))) for h in hotels]
+    fails = [(h, set(_pref_fails(h, brief, near))) for h in hotels]
     strict = [h for h, f in fails if not f]
     if strict or not hotels:
         return strict, ()
@@ -560,7 +613,7 @@ def _relax_hotels(hotels, brief):
 
 RELAXED_RU = {"prefs.stars_min": "с нужной звёздностью", "prefs.meals": "с нужным питанием",
               "prefs.free_cancellation": "с бесплатной отменой", "prefs.beach_max_m": "так близко к пляжу",
-              "prefs.center_max_m": "так близко к центру",
+              "prefs.center_max_m": "так близко к центру", "prefs.near": "так близко к нужному месту",
               "prefs.max_travel_hours": "с дорогой в нужное время", "prefs.arrive_before": "с прибытием к нужному времени",
               "prefs.no_night_flights": "без ночных рейсов", CRIB: "с гарантированной детской кроваткой"}
 
@@ -740,9 +793,9 @@ def _comfort(c: Combo, brief, districts, segments, rr) -> float:
     if d is not None:
         parts["district"] = d
     if h is not None and rr.get("center_on"):
-        cs = center_score(brief, h.get("distance_center_m"), rr)
+        cs = _loc_score(h, brief, rr)
         if cs is not None:
-            parts["center"] = cs
+            parts["near" if rr.get("near") else "center"] = cs
     total = sum(w.get(k, 0) for k in parts) or 1.0
     return round(sum(w.get(k, 0) * v for k, v in parts.items()) / total, 4)
 
@@ -974,7 +1027,14 @@ def _facts(c: Combo, brief, districts, segments, rr):
         d = district_fit(brief, profile, segments)
         if d is not None:
             f["district_fit"] = d
-    if rr.get("center_on"):
+    near = rr.get("near")
+    if near:   # a named place: its distance replaces the centre's in fit and comfort
+        f["near_name"] = near.get("name")
+        f["distance_near_m"] = h.get("distance_near_m")
+        ns = near_score(h.get("distance_near_m"), rr)
+        if ns is not None:
+            f["near_fit"] = ns
+    elif rr.get("center_on"):
         cs = center_score(brief, h.get("distance_center_m"), rr)
         if cs is not None:
             f["center_fit"] = cs   # the centre counts for this trip (city stay or prefs.center_max_m)
@@ -1131,6 +1191,12 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
             text = f"Рейсов с прибытием до {prefs.arrive_before} не нашли — показываем ближайшие"
         elif path == "prefs.center_max_m":
             text = "Отелей так близко к центру на эти даты нет — показываем ближайшие"
+        elif path == "prefs.near" and rr.get("near"):
+            near = rr["near"]
+            text = (f"В {_km_text(near.get('radius_m') or rr['near_max_m'])} от места «{near.get('name')}» отелей на "
+                    f"эти даты нет — ближайший в {fmt_int(near.get('nearest_m'))} м, показываем ближайшие"
+                    if near.get("nearest_m") is not None else
+                    f"Отелей рядом с местом «{near.get('name')}» на эти даты нет — показываем ближайшие")
         else:
             text = f"Вариантов {RELAXED_RU.get(path, path)} не нашли — показываем ближайшие"
         head.append(_note("relaxed_pref", text, field=path))
@@ -1223,6 +1289,11 @@ def _sacrifices(v, others, rr, brief):
     if f.get("center_fit") is not None and dc is not None and centers and \
             dc - min(centers) >= rr.get("sacrifice_center_delta_m", 700):
         out.append(_note("center_farther", f"До центра {fmt_int(dc)} м", distance_m=dc))
+    nears = [x["facts"].get("distance_near_m") for x in all_ if x["facts"].get("distance_near_m") is not None]
+    dn = f.get("distance_near_m")
+    if dn is not None and nears and dn - min(nears) >= rr.get("sacrifice_near_delta_m", 400):
+        # the place the user wants to stay near comes first among the sacrifices (never cut by max_notes)
+        out.insert(0, _note("near_farther", f"До места «{f.get('near_name')}» {fmt_int(dn)} м", distance_m=dn))
     ratings = [x["facts"].get("hotel_rating") for x in all_ if x["facts"].get("hotel_rating") is not None]
     r = f.get("hotel_rating")
     if r is not None and ratings and max(ratings) - r >= rr["sacrifice_rating_delta"]:
@@ -1291,7 +1362,9 @@ def fit(brief, variant, rules, segments=None):
     elif sea_wanted:
         near, zero = rr["beach_near_m"], rr["beach_zero_m"]
         b["beach"] = 0.0 if dist is None else (1.0 if dist <= near else max(0.0, 1 - (dist - near) / (zero - near)))
-    if f.get("center_fit") is not None:   # set by _facts only when the centre counts for this trip
+    if f.get("near_fit") is not None:     # a named place (prefs.near): replaces the centre
+        b["near"] = float(f["near_fit"])
+    elif f.get("center_fit") is not None:   # set by _facts only when the centre counts for this trip
         b["center"] = float(f["center_fit"])
     party = brief.party.value
     if brief.constraints.value or wants_pet(brief) or (party and party.children):
@@ -1381,10 +1454,19 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     hotels_all = [h for h in hotels_all if _party_ok(h, brief)]
     if want_stay and not hotels_all:
         return []
-    rr["center_on"] = want_stay and center_applies(brief, dest, rr)
-    hotels, relaxed_paths = _relax_hotels(hotels_all, brief)
+    near = dict(results.get("near")) if want_stay and results.get("near") else None
+    if near:   # prefs.near resolved by steps: every hotel gets its distance to that place
+        near.setdefault("radius_m", rr["near_max_m"])
+        hotels_all = [dict(h, distance_near_m=near_distance_m(h, near)) for h in hotels_all]
+        ds = [h["distance_near_m"] for h in hotels_all if h.get("distance_near_m") is not None]
+        near["nearest_m"] = min(ds) if ds else None
+    rr["near"] = near
+    rr["center_on"] = want_stay and (bool(near) or center_applies(brief, dest, rr))
+    hotels, relaxed_paths = _relax_hotels(hotels_all, brief, near)
     if "prefs.center_max_m" in relaxed_paths:   # none so close to the centre: the nearest ones, said so
         hotels = _nearest_hotels(hotels, rr) or hotels
+    if "prefs.near" in relaxed_paths:           # none within the radius of the place: the nearest ones
+        hotels = _nearest_hotels(hotels, rr, "distance_near_m", "near_relax_tolerance_m") or hotels
     hotels = _prune_hotels(hotels, rr["max_hotels"], brief, districts, segs, rr["max_dorm_hotels"], rr=rr)
 
     want_transport = bool(scope & {"flights", "trains"})
@@ -1530,7 +1612,8 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
             dp = DistrictProfile(labels=district_labels(profile, rr),
                                  scores={k: round(float(v), 3) for k, v in ((profile or {}).get("scores") or {}).items()})
             hotel = VariantHotel(hotel_id=c.hotel["hotel_id"], offer_id=c.hotel["offer_id"], name=c.hotel["name"],
-                                 stars=c.hotel.get("stars"), rating=c.hotel.get("rating"), district=dp)
+                                 stars=c.hotel.get("stars"), rating=c.hotel.get("rating"), district=dp,
+                                 lat=c.hotel.get("lat"), lon=c.hotel.get("lon"))
         risks = _risks(c, f, brief, rules, rr, steps)
         if shift and shift.get("days"):
             f["dates_shifted_days"] = int(shift["days"])

@@ -257,6 +257,10 @@ class Engine:
             tentative, _, _ = prepare_brief(ctx, s.brief, ctx.patch)
         if self._drop_contradicting_destination(ctx, tentative):
             tentative, _, _ = prepare_brief(ctx, s.brief, ctx.patch)
+        if self._resolve_near(ctx, tentative):
+            tentative, _, _ = prepare_brief(ctx, s.brief, ctx.patch)
+            if "intent" in route_kw:
+                route_kw["intent"] = ctx.intent
         route = self.skill.match_route(stage=s.stage, brief=tentative, **route_kw)
         if route is None:
             raise StepError("bad_request", "Не понял, что сделать — попробуйте сформулировать иначе.")
@@ -524,6 +528,78 @@ class Engine:
         if sets.get("prefs.district") == "walkable" and not walkable_cue(rules, ctx.text):
             sets.pop("prefs.district")
             ctx.trace["notes"].append("location cue: prefs.district walkable dropped (the centre is the wish)")
+
+    def _resolve_near(self, ctx, tentative):
+        """prefs.near — the place the user wants to stay near — checked against the destination's pois before
+        routing (-> True when the patch or the intent changed):
+        - «неважно где жить» (rules.json location.near_drop_cues) unsets it;
+        - safety net: «рядом с X», «в районе X», «у X»… whose X names a poi of the (tentative) destination set it
+          when understand did not; inside an info question before payment only when it asks for other hotels
+          («есть что-то рядом с X?» -> refine; «далеко ли от X?» stays a distance question);
+        - a value that resolves nowhere is dropped with a plain note (the centre logic applies, nothing is
+          claimed); a resolved one replaces an older centre wish, and a centre limit it contradicts (the place
+          lies farther from the centre) is dropped; a new centre wish replaces an older prefs.near.
+        The point itself is resolved again by steps.near_point for the search (kept in the session)."""
+        from .steps import near_cue_phrase, near_drop_cue, near_search_cue, resolve_place
+        s = ctx.session
+        if ctx.action is not None and ctx.action.get("type") not in ("set_chip", "answer_question"):
+            return False
+        sets, unsets = ctx.patch["set"], ctx.patch["unset"]
+        prefs_now = s.brief.values().get("prefs") or {}
+        dest = tentative.values().get("destination") or {}
+        dest_id = dest.get("id")
+        rules = self.skill.rules
+        changed = False
+        text = ctx.text if ctx.action is None else None
+        if text and near_drop_cue(rules, text) and "prefs.near" not in sets and prefs_now.get("near") \
+                and "prefs.near" not in unsets:
+            unsets.append("prefs.near")
+            ctx.trace["notes"].append("near: drop cue -> unset prefs.near")
+            changed = True
+        trip = ctx.intent in ("new_trip", "refine", "answer")
+        question = ctx.intent == "info" and s.stage in PRE_PAY_STAGES
+        if text and dest_id and (trip or question) and "prefs.near" not in sets and "prefs.near" not in unsets:
+            poi, phrase = near_cue_phrase(ctx, dest_id, text)
+            if poi is not None and (trip or near_search_cue(rules, text)):
+                sets["prefs.near"] = phrase[:80]
+                ctx.trace["notes"].append(f"near cue «{phrase}» -> prefs.near ({poi['name']})")
+                changed = True
+        if "prefs.near" in sets:
+            value = sets["prefs.near"]
+            point = resolve_place(ctx, dest_id, value) if isinstance(value, str) else None
+            if point is None:
+                sets.pop("prefs.near")
+                changed = True
+                if value is None:          # a null set is an unset
+                    if prefs_now.get("near") and "prefs.near" not in unsets:
+                        unsets.append("prefs.near")
+                elif dest_id:
+                    ctx.note(f"«{value}» не нашёл на карте города {dest.get('name') or dest_id}, поэтому отели "
+                             f"подбираю по расстоянию до центра.")
+                    ctx.trace["notes"].append(f"near «{value}» not in {dest_id} pois -> dropped")
+                else:
+                    ctx.trace["notes"].append(f"near «{value}» without a destination -> dropped")
+            else:
+                centre = sets.get("prefs.center_max_m")
+                if isinstance(centre, int) and (point.get("dist_center_m") or 0) > centre:
+                    sets.pop("prefs.center_max_m")
+                    ctx.trace["notes"].append(f"near {point['name']} is {point.get('dist_center_m')} m from the "
+                                              f"centre -> prefs.center_max_m {centre} dropped")
+                    changed = True
+                elif centre is None and prefs_now.get("center_max_m") is not None \
+                        and s.brief.source_of("prefs.center_max_m") == "user" \
+                        and "prefs.center_max_m" not in unsets:
+                    unsets.append("prefs.center_max_m")      # the place replaces the older centre wish
+                    changed = True
+                if ctx.intent == "info" and s.stage in PRE_PAY_STAGES:
+                    ctx.intent = "refine"
+                    ctx.trace["notes"].append("intent info with prefs.near -> refine")
+                    changed = True
+        elif "prefs.center_max_m" in sets and prefs_now.get("near") and "prefs.near" not in unsets:
+            unsets.append("prefs.near")                    # a new centre wish replaces the older place
+            ctx.trace["notes"].append("centre wish -> prefs.near unset")
+            changed = True
+        return changed
 
     def _drop_contradicting_destination(self, ctx, tentative):
         """The kind of trip changed this turn and the chosen destination no longer fits it: prefs.domestic set
@@ -825,8 +901,8 @@ def route_intent(intent, stage, text, patch, refs=(), paid=False, post_purchase=
         return new, {"set": sets, "unset": unsets}, f"intent post_purchase without a paid order -> {new}"
     if stage in PRE_PAY_STAGES and intent in ("choose", "cart", "checkout", "info"):
         variant_ref = any((r or {}).get("kind") == "variant" for r in refs or [])
-        # «есть что-то ближе к Айя-Софии?»: a question that carries the centre pref is a rebuild (s04 t6)
-        centre = intent == "info" and "prefs.center_max_m" in sets
+        # «есть что-то ближе к Айя-Софии?»: a question that carries a location pref is a rebuild (s04 t6)
+        centre = intent == "info" and ("prefs.center_max_m" in sets or "prefs.near" in sets)
         if rebuild or centre or ((sets or unsets) and not variant_ref and intent in ("choose", "cart")):
             return "refine", {"set": sets, "unset": unsets}, f"intent {intent} with a rebuild request -> refine"
     return intent, {"set": sets, "unset": unsets}, None

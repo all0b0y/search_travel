@@ -1,0 +1,70 @@
+{
+  "id": "ap5_photo_landmark",
+  "category": "A_photo",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Хочу сюда!",
+    "has_image": true
+  },
+  "image": "evals/images/landmark_hagia_sophia.jpg",
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/image/want",
+      "value": "here"
+    },
+    {
+      "type": "predicate",
+      "name": "matches",
+      "args": {
+        "path": "/image/place/name",
+        "pattern": "стамбул|istanbul"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "matches",
+      "args": {
+        "path": "/image/landmark",
+        "pattern": "айя|софи|ayasofya|hagia"
+      }
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/prefs.near"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/prefs.center_max_m"
+    }
+  ],
+  "runs": 5,
+  "notes": "A photo of Hagia Sophia: image.place is the city (Стамбул) and image.landmark the sight in Russian («Айя-София»); code resolves the landmark in Istanbul's pois and assumes prefs.near itself, the patch stays empty (image findings never go into the patch)."
+}

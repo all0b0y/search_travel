@@ -42,10 +42,18 @@
       "casefold": true
     },
     {
+      "type": "predicate",
+      "name": "matches",
+      "args": {
+        "path": "/patch/set/prefs.near",
+        "pattern": "диснейленд|disney"
+      }
+    },
+    {
       "type": "path_absent",
       "path": "/patch/set/prefs.center_max_m"
     }
   ],
   "runs": 5,
-  "notes": "Disneyland Paris is ~30 km out of the centre: no centre pref (the card says plainly that hotels are picked by the distance to the centre only)."
+  "notes": "Disneyland Paris is ~30 km out of the centre: prefs.near «Диснейленд» (any named place, also outside the centre), never a centre pref; when code does not find it in the pois the reply says so and picks hotels by the distance to the centre."
 }
