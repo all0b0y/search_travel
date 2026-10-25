@@ -16,7 +16,7 @@ FinalState normalises what the engine exposes:
 """
 import re
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Any, Callable, Optional
 
 MEALS_ORDER = ("none", "breakfast", "half_board", "full_board", "all_inclusive")
@@ -140,6 +140,19 @@ def _stay_step(state):
             if item:
                 return {"type": "stay", "start": item.get("start"), "end": item.get("end"), "title": item.get("title") or ""}
     return None
+
+
+def _stay_dates(state):
+    """(check-in, check-out) datetimes of the stay: the chosen variant's stay step, else the order's / cart's
+    hotel item. A step is the timeline at the hotel: arriving at 02:13 starts it on the next day although
+    the night before is booked (h04), so a step that starts before 06:00 counts from the day before."""
+    stay = _stay_step(state)
+    if not stay:
+        return None, None
+    a, b = _parse_dt(stay.get("start")), _parse_dt(stay.get("end"))
+    if a is not None and a.hour < 6:
+        a = a - timedelta(days=1)
+    return a, b
 
 
 def _fact(state, *names):
@@ -286,12 +299,10 @@ def destination_in(state, names):
 
 
 def nights_between(state, min, max):
-    stay = _stay_step(state)
     nights = None
-    if stay:
-        a, b = _parse_dt(stay.get("start")), _parse_dt(stay.get("end"))
-        if a and b:
-            nights = (b.date() - a.date()).days
+    a, b = _stay_dates(state)
+    if a and b:
+        nights = (b.date() - a.date()).days
     if nights is None:
         dates = state.brief.get("dates") or {}
         if dates.get("start") and dates.get("end"):
@@ -387,8 +398,7 @@ def dates_within(state, start, end):
 
 
 def stay_starts_on(state, day):
-    stay = _stay_step(state)
-    a = _parse_dt(stay.get("start")) if stay else None
+    a, _ = _stay_dates(state)
     if not a:
         return _no_data("stay start")
     return _res(a.date().isoformat() == day, f"stay starts {a.date()} != {day}" if a.date().isoformat() != day else "")
