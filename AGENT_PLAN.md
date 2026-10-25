@@ -34,6 +34,22 @@
 | 20 | Строим всё сразу параллельными субагентами (Opus 5.5 high), включаем флагами ступенями, каждая ступень — прогон evals. |
 | 21 | Целевая модель — `deepseek/deepseek-v4.1-flash-1017` через OpenRouter, провайдер закреплён (DeepSeek, `allow_fallbacks: false`); фактические модель и провайдер пишутся в каждом прогоне. Запасной провайдер — только явно и с записью в лог. |
 | 22 | Финальная проверка на сильной модели — `gpt-6-luna` effort `high` через Codex (подписка) в изолированном профиле `.codex-profile/`. |
+| 23 | Режим «гид» (2026-10-25, решение владельца после ручного теста и слепого v2): на каждом ходу со свободным текстом модель с размышлением сама решает, что делать — ответить, спросить одну важную вещь, поискать альтернативы, найти экономию, проверить дорогу, подвести к оформлению. Шаги движка — её инструменты; цифры, карточки и проверки остаются за кодом. Для свободного текста меняет решения 3 и 5; кнопки (корзина, оформление, оплата, выбор) остаются кодом. Прежний конвейер — путь по умолчанию до замеров и запасной путь на ход при сбое гида. |
+| 24 | Модель гида — та же DeepSeek V4.1 Flash с размышлением. Если на замерах слабая — более сильная модель только для планирования (решение по замерам, с записью). |
+| 25 | Ход гида — до 15 с. Контекст компактный: заданные поля брифа, что на экране, последние реплики, сжатые результаты инструментов; стабильный префикс промпта ради кэша. Скорость второстепенна по сравнению с качеством, но не больше 15 с. |
+| 26 | Гид становится режимом по умолчанию, только если на новом слепом наборе v3 и на наших наборах он не хуже конвейера по скрытым требованиям и лучше по касаниям или качеству. Работа — в ветке `guide` (worktree `../search_travel-guide`). |
+
+### Режим «гид» (решения 23–26)
+
+Turn with free text (no button action), flag `guide` on:
+
+1. `understand` and patch validation run as today; the route the pipeline would take runs its steps as today (the default plan), but `present` is not called.
+2. Guide round 1 (Flash, reasoning low, card `guide`, prompt `skills/trip-agent/guide.md`): input = compact context (today, stage, the brief's set fields with sources, profile home city, what is on screen with key facts, the last 4 exchanges, this message, the understand reading, the default plan's results compacted: variants / destinations / info facts, risks, relaxed notes, transport gaps, budget fit). Output JSON `{calls: [{tool, args}], reply: {message, show, recommended_id, question} | null}`.
+3. `calls` non-empty → code runs the tools (in parallel where independent) and round 2 sees their compact results; at most 2 tool rounds, then a reply is required.
+4. The reply goes through the card guards (numbers only from this turn's facts and tool results, change and promise claims, tone, Russian); one fix-up round with the issues; still failing → the pipeline's `present` card on the same results (or its code text).
+5. Response: `message` from the guide; cards from the default plan or the tool results the guide chose (`show`); actions and chips built by code as today.
+
+Tools wrap existing steps, compact in and out: `rebuild` (brief overrides: dates, nights, party, prefs, destination; returns variants), `find_savings` (levers priced by code: other start days, fewer nights, cheaper hotel class or district, no free cancellation, cheaper transport — connecting or train —, similar cheaper places; each with its total and difference), `check_road` (direct / connecting / train for the pair and dates), `find_destinations` (wishes, budget, month, transport overrides), `place_info` (sights, distances, climate and best time, hotel terms), `compare` (two or three shown variants). Facts the guide may cite come only from these results and the screen. Budget: the whole turn ≤ 15 s; time per round and per tool goes to the trace.
 
 ### Входы и этапы
 
