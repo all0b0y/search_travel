@@ -132,6 +132,8 @@ def check_scenario(path, places, problems):
             v = args.get(k)
             if m["name"] in ("dates_within", "stay_starts_on") and v and not WINDOW[0] <= v <= WINDOW[1]:
                 problems.append(f"{sid}: {m['name']} {k}={v} is outside {WINDOW}")
+    if any(m["name"] == "order_action_done" for m in p["hidden"]["must"]):
+        s["stop_on_paid"] = False   # the runner's flag: the dialogue goes on after payment (BRIEF v1 lacked it)
     return s
 
 

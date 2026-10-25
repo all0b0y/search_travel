@@ -1,0 +1,444 @@
+{
+  "run_id": "20261025-171440-L2-bench-blind",
+  "level": 2,
+  "set": "bench",
+  "model": "flash",
+  "flags": "stage1",
+  "flags_enabled": [],
+  "dry_run": false,
+  "persona": null,
+  "started_at": "2026-10-25T17:14:40+03:00",
+  "run_dir": "evals/bench/v1/runs/20261025-171440-L2-bench-blind",
+  "argv": [
+    "--level",
+    "2",
+    "--set",
+    "bench",
+    "--bench",
+    "evals/bench/v1",
+    "--model",
+    "flash",
+    "--parallel",
+    "6",
+    "--tag",
+    "blind"
+  ],
+  "policy": {},
+  "tag": "blind",
+  "cases": [
+    {
+      "id": "bu_01_forty_total",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 3798,
+      "failures": [
+        "run 0: path_equals /patch/set/party.adults: /patch/set/party.adults is absent",
+        "run 1: path_equals /patch/set/party.adults: /patch/set/party.adults is absent",
+        "run 2: path_equals /patch/set/party.adults: /patch/set/party.adults is absent",
+        "run 3: path_equals /patch/set/party.adults: /patch/set/party.adults is absent",
+        "run 4: path_equals /patch/set/party.adults: /patch/set/party.adults is absent"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "bu_02_fifty_for_two",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1364,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_03_infant_counts",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1408,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_04_may_holidays",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 1409,
+      "failures": [
+        "run 0: path_equals /patch/set/dates.month: /patch/set/dates.month is absent",
+        "run 0: path_absent /patch/set/dates.start: /patch/set/dates.start = '2027-05-01'",
+        "run 0: path_absent /patch/set/dates.end: /patch/set/dates.end = '2027-05-04'",
+        "run 1: path_equals /patch/set/dates.month: /patch/set/dates.month is absent",
+        "run 1: path_absent /patch/set/dates.start: /patch/set/dates.start = '2027-05-01'",
+        "run 1: path_absent /patch/set/dates.end: /patch/set/dates.end = '2027-05-04'",
+        "run 2: path_equals /patch/set/dates.month: /patch/set/dates.month is absent",
+        "run 2: path_absent /patch/set/dates.start: /patch/set/dates.start = '2027-05-01'",
+        "run 2: path_absent /patch/set/dates.end: /patch/set/dates.end = '2027-05-04'",
+        "run 3: path_equals /patch/set/dates.month: /patch/set/dates.month is absent"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "bu_05_after_new_year",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1293,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_06_train_typo",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1421,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_07_sight_nominative",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1583,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_08_no_steps",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1563,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_09_basenji",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1245,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_10_bobtail",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1190,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_11_cot_kitchen",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1293,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_12_private_room",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 1621,
+      "failures": [
+        "run 0: predicate contains: /patch/set/constraints.add = ['no_hostel'], want all of ['no_dorm']",
+        "run 1: predicate contains: /patch/set/constraints.add = ['no_hostel'], want all of ['no_dorm']",
+        "run 2: predicate contains: /patch/set/constraints.add = ['no_hostel'], want all of ['no_dorm']",
+        "run 3: predicate contains: /patch/set/constraints.add = ['no_hostel'], want all of ['no_dorm']",
+        "run 4: predicate contains: /patch/set/constraints.add = ['no_hostel'], want all of ['no_dorm']"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "bu_13_all_in_beach",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1377,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_14_refundable_four",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1338,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_15_nonstop_five_hours",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1451,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_16_morning_arrival",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1395,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_17_stay_only",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1360,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_18_domestic_sea",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1325,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_19_visa_only",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1372,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_20_car_rental_only",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 1242,
+      "failures": [
+        "run 0: path_equals /intent: /intent = 'new_trip', want 'out_of_scope'",
+        "run 0: path_absent /patch/set/scope: /patch/set/scope = ['transfers']",
+        "run 0: path_absent /patch/set/dates.start: /patch/set/dates.start = '2026-10-31'",
+        "run 1: path_equals /intent: /intent = 'new_trip', want 'out_of_scope'",
+        "run 1: path_absent /patch/set/scope: /patch/set/scope = ['stay']",
+        "run 1: path_absent /patch/set/dates.start: /patch/set/dates.start = '2026-10-31'",
+        "run 2: path_equals /intent: /intent = 'new_trip', want 'out_of_scope'",
+        "run 2: path_absent /patch/set/scope: /patch/set/scope = ['transfers']",
+        "run 2: path_absent /patch/set/dates.start: /patch/set/dates.start = '2026-10-31'",
+        "run 3: path_equals /intent: /intent = 'new_trip', want 'out_of_scope'"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "bu_21_shift_three",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1449,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_22_cheaper_ceiling",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1426,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_23_children_stay_home",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 1446,
+      "failures": [
+        "run 0: path_equals /patch/set/party.children_ages: /patch/set/party.children_ages = None, want []",
+        "run 1: path_equals /patch/set/party.children_ages: /patch/set/party.children_ages = None, want []",
+        "run 2: path_equals /patch/set/party.children_ages: /patch/set/party.children_ages = None, want []",
+        "run 3: path_equals /patch/set/party.children_ages: /patch/set/party.children_ages = None, want []",
+        "run 4: path_equals /patch/set/party.children_ages: /patch/set/party.children_ages = None, want []"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "bu_24_june_four_nights",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1340,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_25_correct_origin",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1392,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_26_cancellation_question",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1467,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_27_sapsan_baggage",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1549,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_28_choose_second",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1239,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_29_compare_two",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1297,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "bu_30_cart_not_payment",
+      "category": "bench",
+      "card": "understand",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1243,
+      "failures": [],
+      "unsure": null
+    }
+  ],
+  "metrics": {
+    "cases_total": 30,
+    "cases_full_pass": 25,
+    "cases_full_pass_rate": 0.8333333333333334,
+    "runs_total": 150,
+    "runs_passed": 125,
+    "runs_pass_rate": 0.8333333333333334,
+    "llm_errors": 0,
+    "input_errors": 0,
+    "retries_total": 0,
+    "guard_reruns": 0,
+    "guard_rerun_reasons": [],
+    "latency_p50_ms": 1393.0,
+    "latency_p95_ms": 1872.5500000000002,
+    "input_tokens": 1142640,
+    "output_tokens": 9362,
+    "cost_usd_total": 0.015496656000000018,
+    "served_models": {
+      "deepseek/deepseek-v4.1-flash-1017": 150
+    },
+    "served_providers": {
+      "DeepSeek": 150
+    },
+    "by_category": {
+      "bench": "25/30"
+    }
+  },
+  "finished_at": "2026-10-25T17:15:17+03:00",
+  "notes": [],
+  "thresholds": [
+    {
+      "metric": "cases_full_pass_rate",
+      "label": "фазовые кейсы 5/5 (каждый кейс прошёл все прогоны)",
+      "value": 0.8333333333333334,
+      "op": ">=",
+      "threshold": 1.0,
+      "pass": false
+    }
+  ],
+  "green": false,
+  "report_paths": {
+    "json": "evals/bench/v1/reports/20261025-171440-L2-bench-blind.json",
+    "md": "evals/bench/v1/reports/20261025-171440-L2-bench-blind.md"
+  }
+}
