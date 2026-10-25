@@ -123,8 +123,8 @@
         "rating": 8.0,
         "district": {
           "labels": [
-            "family",
-            "quiet"
+            "семейный район",
+            "тихий район"
           ],
           "counts": {
             "playgrounds": 2,
@@ -239,7 +239,7 @@
         "rating": 9.3,
         "district": {
           "labels": [
-            "family"
+            "семейный район"
           ],
           "counts": {
             "playgrounds": 5,

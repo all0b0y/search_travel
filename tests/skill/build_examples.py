@@ -236,7 +236,9 @@ def with_gaps(b, items, hint=None):
 
 
 def hotel(name, stars, rating, labels, **counts):
-    return {"name": name, "stars": stars, "rating": rating, "district": {"labels": labels, "counts": counts}}
+    from agent.payloads import DISTRICT_RU   # card inputs carry Russian words, not the label codes
+    return {"name": name, "stars": stars, "rating": rating,
+            "district": {"labels": [DISTRICT_RU.get(lb, lb) for lb in labels], "counts": counts}}
 
 
 def v_input(b, stage, items, hint, questions=(), upsell=(), assumptions=(), **extra):

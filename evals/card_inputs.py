@@ -8,6 +8,7 @@ single place evals encode the card-input contract; tests run every case through 
 """
 import jsonschema
 
+from agent.payloads import DISTRICT_RU
 from agent.state import (ALLOWED_PATCH_PATHS, DISTRICT_LABELS, SHOWN_KINDS, STAGES, Brief)
 
 COMMON_KEYS = ("today", "stage", "brief", "assumed", "assumptions")
@@ -51,7 +52,7 @@ STEP = _obj(["type", "from", "to", "start", "end", "carrier", "price_rub"], {
 HOTEL = _obj(["name", "stars", "rating", "district"], {
     "name": {"type": "string"}, "stars": {"type": ["integer", "null"]}, "rating": NUM_OR_NULL,
     "district": _obj(["labels", "counts"], {
-        "labels": {"type": "array", "items": {"enum": list(DISTRICT_LABELS)}},
+        "labels": {"type": "array", "items": {"enum": [DISTRICT_RU[k] for k in DISTRICT_LABELS]}},   # Russian words
         "counts": {"type": "object", "additionalProperties": {"type": "integer"}}})})
 # totals: door_to_door_hours = both ways together; out_hours / back_hours = one way each (null without that
 # direction). diff_rub / diff_word: the gap to the recommended item (0 / null for it), over_budget_rub: above

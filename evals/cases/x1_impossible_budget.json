@@ -100,7 +100,7 @@
           "rating": 7.9,
           "district": {
             "labels": [
-              "walkable"
+              "пешком до всего"
             ],
             "counts": {
               "bars": 3,
@@ -190,7 +190,7 @@
           "rating": 8.5,
           "district": {
             "labels": [
-              "walkable"
+              "пешком до всего"
             ],
             "counts": {
               "bars": 3,

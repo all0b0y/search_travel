@@ -330,7 +330,9 @@ def variant_item(variant, label, district_counts=None, base_rub=None, budget_max
     hotel = None
     if variant.hotel is not None:
         hotel = {"name": variant.hotel.name, "stars": variant.hotel.stars, "rating": variant.hotel.rating,
-                 "district": {"labels": list(variant.hotel.district.labels), "counts": district_counts or {}}}
+                 # Russian words, not the codes: a cheap model copies «walkable» into the text otherwise
+                 "district": {"labels": [DISTRICT_RU.get(lb, lb) for lb in variant.hotel.district.labels],
+                              "counts": district_counts or {}}}
     return {"id": variant.id, "label": label, "title": variant.title or VARIANT_TITLES.get(variant.id, variant.id),
             "totals": variant.totals.model_dump(mode="json"), "steps": [step_item(s) for s in variant.steps],
             "hotel": hotel, "facts": dict(variant.facts), "sacrifices": [_note(n) for n in variant.sacrifices],

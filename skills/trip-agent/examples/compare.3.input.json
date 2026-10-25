@@ -92,7 +92,7 @@
         "rating": 8.0,
         "district": {
           "labels": [
-            "quiet"
+            "тихий район"
           ],
           "counts": {
             "cafes": 3,
@@ -157,8 +157,8 @@
         "rating": 8.6,
         "district": {
           "labels": [
-            "walkable",
-            "lively"
+            "пешком до всего",
+            "движ"
           ],
           "counts": {
             "cafes": 24,

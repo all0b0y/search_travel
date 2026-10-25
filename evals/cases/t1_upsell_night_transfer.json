@@ -118,7 +118,7 @@
           "rating": 8.1,
           "district": {
             "labels": [
-              "quiet"
+              "тихий район"
             ],
             "counts": {
               "bars": 1,
@@ -246,8 +246,8 @@
           "rating": 8.7,
           "district": {
             "labels": [
-              "walkable",
-              "quiet"
+              "пешком до всего",
+              "тихий район"
             ],
             "counts": {
               "bars": 3,
@@ -356,8 +356,8 @@
           "rating": 9.1,
           "district": {
             "labels": [
-              "quiet",
-              "family"
+              "тихий район",
+              "семейный район"
             ],
             "counts": {
               "bars": 3,

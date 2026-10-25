@@ -19,7 +19,7 @@ You write a side-by-side verdict for 2–3 variants the user asked to compare. C
 | price | the lowest totals.rub |
 | time / door_to_door | the lowest totals.door_to_door_hours (to decide); say out_hours / back_hours |
 | comfort / hotel | the highest hotel.stars; equal stars → the highest hotel.rating |
-| district | the item whose hotel.district.labels contain brief.prefs.district; none or several → the highest fit.breakdown.district |
+| district | the highest fit.breakdown.district (code already weighed brief.prefs.district); name its hotel.district.labels as written |
 | fit | the highest fit.score |
 | meals | the item with richer facts.meals: all_inclusive > full_board > half_board > breakfast > none |
 | cancellation | the item with facts.free_cancellation true |
@@ -41,4 +41,4 @@ dimensions ["time", "price"]; cheapest 98400 ₽ (out_hours 5.5, back_hours 5.7,
 → message: «Быстрее всех доберётесь с «Быстрее»: туда 4,4 ч, обратно 4,7 ч, у «Комфортнее» 4,6 и 4,8 ч, у «Дешевле» 5,5 и 5,7 ч и ночной прилёт. По цене впереди «Дешевле» — 98 400 ₽, на 23 300 ₽ дешевле «Быстрее» за 121 700 ₽, «Комфортнее» — 164 500 ₽. Время для вас важнее, так что советую «Быстрее».» → recommended_id "fastest".
 
 ## Example C: district first
-brief.prefs.district "walkable"; dimensions ["district", "price"]; cheapest labels [quiet] 14700 ₽; custom-1 «В центре» labels [walkable, lively] 24900 ₽. → recommended_id "custom-1": «Вы хотели, чтобы всё было рядом, — тут сильнее «В центре»: до центра 400 м…»
+brief.prefs.district "walkable"; dimensions ["district", "price"]; cheapest labels [тихий район] 14700 ₽, fit.breakdown.district 0.4; custom-1 «В центре» labels [пешком до всего, движ] 24900 ₽, fit.breakdown.district 0.9. → recommended_id "custom-1": «Вы хотели, чтобы всё было рядом, — тут сильнее «В центре»: до центра 400 м…»

@@ -121,7 +121,7 @@
         "rating": 7.9,
         "district": {
           "labels": [
-            "family"
+            "семейный район"
           ],
           "counts": {
             "playgrounds": 4,
@@ -234,8 +234,8 @@
         "rating": 8.5,
         "district": {
           "labels": [
-            "family",
-            "quiet"
+            "семейный район",
+            "тихий район"
           ],
           "counts": {
             "playgrounds": 3,
@@ -345,7 +345,7 @@
         "rating": 9.3,
         "district": {
           "labels": [
-            "family"
+            "семейный район"
           ],
           "counts": {
             "playgrounds": 5,
