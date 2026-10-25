@@ -11,6 +11,10 @@
   (x0.82 for 1-stop). Children (2-11) 75 %, infants (< 2, no seat) 10 %.
 - Tiers: basic (cabin bag only, non-refundable, no changes), standard (23 kg bag, change fee),
   flex (23 kg bag, refundable, free changes) — `flex` is the `flexible_fare` upsell.
+- Pets (`pets` terms, one generic mock rule for every carrier, fees synthetic): in the cabin a pet in
+  its carrier weighing up to 8 kg together; heavier ones fly in the hold as checked baggage; both paid
+  separately per animal, at most one animal per passenger. A search with `pets` > 0 prices that many
+  animals at the cabin fee into `price_rub` (the offer id keeps the count, so carts agree).
 """
 from __future__ import annotations
 
@@ -45,6 +49,24 @@ TIERS = {
 }
 SLOTS = 4
 CHILD_SHARE, INFANT_SHARE = 0.75, 0.10
+PET_CABIN_MAX_KG = 8
+PET_FEES = {"cabin": (2500, 4500), "hold": (4000, 7000)}   # per animal (domestic, international), synthetic
+PET_HOLD_HOW = "тяжелее 8 кг вместе с переноской — в багажном отсеке как багаж"
+
+
+def pet_terms(international: bool, seats: int, pets: int, *seed) -> dict:
+    """Pet carriage terms of a flight offer (the module docstring's generic rule); `seed` makes the
+    synthetic fees deterministic. `count` animals are priced at the cabin fee when allowed."""
+    k = 1 if international else 0
+    cabin = pricing.round10(PET_FEES["cabin"][k] * rng.between(0.9, 1.1, "flight", "petfee", *seed))
+    hold = pricing.round10(PET_FEES["hold"][k] * rng.between(0.9, 1.1, "flight", "petfee_hold", *seed))
+    terms = {"small_in_carrier": True, "carrier_max_cm_sum": None, "carrier_max_kg": PET_CABIN_MAX_KG,
+             "places": "в салоне, в переноске", "large_dogs": True, "large_dogs_how": PET_HOLD_HOW,
+             "max_animals": max(1, seats), "fee_rub": cabin, "large_dog_fee_rub": hold, "guide_dogs_free": True,
+             "count": 0, "fee_total_rub": 0, "synthetic_fee": True}
+    if 0 < pets <= terms["max_animals"]:
+        terms["count"], terms["fee_total_rub"] = pets, cabin * pets
+    return terms
 
 
 def carrier_name(code: str) -> str:
@@ -185,6 +207,8 @@ def build(params: dict) -> dict | None:
     per_adult *= mult * (0.82 if h else 1.0)
     price = pricing.round10(per_adult * (adults + CHILD_SHARE * children + INFANT_SHARE * infants))
     change_fee = None if fee is None else fee[1 if international else 0] * (adults + children)
+    pets = pet_terms(international, adults + children, int(params.get("pt") or 0), o, h or "-", d, day.isoformat(), s)
+    price += pets["fee_total_rub"]
     dep_dt, arr_dt = legs[0]["dep"], legs[-1]["arr"]
     offer = {
         "offer_id": encode("flight", params),
@@ -201,6 +225,7 @@ def build(params: dict) -> dict | None:
         "baggage": {"checked_kg": checked, "cabin_kg": cabin},
         "fare": {"name": tier, "refundable": refundable, "change_fee_rub": change_fee},
         "price_rub": price,
+        "pets": pets,
         "date": day.isoformat(),
         "synthetic": True,
     }
@@ -208,7 +233,7 @@ def build(params: dict) -> dict | None:
 
 
 def search(origin: list[str], dest: list[str], day: date, adults: int, children: int, infants: int,
-           flex_days: int, today: date, tiers: tuple[str, ...] = tuple(TIERS)) -> list[dict]:
+           flex_days: int, today: date, tiers: tuple[str, ...] = tuple(TIERS), pets: int = 0) -> list[dict]:
     offers = []
     origins, dests = geo.expand_iata(origin), geo.expand_iata(dest)
     for delta in range(-flex_days, flex_days + 1):
@@ -222,7 +247,8 @@ def search(origin: list[str], dest: list[str], day: date, adults: int, children:
                     for s in active_slots(o, first_to, d0):
                         for tier in tiers:
                             params = {"o": o, "d": d, "h": h, "dt": d0.isoformat(), "s": s, "f": tier,
-                                      "a": adults, "c": children, "i": infants, "t": today.isoformat()}
+                                      "a": adults, "c": children, "i": infants, "t": today.isoformat(),
+                                      **({"pt": int(pets)} if pets else {})}
                             offer = build(params)
                             if offer:
                                 offers.append(offer)

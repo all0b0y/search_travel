@@ -8,6 +8,15 @@ High-speed corridors (HIGH_SPEED, e.g. Москва — Санкт-Петерб�
 even-numbered one a high-speed day train (class `seat`), the others regular overnight trains.
 Fare per passenger (RUB): seat 500 + 3.2/km, platzkart 400 + 1.6/km, coupe 700 + 2.8/km,
 sv 1500 + 5.5/km, x season x lead time (flight table, softened by half) x noise 0.92-1.12.
+
+Every offer has `train_kind` (`high_speed` = a HIGH_SPEED train such as «Сапсан», `day` = another day
+train with seats, `long_distance` = an FPK overnight train) and `pets` terms (pet_terms): a cautious
+summary of the RZD rules in force since 01.01.2025 — cats and small dogs in a closed carrier whose three
+sides sum to <= 180 cm, where hand luggage goes, a travel document per animal, at most two per ticket;
+on high-speed / day trains only on the seats for passengers with animals and never a large dog; on FPK
+trains a large dog only in a separate compartment (coupe / sv) with every free place bought, muzzled and
+on a leash; guide dogs free everywhere. The fee is synthetic like every mock price. A search with
+`pets` > 0 prices that many animals into `price_rub` (the offer id keeps the count, so carts agree).
 """
 from __future__ import annotations
 
@@ -60,8 +69,42 @@ def _train(a: geo.City, b: geo.City, day: date, i: int) -> dict:
     if hsr and fast:
         # odd numbers one way, even the other (as on the real line)
         number, letter, carrier = 751 + 2 * i + (a.name_ru > b.name_ru), "А", f"РЖД «{hsr[0]}»"
+    kind = "high_speed" if hsr and fast else "day" if fast else "long_distance"
     return {"fast": fast, "km": km, "duration": int(round(km / speed * 60)), "dep_min": dep_min,
-            "train_no": f"{number:03d}{letter}", "carrier": carrier}
+            "train_no": f"{number:03d}{letter}", "carrier": carrier, "kind": kind}
+
+
+PET_MAX_PER_TICKET = 2
+PET_CARRIER_CM_SUM = 180
+COMPARTMENT_PLACES = {"coupe": 4, "sv": 2}
+PET_PLACES_SEATS = "места для пассажиров с животными"
+LARGE_DOG_HOW = "только в отдельном купе: выкупить все свободные места, собака в наморднике и на поводке"
+
+
+def pet_terms(tr: dict, cls: str, pax: int, per_pax_fare: float, pets: int, *seed) -> dict:
+    """Pet carriage terms of one train and car class (see the module docstring); `seed` makes the
+    synthetic fee deterministic. `count` animals are priced into the offer when the terms allow them."""
+    fee = pricing.round10((300 + 0.6 * tr["km"]) * rng.between(0.9, 1.1, "train", "petfee", *seed))
+    large = cls in COMPARTMENT_PLACES and tr["kind"] == "long_distance"
+    terms = {
+        "small_in_carrier": True,
+        "carrier_max_cm_sum": PET_CARRIER_CM_SUM,
+        "carrier_max_kg": None,
+        "places": PET_PLACES_SEATS if tr["kind"] != "long_distance" else None,
+        "large_dogs": large,
+        "large_dogs_how": LARGE_DOG_HOW if large else None,
+        "max_animals": PET_MAX_PER_TICKET * pax,
+        "fee_rub": fee,
+        "large_dog_fee_rub": (pricing.round10(per_pax_fare * max(0, COMPARTMENT_PLACES[cls] - pax))
+                              if large else None),
+        "guide_dogs_free": True,
+        "count": 0,
+        "fee_total_rub": 0,
+        "synthetic_fee": True,
+    }
+    if 0 < pets <= terms["max_animals"]:
+        terms["count"], terms["fee_total_rub"] = pets, fee * pets
+    return terms
 
 
 def active(a: geo.City, b: geo.City, day: date) -> list[int]:
@@ -99,16 +142,19 @@ def build(params: dict) -> dict | None:
     fare *= pricing.season_factor(day, prof)
     fare *= 1 + (pricing.lead_factor(lead, pricing.FLIGHT_LEAD) - 1) / 2
     fare *= rng.between(0.92, 1.12, "train", a.name_ru, b.name_ru, "demand", day.isoformat(), i, cls)
+    pets = pet_terms(tr, cls, pax, fare, int(params.get("pt") or 0), a.name_ru, b.name_ru, day.isoformat(), i)
     return {
         "offer_id": encode("train", params),
-        "carrier": tr["carrier"], "train_no": tr["train_no"],
+        "carrier": tr["carrier"], "train_no": tr["train_no"], "train_kind": tr["kind"],
         "from_station": geo.station_for(a, b), "to_station": geo.station_for(b, a),
         "dep": geo.iso(dep), "arr": geo.iso(arr), "duration_min": max(1, tr["duration"]),
-        "car_class": cls, "price_rub": pricing.round10(fare * pax), "date": day.isoformat(), "synthetic": True,
+        "car_class": cls, "price_rub": pricing.round10(fare * pax) + pets["fee_total_rub"],
+        "pets": pets, "date": day.isoformat(), "synthetic": True,
     }
 
 
-def search(origin_city: str, dest_city: str, day: date, passengers: int, today: date) -> tuple[list[dict], str | None]:
+def search(origin_city: str, dest_city: str, day: date, passengers: int, today: date,
+           pets: int = 0) -> tuple[list[dict], str | None]:
     a, b = geo.resolve_city(origin_city), geo.resolve_city(dest_city)
     note = pair_note(a, b)
     if note:
@@ -119,7 +165,7 @@ def search(origin_city: str, dest_city: str, day: date, passengers: int, today: 
     for i in active(a, b, day):
         for cls in classes(_train(a, b, day, i)):
             params = {"o": a.name_ru, "d": b.name_ru, "dt": day.isoformat(), "s": i, "cls": cls,
-                      "p": passengers, "t": today.isoformat()}
+                      "p": passengers, "t": today.isoformat(), **({"pt": int(pets)} if pets else {})}
             offer = build(params)
             if offer:
                 offers.append(offer)

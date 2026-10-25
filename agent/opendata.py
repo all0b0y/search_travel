@@ -52,6 +52,8 @@ WEIGHTS = {"trait": 0.4, "climate": 0.3, "travel": 0.2, "popularity": 0.1}
 CLIMATE = {"warm_air": (20.0, 26.0), "warm_sea": (19.0, 24.0), "cold_air": (8.0, 0.0), "comfort": (15.0, 28.0),
            "comfort_zero": (0.0, 38.0), "rain_cap_days": 20, "rain_halving_days": 40,
            "trait_warm": 24.0, "trait_hot": 30.0, "trait_cold": 8.0, "trait_snow": 0.0}
+# best_months (rules.json `best_time` overrides): sightseeing day maximum full / zero bands, months kept
+BEST_TIME = {"city_air": (18.0, 26.0), "city_air_zero": (8.0, 34.0), "keep_ratio": 0.9, "max_months": 4}
 CRUISE_KMH = 750.0
 FLIGHT_OVERHEAD_H = 0.5
 CONNECTION_H = 2.0
@@ -536,6 +538,46 @@ class OpenData:
         if rain is not None:
             score *= 1 - min(rain, c["rain_cap_days"]) / c["rain_halving_days"]
         return round(score, 3)
+
+    def best_months(self, dest_id, traits=None, rules=None):
+        """The best months to go, from the climate table -> [{month, score, air_max_c, air_min_c, sea_c,
+        rain_days}] in calendar order ([] without climate rows).
+
+        Rule (rules.json `best_time`, defaults BEST_TIME): the trip's wishes decide the score — cold / snow /
+        ski wishes, or warm / sea / beach wishes → climate_fit (the destinations ranking); no such wish → a
+        sea resort (kind resort with a sea / beach tag) is scored as a sea trip, anything else as sightseeing:
+        day maximum in `city_air` (18–26°) scores 1, ramping to 0 at `city_air_zero` (8° / 34°), times the
+        same rain factor as climate_fit. Kept: the months scoring ≥ keep_ratio × the best month, at most
+        max_months of them (highest first), returned in calendar order."""
+        r = {**BEST_TIME, **(rules or {})}
+        wishes = set(traits or [])
+        if not wishes & (COLD_WISH | WARM_WISH | SEA_WISH):
+            dest = self.destination(dest_id) or {}
+            if dest.get("kind") == "resort" and set(dest.get("tags") or []) & SEA_WISH:
+                wishes = {"sea", "warm"}
+        c = self.climate_rules
+        scored = []
+        for month in range(1, 13):
+            clim = self.climate(dest_id, month)
+            if not clim or clim.get("air_max_c") is None:
+                continue
+            if wishes & (COLD_WISH | WARM_WISH | SEA_WISH):
+                score = self.climate_fit(wishes, clim)
+            else:
+                air = clim["air_max_c"]
+                (lo, hi), (z_lo, z_hi) = r["city_air"], r["city_air_zero"]
+                score = 1.0 if lo <= air <= hi else (ramp(air, z_lo, lo) if air < lo else ramp(air, z_hi, hi))
+                rain = clim.get("rain_days")
+                if rain is not None:
+                    score *= 1 - min(rain, c["rain_cap_days"]) / c["rain_halving_days"]
+            scored.append((round(score, 3), month, clim))
+        top = max((s for s, _, _ in scored), default=0.0)
+        if top <= 0:
+            return []
+        keep = sorted((x for x in scored if x[0] >= top * float(r["keep_ratio"])), key=lambda x: (-x[0], x[1]))
+        keep = sorted(keep[: int(r["max_months"])], key=lambda x: x[1])
+        return [{"month": m, "score": s, **{k: clim.get(k) for k in ("air_max_c", "air_min_c", "sea_c", "rain_days")}}
+                for s, m, clim in keep]
 
     def find_destinations(self, traits, month, origin_city, budget=None, max_travel_hours=None, segment=None,
                           limit=8, exclude=()):

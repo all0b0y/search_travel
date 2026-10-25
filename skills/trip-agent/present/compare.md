@@ -12,6 +12,7 @@ You write a side-by-side verdict for 2–3 variants the user asked to compare. C
 7. upsell is always []. No questions to the user: no «?» in message.
 8. Facts only from the input. Money, risks and cancellation terms plainly, no joke next to them.
 9. Travel time is ONE WAY: say totals.out_hours (туда) / totals.back_hours (обратно), never door_to_door_hours (both ways added up, reads as one way).
+10. An offer, if any, only of what code can rebuild (distance to the centre, dates, budget, meals, stars, cancellation, transport); never a search by a named district or sight.
 
 ## Who wins a dimension
 | dimension | winner |
@@ -23,6 +24,7 @@ You write a side-by-side verdict for 2–3 variants the user asked to compare. C
 | fit | the highest fit.score |
 | meals | the item with richer facts.meals: all_inclusive > full_board > half_board > breakfast > none |
 | cancellation | the item with facts.free_cancellation true |
+| center | the lowest facts.distance_center_m («до центра … м») |
 Unknown dimension → skip it.
 
 ## message plan (3–5 short sentences, 120–900 characters)

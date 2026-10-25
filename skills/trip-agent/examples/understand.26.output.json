@@ -1,0 +1,14 @@
+{
+  "intent": "new_trip",
+  "patch": {
+    "set": {
+      "destination.name": "Стамбул",
+      "prefs.center_max_m": 1500
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": "Когда лучше ехать в Стамбул?",
+  "post_purchase": null
+}

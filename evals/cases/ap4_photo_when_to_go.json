@@ -1,0 +1,62 @@
+{
+  "id": "ap4_photo_when_to_go",
+  "category": "A_photo",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Хочу сюда! Когда лучше поехать?",
+    "has_image": true
+  },
+  "image": "evals/images/landmark_hagia_sophia.jpg",
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/image/want",
+      "value": "here"
+    },
+    {
+      "type": "predicate",
+      "name": "matches",
+      "args": {
+        "path": "/image/place/name",
+        "pattern": "стамбул|istanbul"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "matches",
+      "args": {
+        "path": "/info_question",
+        "pattern": "когда|сезон|время"
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "L3 s04 t1: a question inside a photo request goes to info_question while the intent stays new_trip (the variants card answers it from code-made best months)."
+}

@@ -12,6 +12,9 @@ hotel|room|night) x n_rooms (x0.85 for a single adult) + meals + extra beds.
 Meals per person-night = base x MEAL_SHARE[meals] / 2 (children 2-11 at half).
 Availability: a room type is sold out when any night draws < 1.2 % (x3 in peak nights, season
 factor >= 1.25), seeded by hotel|room|night.
+Filters (meals, free_cancellation, stars_min, pets, kinds, max_distance_center_m, max_price_total) apply
+before the top-`limit` cut, so a filtered search reaches hotels the unfiltered top would not show
+(max_distance_center_m: distance_center_m from the destination's centre point, «в центре»).
 Sorting: stable score = 0.45 rating + 0.20 stars + 0.15 reviews volume + 0.20 price rank.
 """
 from __future__ import annotations
@@ -213,6 +216,9 @@ def search(dest_id: str, ci: date, co: date, adults: int, ages: list[int], filte
         if filters.get("stars_min") and (h.get("stars") is None or h["stars"] < filters["stars_min"]):
             continue
         if filters.get("kinds") and h["kind"] not in filters["kinds"]:
+            continue
+        if filters.get("max_distance_center_m") is not None and \
+                _distance_center(h, dest) > int(filters["max_distance_center_m"]):
             continue
         if filters.get("free_cancellation") and cancellation(pol, ci, tz or geo.zone(None, None, h["lon"]),
                                                              today)["free_until"] is None:

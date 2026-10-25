@@ -18,6 +18,7 @@ guards, render) are reached through `Domain`, which imports them lazily, so test
 import hashlib
 import importlib
 import json
+import re
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -159,6 +160,8 @@ class Ctx:
     ask_cheaper: bool = False                              # «подешевле / попроще» without exact values
     dropped_destination: Optional[dict] = None             # a destination dropped by a change of trip kind
     other_country: bool = False                            # «другую страну»: the dropped one's country too
+    best_time_asked: bool = False                          # «когда лучше поехать?» (rules.json best_time cues)
+    best_month_assumed: Optional[int] = None               # dates assumed in the nearest best month this turn
     trace: dict = field(default_factory=new_trace)
     flash_calls: int = 0
     lock: threading.RLock = field(default_factory=threading.RLock)
@@ -476,6 +479,50 @@ def room_cues(ctx, brief):
     return new
 
 
+def train_cues(ctx, brief):
+    """rules.json `trains` on the user's message: «на Сапсане», «Сапсаном» -> constraint train:sapsan, «на
+    скоростном поезде» -> train:high_speed, each with prefs.transport = train (ranking keeps only high-speed
+    trains, relaxed with a plain risk when a direction has none); «можно и не Сапсан», «любой поезд» drop both.
+    The user's own words, read by code like the room cues."""
+    rules = (ctx.rules or {}).get("trains") or {}
+    text = (ctx.text or "").casefold()
+    have = set(brief.values().get("constraints") or [])
+    tokens = ("train:sapsan", "train:high_speed")
+    if _cue_in(text, rules.get("any_train_cues")):
+        drop = [t for t in tokens if t in have]
+        if not drop:
+            return brief
+        new, _ = apply_patch(brief, {"set": {"constraints.remove": drop}, "unset": []})
+        return new
+    if _cue_in(text, rules.get("sapsan_cues")):
+        add = "train:sapsan"
+    elif _cue_in(text, rules.get("high_speed_cues")):
+        add = "train:high_speed"
+    else:
+        return brief
+    patch = {"set": {}, "unset": []}
+    if add not in have:
+        patch["set"]["constraints.add"] = [add]
+    other = [t for t in tokens if t != add and t in have]
+    if other:
+        patch["set"]["constraints.remove"] = other
+    prefs = brief.values().get("prefs") or {}
+    if prefs.get("transport") != "train" or brief.source_of("prefs.transport") != "user":
+        patch["set"]["prefs.transport"] = "train"
+    if not patch["set"]:
+        return brief
+    new, _ = apply_patch(brief, patch)
+    return new
+
+
+def _pets_payload(brief):
+    """search_trains / search_flights `pets`: the party's animals priced into the tickets (none: no key, so
+    offer ids and caches stay as before)."""
+    from .ranking import pet_count
+    n = pet_count(brief)
+    return {"pets": n} if n else {}
+
+
 def normalize_brief(ctx, brief):
     """Profile values, segment defaults, party counts, nights/month/scope defaults (never over the user)."""
     skill = ctx.skill
@@ -569,6 +616,7 @@ def prepare_brief(ctx, brief, patch, allow_lazy=True):
     """Patch + destination resolution + normalisation -> (brief, changed_paths, unknown_name)."""
     new, changed = apply_patch(brief, patch)
     new = room_cues(ctx, new)
+    new = train_cues(ctx, new)
     unknown = None
     dest = new.values().get("destination")
     if ctx.destination_hint:
@@ -998,6 +1046,12 @@ def resolve_dates(ctx, dest):
         end = start + timedelta(days=nights)
     if not (start and end):
         month = _month(brief) or (ctx.session.today() + timedelta(days=30)).month
+        best = best_month_for(ctx, brief, dest)
+        if best is not None and best != month:
+            month = best
+            brief = assume(brief, "dates.month", month, "inferred")
+            ctx.best_month_assumed = month
+            ctx.trace["notes"].append(f"best time: dates assumed in month {month}")
         out = tool_safe(ctx, "quote_destinations", {
             "destination_ids": [dest["id"]], "origin_city": (brief.values().get("origin") or {}).get("city") or "",
             "month": month, "nights": nights, "party": _party_payload(brief),
@@ -1016,6 +1070,172 @@ def resolve_dates(ctx, dest):
             brief = assume(brief, "dates.end", end.isoformat(), "inferred")
         ctx.session.brief = brief
     return start, end
+
+
+# ---------------------------------------------------------------- location and best time
+
+def center_search_m(ctx, brief, dest):
+    """Max distance to the centre for the extra hotel search, or None when the centre does not count for this
+    trip (ranking.center_applies): the user's prefs.center_max_m, else rules.ranking.center_search_m."""
+    from .ranking import center_applies, ranking_rules, user_center_max
+    rr = ranking_rules(ctx.rules)
+    if not center_applies(brief, dest, rr):
+        return None
+    mx = user_center_max(brief)
+    return int(mx if mx is not None else rr["center_search_m"])
+
+
+def location_cue(rules, text):
+    """rules.json `location` on the user's words -> metres for prefs.center_max_m («в центре» 1500, «в самом
+    центре» 800) or None (no cue, or «не в центре»)."""
+    loc = (rules or {}).get("location") or {}
+    low = (text or "").casefold().replace("ё", "е")
+    norm = [str(c).casefold().replace("ё", "е") for c in loc.get("not_center_cues") or []]
+    if any(c in low for c in norm):
+        return None
+    if _cue_in(low, [str(c).replace("ё", "е") for c in loc.get("very_center_cues") or []]):
+        return int(loc.get("center_very_m", 800))
+    if _cue_in(low, [str(c).replace("ё", "е") for c in loc.get("center_cues") or []]):
+        return int(loc.get("center_m", 1500))
+    return None
+
+
+def walkable_cue(rules, text):
+    return _cue_in((text or "").casefold(), ((rules or {}).get("location") or {}).get("walkable_cues"))
+
+
+def best_time_cue(rules, text):
+    """«когда лучше поехать», «в какой сезон», «когда там хорошо» (rules.json best_time.cues)."""
+    return _cue_in((text or "").casefold().replace("ё", "е"),
+                   [str(c).replace("ё", "е") for c in ((rules or {}).get("best_time") or {}).get("cues") or []])
+
+
+def _user_dates(brief):
+    return any(brief.source_of(p) in ("user", "profile") for p in ("dates.start", "dates.month"))
+
+
+def nearest_best_month(today, months, min_lead_days=7):
+    """The first best month from today on whose trip can still start in it (the current month only while at
+    least min_lead_days of it are left) -> month or None."""
+    months = {int(m) for m in months or []}
+    for k in range(13):
+        m = (today.month - 1 + k) % 12 + 1
+        if m not in months:
+            continue
+        if k == 0:
+            nxt = date(today.year + (today.month == 12), today.month % 12 + 1, 1)
+            if (nxt - today).days <= min_lead_days:
+                continue
+        return m
+    return None
+
+
+def best_month_for(ctx, brief, dest):
+    """When the user asked when to go and gave no dates: the nearest best month (source inferred), else None."""
+    if not ctx.best_time_asked or _user_dates(brief) or not (dest or {}).get("id"):
+        return None
+    bt = (ctx.rules or {}).get("best_time") or {}
+    months = od(ctx, "best_months", dest["id"], brief.values().get("traits") or None, bt) or []
+    return nearest_best_month(ctx.session.today(), [m["month"] for m in months], int(bt.get("min_lead_days", 7)))
+
+
+MONTHS_NOM = ("январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь",
+              "ноябрь", "декабрь")
+
+
+def _ru_list(words):
+    words = list(words)
+    return words[0] if len(words) == 1 else ", ".join(words[:-1]) + " и " + words[-1]
+
+
+def _deg_range(values):
+    vals = sorted({int(round(v)) for v in values if v is not None})
+    if not vals:
+        return None
+    return f"{vals[0]}°" if vals[0] == vals[-1] else f"{vals[0]}–{vals[-1]}°"
+
+
+def best_time_fact(ctx, brief=None):
+    """The best months for the brief's destination as ready Russian facts (opendata.best_months + the rules.json
+    best_time rule) -> an info-style record {"kind": "best_time", "id", "data"} or None without climate data.
+    data: best_months, best_months_ru, months [{month, month_ru, air_max_c, sea_c?}], summary_ru (months + day
+    temperature, + sea temperature for a place by the sea), trip_month(_ru), trip_month_is_best, dates_assumed."""
+    brief = brief or ctx.session.brief
+    dest = brief.values().get("destination") or {}
+    if not dest.get("id"):
+        return None
+    bt = (ctx.rules or {}).get("best_time") or {}
+    months = od(ctx, "best_months", dest["id"], brief.values().get("traits") or None, bt) or []
+    if not months:
+        return None
+    rec = as_dict(od(ctx, "destination", dest["id"])) or {}
+    sea = bool(set(rec.get("tags") or []) & {"sea", "beach", "island"}) and any(m.get("sea_c") is not None for m in months)
+    names = [MONTHS_NOM[m["month"] - 1] for m in months]
+    rows = []
+    for m in months:
+        row = {"month": m["month"], "month_ru": MONTHS_NOM[m["month"] - 1], "air_max_c": m.get("air_max_c")}
+        if sea and m.get("sea_c") is not None:
+            row["sea_c"] = m["sea_c"]
+        rows.append(row)
+    summary = f"Лучшее время для поездки в {dest.get('name') or rec.get('name_ru') or dest['id']} — {_ru_list(names)}"
+    air = _deg_range(m.get("air_max_c") for m in months)
+    if air:
+        summary += f": днём около {air}"
+        water = _deg_range(m.get("sea_c") for m in months) if sea else None
+        if water:
+            summary += f", море {water}"
+    data = {"place": dest.get("name"), "best_months": [m["month"] for m in months], "best_months_ru": _ru_list(names),
+            "months": rows, "summary_ru": summary}
+    trip_month = _month(brief)
+    if trip_month:
+        data["trip_month"] = int(trip_month)
+        data["trip_month_ru"] = MONTHS_NOM[int(trip_month) - 1]
+        data["trip_month_is_best"] = int(trip_month) in data["best_months"]
+        data["dates_assumed"] = not _user_dates(brief)
+    return {"kind": "best_time", "id": dest["id"], "data": data}
+
+
+def center_distance_fact(variants):
+    """Distance to the centre of every shown variant's hotel (ready numbers for «далеко от центра?»)."""
+    rows = []
+    for v in variants or []:
+        f = v.facts or {}
+        if v.hotel is None or f.get("distance_center_m") is None:
+            continue
+        d = int(f["distance_center_m"])
+        rows.append({"id": v.id, "title": v.title, "hotel": v.hotel.name, "distance_center_m": d,
+                     "distance_center_km": round(d / 1000, 1)})
+    return {"kind": "center_distance", "items": rows} if rows else None
+
+
+def search_question(ctx):
+    """A question inside a search / refine message (understand info_question, or a best-time cue): never dropped.
+    -> {"text", "facts"} for present.variants / present.update, or None. facts: best_time (when asked), the
+    distance to the centre of each variant's hotel, the climate of the trip month."""
+    if ctx.action is not None:
+        return None
+    text = ((ctx.understand or {}).get("info_question") or "").strip()
+    asked = ctx.best_time_asked or best_time_cue(ctx.rules, text)
+    if not text and asked:
+        text = (ctx.text or "").strip()
+    if not text:
+        return None
+    facts = []
+    if asked:
+        bt = best_time_fact(ctx)
+        if bt is not None:
+            facts.append(bt)
+    cd = center_distance_fact(ctx.variants)
+    if cd is not None:
+        facts.append(cd)
+    dest = ctx.session.brief.values().get("destination") or {}
+    month = _month(ctx.session.brief)
+    if dest.get("id") and month:
+        clim = od(ctx, "climate", dest["id"], month)
+        if clim is not None:
+            facts.append({"kind": "climate", "id": dest["id"], "month": month,
+                          "data": {k: v for k, v in as_dict(clim).items() if k not in INFO_DROP}})
+    return {"text": text, "facts": facts}
 
 
 def _flight_party(brief, start):
@@ -1160,7 +1380,7 @@ def _flight_jobs(ctx, brief, dest, check_in, check_out, flex=0):
         return {}
     adults, children, infants = _flight_party(brief, check_in)
     base = {"adults": adults, "children": children, "infants": infants, "flex_days": flex,
-            "today": ctx.session.today().isoformat()}
+            "today": ctx.session.today().isoformat(), **_pets_payload(brief)}
     return {"flights.out": ("search_flights", {**base, "origin_iata": o_iata, "dest_iata": d_iata,
                                                "date": check_in.isoformat()}),
             "flights.back": ("search_flights", {**base, "origin_iata": d_iata, "dest_iata": o_iata,
@@ -1183,7 +1403,7 @@ def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None, hotel_ca
     if "flights" in scope and transport != "train":
         jobs.update(_flight_jobs(ctx, brief, dest, check_in, check_out))
     if "trains" in scope or transport == "train":
-        base = {"passengers": pax, "today": today}
+        base = {"passengers": pax, "today": today, **_pets_payload(brief)}
         jobs["trains.out"] = ("search_trains", {**base, "origin_city": origin.get("city") or "",
                                                 "dest_city": dest["name"], "date": check_in.isoformat()})
         jobs["trains.back"] = ("search_trains", {**base, "origin_city": dest["name"],
@@ -1205,7 +1425,20 @@ def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None, hotel_ca
                                             or hotel_cap is not None else 20,
                                             "today": today, **({"hotel_id": hotel_id, "all_rooms": True}
                                                                if hotel_id else {})})
+    if "hotels" in jobs and not hotel_id:
+        center_m = center_search_m(ctx, brief, dest)
+        if center_m is not None:
+            # the mock returns its top `limit` hotels by rating / stars / price: central hotels reach the ranking
+            # only through a search filtered by the distance to the centre (applied before that cut)
+            name, payload = jobs["hotels"]
+            jobs["hotels.center"] = (name, {**payload, "limit": 20,
+                                            "filters": {**payload["filters"], "max_distance_center_m": center_m}})
     out = _parallel(ctx, jobs)
+    if out.get("hotels.center") is not None:
+        seen = {o["offer_id"] for o in (out.get("hotels") or {}).get("offers") or []}
+        extra = [o for o in out["hotels.center"].get("offers") or [] if o["offer_id"] not in seen]
+        base = out.get("hotels") or {"offers": [], "total_found": 0}
+        out["hotels"] = {**base, "offers": extra + list(base.get("offers") or [])}
     if "flights.out" in jobs and "stay" in scope:
         # every flight of the check-in day lands on a later day (eastern origins: OVB 22:25 -> MCT 11:25 next
         # day): the first night is lost and nothing pairs with the stay (h01 Muscat no_data). Overnight flights
@@ -2071,8 +2304,10 @@ def _fare_fact(offer):
             "exchange_fee_rub": fare.get("change_fee_rub")}
 
 
-def _leg_fact(step, offer):
-    """One transport step as the info card sees it: local times, carrier, number, direct, baggage, fare."""
+def _leg_fact(step, offer, pets=False):
+    """One transport step as the info card sees it: local times, carrier, number, direct, baggage, fare.
+    `pets` (a pet in the brief or a pet question): the ticket's ready pet line `pets_rule` (+ `pet_fee_rub`
+    when the party's animals are priced into it)."""
     o = offer or {}
     dep, arr = o.get("dep") or step.start, o.get("arr") or step.end
     out = {"type": step.type, "from": step.from_, "to": step.to, "carrier": o.get("carrier") or step.carrier,
@@ -2082,9 +2317,12 @@ def _leg_fact(step, offer):
         out.update(flight_no=o.get("flight_no"), duration_min=o.get("duration_min"),
                    **(_fare_fact(o) if o else {}))
     elif step.type == "train":
-        out.update(train_no=o.get("train_no"), car_class=o.get("car_class"), duration_min=o.get("duration_min"))
+        out.update(train_no=o.get("train_no"), car_class=o.get("car_class"), duration_min=o.get("duration_min"),
+                   high_speed=True if o.get("train_kind") == "high_speed" else None)
     elif step.type == "transfer":
         out.update(kind=o.get("kind"), duration_min=o.get("duration_min"), meeting_point=o.get("meeting_point"))
+    if pets and step.type in ("flight", "train"):
+        out.update(_pet_fact(step.type, o))
     return {k: v for k, v in out.items() if v is not None}
 
 
@@ -2143,7 +2381,7 @@ def _fact_offer(ctx, step, variant=None):
         adults, children, infants = _flight_party(ctx.brief, _date(step.start))
         payload = ("search_flights", {"origin_iata": [step.from_], "dest_iata": [step.to], "date": step.start[:10],
                                       "adults": adults, "children": children, "infants": infants, "flex_days": 0,
-                                      "today": today})
+                                      "today": today, **_pets_payload(ctx.brief)})
     elif step.type == "stay" and variant is not None and variant.hotel and (b.get("destination") or {}).get("id"):
         party = _party_payload(ctx.brief)
         payload = ("search_hotels", {"destination_id": b["destination"]["id"], "check_in": step.start[:10],
@@ -2165,13 +2403,16 @@ def _fact_offer(ctx, step, variant=None):
 def variant_fact(ctx, variant):
     """Facts about a shown/chosen variant for present.info: transport legs (local dates and times), the stay
     (check-in / check-out dates and times, terms) and the nights no booked stay covers."""
-    legs = [_leg_fact(st, _fact_offer(ctx, st)) for st in variant.steps if st.type in ("flight", "train", "transfer")]
+    pets = pet_context(ctx)
+    legs = [_leg_fact(st, _fact_offer(ctx, st), pets) for st in variant.steps if st.type in ("flight", "train", "transfer")]
     stay_step = next((st for st in variant.steps if st.type == "stay"), None)
     stay_offer = (_fact_offer(ctx, stay_step, variant) if stay_step is not None and stay_step.offer_id
                   else find_offer(ctx, variant.hotel.offer_id)) if variant.hotel else None
     stay = _stay_fact(variant, stay_offer) if variant.hotel else None
     out = {"kind": "variant", "id": variant.id, "title": variant.title or P.VARIANT_TITLES.get(variant.id, variant.id),
            "total_rub": variant.totals.rub, "legs": legs, "stay": stay}
+    if variant.facts.get("price_pets_rub"):   # the animals' fee, already inside total_rub
+        out["price_pets_rub"] = variant.facts["price_pets_rub"]
     gaps = nights_without_stay(variant) if variant.hotel else []
     if gaps:
         out["nights_without_stay"] = gaps
@@ -2207,13 +2448,17 @@ def cancel_quote(order, now):
     return q
 
 
-def order_terms_fact(order):
-    """Fare / cancellation terms of the booked items (the order summary has titles and dates only)."""
+def order_terms_fact(order, pets=False):
+    """Fare / cancellation terms of the booked items (the order summary has titles and dates only); with
+    `pets` the tickets' ready pet lines (`pets_rule`, `pet_fee_rub` when the animals are in the price)."""
     terms = []
     for i in order.get("items") or []:
         offer = (i.get("details") or {}).get("offer") or {}
+        pet = _pet_fact(i.get("kind"), offer) if pets and i.get("kind") in ("flight", "train") else {}
         if i.get("kind") == "flight" and offer:
-            terms.append({"item_id": i["item_id"], "title": i.get("title"), **_fare_fact(offer)})
+            terms.append({"item_id": i["item_id"], "title": i.get("title"), **_fare_fact(offer), **pet})
+        elif pet:
+            terms.append({"item_id": i["item_id"], "title": i.get("title"), **pet})
         elif i.get("kind") == "hotel" and offer.get("cancellation"):
             c = offer["cancellation"]
             terms.append({"item_id": i["item_id"], "title": i.get("title"),
@@ -2223,6 +2468,8 @@ def order_terms_fact(order):
 
 # provenance and bulk the info card must not talk about or pay tokens for (voice: never name sources)
 INFO_DROP = {"source", "fetched_at", "synthetic", "synthetic_fields", "photos", "lat", "lon", "osm_id"}
+# a question about where the hotel is: the distances to the centre of the variants' hotels go with the facts
+LOCATION_Q_RE = re.compile(r"центр|далек|далеко|близк|рядом|пешком|достопримечат|старый город|старом город", re.I)
 
 
 def step_info_lookup(ctx):
@@ -2252,16 +2499,50 @@ def step_info_lookup(ctx):
         if order:
             fact = {"kind": "order", "id": order["order_id"],
                     "data": order_summary(order, checkout_issues(ctx.session, order["order_id"]))}
-            terms = order_terms_fact(order)
+            terms = order_terms_fact(order, pets=pet_context(ctx))
             if terms:
                 fact["terms"] = terms
             if order.get("status") in ("paid", "changed"):
                 fact["if_cancelled"] = cancel_quote(order, ctx.session.clock())
             facts.append(fact)
+    if best_time_cue(ctx.rules, ctx.info_question) or best_time_cue(ctx.rules, ctx.text):
+        bt = best_time_fact(ctx)
+        if bt is not None:
+            facts.append(bt)
+    cd = center_distance_fact(_info_variants(ctx)) if LOCATION_Q_RE.search(ctx.info_question or "") else None
+    if cd is not None:
+        facts.append(cd)
+    if pet_context(ctx):
+        lines = ((ctx.rules or {}).get("pets") or {}).get("general_ru") or []
+        if lines:
+            facts.append({"kind": "pet_rules", "lines": list(lines)})
     warnings = open_warnings(ctx)
     if warnings:
         facts.append({"kind": "warnings", "items": warnings})
     ctx.info_facts = facts
+
+
+def pet_context(ctx):
+    """Pet lines go into the info facts: a pet in the brief, or a pet word in the question (rules.json
+    pets.question_cues: «собак», «корги», «кошк»…)."""
+    from .checks import wants_pet
+    if wants_pet(ctx.brief):
+        return True
+    text = f" {ctx.info_question or ''} {ctx.text or ''} ".casefold()
+    return _cue_in(text, ((ctx.rules or {}).get("pets") or {}).get("question_cues"))
+
+
+def _pet_fact(kind, offer):
+    """{pets_rule, pet_fee_rub} of one ticket offer (empty without pet terms)."""
+    from .ranking import pet_rule_line
+    terms = (offer or {}).get("pets") or {}
+    line = pet_rule_line(kind, offer) if terms else None
+    if not line:
+        return {}
+    out = {"pets_rule": line}
+    if terms.get("count"):
+        out["pet_fee_rub"] = int(terms.get("fee_total_rub") or 0)
+    return out
 
 
 def open_warnings(ctx):

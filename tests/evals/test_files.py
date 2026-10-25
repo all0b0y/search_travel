@@ -9,7 +9,7 @@ import pytest
 
 from agent.skill_loader import load_skill
 from evals.assertions import ASSERTION_TYPES, PREDICATES as CASE_PREDICATES
-from evals.card_inputs import CARDS, input_keys, validate_card_input
+from evals.card_inputs import CARDS, OPTIONAL_KEYS, input_keys, validate_card_input
 from evals.common import CASES_DIR, HOLDOUT_DIR, ROOT, SCENARIOS_DIR, load_schema
 from evals.predicates import PREDICATES as MUST_PREDICATES
 
@@ -23,9 +23,12 @@ def load(p):
 
 
 def test_counts_and_categories():
-    assert len(CASES) == 47   # 40 v0 cases + 7 for the L3-fix understand rules (seasons, wishes, ranges, prefs, new_dates)
+    # 40 v0 cases + 7 for the L3-fix understand rules (seasons, wishes, ranges, prefs, new_dates)
+    # + 5 present.info pet cases (evals/authoring/cases_pets.py)
+    # + 8 location / best-time cases (evals/authoring/cases_location.py)
+    assert len(CASES) == 60
     cats = Counter(load(p)["category"] for p in CASES)
-    assert cats == {"A": 8, "A_photo": 3, "B": 5, "C": 3, "D": 3, "E": 6, "F": 4, "segments": 4, "edge": 6, "tone": 5}
+    assert cats == {"A": 8, "A_photo": 4, "B": 8, "C": 3, "D": 3, "E": 9, "F": 9, "segments": 4, "edge": 7, "tone": 5}
     assert len(SCENARIOS) == 25
     assert len(HOLDOUT) == 10
 
@@ -36,7 +39,8 @@ def test_case_valid(path):
     jsonschema.validate(case, load_schema("case.schema.json"))
     assert case["id"] == path.stem
     assert case["runs"] == 5
-    assert set(case["input"]) == input_keys(case["card"])
+    optional = set(OPTIONAL_KEYS.get(case["card"], ()))   # e.g. `question`: present only when asked
+    assert set(case["input"]) - optional == input_keys(case["card"])
     assert validate_card_input(case["card"], case["input"]) == []
     if case["image"]:
         assert (ROOT / case["image"]).is_file()

@@ -38,6 +38,7 @@
       "max_travel_hours": null,
       "district": "walkable",
       "beach_max_m": null,
+      "center_max_m": null,
       "transport": "any",
       "arrive_before": null,
       "no_night_flights": null,

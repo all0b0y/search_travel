@@ -15,7 +15,7 @@ not be catalog destinations (e.g. Moscow). Catalog destinations always win over 
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, time, timedelta, timezone, tzinfo
 from functools import lru_cache
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -214,9 +214,19 @@ def _dest_city(d: dict) -> City:
 
 
 def resolve_city(name: str) -> City | None:
-    """Catalog destination (id, name_ru, name_en) first, then KNOWN_CITIES, then airports.city."""
+    """Catalog destination (id, name_ru, name_en) first, then KNOWN_CITIES, then airports.city.
+    Memoised per open-data state (a miss scans every destination and airport in Python: a train trip's
+    transfer quotes resolved «Московский вокзал» ~60 times per search, 0.2 s each); callers get a copy."""
     if not name:
         return None
+    city = _resolve_city_cached(db._cache_key(db.opendata_paths()), name)
+    if city is None:
+        return None
+    return replace(city, iata=list(city.iata), stations=list(city.stations), tags=list(city.tags))
+
+
+@lru_cache(maxsize=8192)
+def _resolve_city_cached(cache_key: tuple, name: str) -> City | None:
     n = norm(name)
     od = db.opendata()
     rows = od.query("destinations", "lower(id) = ? OR lower(name_ru) = ? OR lower(name_en) = ?",
@@ -260,6 +270,22 @@ def _airport_cached(cache_key: tuple, iata: str) -> dict | None:
     a["dest_kind"] = dests[0].get("kind") if dests else None
     a["dest_tags"] = db.jload(dests[0].get("tags"), []) if dests else []
     return a
+
+
+@lru_cache(maxsize=16)
+def _station_index(cache_key: tuple) -> dict:
+    out: dict[str, str] = {}
+    for d in db.opendata().query("destinations", cols="id, stations", key="id"):
+        for s in db.jload(d.get("stations"), []):
+            out.setdefault(str(s), d["id"])
+    return out
+
+
+def station_city(name: str) -> City | None:
+    """The catalog place whose station list has exactly this station name («Московский вокзал» -> Saint
+    Petersburg), else None."""
+    did = _station_index(db._cache_key(db.opendata_paths())).get(str(name or ""))
+    return resolve_city(did) if did else None
 
 
 def airport(iata: str) -> dict | None:

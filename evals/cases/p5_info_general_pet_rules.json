@@ -1,0 +1,157 @@
+{
+  "id": "p5_info_general_pet_rules",
+  "category": "F",
+  "card": "present.info",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "saint-petersburg",
+        "name": "Санкт-Петербург",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-10-31",
+        "end": "2026-11-01",
+        "month": 10,
+        "window": null,
+        "nights": 1,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "solo",
+        "adults": 1,
+        "children": 0,
+        "children_ages": null,
+        "pets": [
+          "cat"
+        ]
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "train"
+      },
+      "constraints": [
+        "pet:cat"
+      ],
+      "mood": null
+    },
+    "assumed": [
+      "origin.city"
+    ],
+    "assumptions": [
+      {
+        "field": "origin.city",
+        "label": "из Москвы"
+      }
+    ],
+    "question": "А в «Ласточку» с котом можно?",
+    "facts": [
+      {
+        "kind": "pet_rules",
+        "lines": [
+          "В поездах РЖД кошек и небольших собак возят в закрытой переноске: сумма трёх её сторон — до 180 см, ставят её на место для ручной клади, на животное оформляют перевозочный документ, не больше двух животных на один билет.",
+          "В скоростных поездах («Сапсан», «Ласточка») — только небольших животных в переноске и только на местах для пассажиров с животными; в экономе переноска до 180 см по сумме трёх сторон, в бизнес- и первом классе — до 120 см и до 10 кг вместе с переноской. Крупных собак в «Сапсане» не возят, кроме собак-проводников.",
+          "В поездах дальнего следования крупную собаку везут только в отдельном купе: выкупают все свободные места, собака в наморднике и на поводке.",
+          "Собаки-проводники едут бесплатно во всех вагонах."
+        ]
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 0
+    },
+    {
+      "type": "predicate",
+      "name": "max_chars",
+      "args": {
+        "n": 600
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "none_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "predicate",
+            "name": "admits_no_data"
+          }
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "переноск"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "path": "$text",
+        "words": [
+          "местах для пассажиров с животными",
+          "места для пассажиров с животными"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "No leg is a «Ласточка», the pet_rules lines answer it (high-speed trains: carrier, designated seats)."
+}

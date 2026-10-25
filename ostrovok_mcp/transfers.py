@@ -63,7 +63,7 @@ def resolve_point(point: dict) -> dict:
                 "country_code": ap["country_code"]}
     if point.get("station"):
         name = point["station"]
-        city = geo.resolve_city(name)
+        city = geo.station_city(name) or geo.resolve_city(name)
         if city is None:  # "Москва Казанская" -> "Москва", "Казань-Пассажирская" -> "Казань"
             for sep in (" ", "-"):
                 city = geo.resolve_city(name.split(sep)[0])

@@ -1,0 +1,51 @@
+{
+  "id": "x7_near_disneyland_no_center",
+  "category": "edge",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Париж на 3 ночи в январе, вдвоём с ребёнком, отель рядом с Диснейлендом",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/destination.name",
+      "value": "Париж",
+      "casefold": true
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/prefs.center_max_m"
+    }
+  ],
+  "runs": 5,
+  "notes": "Disneyland Paris is ~30 km out of the centre: no centre pref (the card says plainly that hotels are picked by the distance to the centre only)."
+}

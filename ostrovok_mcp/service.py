@@ -36,11 +36,11 @@ def _get_hotel(r) -> dict:
 
 def _search_flights(r) -> dict:
     return {"offers": flights.search(r.origin_iata, r.dest_iata, r.date, r.adults, r.children, r.infants,
-                                     r.flex_days, r.today), "synthetic": True}
+                                     r.flex_days, r.today, pets=r.pets), "synthetic": True}
 
 
 def _search_trains(r) -> dict:
-    offers, note = trains.search(r.origin_city, r.dest_city, r.date, r.passengers, r.today)
+    offers, note = trains.search(r.origin_city, r.dest_city, r.date, r.passengers, r.today, pets=r.pets)
     return {"offers": offers, "note": note, "synthetic": True}
 
 

@@ -169,6 +169,13 @@
               ],
               "minimum": 0
             },
+            "prefs.center_max_m": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
             "prefs.transport": {
               "enum": [
                 "any",
@@ -298,6 +305,7 @@
               "prefs.max_travel_hours",
               "prefs.district",
               "prefs.beach_max_m",
+              "prefs.center_max_m",
               "prefs.transport",
               "prefs.arrive_before",
               "prefs.no_night_flights",

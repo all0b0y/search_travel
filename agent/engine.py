@@ -239,6 +239,7 @@ class Engine:
                 route_kw = {"intent": ctx.intent}
                 self._apply_season(ctx)
                 self._read_rebuild_wishes(ctx)
+                self._read_location_cues(ctx)
         self._validate_patch(ctx)
         self._resolve_shift(ctx)
         if ctx.stop:
@@ -497,6 +498,33 @@ class Engine:
             ctx.ask_cheaper = True
             ctx.trace["notes"].append("wish: cheaper without values -> cheaper search")
 
+    def _read_location_cues(self, ctx):
+        """Code rules behind understand (rules.json `location`, `best_time`) on a trip request:
+        - «в центре», «поближе к (историческому) центру», «в старом городе» → prefs.center_max_m (1500, «в самом
+          центре» 800) when understand did not set it; a prefs.district "walkable" understand read from the same
+          words is dropped unless the user also said «всё рядом / пешком» (s04: the centre wish was a no-op);
+        - «когда лучше поехать», «в какой сезон» → ctx.best_time_asked: the card answers with the best months and,
+          without user dates, the trip is assumed in the nearest best month (steps.resolve_dates)."""
+        from .steps import best_time_cue, location_cue, walkable_cue
+        if not ctx.text:
+            return
+        rules = self.skill.rules
+        if best_time_cue(rules, ctx.text) or best_time_cue(rules, (ctx.understand or {}).get("info_question")):
+            ctx.best_time_asked = True
+            ctx.trace["notes"].append("best time asked")
+        if ctx.intent not in ("new_trip", "refine", "answer"):
+            return
+        metres = location_cue(rules, ctx.text)
+        if metres is None:
+            return
+        sets = ctx.patch["set"]
+        if "prefs.center_max_m" not in sets:
+            sets["prefs.center_max_m"] = metres
+            ctx.trace["notes"].append(f"location cue -> prefs.center_max_m {metres}")
+        if sets.get("prefs.district") == "walkable" and not walkable_cue(rules, ctx.text):
+            sets.pop("prefs.district")
+            ctx.trace["notes"].append("location cue: prefs.district walkable dropped (the centre is the wish)")
+
     def _drop_contradicting_destination(self, ctx, tentative):
         """The kind of trip changed this turn and the chosen destination no longer fits it: prefs.domestic set
         while the destination is abroad, prefs.transport = train set while no train goes there from the origin,
@@ -651,8 +679,10 @@ class Engine:
                           for vid in list(ctx.old_totals) + [i for i in new_totals if i not in ctx.old_totals]
                           if ctx.old_totals.get(vid) != new_totals.get(vid)]
                 changes, rebuilt = ctx.changes + totals, ctx.rebuilt
+            from .steps import search_question
             return P.variants_input(s, items, hint, ctx.questions, ctx.upsell[:cap],
-                                    ctx.chips, changes, rebuilt, request=ctx.text if ctx.action is None else "")
+                                    ctx.chips, changes, rebuilt, request=ctx.text if ctx.action is None else "",
+                                    question=search_question(ctx))
         if card == "present.compare":
             labels = {i.id: i.label for i in s.shown.variants}
             labels = {v.id: labels.get(v.id, str(n + 1)) for n, v in enumerate(ctx.variants)}
@@ -794,7 +824,9 @@ def route_intent(intent, stage, text, patch, refs=(), paid=False, post_purchase=
         return new, {"set": sets, "unset": unsets}, f"intent post_purchase without a paid order -> {new}"
     if stage in PRE_PAY_STAGES and intent in ("choose", "cart", "checkout", "info"):
         variant_ref = any((r or {}).get("kind") == "variant" for r in refs or [])
-        if rebuild or ((sets or unsets) and not variant_ref and intent in ("choose", "cart")):
+        # «есть что-то ближе к Айя-Софии?»: a question that carries the centre pref is a rebuild (s04 t6)
+        centre = intent == "info" and "prefs.center_max_m" in sets
+        if rebuild or centre or ((sets or unsets) and not variant_ref and intent in ("choose", "cart")):
             return "refine", {"set": sets, "unset": unsets}, f"intent {intent} with a rebuild request -> refine"
     return intent, {"set": sets, "unset": unsets}, None
 

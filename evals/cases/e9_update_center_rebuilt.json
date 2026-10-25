@@ -1,0 +1,974 @@
+{
+  "id": "e9_update_center_rebuilt",
+  "category": "E",
+  "card": "present.update",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "DME",
+          "VKO"
+        ]
+      },
+      "destination": {
+        "id": "istanbul",
+        "name": "Стамбул",
+        "country": "Турция"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-12-01",
+        "end": "2026-12-05",
+        "month": 12,
+        "window": null,
+        "nights": 4,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": 1500,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "origin.city",
+      "dates.nights",
+      "party.adults",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "dates.nights",
+        "label": "4 ночи"
+      },
+      {
+        "field": "party.adults",
+        "label": "2 взрослых"
+      },
+      {
+        "field": "prefs.district",
+        "label": "тихий район"
+      },
+      {
+        "field": "scope",
+        "label": "перелёт + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 63180,
+          "door_to_door_hours": 19.3,
+          "out_hours": 8.9,
+          "back_hours": 10.4
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "SAW",
+            "start": "2026-12-01T15:50:00+03:00",
+            "end": "2026-12-01T22:22:00+03:00",
+            "carrier": "Аэрофлот",
+            "price_rub": 20100
+          },
+          {
+            "type": "transfer",
+            "from": "SAW",
+            "to": "Fatih",
+            "start": "2026-12-01T23:07:00+03:00",
+            "end": "2026-12-02T01:27:00+03:00",
+            "carrier": null,
+            "price_rub": 2120
+          },
+          {
+            "type": "stay",
+            "from": "Fatih",
+            "to": "Fatih",
+            "start": "2026-12-02T01:27:00+03:00",
+            "end": "2026-12-05T06:00:00+03:00",
+            "carrier": null,
+            "price_rub": 15590
+          },
+          {
+            "type": "transfer",
+            "from": "Fatih",
+            "to": "SAW",
+            "start": "2026-12-05T06:00:00+03:00",
+            "end": "2026-12-05T07:20:00+03:00",
+            "carrier": null,
+            "price_rub": 2790
+          },
+          {
+            "type": "flight",
+            "from": "SAW",
+            "to": "SVO",
+            "start": "2026-12-05T10:20:00+03:00",
+            "end": "2026-12-05T19:27:00+03:00",
+            "carrier": "Pegasus",
+            "price_rub": 22580
+          }
+        ],
+        "hotel": {
+          "name": "Fatih",
+          "stars": 1,
+          "rating": 6.9,
+          "district": {
+            "labels": [
+              "движ",
+              "семейный район",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 1,
+              "beach": 0,
+              "cafe": 67,
+              "convenience": 20,
+              "fast_food": 17,
+              "nightclub": 0,
+              "park": 10,
+              "pedestrian": 62,
+              "pharmacy": 9,
+              "playground": 5,
+              "pub": 5,
+              "restaurant": 200,
+              "station": 0,
+              "stop": 8,
+              "supermarket": 15
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 61360,
+          "door_to_door_hours": 19.3,
+          "price_stay_rub": 15590,
+          "nights": 4,
+          "check_in_date": "2026-12-01",
+          "check_out_date": "2026-12-05",
+          "check_in_time": "14:00",
+          "check_out_time": "11:00",
+          "hotel_name": "Fatih",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 1,
+          "hotel_rating": 6.9,
+          "hotel_reviews": 549,
+          "meals": "breakfast",
+          "meals_ru": "завтраки",
+          "free_cancellation": false,
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 15590,
+          "distance_center_m": 398,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": true,
+          "children_allowed": true,
+          "infant_cot": "paid",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 1800,
+          "out_kind": "flight",
+          "out_price_rub": 20100,
+          "out_from": "SVO",
+          "out_to": "SAW",
+          "out_date": "2026-12-01",
+          "out_dep_time": "15:50",
+          "out_arr_time": "22:22",
+          "out_arr_date": "2026-12-01",
+          "out_duration_min": 392,
+          "out_duration_hours": 6.5,
+          "out_stops": 1,
+          "out_carrier": "Аэрофлот",
+          "out_number": "SU4588",
+          "out_baggage": false,
+          "out_refundable": false,
+          "out_fare": "basic",
+          "out_layover_min": 195,
+          "out_door_hours": 8.9,
+          "back_kind": "flight",
+          "back_price_rub": 22580,
+          "back_from": "SAW",
+          "back_to": "SVO",
+          "back_date": "2026-12-05",
+          "back_dep_time": "10:20",
+          "back_arr_time": "19:27",
+          "back_arr_date": "2026-12-05",
+          "back_duration_min": 547,
+          "back_duration_hours": 9.1,
+          "back_stops": 1,
+          "back_carrier": "Pegasus",
+          "back_number": "PC9479",
+          "back_baggage": false,
+          "back_refundable": false,
+          "back_fare": "basic",
+          "back_layover_min": 350,
+          "back_door_hours": 10.4,
+          "transfer_out_min": 116,
+          "transfer_out_price_rub": 300,
+          "transfer_out_kind": "public",
+          "transfer_back_min": 63,
+          "transfer_back_price_rub": 2790,
+          "transfer_back_kind": "taxi",
+          "price_transfers_rub": 3090,
+          "price_transport_rub": 42680,
+          "arrival_at_hotel_time": "01:27",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "06:00",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.7,
+          "district_quiet": 0.42,
+          "district_family": 0.78,
+          "district_walkable": 1.0,
+          "poi_bar": 1,
+          "poi_beach": 0,
+          "poi_cafe": 67,
+          "poi_convenience": 20,
+          "poi_fast_food": 17,
+          "poi_nightclub": 0,
+          "poi_park": 10,
+          "poi_pedestrian": 62,
+          "poi_pharmacy": 9,
+          "poi_playground": 5,
+          "poi_pub": 5,
+          "poi_restaurant": 200,
+          "poi_station": 0,
+          "poi_stop": 8,
+          "poi_supermarket": 15,
+          "nearest_centre_m": 398,
+          "nearest_major_road_m": 393,
+          "nearest_railway_m": 344,
+          "nearest_station_m": 852,
+          "nearest_stop_m": 336,
+          "district_fit": 0.557,
+          "center_fit": 1.0,
+          "comfort_score": 0.4332,
+          "ref_min_rub": 61360,
+          "delta_rub_vs_cheapest": 0,
+          "ref_min_hours": 7.8,
+          "delta_hours_vs_fastest": 11.5
+        },
+        "sacrifices": [
+          {
+            "code": "slower",
+            "text": "+11,5 ч в пути",
+            "data": {
+              "delta_hours": 11.5
+            }
+          },
+          {
+            "code": "stops",
+            "text": "С пересадкой",
+            "data": {
+              "stops": 2
+            }
+          },
+          {
+            "code": "no_free_cancel",
+            "text": "Нет бесплатной отмены",
+            "data": {}
+          },
+          {
+            "code": "no_baggage",
+            "text": "Без багажа в тарифе",
+            "data": {}
+          }
+        ],
+        "risks": [
+          {
+            "code": "non_refundable",
+            "text": "Невозвратные билеты без обмена",
+            "data": {
+              "directions": "out,back"
+            }
+          },
+          {
+            "code": "no_free_cancel",
+            "text": "Отель без бесплатной отмены: штраф 100% — 15 590 ₽",
+            "data": {
+              "penalty_pct": 100,
+              "penalty_rub": 15590
+            }
+          },
+          {
+            "code": "long_transfer",
+            "text": "Дорога до отеля 116 мин",
+            "data": {
+              "minutes": 116,
+              "direction": "out"
+            }
+          },
+          {
+            "code": "late_checkin",
+            "text": "Заселение поздно, в 01:27 — отель стоит предупредить",
+            "data": {
+              "time": "01:27"
+            }
+          },
+          {
+            "code": "unused_first_night",
+            "text": "Приезд 02.12 в 01:27, а заезд с 01.12 — первая ночь оплачена, но не используется",
+            "data": {
+              "arrival": "01:27",
+              "check_in_date": "2026-12-01"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.7
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.7,
+          "breakdown": {
+            "budget": 1.0,
+            "time": 0.404,
+            "district": 0.557,
+            "cancellation": 0.5,
+            "stars": 0.2,
+            "center": 1.0,
+            "rating": 0.69
+          }
+        },
+        "diff_rub": 21410,
+        "diff_word": "дешевле",
+        "over_budget_rub": null
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "Быстрее",
+        "totals": {
+          "rub": 84590,
+          "door_to_door_hours": 7.8,
+          "out_hours": 3.9,
+          "back_hours": 3.9
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "VKO",
+            "to": "IST",
+            "start": "2026-12-01T16:20:00+03:00",
+            "end": "2026-12-01T18:58:00+03:00",
+            "carrier": "Трансаэро",
+            "price_rub": 26220
+          },
+          {
+            "type": "transfer",
+            "from": "IST",
+            "to": "Sultanahmet Endless Hotel",
+            "start": "2026-12-01T19:43:00+03:00",
+            "end": "2026-12-01T20:58:00+03:00",
+            "carrier": null,
+            "price_rub": 4790
+          },
+          {
+            "type": "stay",
+            "from": "Sultanahmet Endless Hotel",
+            "to": "Sultanahmet Endless Hotel",
+            "start": "2026-12-01T20:58:00+03:00",
+            "end": "2026-12-05T11:40:00+03:00",
+            "carrier": null,
+            "price_rub": 16430
+          },
+          {
+            "type": "transfer",
+            "from": "Sultanahmet Endless Hotel",
+            "to": "IST",
+            "start": "2026-12-05T11:40:00+03:00",
+            "end": "2026-12-05T12:55:00+03:00",
+            "carrier": null,
+            "price_rub": 4790
+          },
+          {
+            "type": "flight",
+            "from": "IST",
+            "to": "VKO",
+            "start": "2026-12-05T15:55:00+03:00",
+            "end": "2026-12-05T18:33:00+03:00",
+            "carrier": "Turkish Airlines",
+            "price_rub": 32360
+          }
+        ],
+        "hotel": {
+          "name": "Sultanahmet Endless Hotel",
+          "stars": 2,
+          "rating": 8.6,
+          "district": {
+            "labels": [
+              "движ",
+              "семейный район",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 1,
+              "beach": 0,
+              "cafe": 33,
+              "convenience": 14,
+              "fast_food": 9,
+              "nightclub": 0,
+              "park": 8,
+              "pedestrian": 26,
+              "pharmacy": 4,
+              "playground": 6,
+              "pub": 4,
+              "restaurant": 93,
+              "station": 0,
+              "stop": 3,
+              "supermarket": 15
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 84590,
+          "door_to_door_hours": 7.8,
+          "price_stay_rub": 16430,
+          "nights": 4,
+          "check_in_date": "2026-12-01",
+          "check_out_date": "2026-12-05",
+          "check_in_time": "14:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Sultanahmet Endless Hotel",
+          "hotel_kind": "motel",
+          "hotel_stars": 2,
+          "hotel_rating": 8.6,
+          "hotel_reviews": 186,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-24",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 16430,
+          "distance_center_m": 449,
+          "room_name": "Номер с двумя кроватями",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": true,
+          "children_allowed": true,
+          "infant_cot": "on_request",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 2400,
+          "out_kind": "flight",
+          "out_price_rub": 26220,
+          "out_from": "VKO",
+          "out_to": "IST",
+          "out_date": "2026-12-01",
+          "out_dep_time": "16:20",
+          "out_arr_time": "18:58",
+          "out_arr_date": "2026-12-01",
+          "out_duration_min": 158,
+          "out_duration_hours": 2.6,
+          "out_stops": 0,
+          "out_carrier": "Трансаэро",
+          "out_number": "UN4433",
+          "out_baggage": false,
+          "out_refundable": false,
+          "out_fare": "basic",
+          "out_door_hours": 3.9,
+          "back_kind": "flight",
+          "back_price_rub": 32360,
+          "back_from": "IST",
+          "back_to": "VKO",
+          "back_date": "2026-12-05",
+          "back_dep_time": "15:55",
+          "back_arr_time": "18:33",
+          "back_arr_date": "2026-12-05",
+          "back_duration_min": 158,
+          "back_duration_hours": 2.6,
+          "back_stops": 0,
+          "back_carrier": "Turkish Airlines",
+          "back_number": "TK7469",
+          "back_baggage": false,
+          "back_refundable": false,
+          "back_fare": "basic",
+          "back_door_hours": 3.9,
+          "transfer_out_min": 62,
+          "transfer_out_price_rub": 4790,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 62,
+          "transfer_back_price_rub": 4790,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 9580,
+          "price_transport_rub": 58580,
+          "arrival_at_hotel_time": "20:58",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "11:40",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.65,
+          "district_quiet": 0.3,
+          "district_family": 0.81,
+          "district_walkable": 0.84,
+          "poi_bar": 1,
+          "poi_beach": 0,
+          "poi_cafe": 33,
+          "poi_convenience": 14,
+          "poi_fast_food": 9,
+          "poi_nightclub": 0,
+          "poi_park": 8,
+          "poi_pedestrian": 26,
+          "poi_pharmacy": 4,
+          "poi_playground": 6,
+          "poi_pub": 4,
+          "poi_restaurant": 93,
+          "poi_station": 0,
+          "poi_stop": 3,
+          "poi_supermarket": 15,
+          "nearest_centre_m": 449,
+          "nearest_major_road_m": 159,
+          "nearest_railway_m": 102,
+          "nearest_station_m": 731,
+          "nearest_stop_m": 146,
+          "district_fit": 0.435,
+          "center_fit": 1.0,
+          "comfort_score": 0.6835,
+          "ref_min_rub": 61360,
+          "delta_rub_vs_cheapest": 23230,
+          "ref_min_hours": 7.8,
+          "delta_hours_vs_fastest": 0.0
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+23 230 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 23230
+            }
+          },
+          {
+            "code": "meals_less",
+            "text": "Без питания",
+            "data": {
+              "meals": "none"
+            }
+          },
+          {
+            "code": "no_baggage",
+            "text": "Без багажа в тарифе",
+            "data": {}
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 2★",
+            "data": {
+              "stars": 2
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "non_refundable",
+            "text": "Невозвратные билеты без обмена",
+            "data": {
+              "directions": "out,back"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.65
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.768,
+          "breakdown": {
+            "budget": 0.725,
+            "time": 1.0,
+            "district": 0.434,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "center": 1.0,
+            "rating": 0.86
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      },
+      {
+        "id": "comfort",
+        "label": "3",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 120780,
+          "door_to_door_hours": 7.8,
+          "out_hours": 3.9,
+          "back_hours": 3.9
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "VKO",
+            "to": "IST",
+            "start": "2026-12-01T16:20:00+03:00",
+            "end": "2026-12-01T18:58:00+03:00",
+            "carrier": "Трансаэро",
+            "price_rub": 30940
+          },
+          {
+            "type": "transfer",
+            "from": "IST",
+            "to": "Senatus Hotel",
+            "start": "2026-12-01T20:13:00+03:00",
+            "end": "2026-12-01T21:28:00+03:00",
+            "carrier": null,
+            "price_rub": 4810
+          },
+          {
+            "type": "stay",
+            "from": "Senatus Hotel",
+            "to": "Senatus Hotel",
+            "start": "2026-12-01T21:28:00+03:00",
+            "end": "2026-12-05T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 42030
+          },
+          {
+            "type": "transfer",
+            "from": "Senatus Hotel",
+            "to": "IST",
+            "start": "2026-12-05T11:40:00+03:00",
+            "end": "2026-12-05T12:55:00+03:00",
+            "carrier": null,
+            "price_rub": 4810
+          },
+          {
+            "type": "flight",
+            "from": "IST",
+            "to": "VKO",
+            "start": "2026-12-05T15:55:00+03:00",
+            "end": "2026-12-05T18:33:00+03:00",
+            "carrier": "Turkish Airlines",
+            "price_rub": 38190
+          }
+        ],
+        "hotel": {
+          "name": "Senatus Hotel",
+          "stars": 4,
+          "rating": 8.2,
+          "district": {
+            "labels": [
+              "движ",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 2,
+              "beach": 0,
+              "cafe": 33,
+              "convenience": 16,
+              "fast_food": 7,
+              "nightclub": 0,
+              "park": 5,
+              "pedestrian": 57,
+              "pharmacy": 2,
+              "playground": 0,
+              "pub": 3,
+              "restaurant": 122,
+              "station": 1,
+              "stop": 6,
+              "supermarket": 2
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 120780,
+          "door_to_door_hours": 7.8,
+          "price_stay_rub": 42030,
+          "nights": 4,
+          "check_in_date": "2026-12-01",
+          "check_out_date": "2026-12-05",
+          "check_in_time": "14:00",
+          "check_out_time": "11:00",
+          "hotel_name": "Senatus Hotel",
+          "hotel_kind": "hotel",
+          "hotel_stars": 4,
+          "hotel_rating": 8.2,
+          "hotel_reviews": 79,
+          "meals": "breakfast",
+          "meals_ru": "завтраки",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-29",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 42030,
+          "distance_center_m": 349,
+          "room_name": "Стандартный двухместный",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 5400,
+          "out_kind": "flight",
+          "out_price_rub": 30940,
+          "out_from": "VKO",
+          "out_to": "IST",
+          "out_date": "2026-12-01",
+          "out_dep_time": "16:20",
+          "out_arr_time": "18:58",
+          "out_arr_date": "2026-12-01",
+          "out_duration_min": 158,
+          "out_duration_hours": 2.6,
+          "out_stops": 0,
+          "out_carrier": "Трансаэро",
+          "out_number": "UN4433",
+          "out_baggage": true,
+          "out_refundable": false,
+          "out_fare": "standard",
+          "out_door_hours": 3.9,
+          "back_kind": "flight",
+          "back_price_rub": 38190,
+          "back_from": "IST",
+          "back_to": "VKO",
+          "back_date": "2026-12-05",
+          "back_dep_time": "15:55",
+          "back_arr_time": "18:33",
+          "back_arr_date": "2026-12-05",
+          "back_duration_min": 158,
+          "back_duration_hours": 2.6,
+          "back_stops": 0,
+          "back_carrier": "Turkish Airlines",
+          "back_number": "TK7469",
+          "back_baggage": true,
+          "back_refundable": false,
+          "back_fare": "standard",
+          "back_door_hours": 3.9,
+          "transfer_out_min": 62,
+          "transfer_out_price_rub": 4810,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 62,
+          "transfer_back_price_rub": 4810,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 9620,
+          "price_transport_rub": 69130,
+          "arrival_at_hotel_time": "21:28",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "11:40",
+          "wait_after_checkout_min": 40,
+          "district_lively": 0.65,
+          "district_quiet": 0.39,
+          "district_family": 0.51,
+          "district_walkable": 0.97,
+          "poi_bar": 2,
+          "poi_beach": 0,
+          "poi_cafe": 33,
+          "poi_convenience": 16,
+          "poi_fast_food": 7,
+          "poi_nightclub": 0,
+          "poi_park": 5,
+          "poi_pedestrian": 57,
+          "poi_pharmacy": 2,
+          "poi_playground": 0,
+          "poi_pub": 3,
+          "poi_restaurant": 122,
+          "poi_station": 1,
+          "poi_stop": 6,
+          "poi_supermarket": 2,
+          "nearest_centre_m": 349,
+          "nearest_major_road_m": 250,
+          "nearest_railway_m": 153,
+          "nearest_station_m": 219,
+          "nearest_stop_m": 213,
+          "district_fit": 0.525,
+          "center_fit": 1.0,
+          "comfort_score": 0.7923,
+          "ref_min_rub": 61360,
+          "delta_rub_vs_cheapest": 59420,
+          "ref_min_hours": 7.8,
+          "delta_hours_vs_fastest": 0.0
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+59 420 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 59420
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "non_refundable",
+            "text": "Невозвратные билеты",
+            "data": {
+              "directions": "out,back"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.65
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.757,
+          "breakdown": {
+            "budget": 0.508,
+            "time": 1.0,
+            "district": 0.526,
+            "cancellation": 1.0,
+            "stars": 0.8,
+            "center": 1.0,
+            "rating": 0.82
+          }
+        },
+        "diff_rub": 36190,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      }
+    ],
+    "recommended_hint": "fastest",
+    "questions": [
+      {
+        "id": "q_budget",
+        "text": "Какой бюджет на всех, примерно?"
+      },
+      {
+        "id": "q_origin",
+        "text": "Откуда летим?"
+      }
+    ],
+    "upsell_candidates": [],
+    "changes": [
+      {
+        "field": "prefs.center_max_m",
+        "before": null,
+        "after": 1500
+      },
+      {
+        "field": "totals.cheapest.rub",
+        "before": 63120,
+        "after": 63180,
+        "delta_rub": 60,
+        "delta_word": "дороже"
+      },
+      {
+        "field": "totals.custom-1.rub",
+        "before": 82990,
+        "after": null,
+        "delta_rub": null,
+        "delta_word": null
+      },
+      {
+        "field": "totals.fastest.rub",
+        "before": null,
+        "after": 84590,
+        "delta_rub": null,
+        "delta_word": null
+      }
+    ],
+    "rebuilt": [],
+    "request": "Да, пересоберите, пожалуйста, чтобы отель был поближе к историческому центру"
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "(поищ|подбер|найд|посмотр)\\w*\\s+(отел\\w*\\s+)?(в\\s+районе|рядом\\s+с|возле|у\\s+)\\s*(Султанахмет|Айя|Галат|Таксим|Диснейленд)"
+    },
+    {
+      "type": "predicate",
+      "name": "matches",
+      "args": {
+        "path": "/message",
+        "pattern": "^[^.!]*центр"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 0
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "ничего не менял|подборка та же"
+    }
+  ],
+  "runs": 5,
+  "notes": "L3 s04 t5: the centre wish is prefs.center_max_m; the update card starts with it (a prefs row in changes) and names the new hotels' distance; never «ничего не менял», never a district search offer."
+}

@@ -122,6 +122,7 @@ class HotelFilters(Model):
     max_price_total: Optional[Rub] = None
     pets: Optional[bool] = None
     kinds: Optional[list[str]] = None
+    max_distance_center_m: Optional[int] = PField(default=None, ge=0)   # applied before the top-`limit` cut
 
 
 class SearchHotelsIn(Model):
@@ -254,6 +255,25 @@ class SearchFlightsIn(Model):
     infants: int = PField(default=0, ge=0, le=4)
     flex_days: int = PField(default=0, ge=0, le=3)
     today: Date
+    pets: int = PField(default=0, ge=0, le=4)   # animals in carriers priced into price_rub (PetTerms.count)
+
+
+class PetTerms(Model):
+    """Pet carriage on a train / flight offer (trains: RZD rules since 01.01.2025; flights: one generic mock
+    rule). Fees are per animal and synthetic like every mock price."""
+    small_in_carrier: bool                       # cats and small dogs in a closed carrier
+    carrier_max_cm_sum: Optional[int] = None     # the carrier's three sides together (trains: 180)
+    carrier_max_kg: Optional[int] = None         # with the animal (flights: 8, cabin)
+    places: Optional[str] = None                 # where (Russian): «места для пассажиров с животными»
+    large_dogs: bool                             # trains: a separate compartment; flights: the hold
+    large_dogs_how: Optional[str] = None         # Russian condition for large dogs
+    max_animals: int = PField(ge=0)              # for this booking (trains: 2 per ticket)
+    fee_rub: Rub                                 # one animal in a carrier (flights: in the cabin)
+    large_dog_fee_rub: Optional[Rub] = None      # trains: the compartment's free places; flights: the hold
+    guide_dogs_free: bool = True
+    count: int = PField(default=0, ge=0)         # animals priced into the offer's price_rub
+    fee_total_rub: Rub = 0                       # count x fee_rub, already inside price_rub
+    synthetic_fee: bool = True
 
 
 class FlightSegment(Model):
@@ -290,7 +310,8 @@ class FlightOffer(Model):
     international: bool
     baggage: Baggage
     fare: Fare
-    price_rub: Rub              # whole party
+    price_rub: Rub              # whole party (+ pets.fee_total_rub when searched with pets)
+    pets: Optional[PetTerms] = None
     date: Date
     synthetic: bool = True
 
@@ -306,6 +327,7 @@ class SearchTrainsIn(Model):
     date: Date
     passengers: int = PField(ge=1, le=9)
     today: Date
+    pets: int = PField(default=0, ge=0, le=4)   # animals in carriers priced into price_rub (PetTerms.count)
 
 
 class TrainOffer(Model):
@@ -318,7 +340,9 @@ class TrainOffer(Model):
     arr: IsoDateTime
     duration_min: int = PField(ge=1)
     car_class: Literal["seat", "platzkart", "coupe", "sv"]
-    price_rub: Rub              # all passengers
+    train_kind: Optional[Literal["high_speed", "day", "long_distance"]] = None   # high_speed: «Сапсан»
+    price_rub: Rub              # all passengers (+ pets.fee_total_rub when searched with pets)
+    pets: Optional[PetTerms] = None
     date: Date
     synthetic: bool = True
 

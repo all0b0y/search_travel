@@ -1,0 +1,66 @@
+{
+  "id": "b6_center_new_trip",
+  "category": "B",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Хочу в Рим на 4 ночи в декабре, вдвоём, отель в центре",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/destination.name",
+      "value": "Рим",
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/prefs.center_max_m",
+      "value": 1500
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/prefs.district"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.month",
+      "value": 12
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.nights",
+      "value": 4
+    }
+  ],
+  "runs": 5,
+  "notes": "«в центре» -> prefs.center_max_m 1500 (a hotel filter by the distance to the centre), never district."
+}

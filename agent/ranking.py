@@ -67,15 +67,27 @@ RANKING_DEFAULTS = {
     "budget_zero_over_pct": 50,       # fit: budget score reaches 0 at +50 % over the budget
     "max_notes": 4,                   # per list (sacrifices / risks / not_for)
     "fit_weights": {"budget": 0.25, "time": 0.15, "district": 0.15, "meals": 0.1, "cancellation": 0.07,
-                    "stars": 0.08, "beach": 0.1, "constraints": 0.05, "rating": 0.05},
+                    "stars": 0.08, "beach": 0.1, "constraints": 0.05, "rating": 0.05, "center": 0.15},
     "comfort_weights": {"stars": 0.2, "rating": 0.25, "meals": 0.15, "cancellation": 0.1, "direct": 0.1,
-                        "fare": 0.05, "transfer": 0.05, "district": 0.1, "car_class": 0.1, "cot": 0.15},
+                        "fare": 0.05, "transfer": 0.05, "district": 0.1, "car_class": 0.1, "cot": 0.15,
+                        "center": 0.3},
     "comfort_legs": 2,                # extra transport offers kept per direction for comfort (fare, class)
     "unused_night_penalty": 0.05,     # comfort minus this when arriving after midnight (first night unused)
     "max_hours_relax_tolerance_h": 1.0,   # nothing within max_travel_hours: keep journeys this close to the best
     "flex_shift_min_saving_pct": 10,  # flexible_days: another start day only when this much cheaper overall
     "max_dorm_hotels": 3,             # dorm-bed offers kept when private rooms exist (never crowd them out)
     "dorm_fit_factor": 0.5,           # fit x this for a dorm bed the user did not ask for (never the pick)
+    # city centre (center_applies): full score up to center_full_m, zero from center_zero_m; with a user
+    # prefs.center_max_m full up to it, zero at max + max(max, center_full_m)
+    "center_kinds": ["city"],         # destination kinds whose stays are scored by the distance to the centre
+    "center_full_m": 1000,
+    "center_zero_m": 5000,
+    "center_search_m": 1500,          # steps: the extra search_hotels(max_distance_center_m) for city stays
+    "center_relax_tolerance_m": 1000, # prefs.center_max_m relaxed: hotels this close to the nearest one kept
+    "sacrifice_center_delta_m": 700,
+    "center_card_min_score": 0.9,     # «Удачнее по району» for a city stay: a hotel this central ...
+    "center_card_price_ratio": 1.3,   # ... within this x the cheapest private-room trip ...
+    "center_card_max_gain_h": 1.0,    # ... replaces «Быстрее» when that saves less than this door to door
 }
 SENSITIVITY_DEFAULTS = {"price_delta_pct": 10, "top_changes": True, "max_reruns": 12}
 
@@ -218,11 +230,17 @@ def _night_flight(leg, rr) -> bool:
 def _soft_leg_filters(brief, direction, rr):
     """User prefs on tickets, as (relaxed path, keep(leg)) in relaxation order. Each is a hard filter
     unless it would leave no offer in this direction: then it is dropped and the path is reported
-    (risk `relaxed_pref`, or `non_refundable_only` for tickets under free cancellation)."""
+    (risk `relaxed_pref`, or `non_refundable_only` for tickets under free cancellation).
+    A pet in the brief keeps tickets whose `pets` terms take it (pet_ok); constraint train:sapsan /
+    train:high_speed (steps.train_cues) keeps only high-speed trains — per direction, path HIGH_SPEED.<dir>."""
     prefs = brief.prefs.value
-    if prefs is None:
-        return []
     out = []
+    if wants_pet(brief):
+        out.append((PETS_CARRIAGE, lambda l: pet_ok(l, brief)))
+    if wants_high_speed(brief):
+        out.append((f"{HIGH_SPEED}.{direction}", lambda l: l.kind != "train" or is_high_speed(l)))
+    if prefs is None:
+        return out
     if direction == "out" and prefs.arrive_before and _user(brief, "prefs.arrive_before"):
         limit = prefs.arrive_before
         dates = brief.dates.value
@@ -240,6 +258,86 @@ def _soft_leg_filters(brief, direction, rr):
 
 
 TICKETS_REFUNDABLE = "tickets.refundable"   # relaxed marker: no refundable fare under free cancellation
+HIGH_SPEED = "train.high_speed"     # relaxed marker (+ .out / .back): no high-speed train that way
+PETS_CARRIAGE = "pets.carriage"     # relaxed marker: no ticket whose pet terms take the party's animals
+HIGH_SPEED_TOKENS = ("train:sapsan", "train:high_speed")   # constraints set by steps.train_cues
+
+
+def wants_high_speed(brief) -> bool:
+    return any(t in (brief.constraints.value or []) for t in HIGH_SPEED_TOKENS)
+
+
+def is_high_speed(leg) -> bool:
+    """A high-speed train (the mock's train_kind; offers without it: a «Сапсан» carrier)."""
+    kind = (leg.offer or {}).get("train_kind")
+    return kind == "high_speed" if kind else "сапсан" in str(leg.carrier or "").casefold()
+
+
+def pet_count(brief) -> int:
+    """Animals travelling (party.pets, else 1 for a pet:* constraint), at most 4 — the mock prices them."""
+    party = brief.party.value
+    n = len(party.pets) if party is not None and party.pets else 0
+    return min(4, n or (1 if wants_pet(brief) else 0))
+
+
+def pet_ok(leg, brief) -> bool:
+    """The ticket's pet terms take the party's animals in a carrier (a dog of unknown size counts as one in a
+    carrier). An offer without terms is unknown, never dropped on a guess."""
+    terms = (leg.offer or {}).get("pets")
+    if not terms:
+        return True
+    return bool(terms.get("small_in_carrier")) and pet_count(brief) <= int(terms.get("max_animals") or 0)
+
+
+TRAIN_PLACE_RU = {"platzkart": "В плацкарте поезда", "coupe": "В купе поезда", "sv": "В СВ поезда"}
+
+
+def pet_rule_line(kind, offer) -> Optional[str]:
+    """A ready Russian line with the pet terms of one ticket (offer `pets`), or None without terms:
+    «В «Сапсане» — только в переноске до 180 см по сумме трёх сторон, на местах для пассажиров с животными;
+    провоз 720 ₽; крупных собак не возят, кроме собак-проводников». Sizes are the rule's, never the pet's."""
+    o = offer or {}
+    t = o.get("pets") or {}
+    if not t:
+        return None
+    count, fee = int(t.get("count") or 0), t.get("fee_rub")
+    price = (f"провоз {fmt_rub(fee)}" + (f" за животное, за {count} — {fmt_rub(t.get('fee_total_rub'))}" if count > 1 else "")
+             if fee is not None else None)
+    if kind == "flight":
+        head = f"На рейсе {o.get('flight_no')}" if o.get("flight_no") else "В самолёте"
+        if not t.get("small_in_carrier"):
+            return f"{head} животных в салоне не возят"
+        cabin = "в салоне в переноске" + (f", если вместе с ней до {t['carrier_max_kg']} кг" if t.get("carrier_max_kg") else "")
+        line = f"{head} — {cabin}" + (f", {price}" if price else "")
+        if t.get("large_dogs"):
+            line += f"; {t.get('large_dogs_how') or 'крупных — в багажном отсеке'}" + (
+                f", {fmt_rub(t['large_dog_fee_rub'])}" if t.get("large_dog_fee_rub") is not None else "")
+        return line
+    carrier, no, cls = str(o.get("carrier") or ""), o.get("train_no") or "", o.get("car_class")
+    if o.get("train_kind") == "high_speed" or "сапсан" in carrier.casefold():
+        head = "В «Сапсане»" if "сапсан" in carrier.casefold() else f"В скоростном поезде {no}".strip()
+    elif o.get("train_kind") == "day" or cls == "seat":
+        head = f"В дневном поезде {no}".strip()
+    else:
+        head = f"{TRAIN_PLACE_RU.get(cls, 'В поезде')} {no}".strip()
+    if not t.get("small_in_carrier"):
+        return f"{head} животных не возят"
+    line = f"{head} — только в переноске"
+    if t.get("carrier_max_cm_sum"):
+        line += f" до {t['carrier_max_cm_sum']} см по сумме трёх сторон"
+    if t.get("places"):
+        line += f", на местах для пассажиров с животными" if "животн" in str(t["places"]) else f", {t['places']}"
+    if price:
+        line += f"; {price}"
+    if t.get("large_dogs"):
+        line += f"; крупную собаку — {t.get('large_dogs_how')}" if t.get("large_dogs_how") else "; крупную собаку можно"
+        if t.get("large_dog_fee_rub"):
+            line += f" (ещё {fmt_rub(t['large_dog_fee_rub'])})"
+    elif o.get("train_kind") in ("high_speed", "day") or cls == "seat":
+        line += "; крупных собак не возят, кроме собак-проводников"
+    else:
+        line += "; крупную собаку — только в отдельном купе, в плацкарте нельзя"
+    return line
 
 
 def _party_ok(h, brief):
@@ -334,7 +432,94 @@ def _pref_fails(h, brief) -> list[str]:
         d = h.get("distance_beach_m")
         if d is None or d > prefs.beach_max_m:
             bad.append("prefs.beach_max_m")
+    if _user(brief, "prefs.center_max_m") and prefs.center_max_m is not None:
+        d = h.get("distance_center_m")
+        if d is None or d > prefs.center_max_m:
+            bad.append("prefs.center_max_m")
     return bad
+
+
+# ---------------------------------------------------------------- city centre
+
+def user_center_max(brief):
+    prefs = brief.prefs.value
+    if prefs is None or prefs.center_max_m is None or not _user(brief, "prefs.center_max_m"):
+        return None
+    return int(prefs.center_max_m)
+
+
+def center_applies(brief, dest, rr) -> bool:
+    """The hotel's distance to the city centre is a fit / comfort component: always with a user-set
+    prefs.center_max_m; otherwise for a destination whose kind is in ranking.center_kinds (city — not a
+    resort, nature or village stay) when the trip has no sea / beach / island wish and no prefs.beach_max_m
+    (a beach stay is scored by the beach, never pulled to the centre)."""
+    if user_center_max(brief) is not None:
+        return True
+    prefs = brief.prefs.value
+    if prefs is not None and prefs.beach_max_m is not None:
+        return False
+    if set(brief.traits.value or []) & SEA_TRAITS:
+        return False
+    return (dest or {}).get("kind") in tuple(rr.get("center_kinds") or ())
+
+
+def center_score(brief, distance_m, rr) -> Optional[float]:
+    """0..1 by the distance to the centre (None without a distance)."""
+    if distance_m is None:
+        return None
+    d = float(distance_m)
+    mx = user_center_max(brief)
+    if mx is not None:
+        return round(1.0 if d <= mx else max(0.0, 1 - (d - mx) / max(mx, rr["center_full_m"])), 3)
+    full, zero = rr["center_full_m"], rr["center_zero_m"]
+    return round(1.0 if d <= full else max(0.0, 1 - (d - full) / max(1.0, zero - full)), 3)
+
+
+def _center_of(h, brief, rr) -> float:
+    """The centre score of a hotel offer when the centre counts for this trip (rr["center_on"]), else 0."""
+    if not rr.get("center_on") or h is None:
+        return 0.0
+    return center_score(brief, h.get("distance_center_m"), rr) or 0.0
+
+
+def _center_card(picked, private, ref, brief, rr, limit):
+    """City stays (door to door): when no affordable card is central (only «Комфортнее» may be) and a central
+    hotel (centre score >= center_card_min_score) exists within center_card_price_ratio x the cheapest
+    private-room trip (x «Быстрее» when it replaces that card), «Удачнее по району» (custom-1) shows it (the best comfort for its price, like
+    «Быстрее»). With a full set it takes the place of «Быстрее» when that one is less than
+    center_card_max_gain_h faster door to door (a shorter airport transfer is not worth a card in a city;
+    s04: Galata 2.5 km out was «Быстрее» and the recommendation). Changes `picked` in place."""
+    good = rr["center_card_min_score"]
+    if any(_center_of(c.hotel, brief, rr) >= good for vid, c in picked if vid != "comfort"):
+        return
+    taken = {c.key for _, c in picked}
+    full = len(picked) >= limit
+    fast = next((c for vid, c in picked if vid == "fastest"), None) if full else None
+    if full and fast is None:
+        return
+    # the price is compared with the card it joins (the cheapest private room) or replaces («Быстрее»)
+    cap = (fast.rub if full else ref.rub) * rr["center_card_price_ratio"]
+    rest = [c for c in private if c.key not in taken and c.rub <= cap and _center_of(c.hotel, brief, rr) >= good]
+    if full:
+        rest = [c for c in rest if c.hours - fast.hours < rr["center_card_max_gain_h"]]
+    if not rest:
+        return
+    base = max(1, ref.rub)
+    best = max(rest, key=lambda c: (round(c.comfort - rr["fastest_price_weight"] * (c.rub / base - 1), 6),
+                                    -c.hours, -c.rub))
+    if full:
+        picked[:] = [pc for pc in picked if pc[0] != "fastest"]
+    picked.append(("custom-1", best))
+
+
+def _nearest_hotels(hotels, rr):
+    """prefs.center_max_m relaxed: only the hotels within center_relax_tolerance_m of the nearest one
+    («показываем ближайшие»)."""
+    ds = [h.get("distance_center_m") for h in hotels if h.get("distance_center_m") is not None]
+    if not ds:
+        return hotels
+    cap = min(ds) + rr["center_relax_tolerance_m"]
+    return [h for h in hotels if h.get("distance_center_m") is not None and h["distance_center_m"] <= cap]
 
 
 CRIB = "constraints.crib"          # relaxed marker: no hotel with a guaranteed cot
@@ -342,7 +527,8 @@ GUARANTEED_COT = ("free", "paid")  # ostrovok KidsPolicy.infant_cot; on_request 
 COT_COMFORT = {"free": 1.0, "paid": 0.6, "on_request": 0.2, "none": 0.0}
 # hotel prefs in relaxation order: when no hotel meets them all, the smallest set is dropped, the
 # earliest paths in this list first (a cot for a toddler is dropped last)
-RELAX_ORDER = ("prefs.beach_max_m", "prefs.stars_min", "prefs.meals", "prefs.free_cancellation", CRIB)
+RELAX_ORDER = ("prefs.center_max_m", "prefs.beach_max_m", "prefs.stars_min", "prefs.meals", "prefs.free_cancellation",
+               CRIB)
 
 
 def wants_crib(brief) -> bool:
@@ -374,6 +560,7 @@ def _relax_hotels(hotels, brief):
 
 RELAXED_RU = {"prefs.stars_min": "с нужной звёздностью", "prefs.meals": "с нужным питанием",
               "prefs.free_cancellation": "с бесплатной отменой", "prefs.beach_max_m": "так близко к пляжу",
+              "prefs.center_max_m": "так близко к центру",
               "prefs.max_travel_hours": "с дорогой в нужное время", "prefs.arrive_before": "с прибытием к нужному времени",
               "prefs.no_night_flights": "без ночных рейсов", CRIB: "с гарантированной детской кроваткой"}
 
@@ -552,6 +739,10 @@ def _comfort(c: Combo, brief, districts, segments, rr) -> float:
     d = district_fit(brief, district_of(h, districts), segments) if h is not None else None
     if d is not None:
         parts["district"] = d
+    if h is not None and rr.get("center_on"):
+        cs = center_score(brief, h.get("distance_center_m"), rr)
+        if cs is not None:
+            parts["center"] = cs
     total = sum(w.get(k, 0) for k in parts) or 1.0
     return round(sum(w.get(k, 0) * v for k, v in parts.items()) / total, 4)
 
@@ -580,7 +771,7 @@ def _prune_legs(legs, n, extra=0):
     return list(keep.values())
 
 
-def _prune_hotels(hotels, n, brief, districts, segments, max_dorms=None):
+def _prune_hotels(hotels, n, brief, districts, segments, max_dorms=None, rr=None):
     """Cheapest half + best quality up to n. Dorm beds never crowd out private rooms: unless the user
     asked for a hostel, at most `max_dorms` cheapest dorm offers stay next to the private ones."""
     if max_dorms is not None and not wants_dorm(brief):
@@ -588,12 +779,13 @@ def _prune_hotels(hotels, n, brief, districts, segments, max_dorms=None):
         private = [h for h in hotels if not _hotel_is_dorm(h)]
         if dorms and private:
             keep = sorted(dorms, key=lambda h: (h["price_total_rub"], h["offer_id"]))[:max(0, int(max_dorms))]
-            return keep + _prune_hotels(private, max(1, n - len(keep)), brief, districts, segments)
+            return keep + _prune_hotels(private, max(1, n - len(keep)), brief, districts, segments, rr=rr)
     if len(hotels) <= n:
         return hotels
     def quality(h):
         d = district_fit(brief, district_of(h, districts), segments) or 0
-        return (h.get("stars") or 0) / 5 + (h.get("rating") or 0) / 10 + MEALS_RANK.get(h.get("meals"), 0) / 8 + d
+        return ((h.get("stars") or 0) / 5 + (h.get("rating") or 0) / 10 + MEALS_RANK.get(h.get("meals"), 0) / 8 + d
+                + (_center_of(h, brief, rr) if rr else 0.0))
     keep = {}
     for h in sorted(hotels, key=lambda h: h["price_total_rub"])[: (n + 1) // 2]:
         keep[h["offer_id"]] = h
@@ -782,6 +974,10 @@ def _facts(c: Combo, brief, districts, segments, rr):
         d = district_fit(brief, profile, segments)
         if d is not None:
             f["district_fit"] = d
+    if rr.get("center_on"):
+        cs = center_score(brief, h.get("distance_center_m"), rr)
+        if cs is not None:
+            f["center_fit"] = cs   # the centre counts for this trip (city stay or prefs.center_max_m)
     f["comfort_score"] = c.comfort
     if c.relaxed:
         f["relaxed"] = ",".join(c.relaxed)
@@ -813,6 +1009,15 @@ def _leg_facts(f, c: Combo):
             f"{direction}_layover_min": leg.min_layover,
             f"{direction}_door_hours": round(getattr(c, f"{direction}_hours"), 1),
         })
+        if leg.kind == "train" and is_high_speed(leg):
+            f[f"{direction}_high_speed"] = True
+        terms = (leg.offer or {}).get("pets") or {}
+        if terms.get("count"):   # searched with the party's animals: the fee is inside the leg price
+            f[f"{direction}_pets_rule"] = pet_rule_line(leg.kind, leg.offer)
+            f[f"{direction}_pet_fee_rub"] = int(terms.get("fee_total_rub") or 0)
+    fees = [f[k] for k in ("out_pet_fee_rub", "back_pet_fee_rub") if f.get(k)]
+    if fees:   # its own line of the total (already inside the ticket prices and totals.rub)
+        f["price_pets_rub"] = sum(fees)
 
 
 def _transport_facts(c: Combo):
@@ -901,7 +1106,19 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
     if _hotel_is_dorm(c.hotel):   # never hidden by the cap: a bed in a shared room, not a private room
         head.append(_note("dorm_bed", "Это койка в общем номере хостела, а не отдельный номер",
                           room=((c.hotel or {}).get("room") or {}).get("name")))
+    fast = [p for p in c.relaxed if p.startswith(HIGH_SPEED + ".")]
+    if fast:   # «на Сапсане» and no high-speed train that way on these dates
+        name = "«Сапсана»" if "train:sapsan" in (brief.constraints.value or []) else "Скоростного поезда"
+        way = "" if len(fast) > 1 else (" туда" if fast[0].endswith(".out") else " обратно")
+        head.append(_note("relaxed_pref", f"{name}{way} на эти даты нет — показываем другие поезда", field=HIGH_SPEED,
+                          directions=",".join(p.rsplit(".", 1)[1] for p in fast)))
     for path in c.relaxed:
+        if path.startswith(HIGH_SPEED + "."):
+            continue
+        if path == PETS_CARRIAGE:
+            head.append(_note("relaxed_pref", "Билетов, где можно ехать с животным, на эти даты не нашли — "
+                                              "условия провоза уточните у перевозчика", field=path))
+            continue
         if path == TICKETS_REFUNDABLE:
             head.append(_note("non_refundable_only", "Возвратных билетов на эти даты нет — в варианте невозвратные",
                               field="prefs.free_cancellation"))
@@ -912,6 +1129,8 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
             continue
         if path == "prefs.arrive_before" and prefs is not None and prefs.arrive_before:
             text = f"Рейсов с прибытием до {prefs.arrive_before} не нашли — показываем ближайшие"
+        elif path == "prefs.center_max_m":
+            text = "Отелей так близко к центру на эти даты нет — показываем ближайшие"
         else:
             text = f"Вариантов {RELAXED_RU.get(path, path)} не нашли — показываем ближайшие"
         head.append(_note("relaxed_pref", text, field=path))
@@ -998,6 +1217,12 @@ def _sacrifices(v, others, rr, brief):
     d = f.get("distance_beach_m")
     if traits & SEA_TRAITS and d is not None and beaches and d - min(beaches) >= rr["sacrifice_beach_delta_m"]:
         out.append(_note("beach_farther", f"До пляжа {fmt_int(d)} м", distance_m=d))
+    centers = [x["facts"].get("distance_center_m") for x in all_ if x["facts"].get("center_fit") is not None
+               and x["facts"].get("distance_center_m") is not None]
+    dc = f.get("distance_center_m")
+    if f.get("center_fit") is not None and dc is not None and centers and \
+            dc - min(centers) >= rr.get("sacrifice_center_delta_m", 700):
+        out.append(_note("center_farther", f"До центра {fmt_int(dc)} м", distance_m=dc))
     ratings = [x["facts"].get("hotel_rating") for x in all_ if x["facts"].get("hotel_rating") is not None]
     r = f.get("hotel_rating")
     if r is not None and ratings and max(ratings) - r >= rr["sacrifice_rating_delta"]:
@@ -1013,7 +1238,8 @@ def fit(brief, variant, rules, segments=None):
     Criteria present only when they can be computed: budget (vs budget max, else vs the cheapest shown:
     facts.ref_min_rub), time (vs prefs.max_travel_hours, else vs the fastest shown), district (OSM
     scores weighted by the user's district pref or the segment weights of segments.json), meals,
-    cancellation, stars, beach, constraints (party/pet policies), rating. Weights: rules.ranking.fit_weights.
+    cancellation, stars, beach, constraints (party/pet policies), rating, center (facts.center_fit: the hotel's
+    distance to the city centre, only when ranking.center_applies). Weights: rules.ranking.fit_weights.
     """
     from .state import Fit
     rr = ranking_rules(rules)
@@ -1065,6 +1291,8 @@ def fit(brief, variant, rules, segments=None):
     elif sea_wanted:
         near, zero = rr["beach_near_m"], rr["beach_zero_m"]
         b["beach"] = 0.0 if dist is None else (1.0 if dist <= near else max(0.0, 1 - (dist - near) / (zero - near)))
+    if f.get("center_fit") is not None:   # set by _facts only when the centre counts for this trip
+        b["center"] = float(f["center_fit"])
     party = brief.party.value
     if brief.constraints.value or wants_pet(brief) or (party and party.children):
         b["constraints"] = 0.0 if any(i["severity"] == "block" for i in check_party(variant, brief)) else 1.0
@@ -1153,8 +1381,11 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     hotels_all = [h for h in hotels_all if _party_ok(h, brief)]
     if want_stay and not hotels_all:
         return []
+    rr["center_on"] = want_stay and center_applies(brief, dest, rr)
     hotels, relaxed_paths = _relax_hotels(hotels_all, brief)
-    hotels = _prune_hotels(hotels, rr["max_hotels"], brief, districts, segs, rr["max_dorm_hotels"])
+    if "prefs.center_max_m" in relaxed_paths:   # none so close to the centre: the nearest ones, said so
+        hotels = _nearest_hotels(hotels, rr) or hotels
+    hotels = _prune_hotels(hotels, rr["max_hotels"], brief, districts, segs, rr["max_dorm_hotels"], rr=rr)
 
     want_transport = bool(scope & {"flights", "trains"})
     if not (want_stay or want_transport):
@@ -1258,12 +1489,14 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
             d = district_fit(brief, district_of(c.hotel, districts), segs)
             beach = c.hotel.get("distance_beach_m")
             near = 0.0 if beach is None or not (set(brief.traits.value or []) & SEA_TRAITS) else max(0.0, 1 - beach / rr["beach_zero_m"])
-            return (d or 0) + near
+            return (d or 0) + near + _center_of(c.hotel, brief, rr)
         if rest:
             best_loc = max(rest, key=lambda c: (loc(c), -c.rub))
             if loc(best_loc) > max(loc(c) for _, c in picked) + 0.05:
                 picked.append(("custom-1", best_loc))
     limit = rules.get("max_variants", 3)
+    if door and rr.get("center_on"):
+        _center_card(picked, private, ref, brief, rr, limit)
     if dorm_cheapest and len(picked) > limit:   # the private-room cards go first; the fastest may give way
         picked = [pc for pc in picked if pc[0] != "fastest"] or picked
     picked = picked[:limit]

@@ -1,0 +1,13 @@
+{
+  "intent": "refine",
+  "patch": {
+    "set": {
+      "prefs.center_max_m": 1500
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

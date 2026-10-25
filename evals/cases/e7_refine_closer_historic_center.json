@@ -1,0 +1,128 @@
+{
+  "id": "e7_refine_closer_historic_center",
+  "category": "E",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "istanbul",
+        "name": "Стамбул",
+        "country": "Турция"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-12-01",
+        "end": "2026-12-05",
+        "month": 12,
+        "window": null,
+        "nights": 4,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "origin.city",
+      "party.segment"
+    ],
+    "assumptions": [
+      {
+        "field": "origin.city",
+        "label": "из Москвы"
+      }
+    ],
+    "shown": [
+      {
+        "label": "1",
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле"
+      },
+      {
+        "label": "2",
+        "kind": "variant",
+        "id": "fastest",
+        "title": "Быстрее"
+      },
+      {
+        "label": "3",
+        "kind": "variant",
+        "id": "comfort",
+        "title": "Комфортнее"
+      }
+    ],
+    "pending_questions": [],
+    "history": [
+      {
+        "role": "user",
+        "text": "А отель далеко от исторического центра, от Айя-Софии?"
+      },
+      {
+        "role": "agent",
+        "text": "Galata Design Guest House стоит в 2554 м от центра."
+      }
+    ],
+    "message": "Да, пересоберите, пожалуйста, чтобы отель был поближе к историческому центру",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "refine"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/prefs.center_max_m",
+      "value": 1500
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/prefs.district"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "prefs.center_max_m"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "L3 s04 t5: «поближе к историческому центру» was read as district walkable and the rebuild changed nothing; it is prefs.center_max_m 1500 (the code cue does the same as a safety net)."
+}

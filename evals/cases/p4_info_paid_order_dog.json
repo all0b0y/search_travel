@@ -1,0 +1,189 @@
+{
+  "id": "p4_info_paid_order_dog",
+  "category": "F",
+  "card": "present.info",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "ordered",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "saint-petersburg",
+        "name": "Санкт-Петербург",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-10-31",
+        "end": "2026-11-01",
+        "month": 10,
+        "window": null,
+        "nights": 1,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "solo",
+        "adults": 1,
+        "children": 0,
+        "children_ages": null,
+        "pets": [
+          "dog"
+        ]
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "train"
+      },
+      "constraints": [
+        "pet:dog",
+        "train:sapsan"
+      ],
+      "mood": null
+    },
+    "assumed": [
+      "origin.city"
+    ],
+    "assumptions": [
+      {
+        "field": "origin.city",
+        "label": "из Москвы"
+      }
+    ],
+    "question": "Билеты уже оплатил — собаку точно пустят в поезд?",
+    "facts": [
+      {
+        "kind": "order",
+        "id": "o_ex_spb",
+        "data": {
+          "order_id": "o_ex_spb",
+          "status": "paid",
+          "total_rub": 10680,
+          "items": [
+            {
+              "kind": "train",
+              "title": "Поезд 751А Ленинградский вокзал → Московский вокзал, сидячий",
+              "start": "2026-10-31T06:25:00+03:00",
+              "booking_number": "RZ1234"
+            },
+            {
+              "kind": "hotel",
+              "title": "Исаакиевская площадь: Одноместный, 1 ноч., без питания",
+              "start": "2026-10-31T13:00+03:00",
+              "booking_number": "HT5678"
+            },
+            {
+              "kind": "train",
+              "title": "Поезд 752А Московский вокзал → Ленинградский вокзал, сидячий",
+              "start": "2026-11-01T09:20:00+03:00",
+              "booking_number": "RZ4321"
+            }
+          ]
+        },
+        "terms": [
+          {
+            "item_id": "oi_1",
+            "title": "Поезд туда",
+            "pets_rule": "В «Сапсане» — только в переноске до 180 см по сумме трёх сторон, на местах для пассажиров с животными; провоз 720 ₽; крупных собак не возят, кроме собак-проводников",
+            "pet_fee_rub": 720
+          },
+          {
+            "item_id": "oi_3",
+            "title": "Поезд обратно",
+            "pets_rule": "В «Сапсане» — только в переноске до 180 см по сумме трёх сторон, на местах для пассажиров с животными; провоз 770 ₽; крупных собак не возят, кроме собак-проводников",
+            "pet_fee_rub": 770
+          }
+        ]
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 0
+    },
+    {
+      "type": "predicate",
+      "name": "max_chars",
+      "args": {
+        "n": 600
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "none_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "predicate",
+            "name": "admits_no_data"
+          }
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "matches",
+      "args": {
+        "path": "/message",
+        "pattern": "^\\W*Да\\b"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "переноск"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "After payment the order's terms carry the same pet lines; the answer comes from them."
+}

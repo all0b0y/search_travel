@@ -78,7 +78,7 @@ ALLOWED_PATCH_PATHS = (
     "party.segment", "party.adults", "party.children", "party.children_ages", "party.pets",
     "budget_rub.max",
     "prefs.meals", "prefs.free_cancellation", "prefs.stars_min", "prefs.direct_only",
-    "prefs.max_travel_hours", "prefs.district", "prefs.beach_max_m", "prefs.transport",
+    "prefs.max_travel_hours", "prefs.district", "prefs.beach_max_m", "prefs.center_max_m", "prefs.transport",
     "prefs.arrive_before", "prefs.no_night_flights", "prefs.domestic",
     "constraints.add", "constraints.remove",
     "traits.add", "mood.add",
@@ -171,6 +171,9 @@ class Prefs(Model):
     max_travel_hours: Optional[float] = PField(default=None, gt=0)
     district: District = "any"
     beach_max_m: Optional[int] = PField(default=None, ge=0)
+    # metres from the destination's centre point (opendata destinations lat/lon, the catalog's
+    # distance_center_m): a relaxable hotel filter; «в центре» 1500, «в самом центре» 800
+    center_max_m: Optional[int] = PField(default=None, ge=0)
     transport: Transport = "any"
     # "HH:MM", local time at the destination: the outbound leg must arrive at or before it
     arrive_before: Optional[str] = PField(default=None, pattern=r"^([01]\d|2[0-3]):[0-5]\d$")

@@ -1,0 +1,333 @@
+{
+  "today": "2026-10-25",
+  "stage": "selection",
+  "brief": {
+    "origin": null,
+    "destination": {
+      "id": "kazan",
+      "name": "Казань",
+      "country": "Россия"
+    },
+    "traits": null,
+    "dates": {
+      "start": "2026-10-30",
+      "end": "2026-11-02",
+      "month": null,
+      "window": null,
+      "nights": 3,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "couple",
+      "adults": 2,
+      "children": 0,
+      "children_ages": null,
+      "pets": []
+    },
+    "budget_rub": {
+      "max": 30000
+    },
+    "scope": [
+      "stay"
+    ],
+    "prefs": null,
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [
+    "destination.id",
+    "destination.country",
+    "dates.start",
+    "dates.end",
+    "party.segment",
+    "party.adults"
+  ],
+  "assumptions": [
+    {
+      "field": "dates.start",
+      "label": "30 октября – 2 ноября"
+    },
+    {
+      "field": "party.segment",
+      "label": "вдвоём"
+    }
+  ],
+  "items": [
+    {
+      "id": "cheapest",
+      "label": "1",
+      "title": "Дешевле",
+      "totals": {
+        "rub": 14700,
+        "door_to_door_hours": 0,
+        "out_hours": null,
+        "back_hours": null
+      },
+      "steps": [
+        {
+          "type": "stay",
+          "from": "Апарт-отель «Волга» (пример)",
+          "to": "Апарт-отель «Волга» (пример)",
+          "start": "2026-10-30T14:00+03:00",
+          "end": "2026-11-02T12:00+03:00",
+          "carrier": null,
+          "price_rub": 14700
+        }
+      ],
+      "hotel": {
+        "name": "Апарт-отель «Волга» (пример)",
+        "stars": 2,
+        "rating": 8.0,
+        "district": {
+          "labels": [
+            "тихий район"
+          ],
+          "counts": {
+            "cafes": 3,
+            "bars": 0
+          }
+        }
+      },
+      "facts": {
+        "nights": 3,
+        "meals": "none",
+        "free_cancellation": true,
+        "distance_center_m": 3200
+      },
+      "sacrifices": [
+        {
+          "code": "far_center",
+          "text": "До центра 3,2 км",
+          "data": {
+            "distance_center_m": 3200
+          }
+        },
+        {
+          "code": "no_meals",
+          "text": "Без завтрака",
+          "data": {}
+        }
+      ],
+      "risks": [],
+      "not_for": [],
+      "fit": {
+        "score": 0.69,
+        "breakdown": {}
+      },
+      "diff_rub": 10200,
+      "diff_word": "дешевле",
+      "over_budget_rub": null
+    },
+    {
+      "id": "custom-1",
+      "label": "2",
+      "title": "В центре",
+      "totals": {
+        "rub": 24900,
+        "door_to_door_hours": 0,
+        "out_hours": null,
+        "back_hours": null
+      },
+      "steps": [
+        {
+          "type": "stay",
+          "from": "Отель «Баумана 9» (пример)",
+          "to": "Отель «Баумана 9» (пример)",
+          "start": "2026-10-30T14:00+03:00",
+          "end": "2026-11-02T12:00+03:00",
+          "carrier": null,
+          "price_rub": 24900
+        }
+      ],
+      "hotel": {
+        "name": "Отель «Баумана 9» (пример)",
+        "stars": 3,
+        "rating": 8.6,
+        "district": {
+          "labels": [
+            "пешком до всего",
+            "движ"
+          ],
+          "counts": {
+            "cafes": 24,
+            "bars": 9
+          }
+        }
+      },
+      "facts": {
+        "nights": 3,
+        "meals": "breakfast",
+        "free_cancellation": true,
+        "distance_center_m": 400
+      },
+      "sacrifices": [
+        {
+          "code": "price_more",
+          "text": "Дороже «Дешевле» на 10 200 ₽",
+          "data": {
+            "diff_rub": 10200
+          }
+        }
+      ],
+      "risks": [],
+      "not_for": [
+        {
+          "code": "light_sleepers",
+          "text": "Не для тех, кто чутко спит: улица шумная до ночи",
+          "data": {}
+        }
+      ],
+      "fit": {
+        "score": 0.84,
+        "breakdown": {}
+      },
+      "diff_rub": 0,
+      "diff_word": null,
+      "over_budget_rub": null
+    },
+    {
+      "id": "comfort",
+      "label": "3",
+      "title": "Комфортнее",
+      "totals": {
+        "rub": 41300,
+        "door_to_door_hours": 0,
+        "out_hours": null,
+        "back_hours": null
+      },
+      "steps": [
+        {
+          "type": "stay",
+          "from": "Отель «Казанская ривьера» (пример)",
+          "to": "Отель «Казанская ривьера» (пример)",
+          "start": "2026-10-30T14:00+03:00",
+          "end": "2026-11-02T12:00+03:00",
+          "carrier": null,
+          "price_rub": 41300
+        }
+      ],
+      "hotel": {
+        "name": "Отель «Казанская ривьера» (пример)",
+        "stars": 5,
+        "rating": 9.1,
+        "district": {
+          "labels": [
+            "тихий район"
+          ],
+          "counts": {
+            "cafes": 6,
+            "bars": 2
+          }
+        }
+      },
+      "facts": {
+        "nights": 3,
+        "meals": "breakfast",
+        "free_cancellation": true,
+        "distance_center_m": 1800,
+        "spa": true
+      },
+      "sacrifices": [
+        {
+          "code": "price_more",
+          "text": "Дороже «В центре» на 16 400 ₽",
+          "data": {
+            "diff_rub": 16400
+          }
+        }
+      ],
+      "risks": [
+        {
+          "code": "over_budget",
+          "text": "Выше вашего бюджета 30 000 ₽ на 11 300 ₽",
+          "data": {
+            "over_rub": 11300
+          }
+        }
+      ],
+      "not_for": [],
+      "fit": {
+        "score": 0.88,
+        "breakdown": {}
+      },
+      "diff_rub": 16400,
+      "diff_word": "дороже",
+      "over_budget_rub": 11300
+    }
+  ],
+  "recommended_hint": "comfort",
+  "questions": [],
+  "upsell_candidates": [],
+  "question": {
+    "text": "Когда в Казани лучше всего?",
+    "facts": [
+      {
+        "kind": "best_time",
+        "id": "kazan",
+        "data": {
+          "place": "Казань",
+          "best_months": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "best_months_ru": "май, июнь, июль и август",
+          "months": [
+            {
+              "month": 5,
+              "month_ru": "май",
+              "air_max_c": 17.9
+            },
+            {
+              "month": 6,
+              "month_ru": "июнь",
+              "air_max_c": 22.4
+            },
+            {
+              "month": 7,
+              "month_ru": "июль",
+              "air_max_c": 24.8
+            },
+            {
+              "month": 8,
+              "month_ru": "август",
+              "air_max_c": 23.6
+            }
+          ],
+          "summary_ru": "Лучшее время для поездки в Казань — май, июнь, июль и август: днём около 18–25°",
+          "trip_month": 10,
+          "trip_month_ru": "октябрь",
+          "trip_month_is_best": false,
+          "dates_assumed": false
+        }
+      },
+      {
+        "kind": "center_distance",
+        "items": [
+          {
+            "id": "cheapest",
+            "title": "Дешевле",
+            "hotel": "Апарт-отель «Волга» (пример)",
+            "distance_center_m": 3200,
+            "distance_center_km": 3.2
+          },
+          {
+            "id": "custom-1",
+            "title": "В центре",
+            "hotel": "Отель «Баумана 9» (пример)",
+            "distance_center_m": 400,
+            "distance_center_km": 0.4
+          },
+          {
+            "id": "comfort",
+            "title": "Комфортнее",
+            "hotel": "Отель «Казанская ривьера» (пример)",
+            "distance_center_m": 1800,
+            "distance_center_km": 1.8
+          }
+        ]
+      }
+    ]
+  }
+}

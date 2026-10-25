@@ -25,7 +25,7 @@ SCOPE_FULL = ["flights", "stay", "transfers"]
 SCOPE_RU = {"flights": "перелёт", "trains": "поезд", "stay": "отель", "transfers": "трансфер"}
 VARIANT_TITLES = {"cheapest": "Дешевле", "fastest": "Быстрее", "comfort": "Комфортнее"}
 CHIP_ORDER = ("origin.city", "dates.start", "dates.month", "dates.nights", "party.segment", "party.adults",
-              "party.children_ages", "prefs.district", "prefs.meals", "scope", "budget_rub.max")
+              "party.children_ages", "prefs.district", "prefs.center_max_m", "prefs.meals", "scope", "budget_rub.max")
 MAX_CHIPS = 5
 
 
@@ -67,6 +67,12 @@ def transfer_way(title):
         return "до отеля"
     to = route.split("→", 1)[1].strip()
     return "в аэропорт" if len(to) == 3 and to.isalpha() and to.isupper() else "на вокзал"
+
+
+def center_label(metres):
+    """«до центра ≤ 1,5 км» / «до центра ≤ 800 м» (prefs.center_max_m)."""
+    m = int(metres)
+    return f"до центра ≤ {fmt_int(m)} м" if m < 1000 else "до центра ≤ " + f"{m / 1000:.1f}".rstrip("0").rstrip(".").replace(".", ",") + " км"
 
 
 def party_label(party):
@@ -181,6 +187,9 @@ def chip_for(skill, brief, path):
                    ChipOption(label="отель + дорога + трансфер", value=list(SCOPE_FULL))]
     elif path == "budget_rub.max":
         label = label or f"до {fmt_rub(value)}"
+    elif path == "prefs.center_max_m":
+        label = center_label(value)
+        options = [ChipOption(label=center_label(m), value=m) for m in (800, 1500, 3000)]
     else:
         return None
     return Chip(field=path, label=str(label), value=value, options=options)
@@ -360,9 +369,10 @@ def upsell_item(c):
 
 
 def variants_input(session, variant_items, recommended_hint, questions, upsell, chips=(), changes=None, rebuilt=None,
-                   request=None):
+                   request=None, question=None):
     """present.variants; with `changes` it is present.update, which also gets `request` (the user's words,
-    so a wish that is no filter can be named honestly)."""
+    so a wish that is no filter can be named honestly). `question` ({text, facts}, only when the search /
+    refine message also asked something — steps.search_question): the card answers it first, from its facts."""
     payload = common(session, chips)
     payload["items"] = variant_items
     payload["recommended_hint"] = recommended_hint
@@ -372,6 +382,8 @@ def variants_input(session, variant_items, recommended_hint, questions, upsell, 
         payload["changes"] = changes
         payload["rebuilt"] = list(rebuilt or [])
         payload["request"] = request or ""
+    if question:
+        payload["question"] = {"text": str(question.get("text") or ""), "facts": list(question.get("facts") or [])}
     return payload
 
 
@@ -420,6 +432,8 @@ def compare_dimensions(brief):
         first.append("cancellation")
     if prefs.get("district") not in (None, "any"):
         first.append("district")
+    if prefs.get("center_max_m"):
+        first.append("center")
     if prefs.get("stars_min"):
         first.append("hotel")
     rest = [d for d in ("price", "door_to_door", "hotel", "meals", "cancellation", "district") if d not in first]

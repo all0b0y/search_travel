@@ -4,12 +4,12 @@ import pytest
 
 SCHEMAS = ("opendata.sql", "ostrovok_catalog.sql", "ostrovok_state.sql")
 FACT_TABLES = {
-    "opendata.sql": ("destinations", "climate", "airports", "routes", "districts"),
+    "opendata.sql": ("destinations", "climate", "airports", "routes", "districts", "pois"),
     "ostrovok_catalog.sql": ("hotels", "rooms", "policies", "insights_events"),
     "ostrovok_state.sql": ("insights_events_live",),
 }
 EXPECTED_TABLES = {
-    "opendata.sql": {"meta", "destinations", "climate", "airports", "routes", "districts"},
+    "opendata.sql": {"meta", "destinations", "climate", "airports", "routes", "districts", "pois"},
     "ostrovok_catalog.sql": {"meta", "hotels", "rooms", "policies", "insights_events"},
     "ostrovok_state.sql": {"carts", "cart_items", "orders", "order_items", "order_events", "travellers",
                            "insights_events_live"},

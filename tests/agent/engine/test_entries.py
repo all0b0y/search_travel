@@ -141,13 +141,17 @@ def test_entry_e_shift_without_anything_shown_asks(h):
 
 
 def test_entry_e_dog_reruns_only_hotels_and_transfers(h):
+    """«с собакой»: pet-friendly hotels; the tickets are searched again only because the animal's fee is priced
+    into them (search_flights `pets`, trains + pets slice) — no other search reruns."""
     _to_selection(h)
     h.understand(u(intent="refine", set={"party.pets": ["dog"], "constraints.add": ["pet:dog"]}))
     before = len(h.ostrovok.calls)
     r = h.turn("с собакой")
     called = {t for t, _ in h.ostrovok.calls[before:]}
-    assert "search_hotels" in called and "search_flights" not in called
-    assert called <= {"search_hotels", "search_transfers", "insights_log_event", "insights_segment_preferences"}
+    assert "search_hotels" in called
+    assert all(p.get("pets") == 1 for t, p in h.ostrovok.calls[before:] if t == "search_flights")
+    assert called <= {"search_hotels", "search_flights", "search_transfers", "insights_log_event",
+                      "insights_segment_preferences"}
     assert all(v["hotel"]["hotel_id"].endswith("h2") for v in r["cards"]["variants"])   # only pet-friendly
 
 

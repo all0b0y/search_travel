@@ -1,0 +1,207 @@
+{
+  "id": "p2_info_large_dog_coupe",
+  "category": "F",
+  "card": "present.info",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "kazan",
+        "name": "Казань",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-12-04",
+        "end": "2026-12-07",
+        "month": 12,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "solo",
+        "adults": 1,
+        "children": 0,
+        "children_ages": null,
+        "pets": [
+          "dog"
+        ]
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "train"
+      },
+      "constraints": [
+        "pet:dog"
+      ],
+      "mood": null
+    },
+    "assumed": [
+      "origin.city"
+    ],
+    "assumptions": [
+      {
+        "field": "origin.city",
+        "label": "из Москвы"
+      }
+    ],
+    "question": "У нас лабрадор, его в купе возьмут?",
+    "facts": [
+      {
+        "kind": "variant",
+        "id": "comfort",
+        "title": "Комфортнее",
+        "total_rub": 22570,
+        "legs": [
+          {
+            "type": "train",
+            "from": "Казанский вокзал",
+            "to": "Казань-Пассажирская",
+            "carrier": "ФПК",
+            "dep_date": "2026-12-04",
+            "dep_time": "19:30",
+            "arr_date": "2026-12-05",
+            "arr_time": "08:19",
+            "price_rub": 3850,
+            "duration_min": 769,
+            "train_no": "463И",
+            "car_class": "coupe",
+            "pets_rule": "В купе поезда 463И — только в переноске до 180 см по сумме трёх сторон; провоз 850 ₽; крупную собаку — только в отдельном купе: выкупить все свободные места, собака в наморднике и на поводке (ещё 9 010 ₽)",
+            "pet_fee_rub": 850
+          },
+          {
+            "type": "train",
+            "from": "Казань-Пассажирская",
+            "to": "Казанский вокзал",
+            "carrier": "ФПК",
+            "dep_date": "2026-12-07",
+            "dep_time": "22:20",
+            "arr_date": "2026-12-08",
+            "arr_time": "11:09",
+            "price_rub": 3920,
+            "duration_min": 769,
+            "train_no": "429Н",
+            "car_class": "coupe",
+            "pets_rule": "В купе поезда 429Н — только в переноске до 180 см по сумме трёх сторон; провоз 810 ₽; крупную собаку — только в отдельном купе: выкупить все свободные места, собака в наморднике и на поводке (ещё 9 320 ₽)",
+            "pet_fee_rub": 810
+          }
+        ],
+        "stay": {
+          "name": "Отель «Пример» (пример)",
+          "check_in_date": "2026-12-05",
+          "check_in_time": "14:00",
+          "check_out_date": "2026-12-07",
+          "check_out_time": "12:00",
+          "pets_allowed": true
+        },
+        "price_pets_rub": 1660
+      },
+      {
+        "kind": "pet_rules",
+        "lines": [
+          "В поездах РЖД кошек и небольших собак возят в закрытой переноске: сумма трёх её сторон — до 180 см, ставят её на место для ручной клади, на животное оформляют перевозочный документ, не больше двух животных на один билет.",
+          "В скоростных поездах («Сапсан», «Ласточка») — только небольших животных в переноске и только на местах для пассажиров с животными; в экономе переноска до 180 см по сумме трёх сторон, в бизнес- и первом классе — до 120 см и до 10 кг вместе с переноской. Крупных собак в «Сапсане» не возят, кроме собак-проводников.",
+          "В поездах дальнего следования крупную собаку везут только в отдельном купе: выкупают все свободные места, собака в наморднике и на поводке.",
+          "Собаки-проводники едут бесплатно во всех вагонах."
+        ]
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 0
+    },
+    {
+      "type": "predicate",
+      "name": "max_chars",
+      "args": {
+        "n": 600
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "none_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "predicate",
+            "name": "admits_no_data"
+          }
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "купе"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "path": "$text",
+        "words": [
+          "намордник",
+          "выкуп",
+          "все свободные места"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "A large dog on an FPK train: only a separate compartment with every free place bought, muzzled and leashed — copied from pets_rule; the lab is not called «небольшая»."
+}

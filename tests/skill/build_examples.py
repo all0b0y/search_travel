@@ -178,6 +178,12 @@ und(und_input(SOCHI, "aftercare", "да, переносим",
               history=[{"role": "agent", "text": "На 14–21 ноября перенести можно. Доплата 4 200 ₽. Если подходит — "
                                                  "напишите «переносим», и я подтвержу."}], assumed=SOCHI_ASSUMED),
     U("post_purchase", pp={"kind": "change_dates", "params": {"confirm": True}}))
+# the centre is prefs.center_max_m (never district walkable); a question inside a request stays in info_question
+und(und_input(SOCHI, "selection", "пересоберите, чтобы отель был поближе к историческому центру", shown=SHOWN_SOCHI,
+              assumed=SOCHI_ASSUMED, assumptions=SOCHI_CHIPS),
+    U("refine", {"prefs.center_max_m": 1500}))
+und(und_input(EMPTY, "inspiration", "Хочу в Стамбул, жить рядом с Айя-Софией. Когда там лучше всего?"),
+    U("new_trip", {"destination.name": "Стамбул", "prefs.center_max_m": 1500}, info="Когда лучше ехать в Стамбул?"))
 
 print("understand", n)
 
@@ -439,6 +445,31 @@ write("present.variants", 3, v_input(KZN, "selection", kazan_variants(), "comfor
             ["Дороже «В центре» на 16 400 ₽"], ["Выше вашего бюджета 30 000 ₽ на 11 300 ₽"])],
         "custom-1"))
 
+# a question inside the request: answered first from question.facts (code-made best months), dates kept
+KZN_Q = {"text": "Когда в Казани лучше всего?", "facts": [
+    {"kind": "best_time", "id": "kazan", "data": {
+        "place": "Казань", "best_months": [5, 6, 7, 8], "best_months_ru": "май, июнь, июль и август",
+        "months": [{"month": 5, "month_ru": "май", "air_max_c": 17.9}, {"month": 6, "month_ru": "июнь", "air_max_c": 22.4},
+                   {"month": 7, "month_ru": "июль", "air_max_c": 24.8}, {"month": 8, "month_ru": "август", "air_max_c": 23.6}],
+        "summary_ru": "Лучшее время для поездки в Казань — май, июнь, июль и август: днём около 18–25°",
+        "trip_month": 10, "trip_month_ru": "октябрь", "trip_month_is_best": False, "dates_assumed": False}},
+    {"kind": "center_distance", "items": [
+        {"id": "cheapest", "title": "Дешевле", "hotel": VOL, "distance_center_m": 3200, "distance_center_km": 3.2},
+        {"id": "custom-1", "title": "В центре", "hotel": BAU, "distance_center_m": 400, "distance_center_km": 0.4},
+        {"id": "comfort", "title": "Комфортнее", "hotel": RIV, "distance_center_m": 1800, "distance_center_km": 1.8}]}]}
+write("present.variants", 4, v_input(KZN, "selection", kazan_variants(), "comfort", assumptions=KZN_CHIPS, question=KZN_Q),
+      P("Лучшее время для поездки в Казань — май, июнь, июль и август: днём около 18–25°; октябрь в их число не "
+        "входит, но даты оставил ваши. На 30 октября – 2 ноября советую «В центре»: 24 900 ₽ с завтраками, отель в "
+        "400 м от центра. «Дешевле» — 14 700 ₽, но до центра 3,2 км. «Комфортнее» — 41 300 ₽, это на 11 300 ₽ выше "
+        "вашего бюджета 30 000 ₽. Дорогу до Казани добавлю одной кнопкой, если нужна.",
+        [it("cheapest", "Самый бюджетный: 14 700 ₽ за 3 ночи в тихом апарт-отеле с бесплатной отменой.",
+            ["До центра 3,2 км", "Без завтрака"]),
+         it("custom-1", "Центр в 400 м, завтраки и рейтинг 8.6 — гулять по Казани можно пешком.",
+            ["Дороже «Дешевле» на 10 200 ₽"], [], ["Тем, кто чутко спит: улица шумная до ночи"]),
+         it("comfort", "Пять звёзд, спа и рейтинг 9.1 — самый уютный из трёх.",
+            ["Дороже «В центре» на 16 400 ₽"], ["Выше вашего бюджета 30 000 ₽ на 11 300 ₽"])],
+        "custom-1"))
+
 # ---------------------------------------------------------------- update
 def changes(*rows):
     """changes rows as the engine sends them: a totals row carries the ready gap (engine.total_change)."""
@@ -686,6 +717,30 @@ write("present.info", 4, i_input(DXB, "cart", "Ночь с 14 на 15 декаб
     {"kind": "warnings", "items": ["Прибытие 14.12, а заезд только 15.12: ночь без отеля"]}]),
       I("Нет, ночь с 14 на 15 декабря в бронь не входит: прилёт 14 декабря в 20:29, а заезд в «Ритц» только "
         "15 декабря с 14:00. Скажите — пересоберу так, чтобы отель был с 14-го."))
+
+# a dog on a high-speed train: the ticket's ready pet line (trains + pets slice)
+SPB_DOG = brief({"destination.name": "Санкт-Петербург", "dates.start": "2026-10-31", "dates.end": "2026-11-01",
+                 "party.pets": ["dog"], "prefs.transport": "train", "constraints.add": ["pet:dog", "train:sapsan"]},
+                [("destination.id", "saint-petersburg", "inferred"), ("destination.country", "Россия", "inferred")])
+SAPSAN_RULE = ("В «Сапсане» — только в переноске до 180 см по сумме трёх сторон, на местах для пассажиров с животными; "
+               "провоз {fee} ₽; крупных собак не возят, кроме собак-проводников")
+write("present.info", 5, i_input(SPB_DOG, "selection", "А с корги в Сапсан точно пустят? Какие правила для собак?", [
+    {"kind": "variant", "id": "cheapest", "title": "Дешевле", "total_rub": 10690,
+     "legs": [{"type": "train", "from": "Ленинградский вокзал", "to": "Московский вокзал", "carrier": "РЖД «Сапсан»",
+               "dep_date": "2026-10-31", "dep_time": "06:25", "arr_date": "2026-10-31", "arr_time": "10:23",
+               "price_rub": 4070, "train_no": "751А", "car_class": "seat", "high_speed": True,
+               "pets_rule": SAPSAN_RULE.format(fee=720), "pet_fee_rub": 720},
+              {"type": "train", "from": "Московский вокзал", "to": "Ленинградский вокзал", "carrier": "РЖД «Сапсан»",
+               "dep_date": "2026-11-01", "dep_time": "09:20", "arr_date": "2026-11-01", "arr_time": "13:18",
+               "price_rub": 3790, "train_no": "752А", "car_class": "seat", "high_speed": True,
+               "pets_rule": SAPSAN_RULE.format(fee=770), "pet_fee_rub": 770}],
+     "price_pets_rub": 1490},
+    {"kind": "pet_rules", "lines": [
+        "В поездах РЖД кошек и небольших собак возят в закрытой переноске: сумма трёх её сторон — до 180 см, ставят её "
+        "на место для ручной клади, на животное оформляют перевозочный документ, не больше двух животных на один билет."]}]),
+      I("Да, если корги помещается в переноску: в «Сапсане» собак везут только в переноске до 180 см по сумме трёх "
+        "сторон, на местах для пассажиров с животными, крупных собак не берут. Провоз 720 ₽ туда и 770 ₽ обратно — "
+        "всего 1 490 ₽, они уже в цене «Дешевле»."))
 
 # ---------------------------------------------------------------- aftercare
 ORDER = {"order_id": "o_ex_sochi", "status": "paid", "title": "Сочи, 12–19 ноября, вдвоём", "total_rub": 90300,

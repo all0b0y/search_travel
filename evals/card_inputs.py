@@ -22,6 +22,9 @@ CARD_KEYS = {
     "present.aftercare": ("order", "result"),
     "present.fallback": ("message", "reason"),
 }
+# keys a card input may carry only when they apply (absent otherwise): `question` = a question asked inside a
+# search / refine message ({text, facts}, steps.search_question) that the card answers first
+OPTIONAL_KEYS = {"present.variants": ("question",), "present.update": ("question",)}
 CARDS = tuple(CARD_KEYS)
 UPSELL_KINDS = ("transfer", "early_checkin", "room_upgrade", "meal_upgrade", "flexible_fare")  # decision 8
 
@@ -87,6 +90,8 @@ UPSELL_CANDIDATE = _obj(["candidate_id", "variant_id", "kind", "label", "price_r
     "kind": {"enum": list(UPSELL_KINDS)}, "label": {"type": "string"},
     "price_rub": {"type": ["integer", "null"]}, "reason": {"type": "string", "minLength": 1}})
 
+SEARCH_QUESTION = _obj(["text", "facts"], {"text": {"type": "string", "minLength": 1},
+                                          "facts": {"type": "array", "items": {"type": "object"}}})
 _COMMON_PROPS = {
     "today": DATE,
     "stage": {"enum": list(STAGES)},
@@ -145,6 +150,8 @@ def card_input_schema(card):
         raise KeyError(f"unknown card: {card}")
     props = dict(_COMMON_PROPS)
     props.update(_CARD_PROPS[card])
+    for key in OPTIONAL_KEYS.get(card, ()):
+        props[key] = SEARCH_QUESTION
     return _obj(sorted(input_keys(card)), props)
 
 
@@ -172,6 +179,7 @@ def validate_card_input(card, payload):
     want, got = input_keys(card), set(payload)
     if want - got:
         errors.append(f"missing keys: {sorted(want - got)}")
+    got -= set(OPTIONAL_KEYS.get(card, ()))
     if got - want:
         errors.append(f"extra keys: {sorted(got - want)}")
     validator = jsonschema.Draft7Validator(card_input_schema(card))
