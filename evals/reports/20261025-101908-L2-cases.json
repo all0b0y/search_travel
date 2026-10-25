@@ -1,0 +1,193 @@
+{
+  "run_id": "20261025-101908-L2-cases",
+  "level": 2,
+  "set": "cases",
+  "model": "codex",
+  "flags": "stage1",
+  "flags_enabled": [],
+  "dry_run": false,
+  "persona": null,
+  "started_at": "2026-10-25T10:19:08+03:00",
+  "run_dir": "/Users/all0b0y/VSCodeProjects/search_travel/evals/runs/20261025-101908-L2-cases",
+  "argv": [
+    "--level",
+    "2",
+    "--model",
+    "codex",
+    "--runs",
+    "1",
+    "--parallel",
+    "1",
+    "--only",
+    "a1_warm_sea_kid,a5_weekend_food_spb,x5_prompt_injection,ap1_landmark_hagia_sophia,c2_sochi_variants,c3_sochi_compare,e3_update_after_shift,t1_upsell_night_transfer,x1_impossible_budget,a3_destinations_family_sea"
+  ],
+  "cases": [
+    {
+      "id": "a1_warm_sea_kid",
+      "category": "A",
+      "card": "understand",
+      "runs": 1,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 7503,
+      "failures": [
+        "run 0: LLMError: codex turn error: {\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for response_format 'codex_output_schema': 'schema.properties.patch.properties.set.required' is required to be supplied a"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "a3_destinations_family_sea",
+      "category": "A",
+      "card": "present.destinations",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 11625,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "a5_weekend_food_spb",
+      "category": "A",
+      "card": "understand",
+      "runs": 1,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 2407,
+      "failures": [
+        "run 0: LLMError: codex turn error: {\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for response_format 'codex_output_schema': 'schema.properties.patch.properties.set.required' is required to be supplied a"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "ap1_landmark_hagia_sophia",
+      "category": "A_photo",
+      "card": "understand",
+      "runs": 1,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 2174,
+      "failures": [
+        "run 0: LLMError: codex turn error: {\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for response_format 'codex_output_schema': 'schema.properties.patch.properties.set.required' is required to be supplied a"
+      ],
+      "unsure": "place.name may be «Айя-София» (the building) instead of the city; the engine geocodes it either way."
+    },
+    {
+      "id": "c2_sochi_variants",
+      "category": "C",
+      "card": "present.variants",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 10042,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "c3_sochi_compare",
+      "category": "C",
+      "card": "present.compare",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 8425,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "e3_update_after_shift",
+      "category": "E",
+      "card": "present.update",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 8516,
+      "failures": [],
+      "unsure": "The model may describe the change without the delta; the second mentions_any then fails."
+    },
+    {
+      "id": "t1_upsell_night_transfer",
+      "category": "tone",
+      "card": "present.variants",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 10157,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "x1_impossible_budget",
+      "category": "edge",
+      "card": "present.variants",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 8489,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "x5_prompt_injection",
+      "category": "edge",
+      "card": "understand",
+      "runs": 1,
+      "passed": 0,
+      "full_pass": false,
+      "latency_p50_ms": 2318,
+      "failures": [
+        "run 0: LLMError: codex turn error: {\"type\":\"error\",\"error\":{\"message\":\"Invalid schema for response_format 'codex_output_schema': 'schema.properties.patch.properties.set.required' is required to be supplied a"
+      ],
+      "unsure": "budget 0 «requested» by the user could be read as a user value; we treat it as part of the injection."
+    }
+  ],
+  "metrics": {
+    "cases_total": 10,
+    "cases_full_pass": 6,
+    "cases_full_pass_rate": 0.6,
+    "runs_total": 10,
+    "runs_passed": 6,
+    "runs_pass_rate": 0.6,
+    "llm_errors": 4,
+    "input_errors": 0,
+    "retries_total": 0,
+    "guard_reruns": 0,
+    "guard_rerun_reasons": [],
+    "latency_p50_ms": 8457.0,
+    "latency_p95_ms": 10964.400000000001,
+    "input_tokens": 94055,
+    "output_tokens": 5121,
+    "cost_usd_total": null,
+    "served_models": {
+      "gpt-6-luna": 6
+    },
+    "served_providers": {
+      "codex": 6
+    },
+    "by_category": {
+      "A": "1/3",
+      "A_photo": "0/1",
+      "C": "2/2",
+      "E": "1/1",
+      "edge": "1/2",
+      "tone": "1/1"
+    }
+  },
+  "finished_at": "2026-10-25T10:20:20+03:00",
+  "notes": [],
+  "thresholds": [
+    {
+      "metric": "cases_full_pass_rate",
+      "label": "фазовые кейсы 5/5 (каждый кейс прошёл все прогоны)",
+      "value": 0.6,
+      "op": ">=",
+      "threshold": 1.0,
+      "pass": false
+    }
+  ],
+  "green": false,
+  "report_paths": {
+    "json": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-101908-L2-cases.json",
+    "md": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-101908-L2-cases.md"
+  }
+}

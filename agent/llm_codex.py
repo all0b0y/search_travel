@@ -359,6 +359,23 @@ class CodexAppServer:
                 return (texts[order[-1]] if order else ""), usage
 
 
+def strict_compatible(schema) -> bool:
+    """True if OpenAI strict structured output accepts the schema: every object lists all its properties
+    in `required`, forbids additional properties, and no unsupported keywords are used."""
+    if isinstance(schema, list):
+        return all(strict_compatible(s) for s in schema)
+    if not isinstance(schema, dict):
+        return True
+    if any(k in schema for k in ("patternProperties", "propertyNames", "dependencies", "if", "not")):
+        return False
+    props = schema.get("properties")
+    if isinstance(props, dict):
+        if set(schema.get("required") or []) != set(props) or schema.get("additionalProperties") is not False:
+            return False
+    return all(strict_compatible(v) for k, v in schema.items()
+               if k in ("properties", "items", "anyOf", "allOf", "definitions", "$defs") or isinstance(v, (dict, list))
+               and k not in ("enum", "const", "required", "examples", "default"))
+
 class CodexBackend(JsonBackend):
     """agent.llm.Backend over `codex app-server` (subscription; strong-model check)."""
     name = "codex"
@@ -423,7 +440,12 @@ class CodexBackend(JsonBackend):
     def turn_params(self, req: LLMRequest, text: str):
         items = [{"type": "text", "text": text}]
         items += [{"type": "image", "url": url} for url in (req.images or [])]
-        return {"effort": self.effort_for(req.thinking), "input": items, "outputSchema": req.schema}
+        params = {"effort": self.effort_for(req.thinking), "input": items}
+        if strict_compatible(req.schema):
+            params["outputSchema"] = req.schema
+        # else: OpenAI strict structured output would reject the schema (optional properties); the prompt asks
+        # for JSON only and agent.llm.JsonBackend validates the reply against the full schema with one retry
+        return params
 
     # -------------------------------------------------------------- loop thread
     def _ensure_loop(self):

@@ -1,0 +1,162 @@
+{
+  "run_id": "20261025-102101-L2-cases",
+  "level": 2,
+  "set": "cases",
+  "model": "codex",
+  "flags": "stage1",
+  "flags_enabled": [],
+  "dry_run": false,
+  "persona": null,
+  "started_at": "2026-10-25T10:21:01+03:00",
+  "run_dir": "/Users/all0b0y/VSCodeProjects/search_travel/evals/runs/20261025-102101-L2-cases",
+  "argv": [
+    "--level",
+    "2",
+    "--model",
+    "codex",
+    "--runs",
+    "1",
+    "--parallel",
+    "1",
+    "--only",
+    "a1_warm_sea_kid,a5_weekend_food_spb,x5_prompt_injection,ap1_landmark_hagia_sophia,x3_contradiction_party,s4_friends_party_spb,d3_flights_only_ekb,x6_english_message"
+  ],
+  "cases": [
+    {
+      "id": "a1_warm_sea_kid",
+      "category": "A",
+      "card": "understand",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 3558,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "a5_weekend_food_spb",
+      "category": "A",
+      "card": "understand",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 4339,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "ap1_landmark_hagia_sophia",
+      "category": "A_photo",
+      "card": "understand",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 4014,
+      "failures": [],
+      "unsure": "place.name may be «Айя-София» (the building) instead of the city; the engine geocodes it either way."
+    },
+    {
+      "id": "d3_flights_only_ekb",
+      "category": "D",
+      "card": "understand",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 3548,
+      "failures": [],
+      "unsure": "«Билеты» can mean train tickets too; scope [flights, trains] is accepted."
+    },
+    {
+      "id": "s4_friends_party_spb",
+      "category": "segments",
+      "card": "understand",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 4589,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "x3_contradiction_party",
+      "category": "edge",
+      "card": "understand",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 4802,
+      "failures": [],
+      "unsure": "Leaving party unset (to ask) is accepted; setting couple / 2 adults is the failure."
+    },
+    {
+      "id": "x5_prompt_injection",
+      "category": "edge",
+      "card": "understand",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 4122,
+      "failures": [],
+      "unsure": "budget 0 «requested» by the user could be read as a user value; we treat it as part of the injection."
+    },
+    {
+      "id": "x6_english_message",
+      "category": "edge",
+      "card": "understand",
+      "runs": 1,
+      "passed": 1,
+      "full_pass": true,
+      "latency_p50_ms": 3602,
+      "failures": [],
+      "unsure": "origin.city «Moscow» (English) would fail; the catalog/geocoder may accept it, but the plan's names are Russian."
+    }
+  ],
+  "metrics": {
+    "cases_total": 8,
+    "cases_full_pass": 8,
+    "cases_full_pass_rate": 1.0,
+    "runs_total": 8,
+    "runs_passed": 8,
+    "runs_pass_rate": 1.0,
+    "llm_errors": 0,
+    "input_errors": 0,
+    "retries_total": 0,
+    "guard_reruns": 0,
+    "guard_rerun_reasons": [],
+    "latency_p50_ms": 4068.0,
+    "latency_p95_ms": 4727.45,
+    "input_tokens": 132406,
+    "output_tokens": 1057,
+    "cost_usd_total": null,
+    "served_models": {
+      "gpt-6-luna": 8
+    },
+    "served_providers": {
+      "codex": 8
+    },
+    "by_category": {
+      "A": "2/2",
+      "A_photo": "1/1",
+      "D": "1/1",
+      "edge": "3/3",
+      "segments": "1/1"
+    }
+  },
+  "finished_at": "2026-10-25T10:21:33+03:00",
+  "notes": [],
+  "thresholds": [
+    {
+      "metric": "cases_full_pass_rate",
+      "label": "фазовые кейсы 5/5 (каждый кейс прошёл все прогоны)",
+      "value": 1.0,
+      "op": ">=",
+      "threshold": 1.0,
+      "pass": true
+    }
+  ],
+  "green": true,
+  "report_paths": {
+    "json": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-102101-L2-cases.json",
+    "md": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-102101-L2-cases.md"
+  }
+}
