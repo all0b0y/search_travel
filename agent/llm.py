@@ -16,6 +16,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional, Protocol, runtime_checkable
 
+import httpx  # noqa: F401 - imported eagerly: the OpenAI SDK imports it lazily, which races under threads
 import jsonschema
 
 from .env import get_openrouter_key
@@ -176,6 +177,8 @@ def is_transient(exc) -> bool:
     """Network blips, timeouts, 429 and 5xx: worth another try. Auth, other 4xx and our own errors are not."""
     if type(exc).__name__ in TRANSIENT_ERRORS:
         return True
+    if isinstance(exc, (AttributeError, ImportError)) and "partially initialized module" in str(exc):
+        return True   # a lazy import racing in another thread: it is complete a moment later
     status = getattr(exc, "status_code", None) or getattr(getattr(exc, "response", None), "status_code", None)
     return isinstance(status, int) and (status == 429 or status >= 500)
 
@@ -295,6 +298,10 @@ class OpenRouterBackend(JsonBackend):
             from openai import OpenAI
             client = OpenAI(api_key=key, base_url=base_url, timeout=timeout_s, max_retries=0,
                             http_client=http_client)
+            try:
+                client.chat.completions   # resolve the SDK's lazy resources here, not in parallel worker threads
+            except Exception:
+                pass
         self.client = client
 
     def _clock(self):

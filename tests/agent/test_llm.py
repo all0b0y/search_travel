@@ -251,3 +251,9 @@ def test_unknown_enum_items_are_dropped_not_fatal():
         "landscape": {"type": "array", "items": {"enum": ["beach", "mountains"]}}}}}}
     data, errors = validate_output('{"traits": {"landscape": ["beach", "coast"]}}', schema)
     assert errors == [] and data == {"traits": {"landscape": ["beach"]}}
+
+
+def test_partial_import_race_is_transient():
+    from agent.llm import is_transient
+    assert is_transient(AttributeError("partially initialized module 'httpx' has no attribute 'TimeoutException'"))
+    assert not is_transient(AttributeError("'NoneType' object has no attribute 'x'"))
