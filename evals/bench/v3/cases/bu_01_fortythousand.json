@@ -1,0 +1,57 @@
+{
+  "id": "bu_01_fortythousand",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Я из Самары, куда-нибудь проветриться в ноябре. На всю поездку тыщ сорок, больше не наскребу.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/origin.city",
+      "value": "Самара",
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/budget_rub.max",
+      "value": 40000,
+      "casefold": true
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}

@@ -1,0 +1,59 @@
+{
+  "id": "bu_22_wiggleroom",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Из Новосибирска хочу в отпуск с 10 апреля 2027, но дату выезда можно двигать на три дня в любую сторону.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.start",
+      "value": "2027-04-10",
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.flexible_days",
+      "value": 3,
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/origin.city",
+      "value": "Новосибирск",
+      "casefold": true
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}

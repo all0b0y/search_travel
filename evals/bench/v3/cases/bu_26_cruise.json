@@ -1,0 +1,49 @@
+{
+  "id": "bu_26_cruise",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Забронируйте морской круиз с посадкой в Рейкьявике. Перелёт и гостиницу не ищите, нужен именно круиз.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "out_of_scope"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/prefs.transport"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/dates.start"
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}

@@ -1,0 +1,105 @@
+{
+  "id": "bu_29_junenotmay",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Екатеринбург",
+        "iata": [
+          "SVX"
+        ]
+      },
+      "destination": {
+        "id": "derbent",
+        "name": "Дербент",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2027-05-10",
+        "end": "2027-05-15",
+        "month": 5,
+        "window": null,
+        "nights": 5,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [
+      {
+        "label": "1",
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле"
+      },
+      {
+        "label": "2",
+        "kind": "variant",
+        "id": "fastest",
+        "title": "Быстрее"
+      },
+      {
+        "label": "3",
+        "kind": "variant",
+        "id": "comfort",
+        "title": "Комфортнее"
+      }
+    ],
+    "pending_questions": [],
+    "history": [],
+    "message": "Май отпал, смотрим июнь. Место и число ночей те же, конкретные числа пока подберём.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "refine"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.month",
+      "value": 6,
+      "casefold": true
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/prefs.meals"
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}

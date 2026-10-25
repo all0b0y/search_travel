@@ -1,0 +1,3806 @@
+{
+ "Москва": {
+  "Анталья": {
+   "flight": "direct",
+   "train": false
+  },
+  "Аланья": {
+   "flight": "direct",
+   "train": false
+  },
+  "Кемер": {
+   "flight": "direct",
+   "train": false
+  },
+  "Сиде": {
+   "flight": "direct",
+   "train": false
+  },
+  "Белек": {
+   "flight": "direct",
+   "train": false
+  },
+  "Бодрум": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Мармарис": {
+   "flight": "direct",
+   "train": false
+  },
+  "Фетхие": {
+   "flight": "direct",
+   "train": false
+  },
+  "Стамбул": {
+   "flight": "direct",
+   "train": false
+  },
+  "Каппадокия (Гёреме)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хургада": {
+   "flight": "direct",
+   "train": false
+  },
+  "Шарм-эш-Шейх": {
+   "flight": "direct",
+   "train": false
+  },
+  "Марса-Алам": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Каир": {
+   "flight": "direct",
+   "train": false
+  },
+  "Дубай": {
+   "flight": "direct",
+   "train": false
+  },
+  "Абу-Даби": {
+   "flight": "direct",
+   "train": false
+  },
+  "Рас-эль-Хайма": {
+   "flight": "direct",
+   "train": false
+  },
+  "Пхукет": {
+   "flight": "direct",
+   "train": false
+  },
+  "Паттайя": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бангкок": {
+   "flight": "direct",
+   "train": false
+  },
+  "Самуи": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Краби (Ао Нанг)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Чиангмай": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Нячанг": {
+   "flight": "direct",
+   "train": false
+  },
+  "Фукуок": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дананг": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ханой": {
+   "flight": "direct",
+   "train": false
+  },
+  "Хошимин": {
+   "flight": "direct",
+   "train": false
+  },
+  "Хиккадува": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бентота": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Мальдивы (Мале)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Бали": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Санья (Хайнань)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Пекин": {
+   "flight": "direct",
+   "train": false
+  },
+  "Шанхай": {
+   "flight": "direct",
+   "train": false
+  },
+  "Лимасол": {
+   "flight": "direct",
+   "train": false
+  },
+  "Ларнака": {
+   "flight": "direct",
+   "train": false
+  },
+  "Айя-Напа": {
+   "flight": "direct",
+   "train": false
+  },
+  "Пафос": {
+   "flight": "direct",
+   "train": false
+  },
+  "Крит (Ираклион)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Родос": {
+   "flight": "direct",
+   "train": false
+  },
+  "Афины": {
+   "flight": "direct",
+   "train": false
+  },
+  "Санторини (Фира)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Барселона": {
+   "flight": "direct",
+   "train": false
+  },
+  "Мадрид": {
+   "flight": "direct",
+   "train": false
+  },
+  "Тенерифе": {
+   "flight": "direct",
+   "train": false
+  },
+  "Майорка (Пальма)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Льорет-де-Мар": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Рим": {
+   "flight": "direct",
+   "train": false
+  },
+  "Милан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Венеция": {
+   "flight": "direct",
+   "train": false
+  },
+  "Флоренция": {
+   "flight": "direct",
+   "train": false
+  },
+  "Римини": {
+   "flight": "direct",
+   "train": false
+  },
+  "Лиссабон": {
+   "flight": "direct",
+   "train": false
+  },
+  "Париж": {
+   "flight": "direct",
+   "train": false
+  },
+  "Ницца": {
+   "flight": "direct",
+   "train": false
+  },
+  "Сусс": {
+   "flight": "direct",
+   "train": false
+  },
+  "Хаммамет": {
+   "flight": "direct",
+   "train": false
+  },
+  "Джерба": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гоа": {
+   "flight": "direct",
+   "train": false
+  },
+  "Маврикий": {
+   "flight": "direct",
+   "train": false
+  },
+  "Сейшелы (Маэ)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Занзибар": {
+   "flight": null,
+   "train": false
+  },
+  "Варадеро": {
+   "flight": "direct",
+   "train": false
+  },
+  "Гавана": {
+   "flight": "direct",
+   "train": false
+  },
+  "Пунта-Кана": {
+   "flight": "direct",
+   "train": false
+  },
+  "Канкун": {
+   "flight": "direct",
+   "train": false
+  },
+  "Будва": {
+   "flight": "direct",
+   "train": false
+  },
+  "Котор": {
+   "flight": "direct",
+   "train": false
+  },
+  "Белград": {
+   "flight": "direct",
+   "train": false
+  },
+  "Дубровник": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Прага": {
+   "flight": "direct",
+   "train": false
+  },
+  "Карловы Вары": {
+   "flight": "direct",
+   "train": false
+  },
+  "Будапешт": {
+   "flight": "direct",
+   "train": false
+  },
+  "Вена": {
+   "flight": "direct",
+   "train": false
+  },
+  "Берлин": {
+   "flight": null,
+   "train": false
+  },
+  "Амстердам": {
+   "flight": "direct",
+   "train": false
+  },
+  "Лондон": {
+   "flight": "direct",
+   "train": false
+  },
+  "Тбилиси": {
+   "flight": "direct",
+   "train": false
+  },
+  "Батуми": {
+   "flight": "direct",
+   "train": false
+  },
+  "Кутаиси": {
+   "flight": "direct",
+   "train": false
+  },
+  "Гудаури": {
+   "flight": "direct",
+   "train": false
+  },
+  "Казбеги (Степанцминда)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Ереван": {
+   "flight": "direct",
+   "train": false
+  },
+  "Дилижан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Севан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Баку": {
+   "flight": "direct",
+   "train": false
+  },
+  "Габала": {
+   "flight": "direct",
+   "train": false
+  },
+  "Самарканд": {
+   "flight": "direct",
+   "train": false
+  },
+  "Ташкент": {
+   "flight": "direct",
+   "train": false
+  },
+  "Бухара": {
+   "flight": "direct",
+   "train": false
+  },
+  "Хива": {
+   "flight": "direct",
+   "train": false
+  },
+  "Алматы": {
+   "flight": "direct",
+   "train": false
+  },
+  "Астана": {
+   "flight": null,
+   "train": false
+  },
+  "Иссык-Куль (Чолпон-Ата)": {
+   "flight": null,
+   "train": false
+  },
+  "Минск": {
+   "flight": "direct",
+   "train": false
+  },
+  "Токио": {
+   "flight": "direct",
+   "train": false
+  },
+  "Киото": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сеул": {
+   "flight": "direct",
+   "train": false
+  },
+  "Куала-Лумпур": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лангкави": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сингапур": {
+   "flight": "direct",
+   "train": false
+  },
+  "Доха": {
+   "flight": "direct",
+   "train": false
+  },
+  "Маскат": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Салала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Акаба": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Марракеш": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Нью-Йорк": {
+   "flight": "direct",
+   "train": false
+  },
+  "Сочи": {
+   "flight": "direct",
+   "train": true
+  },
+  "Адлер (Сириус)": {
+   "flight": "direct",
+   "train": true
+  },
+  "Красная Поляна": {
+   "flight": "direct",
+   "train": true
+  },
+  "Анапа": {
+   "flight": null,
+   "train": true
+  },
+  "Геленджик": {
+   "flight": null,
+   "train": true
+  },
+  "Лазаревское": {
+   "flight": "direct",
+   "train": true
+  },
+  "Туапсе": {
+   "flight": "direct",
+   "train": true
+  },
+  "Калининград": {
+   "flight": "direct",
+   "train": true
+  },
+  "Зеленоградск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Светлогорск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Владивосток": {
+   "flight": "direct",
+   "train": false
+  },
+  "Дербент": {
+   "flight": "direct",
+   "train": true
+  },
+  "Махачкала": {
+   "flight": "direct",
+   "train": true
+  },
+  "Санкт-Петербург": {
+   "flight": "direct",
+   "train": true
+  },
+  "Казань": {
+   "flight": "direct",
+   "train": true
+  },
+  "Нижний Новгород": {
+   "flight": "direct",
+   "train": true
+  },
+  "Ярославль": {
+   "flight": null,
+   "train": true
+  },
+  "Суздаль": {
+   "flight": null,
+   "train": false
+  },
+  "Владимир": {
+   "flight": null,
+   "train": true
+  },
+  "Кострома": {
+   "flight": null,
+   "train": true
+  },
+  "Плёс": {
+   "flight": null,
+   "train": false
+  },
+  "Великий Новгород": {
+   "flight": "direct",
+   "train": true
+  },
+  "Псков": {
+   "flight": null,
+   "train": true
+  },
+  "Коломна": {
+   "flight": null,
+   "train": true
+  },
+  "Тула": {
+   "flight": null,
+   "train": true
+  },
+  "Екатеринбург": {
+   "flight": "direct",
+   "train": true
+  },
+  "Новосибирск": {
+   "flight": "direct",
+   "train": false
+  },
+  "Самара": {
+   "flight": "direct",
+   "train": true
+  },
+  "Волгоград": {
+   "flight": "direct",
+   "train": true
+  },
+  "Ростов-на-Дону": {
+   "flight": null,
+   "train": true
+  },
+  "Краснодар": {
+   "flight": null,
+   "train": true
+  },
+  "Иркутск": {
+   "flight": "direct",
+   "train": false
+  },
+  "Карелия (Петрозаводск)": {
+   "flight": "direct",
+   "train": true
+  },
+  "Мурманск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Алтай (Чемал)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Белокуриха": {
+   "flight": "direct",
+   "train": false
+  },
+  "Байкал (Листвянка)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Байкал (Ольхон, Хужир)": {
+   "flight": null,
+   "train": false
+  },
+  "Камчатка (Петропавловск-Камчатский)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Териберка": {
+   "flight": "direct",
+   "train": false
+  },
+  "Хибины (Кировск)": {
+   "flight": "direct",
+   "train": true
+  },
+  "Сортавала": {
+   "flight": null,
+   "train": true
+  },
+  "Кисловодск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Пятигорск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Приэльбрусье (Терскол)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Домбай": {
+   "flight": "direct",
+   "train": false
+  },
+  "Архыз": {
+   "flight": "direct",
+   "train": false
+  },
+  "Шерегеш": {
+   "flight": "direct",
+   "train": false
+  },
+  "Абрау-Дюрсо": {
+   "flight": null,
+   "train": false
+  },
+  "Селигер (Осташков)": {
+   "flight": null,
+   "train": true
+  }
+ },
+ "Санкт-Петербург": {
+  "Анталья": {
+   "flight": "direct",
+   "train": false
+  },
+  "Аланья": {
+   "flight": "direct",
+   "train": false
+  },
+  "Кемер": {
+   "flight": "direct",
+   "train": false
+  },
+  "Сиде": {
+   "flight": "direct",
+   "train": false
+  },
+  "Белек": {
+   "flight": "direct",
+   "train": false
+  },
+  "Бодрум": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Мармарис": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Фетхие": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Стамбул": {
+   "flight": "direct",
+   "train": false
+  },
+  "Каппадокия (Гёреме)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хургада": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Шарм-эш-Шейх": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Марса-Алам": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Каир": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дубай": {
+   "flight": "direct",
+   "train": false
+  },
+  "Абу-Даби": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Рас-эль-Хайма": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пхукет": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Паттайя": {
+   "flight": null,
+   "train": false
+  },
+  "Бангкок": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Самуи": {
+   "flight": null,
+   "train": false
+  },
+  "Краби (Ао Нанг)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Чиангмай": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Нячанг": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Фукуок": {
+   "flight": null,
+   "train": false
+  },
+  "Дананг": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ханой": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хошимин": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хиккадува": {
+   "flight": null,
+   "train": false
+  },
+  "Бентота": {
+   "flight": null,
+   "train": false
+  },
+  "Мальдивы (Мале)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бали": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Санья (Хайнань)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пекин": {
+   "flight": "direct",
+   "train": false
+  },
+  "Шанхай": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лимасол": {
+   "flight": "direct",
+   "train": false
+  },
+  "Ларнака": {
+   "flight": "direct",
+   "train": false
+  },
+  "Айя-Напа": {
+   "flight": "direct",
+   "train": false
+  },
+  "Пафос": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Крит (Ираклион)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Родос": {
+   "flight": "direct",
+   "train": false
+  },
+  "Афины": {
+   "flight": "direct",
+   "train": false
+  },
+  "Санторини (Фира)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Барселона": {
+   "flight": "direct",
+   "train": false
+  },
+  "Мадрид": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Тенерифе": {
+   "flight": "direct",
+   "train": false
+  },
+  "Майорка (Пальма)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Льорет-де-Мар": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Рим": {
+   "flight": "direct",
+   "train": false
+  },
+  "Милан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Венеция": {
+   "flight": "direct",
+   "train": false
+  },
+  "Флоренция": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Римини": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лиссабон": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Париж": {
+   "flight": "direct",
+   "train": false
+  },
+  "Ницца": {
+   "flight": "direct",
+   "train": false
+  },
+  "Сусс": {
+   "flight": "direct",
+   "train": false
+  },
+  "Хаммамет": {
+   "flight": "direct",
+   "train": false
+  },
+  "Джерба": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гоа": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Маврикий": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сейшелы (Маэ)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Занзибар": {
+   "flight": null,
+   "train": false
+  },
+  "Варадеро": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гавана": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пунта-Кана": {
+   "flight": "direct",
+   "train": false
+  },
+  "Канкун": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Будва": {
+   "flight": "direct",
+   "train": false
+  },
+  "Котор": {
+   "flight": "direct",
+   "train": false
+  },
+  "Белград": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дубровник": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Прага": {
+   "flight": "direct",
+   "train": false
+  },
+  "Карловы Вары": {
+   "flight": "direct",
+   "train": false
+  },
+  "Будапешт": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Вена": {
+   "flight": "direct",
+   "train": false
+  },
+  "Берлин": {
+   "flight": null,
+   "train": false
+  },
+  "Амстердам": {
+   "flight": "direct",
+   "train": false
+  },
+  "Лондон": {
+   "flight": "direct",
+   "train": false
+  },
+  "Тбилиси": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Батуми": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Кутаиси": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гудаури": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Казбеги (Степанцминда)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ереван": {
+   "flight": "direct",
+   "train": false
+  },
+  "Дилижан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Севан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Баку": {
+   "flight": "direct",
+   "train": false
+  },
+  "Габала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Самарканд": {
+   "flight": "direct",
+   "train": false
+  },
+  "Ташкент": {
+   "flight": "direct",
+   "train": false
+  },
+  "Бухара": {
+   "flight": "direct",
+   "train": false
+  },
+  "Хива": {
+   "flight": "direct",
+   "train": false
+  },
+  "Алматы": {
+   "flight": "direct",
+   "train": false
+  },
+  "Астана": {
+   "flight": null,
+   "train": false
+  },
+  "Иссык-Куль (Чолпон-Ата)": {
+   "flight": null,
+   "train": false
+  },
+  "Минск": {
+   "flight": "direct",
+   "train": false
+  },
+  "Токио": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Киото": {
+   "flight": null,
+   "train": false
+  },
+  "Сеул": {
+   "flight": "direct",
+   "train": false
+  },
+  "Куала-Лумпур": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лангкави": {
+   "flight": null,
+   "train": false
+  },
+  "Сингапур": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Доха": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Маскат": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Салала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Акаба": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Марракеш": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Нью-Йорк": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сочи": {
+   "flight": "direct",
+   "train": true
+  },
+  "Адлер (Сириус)": {
+   "flight": "direct",
+   "train": true
+  },
+  "Красная Поляна": {
+   "flight": "direct",
+   "train": true
+  },
+  "Анапа": {
+   "flight": null,
+   "train": true
+  },
+  "Геленджик": {
+   "flight": null,
+   "train": true
+  },
+  "Лазаревское": {
+   "flight": "direct",
+   "train": true
+  },
+  "Туапсе": {
+   "flight": "direct",
+   "train": true
+  },
+  "Калининград": {
+   "flight": "direct",
+   "train": true
+  },
+  "Зеленоградск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Светлогорск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Владивосток": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дербент": {
+   "flight": "direct",
+   "train": true
+  },
+  "Махачкала": {
+   "flight": "direct",
+   "train": true
+  },
+  "Москва": {
+   "flight": "direct",
+   "train": true
+  },
+  "Казань": {
+   "flight": "direct",
+   "train": true
+  },
+  "Нижний Новгород": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Ярославль": {
+   "flight": "direct",
+   "train": true
+  },
+  "Суздаль": {
+   "flight": "direct",
+   "train": false
+  },
+  "Владимир": {
+   "flight": null,
+   "train": true
+  },
+  "Кострома": {
+   "flight": "direct",
+   "train": true
+  },
+  "Плёс": {
+   "flight": "direct",
+   "train": false
+  },
+  "Великий Новгород": {
+   "flight": null,
+   "train": true
+  },
+  "Псков": {
+   "flight": null,
+   "train": true
+  },
+  "Коломна": {
+   "flight": "direct",
+   "train": true
+  },
+  "Тула": {
+   "flight": "direct",
+   "train": true
+  },
+  "Екатеринбург": {
+   "flight": "direct",
+   "train": true
+  },
+  "Новосибирск": {
+   "flight": "direct",
+   "train": false
+  },
+  "Самара": {
+   "flight": "direct",
+   "train": true
+  },
+  "Волгоград": {
+   "flight": "direct",
+   "train": true
+  },
+  "Ростов-на-Дону": {
+   "flight": null,
+   "train": true
+  },
+  "Краснодар": {
+   "flight": null,
+   "train": true
+  },
+  "Иркутск": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Карелия (Петрозаводск)": {
+   "flight": null,
+   "train": true
+  },
+  "Мурманск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Алтай (Чемал)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Белокуриха": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Байкал (Листвянка)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Байкал (Ольхон, Хужир)": {
+   "flight": null,
+   "train": false
+  },
+  "Камчатка (Петропавловск-Камчатский)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Териберка": {
+   "flight": "direct",
+   "train": false
+  },
+  "Хибины (Кировск)": {
+   "flight": "direct",
+   "train": true
+  },
+  "Сортавала": {
+   "flight": null,
+   "train": true
+  },
+  "Кисловодск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Пятигорск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Приэльбрусье (Терскол)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Домбай": {
+   "flight": "direct",
+   "train": false
+  },
+  "Архыз": {
+   "flight": "direct",
+   "train": false
+  },
+  "Шерегеш": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Абрау-Дюрсо": {
+   "flight": null,
+   "train": false
+  },
+  "Селигер (Осташков)": {
+   "flight": null,
+   "train": true
+  }
+ },
+ "Екатеринбург": {
+  "Анталья": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Аланья": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Кемер": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сиде": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Белек": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бодрум": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Мармарис": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Фетхие": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Стамбул": {
+   "flight": "direct",
+   "train": false
+  },
+  "Каппадокия (Гёреме)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хургада": {
+   "flight": "direct",
+   "train": false
+  },
+  "Шарм-эш-Шейх": {
+   "flight": "direct",
+   "train": false
+  },
+  "Марса-Алам": {
+   "flight": null,
+   "train": false
+  },
+  "Каир": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дубай": {
+   "flight": "direct",
+   "train": false
+  },
+  "Абу-Даби": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Рас-эль-Хайма": {
+   "flight": "direct",
+   "train": false
+  },
+  "Пхукет": {
+   "flight": "direct",
+   "train": false
+  },
+  "Паттайя": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бангкок": {
+   "flight": "direct",
+   "train": false
+  },
+  "Самуи": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Краби (Ао Нанг)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Чиангмай": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Нячанг": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Фукуок": {
+   "flight": null,
+   "train": false
+  },
+  "Дананг": {
+   "flight": null,
+   "train": false
+  },
+  "Ханой": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хошимин": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хиккадува": {
+   "flight": null,
+   "train": false
+  },
+  "Бентота": {
+   "flight": null,
+   "train": false
+  },
+  "Мальдивы (Мале)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бали": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Санья (Хайнань)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пекин": {
+   "flight": "direct",
+   "train": false
+  },
+  "Шанхай": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лимасол": {
+   "flight": "direct",
+   "train": false
+  },
+  "Ларнака": {
+   "flight": "direct",
+   "train": false
+  },
+  "Айя-Напа": {
+   "flight": "direct",
+   "train": false
+  },
+  "Пафос": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Крит (Ираклион)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Родос": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Афины": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Санторини (Фира)": {
+   "flight": null,
+   "train": false
+  },
+  "Барселона": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Мадрид": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Тенерифе": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Майорка (Пальма)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Льорет-де-Мар": {
+   "flight": null,
+   "train": false
+  },
+  "Рим": {
+   "flight": "direct",
+   "train": false
+  },
+  "Милан": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Венеция": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Флоренция": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Римини": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лиссабон": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Париж": {
+   "flight": "direct",
+   "train": false
+  },
+  "Ницца": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сусс": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хаммамет": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Джерба": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гоа": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Маврикий": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сейшелы (Маэ)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Занзибар": {
+   "flight": null,
+   "train": false
+  },
+  "Варадеро": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гавана": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пунта-Кана": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Канкун": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Будва": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Котор": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Белград": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дубровник": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Прага": {
+   "flight": "direct",
+   "train": false
+  },
+  "Карловы Вары": {
+   "flight": "direct",
+   "train": false
+  },
+  "Будапешт": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Вена": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Берлин": {
+   "flight": null,
+   "train": false
+  },
+  "Амстердам": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лондон": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Тбилиси": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Батуми": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Кутаиси": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гудаури": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Казбеги (Степанцминда)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ереван": {
+   "flight": "direct",
+   "train": false
+  },
+  "Дилижан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Севан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Баку": {
+   "flight": "direct",
+   "train": false
+  },
+  "Габала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Самарканд": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ташкент": {
+   "flight": "direct",
+   "train": false
+  },
+  "Бухара": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хива": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Алматы": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Астана": {
+   "flight": null,
+   "train": false
+  },
+  "Иссык-Куль (Чолпон-Ата)": {
+   "flight": null,
+   "train": false
+  },
+  "Минск": {
+   "flight": "direct",
+   "train": false
+  },
+  "Токио": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Киото": {
+   "flight": null,
+   "train": false
+  },
+  "Сеул": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Куала-Лумпур": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лангкави": {
+   "flight": null,
+   "train": false
+  },
+  "Сингапур": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Доха": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Маскат": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Салала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Акаба": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Марракеш": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Нью-Йорк": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сочи": {
+   "flight": "direct",
+   "train": true
+  },
+  "Адлер (Сириус)": {
+   "flight": "direct",
+   "train": true
+  },
+  "Красная Поляна": {
+   "flight": "direct",
+   "train": true
+  },
+  "Анапа": {
+   "flight": null,
+   "train": true
+  },
+  "Геленджик": {
+   "flight": null,
+   "train": true
+  },
+  "Лазаревское": {
+   "flight": "direct",
+   "train": true
+  },
+  "Туапсе": {
+   "flight": "direct",
+   "train": true
+  },
+  "Калининград": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Зеленоградск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Светлогорск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Владивосток": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дербент": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Махачкала": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Москва": {
+   "flight": "direct",
+   "train": true
+  },
+  "Санкт-Петербург": {
+   "flight": "direct",
+   "train": true
+  },
+  "Казань": {
+   "flight": "direct",
+   "train": true
+  },
+  "Нижний Новгород": {
+   "flight": "direct",
+   "train": true
+  },
+  "Ярославль": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Суздаль": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Владимир": {
+   "flight": null,
+   "train": true
+  },
+  "Кострома": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Плёс": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Великий Новгород": {
+   "flight": "direct",
+   "train": true
+  },
+  "Псков": {
+   "flight": null,
+   "train": true
+  },
+  "Коломна": {
+   "flight": "direct",
+   "train": true
+  },
+  "Тула": {
+   "flight": "direct",
+   "train": true
+  },
+  "Новосибирск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Самара": {
+   "flight": "direct",
+   "train": true
+  },
+  "Волгоград": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Ростов-на-Дону": {
+   "flight": null,
+   "train": true
+  },
+  "Краснодар": {
+   "flight": null,
+   "train": true
+  },
+  "Иркутск": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Карелия (Петрозаводск)": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Мурманск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Алтай (Чемал)": {
+   "flight": null,
+   "train": false
+  },
+  "Белокуриха": {
+   "flight": null,
+   "train": false
+  },
+  "Байкал (Листвянка)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Байкал (Ольхон, Хужир)": {
+   "flight": null,
+   "train": false
+  },
+  "Камчатка (Петропавловск-Камчатский)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Териберка": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хибины (Кировск)": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Сортавала": {
+   "flight": null,
+   "train": true
+  },
+  "Кисловодск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Пятигорск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Приэльбрусье (Терскол)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Домбай": {
+   "flight": "direct",
+   "train": false
+  },
+  "Архыз": {
+   "flight": "direct",
+   "train": false
+  },
+  "Шерегеш": {
+   "flight": null,
+   "train": false
+  },
+  "Абрау-Дюрсо": {
+   "flight": null,
+   "train": false
+  },
+  "Селигер (Осташков)": {
+   "flight": null,
+   "train": true
+  }
+ },
+ "Казань": {
+  "Анталья": {
+   "flight": "direct",
+   "train": false
+  },
+  "Аланья": {
+   "flight": "direct",
+   "train": false
+  },
+  "Кемер": {
+   "flight": "direct",
+   "train": false
+  },
+  "Сиде": {
+   "flight": "direct",
+   "train": false
+  },
+  "Белек": {
+   "flight": "direct",
+   "train": false
+  },
+  "Бодрум": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Мармарис": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Фетхие": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Стамбул": {
+   "flight": "direct",
+   "train": false
+  },
+  "Каппадокия (Гёреме)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хургада": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Шарм-эш-Шейх": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Марса-Алам": {
+   "flight": null,
+   "train": false
+  },
+  "Каир": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дубай": {
+   "flight": "direct",
+   "train": false
+  },
+  "Абу-Даби": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Рас-эль-Хайма": {
+   "flight": "direct",
+   "train": false
+  },
+  "Пхукет": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Паттайя": {
+   "flight": null,
+   "train": false
+  },
+  "Бангкок": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Самуи": {
+   "flight": null,
+   "train": false
+  },
+  "Краби (Ао Нанг)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Чиангмай": {
+   "flight": null,
+   "train": false
+  },
+  "Нячанг": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Фукуок": {
+   "flight": null,
+   "train": false
+  },
+  "Дананг": {
+   "flight": null,
+   "train": false
+  },
+  "Ханой": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хошимин": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хиккадува": {
+   "flight": null,
+   "train": false
+  },
+  "Бентота": {
+   "flight": null,
+   "train": false
+  },
+  "Мальдивы (Мале)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бали": {
+   "flight": null,
+   "train": false
+  },
+  "Санья (Хайнань)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пекин": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Шанхай": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лимасол": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ларнака": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Айя-Напа": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пафос": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Крит (Ираклион)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Родос": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Афины": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Санторини (Фира)": {
+   "flight": null,
+   "train": false
+  },
+  "Барселона": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Мадрид": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Тенерифе": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Майорка (Пальма)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Льорет-де-Мар": {
+   "flight": null,
+   "train": false
+  },
+  "Рим": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Милан": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Венеция": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Флоренция": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Римини": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лиссабон": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Париж": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ницца": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сусс": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хаммамет": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Джерба": {
+   "flight": null,
+   "train": false
+  },
+  "Гоа": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Маврикий": {
+   "flight": null,
+   "train": false
+  },
+  "Сейшелы (Маэ)": {
+   "flight": null,
+   "train": false
+  },
+  "Занзибар": {
+   "flight": null,
+   "train": false
+  },
+  "Варадеро": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гавана": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пунта-Кана": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Канкун": {
+   "flight": null,
+   "train": false
+  },
+  "Будва": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Котор": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Белград": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дубровник": {
+   "flight": null,
+   "train": false
+  },
+  "Прага": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Карловы Вары": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Будапешт": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Вена": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Берлин": {
+   "flight": null,
+   "train": false
+  },
+  "Амстердам": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лондон": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Тбилиси": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Батуми": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Кутаиси": {
+   "flight": null,
+   "train": false
+  },
+  "Гудаури": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Казбеги (Степанцминда)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ереван": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дилижан": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Севан": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Баку": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Габала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Самарканд": {
+   "flight": "direct",
+   "train": false
+  },
+  "Ташкент": {
+   "flight": "direct",
+   "train": false
+  },
+  "Бухара": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хива": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Алматы": {
+   "flight": "direct",
+   "train": false
+  },
+  "Астана": {
+   "flight": null,
+   "train": false
+  },
+  "Иссык-Куль (Чолпон-Ата)": {
+   "flight": null,
+   "train": false
+  },
+  "Минск": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Токио": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Киото": {
+   "flight": null,
+   "train": false
+  },
+  "Сеул": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Куала-Лумпур": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лангкави": {
+   "flight": null,
+   "train": false
+  },
+  "Сингапур": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Доха": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Маскат": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Салала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Акаба": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Марракеш": {
+   "flight": null,
+   "train": false
+  },
+  "Нью-Йорк": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сочи": {
+   "flight": "direct",
+   "train": true
+  },
+  "Адлер (Сириус)": {
+   "flight": "direct",
+   "train": true
+  },
+  "Красная Поляна": {
+   "flight": "direct",
+   "train": true
+  },
+  "Анапа": {
+   "flight": null,
+   "train": true
+  },
+  "Геленджик": {
+   "flight": null,
+   "train": true
+  },
+  "Лазаревское": {
+   "flight": "direct",
+   "train": true
+  },
+  "Туапсе": {
+   "flight": "direct",
+   "train": true
+  },
+  "Калининград": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Зеленоградск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Светлогорск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Владивосток": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дербент": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Махачкала": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Москва": {
+   "flight": "direct",
+   "train": true
+  },
+  "Санкт-Петербург": {
+   "flight": "direct",
+   "train": true
+  },
+  "Нижний Новгород": {
+   "flight": null,
+   "train": true
+  },
+  "Ярославль": {
+   "flight": null,
+   "train": true
+  },
+  "Суздаль": {
+   "flight": null,
+   "train": false
+  },
+  "Владимир": {
+   "flight": null,
+   "train": true
+  },
+  "Кострома": {
+   "flight": null,
+   "train": true
+  },
+  "Плёс": {
+   "flight": null,
+   "train": false
+  },
+  "Великий Новгород": {
+   "flight": "direct",
+   "train": true
+  },
+  "Псков": {
+   "flight": null,
+   "train": true
+  },
+  "Коломна": {
+   "flight": "direct",
+   "train": true
+  },
+  "Тула": {
+   "flight": "direct",
+   "train": true
+  },
+  "Екатеринбург": {
+   "flight": "direct",
+   "train": true
+  },
+  "Новосибирск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Самара": {
+   "flight": null,
+   "train": true
+  },
+  "Волгоград": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Ростов-на-Дону": {
+   "flight": null,
+   "train": true
+  },
+  "Краснодар": {
+   "flight": null,
+   "train": true
+  },
+  "Иркутск": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Карелия (Петрозаводск)": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Мурманск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Алтай (Чемал)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Белокуриха": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Байкал (Листвянка)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Байкал (Ольхон, Хужир)": {
+   "flight": null,
+   "train": false
+  },
+  "Камчатка (Петропавловск-Камчатский)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Териберка": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хибины (Кировск)": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Сортавала": {
+   "flight": null,
+   "train": true
+  },
+  "Кисловодск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Пятигорск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Приэльбрусье (Терскол)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Домбай": {
+   "flight": "direct",
+   "train": false
+  },
+  "Архыз": {
+   "flight": "direct",
+   "train": false
+  },
+  "Шерегеш": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Абрау-Дюрсо": {
+   "flight": null,
+   "train": false
+  },
+  "Селигер (Осташков)": {
+   "flight": null,
+   "train": true
+  }
+ },
+ "Новосибирск": {
+  "Анталья": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Аланья": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Кемер": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сиде": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Белек": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бодрум": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Мармарис": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Фетхие": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Стамбул": {
+   "flight": "direct",
+   "train": false
+  },
+  "Каппадокия (Гёреме)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хургада": {
+   "flight": "direct",
+   "train": false
+  },
+  "Шарм-эш-Шейх": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Марса-Алам": {
+   "flight": null,
+   "train": false
+  },
+  "Каир": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дубай": {
+   "flight": "direct",
+   "train": false
+  },
+  "Абу-Даби": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Рас-эль-Хайма": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пхукет": {
+   "flight": "direct",
+   "train": false
+  },
+  "Паттайя": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бангкок": {
+   "flight": "direct",
+   "train": false
+  },
+  "Самуи": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Краби (Ао Нанг)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Чиангмай": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Нячанг": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Фукуок": {
+   "flight": null,
+   "train": false
+  },
+  "Дананг": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ханой": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хошимин": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хиккадува": {
+   "flight": null,
+   "train": false
+  },
+  "Бентота": {
+   "flight": null,
+   "train": false
+  },
+  "Мальдивы (Мале)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бали": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Санья (Хайнань)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пекин": {
+   "flight": "direct",
+   "train": false
+  },
+  "Шанхай": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лимасол": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ларнака": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Айя-Напа": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пафос": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Крит (Ираклион)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Родос": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Афины": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Санторини (Фира)": {
+   "flight": null,
+   "train": false
+  },
+  "Барселона": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Мадрид": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Тенерифе": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Майорка (Пальма)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Льорет-де-Мар": {
+   "flight": null,
+   "train": false
+  },
+  "Рим": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Милан": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Венеция": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Флоренция": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Римини": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лиссабон": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Париж": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ницца": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сусс": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хаммамет": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Джерба": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гоа": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Маврикий": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сейшелы (Маэ)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Занзибар": {
+   "flight": null,
+   "train": false
+  },
+  "Варадеро": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гавана": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пунта-Кана": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Канкун": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Будва": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Котор": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Белград": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дубровник": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Прага": {
+   "flight": "direct",
+   "train": false
+  },
+  "Карловы Вары": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Будапешт": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Вена": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Берлин": {
+   "flight": null,
+   "train": false
+  },
+  "Амстердам": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лондон": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Тбилиси": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Батуми": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Кутаиси": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гудаури": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Казбеги (Степанцминда)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ереван": {
+   "flight": "direct",
+   "train": false
+  },
+  "Дилижан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Севан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Баку": {
+   "flight": "direct",
+   "train": false
+  },
+  "Габала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Самарканд": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ташкент": {
+   "flight": "direct",
+   "train": false
+  },
+  "Бухара": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хива": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Алматы": {
+   "flight": "direct",
+   "train": false
+  },
+  "Астана": {
+   "flight": null,
+   "train": false
+  },
+  "Иссык-Куль (Чолпон-Ата)": {
+   "flight": null,
+   "train": false
+  },
+  "Минск": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Токио": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Киото": {
+   "flight": null,
+   "train": false
+  },
+  "Сеул": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Куала-Лумпур": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лангкави": {
+   "flight": null,
+   "train": false
+  },
+  "Сингапур": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Доха": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Маскат": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Салала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Акаба": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Марракеш": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Нью-Йорк": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сочи": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Адлер (Сириус)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Красная Поляна": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Анапа": {
+   "flight": null,
+   "train": false
+  },
+  "Геленджик": {
+   "flight": null,
+   "train": false
+  },
+  "Лазаревское": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Туапсе": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Калининград": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Зеленоградск": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Светлогорск": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Владивосток": {
+   "flight": "direct",
+   "train": false
+  },
+  "Дербент": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Махачкала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Москва": {
+   "flight": "direct",
+   "train": false
+  },
+  "Санкт-Петербург": {
+   "flight": "direct",
+   "train": false
+  },
+  "Казань": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Нижний Новгород": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Ярославль": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Суздаль": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Владимир": {
+   "flight": null,
+   "train": false
+  },
+  "Кострома": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Плёс": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Великий Новгород": {
+   "flight": "direct",
+   "train": false
+  },
+  "Псков": {
+   "flight": null,
+   "train": false
+  },
+  "Коломна": {
+   "flight": "direct",
+   "train": false
+  },
+  "Тула": {
+   "flight": "direct",
+   "train": false
+  },
+  "Екатеринбург": {
+   "flight": "direct",
+   "train": true
+  },
+  "Самара": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Волгоград": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ростов-на-Дону": {
+   "flight": null,
+   "train": false
+  },
+  "Краснодар": {
+   "flight": null,
+   "train": false
+  },
+  "Иркутск": {
+   "flight": "direct",
+   "train": true
+  },
+  "Карелия (Петрозаводск)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Мурманск": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Алтай (Чемал)": {
+   "flight": null,
+   "train": false
+  },
+  "Белокуриха": {
+   "flight": null,
+   "train": false
+  },
+  "Байкал (Листвянка)": {
+   "flight": "direct",
+   "train": false
+  },
+  "Байкал (Ольхон, Хужир)": {
+   "flight": null,
+   "train": false
+  },
+  "Камчатка (Петропавловск-Камчатский)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Териберка": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хибины (Кировск)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сортавала": {
+   "flight": null,
+   "train": false
+  },
+  "Кисловодск": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пятигорск": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Приэльбрусье (Терскол)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Домбай": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Архыз": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Шерегеш": {
+   "flight": null,
+   "train": false
+  },
+  "Абрау-Дюрсо": {
+   "flight": null,
+   "train": false
+  },
+  "Селигер (Осташков)": {
+   "flight": null,
+   "train": false
+  }
+ },
+ "Самара": {
+  "Анталья": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Аланья": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Кемер": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сиде": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Белек": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бодрум": {
+   "flight": null,
+   "train": false
+  },
+  "Мармарис": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Фетхие": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Стамбул": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Каппадокия (Гёреме)": {
+   "flight": null,
+   "train": false
+  },
+  "Хургада": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Шарм-эш-Шейх": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Марса-Алам": {
+   "flight": null,
+   "train": false
+  },
+  "Каир": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дубай": {
+   "flight": "direct",
+   "train": false
+  },
+  "Абу-Даби": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Рас-эль-Хайма": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пхукет": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Паттайя": {
+   "flight": null,
+   "train": false
+  },
+  "Бангкок": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Самуи": {
+   "flight": null,
+   "train": false
+  },
+  "Краби (Ао Нанг)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Чиангмай": {
+   "flight": null,
+   "train": false
+  },
+  "Нячанг": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Фукуок": {
+   "flight": null,
+   "train": false
+  },
+  "Дананг": {
+   "flight": null,
+   "train": false
+  },
+  "Ханой": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хошимин": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хиккадува": {
+   "flight": null,
+   "train": false
+  },
+  "Бентота": {
+   "flight": null,
+   "train": false
+  },
+  "Мальдивы (Мале)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Бали": {
+   "flight": null,
+   "train": false
+  },
+  "Санья (Хайнань)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пекин": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Шанхай": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лимасол": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ларнака": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Айя-Напа": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пафос": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Крит (Ираклион)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Родос": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Афины": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Санторини (Фира)": {
+   "flight": null,
+   "train": false
+  },
+  "Барселона": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Мадрид": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Тенерифе": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Майорка (Пальма)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Льорет-де-Мар": {
+   "flight": null,
+   "train": false
+  },
+  "Рим": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Милан": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Венеция": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Флоренция": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Римини": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лиссабон": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Париж": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ницца": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сусс": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хаммамет": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Джерба": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гоа": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Маврикий": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сейшелы (Маэ)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Занзибар": {
+   "flight": null,
+   "train": false
+  },
+  "Варадеро": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гавана": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Пунта-Кана": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Канкун": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Будва": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Котор": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Белград": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дубровник": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Прага": {
+   "flight": "direct",
+   "train": false
+  },
+  "Карловы Вары": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Будапешт": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Вена": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Берлин": {
+   "flight": null,
+   "train": false
+  },
+  "Амстердам": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лондон": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Тбилиси": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Батуми": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Кутаиси": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Гудаури": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Казбеги (Степанцминда)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ереван": {
+   "flight": "direct",
+   "train": false
+  },
+  "Дилижан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Севан": {
+   "flight": "direct",
+   "train": false
+  },
+  "Баку": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Габала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Самарканд": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Ташкент": {
+   "flight": "direct",
+   "train": false
+  },
+  "Бухара": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хива": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Алматы": {
+   "flight": "direct",
+   "train": false
+  },
+  "Астана": {
+   "flight": null,
+   "train": false
+  },
+  "Иссык-Куль (Чолпон-Ата)": {
+   "flight": null,
+   "train": false
+  },
+  "Минск": {
+   "flight": "direct",
+   "train": false
+  },
+  "Токио": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Киото": {
+   "flight": null,
+   "train": false
+  },
+  "Сеул": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Куала-Лумпур": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Лангкави": {
+   "flight": null,
+   "train": false
+  },
+  "Сингапур": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Доха": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Маскат": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Салала": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Акаба": {
+   "flight": null,
+   "train": false
+  },
+  "Марракеш": {
+   "flight": null,
+   "train": false
+  },
+  "Нью-Йорк": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Сочи": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Адлер (Сириус)": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Красная Поляна": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Анапа": {
+   "flight": null,
+   "train": true
+  },
+  "Геленджик": {
+   "flight": null,
+   "train": true
+  },
+  "Лазаревское": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Туапсе": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Калининград": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Зеленоградск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Светлогорск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Владивосток": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Дербент": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Махачкала": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Москва": {
+   "flight": "direct",
+   "train": true
+  },
+  "Санкт-Петербург": {
+   "flight": "direct",
+   "train": true
+  },
+  "Казань": {
+   "flight": null,
+   "train": true
+  },
+  "Нижний Новгород": {
+   "flight": "direct",
+   "train": true
+  },
+  "Ярославль": {
+   "flight": null,
+   "train": true
+  },
+  "Суздаль": {
+   "flight": null,
+   "train": false
+  },
+  "Владимир": {
+   "flight": null,
+   "train": true
+  },
+  "Кострома": {
+   "flight": null,
+   "train": true
+  },
+  "Плёс": {
+   "flight": null,
+   "train": false
+  },
+  "Великий Новгород": {
+   "flight": "direct",
+   "train": true
+  },
+  "Псков": {
+   "flight": null,
+   "train": true
+  },
+  "Коломна": {
+   "flight": "direct",
+   "train": true
+  },
+  "Тула": {
+   "flight": "direct",
+   "train": true
+  },
+  "Екатеринбург": {
+   "flight": "direct",
+   "train": true
+  },
+  "Новосибирск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Волгоград": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Ростов-на-Дону": {
+   "flight": null,
+   "train": true
+  },
+  "Краснодар": {
+   "flight": null,
+   "train": true
+  },
+  "Иркутск": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Карелия (Петрозаводск)": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Мурманск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Алтай (Чемал)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Белокуриха": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Байкал (Листвянка)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Байкал (Ольхон, Хужир)": {
+   "flight": null,
+   "train": false
+  },
+  "Камчатка (Петропавловск-Камчатский)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Териберка": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Хибины (Кировск)": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Сортавала": {
+   "flight": null,
+   "train": true
+  },
+  "Кисловодск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Пятигорск": {
+   "flight": "connecting",
+   "train": true
+  },
+  "Приэльбрусье (Терскол)": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Домбай": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Архыз": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Шерегеш": {
+   "flight": "connecting",
+   "train": false
+  },
+  "Абрау-Дюрсо": {
+   "flight": null,
+   "train": false
+  },
+  "Селигер (Осташков)": {
+   "flight": null,
+   "train": true
+  }
+ }
+}

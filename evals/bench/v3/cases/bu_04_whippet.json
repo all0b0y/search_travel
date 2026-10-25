@@ -1,0 +1,63 @@
+{
+  "id": "bu_04_whippet",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Екатеринбург, хочу в отпуск с уиппетом, это собака, 12 кило. Нужна гостиница, куда с ним можно, и дорога туда-обратно.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.pets",
+      "value": [
+        "dog"
+      ],
+      "casefold": true
+    },
+    {
+      "type": "predicate",
+      "name": "contains",
+      "args": {
+        "path": "/patch/set/constraints.add",
+        "values": [
+          "pet:dog"
+        ]
+      }
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/party.children_ages"
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}
