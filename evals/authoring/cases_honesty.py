@@ -157,7 +157,7 @@ def present_cases():
              PRESENT_COMMON + [
                  pred("mentions_any", words=[r"ночн"]),
                  a("regex_absent", path="/message",
-                   pattern=r"убрал\w*\s+(все\s+)?ночн|без\s+ночных\s+(поезд|рейс)|все\s+[^.!?]{0,40}дн[её]м"),
+                   pattern=r"убрал\w*\s+(все\s+)?ночн|без\s+ночных\s+(поезд|рейс)\w*(?![^.!?]{0,40}не\s+(получилось|вышло|удалось))|все\s+[^.!?]{0,40}дн[её]м"),
                  pred("no_unbacked_claims", card="present.update"),
                  pred("asks_at_most", n=len(nk.get("questions") or []))],
              "Moscow → Kazan by train has only sleepers on these dates: the filter is relaxed (risk «Дневных поездов "

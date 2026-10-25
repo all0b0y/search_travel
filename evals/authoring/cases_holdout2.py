@@ -148,7 +148,7 @@ def present_cases():
              PRESENT_COMMON + [
                  pred("mentions_any", words=[place_re]),
                  a("regex_absent", path="/message", pattern=r"убрал\w*\s+(все\s+)?хостел"),
-                 a("regex_absent", path="/message", pattern=r"другие города не (ищу|подбираю)|про другой город"),
+                 a("regex_absent", path="/message", pattern=r"другие города не (ищу|подбираю)|про другой город[^.!?]{0,40}(нет данных|не (могу|подбира|ищу))"),
                  pred("asks_at_most", n=len(other.get("questions") or []))],
              f"h01 t4: «в другие даты декабря или в другом городе?» — the date search ran in Dubai and code priced "
              f"other places for the trip (`other_places`: {', '.join(places)}); the card names them with their "

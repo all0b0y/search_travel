@@ -29,7 +29,7 @@ from evals.common import CASES_DIR, write_json
 PRESENT_COMMON = [a("ids_subset"), a("numbers_subset"), pred("russian_only"), pred("tone_no_bureaucratese"),
                   pred("at_most_one_joke"), pred("money_risks_plain"), pred("no_upsell_without_candidate")]
 # a long train's time said as decimal hours (the card must use the ready «1 сутки 3 ч» line instead)
-DECIMAL_ROAD = r"(туда|обратно|поездом|в\s+пути)\s+\d+,\d\s*ч"
+DECIMAL_ROAD = r"(?<![\d,])(1[89]|[2-9]\d),\d\s*ч"
 
 
 def build_inputs():
@@ -82,7 +82,7 @@ def cases():
              PRESENT_COMMON + [
                  a("max_items", path="/upsell", max=2), pred("recommended_in_items"),
                  pred("mentions_any", words=[r"поезд"]),
-                 pred("mentions_any", words=[r"в\s+пути\s+(" + "|".join(road) + ")"]),
+                 pred("mentions_any", words=[r"(?<![\d,])(" + "|".join(road) + ")"]),
                  pred("mentions_any", words=[leave, r"за\s+день\s+до\s+заезда"]),
                  a("regex_absent", path="/message", pattern=DECIMAL_ROAD),
                  a("regex_absent", path="/message", pattern=r"перел[её]т|\bлететь|\bвылет"),

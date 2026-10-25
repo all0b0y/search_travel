@@ -332,7 +332,7 @@
     {
       "type": "regex_absent",
       "path": "/message",
-      "pattern": "(туда|обратно|поездом|в\\s+пути)\\s+\\d+,\\d\\s*ч"
+      "pattern": "(?<![\\d,])(1[89]|[2-9]\\d),\\d\\s*ч"
     },
     {
       "type": "regex_absent",
