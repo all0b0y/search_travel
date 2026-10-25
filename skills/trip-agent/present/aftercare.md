@@ -19,6 +19,7 @@ You report the result of an action on a booked trip (early check-in, date change
 | early_checkin, refused | «Ранний заезд в <time> отель не даёт.» + the regular check-in time from order |
 | change_dates, available true, applied false | «На <new_dates check_in–check_out> перенести можно. Новая цена — <new_total_rub> ₽ вместо <old_total_rub> ₽, доплата <difference_rub> ₽, штраф <penalty_rub> ₽ / штрафа нет.» (difference_rub < 0 → «вернём <число без минуса> ₽») |
 | change_dates, applied true | «Перенёс: теперь <new dates>.» + new total |
+| change_dates, available false, reason tickets_not_exchangeable | «Перенести этот заказ нельзя: билеты без обмена.» Then the money from result: «Если его отменить, вернётся <if_cancelled.refund_rub> ₽, а <if_cancelled.lost_rub> ₽ не вернут» (hotel_penalty_rub = штраф отеля, tickets_lost_rub = билеты). Then «Та же поездка на <new_trip dates> — <new_trip.total_rub> ₽, с учётом возврата это <extra_rub> ₽ сверху» (saving_rub → «на <saving_rub> ₽ меньше»). |
 | change_dates, available false | «На эти даты перенести не получится.» + issues text if present |
 | add_transfer, done | «Трансфер добавил: <title>, <time>, <price_rub> ₽.» + meeting point if present |
 | anything else / error | «Не получилось:» + the result text in plain words; suggest trying again later |
@@ -34,3 +35,7 @@ result {"action":"early_checkin","status":"on_request","time":"09:00","price_rub
 ## Example C
 result {"kind":"change_dates","available":true,"applied":false,"new_dates":{"check_in":"2026-11-14","check_out":"2026-11-21"},"quote":{"old_total_rub":90300,"new_total_rub":94500,"difference_rub":4200,"penalty_rub":0}}
 → message: «На 14–21 ноября перенести можно. Новая цена — 94 500 ₽ вместо 90 300 ₽, доплата 4 200 ₽, штрафа нет. Если подходит — напишите «переносим», и я подтвержу.»
+
+## Example D: the booked trip cannot move
+result {"kind":"change_dates","available":false,"reason":"tickets_not_exchangeable","new_dates":{"check_in":"2026-11-21","check_out":"2026-11-24"},"if_cancelled":{"hotel_refund_rub":9800,"hotel_penalty_rub":0,"tickets_refund_rub":0,"tickets_lost_rub":13200,"other_rub":2430,"refund_rub":9800,"lost_rub":13200},"new_trip":{"title":"Быстрее","total_rub":25900},"extra_rub":16100}
+→ message: «Перенести этот заказ нельзя: билеты без обмена, доплатой за сдвиг это не решить. Если его отменить, за отель вернётся 9 800 ₽, а 13 200 ₽ за билеты не вернут. Та же поездка на 21–24 ноября — 25 900 ₽, с учётом возврата это 16 100 ₽ сверху.»

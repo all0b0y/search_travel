@@ -15,7 +15,7 @@ CARD_KEYS = {
     "understand": ("shown", "pending_questions", "history", "message", "has_image"),
     "present.destinations": ("items", "questions", "image", "insight"),
     "present.variants": ("items", "recommended_hint", "questions", "upsell_candidates"),
-    "present.update": ("items", "recommended_hint", "questions", "upsell_candidates", "changes", "rebuilt"),
+    "present.update": ("items", "recommended_hint", "questions", "upsell_candidates", "changes", "rebuilt", "request"),
     "present.compare": ("items", "dimensions"),
     "present.info": ("question", "facts"),
     "present.aftercare": ("order", "result"),
@@ -53,11 +53,18 @@ HOTEL = _obj(["name", "stars", "rating", "district"], {
     "district": _obj(["labels", "counts"], {
         "labels": {"type": "array", "items": {"enum": list(DISTRICT_LABELS)}},
         "counts": {"type": "object", "additionalProperties": {"type": "integer"}}})})
+# totals: door_to_door_hours = both ways together; out_hours / back_hours = one way each (null without that
+# direction). diff_rub / diff_word: the gap to the recommended item (0 / null for it), over_budget_rub: above
+# brief.budget_rub.max (null when within or no budget) — ready numbers, the card never subtracts.
 VARIANT_ITEM = _obj(["id", "label", "title", "totals", "steps", "hotel", "facts", "sacrifices", "risks", "not_for",
-                     "fit"], {
+                     "fit", "diff_rub", "diff_word", "over_budget_rub"], {
     "id": {"type": "string", "pattern": "^(cheapest|fastest|comfort|custom-[0-9]+)$"},
     "label": {"type": "string"}, "title": {"type": "string"},
-    "totals": _obj(["rub", "door_to_door_hours"], {"rub": {"type": "integer"}, "door_to_door_hours": {"type": "number"}}),
+    "totals": _obj(["rub", "door_to_door_hours", "out_hours", "back_hours"], {
+        "rub": {"type": "integer"}, "door_to_door_hours": {"type": "number"},
+        "out_hours": NUM_OR_NULL, "back_hours": NUM_OR_NULL}),
+    "diff_rub": {"type": "integer", "minimum": 0}, "diff_word": {"enum": ["дешевле", "дороже", None]},
+    "over_budget_rub": {"type": ["integer", "null"], "minimum": 1},
     "steps": {"type": "array", "items": STEP, "minItems": 1},
     "hotel": {"oneOf": [{"type": "null"}, HOTEL]},
     "facts": {"type": "object"},
@@ -125,7 +132,8 @@ _CARD_PROPS = {
 CHANGE_FIELD = {"type": "string", "pattern": r"^([a-z_]+(\.[a-z_]+)?|totals\.(cheapest|fastest|comfort|custom-[0-9]+)\.rub)$"}
 _CARD_PROPS["present.update"] = dict(_CARD_PROPS["present.variants"], changes={
     "type": "array", "items": _obj(["field", "before", "after"], {"field": CHANGE_FIELD})},
-    rebuilt={"type": "array", "items": {"enum": ["flights", "trains", "stay", "transfers"]}})
+    rebuilt={"type": "array", "items": {"enum": ["flights", "trains", "stay", "transfers"]}},
+    request={"type": "string"})   # the user's words (a wish that is no filter is named from them)
 
 
 def card_input_schema(card):

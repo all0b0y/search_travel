@@ -411,11 +411,18 @@ def no_blocking_issues(state):
     return _res(True)
 
 
+# action kind (as in post_purchase / scenario musts) -> order event kinds the mock logs for it
+ACTION_EVENTS = {"change_dates": ("dates_changed", "change_dates"), "add_transfer": ("transfer_added", "add_transfer"),
+                 "early_checkin": ("early_checkin",)}
+
+
 def order_action_done(state, kind):
-    """An after-purchase action of `kind` reached the order (an order event whose kind starts with it)."""
+    """An after-purchase action of `kind` reached the order (an order event of that action: the mock logs
+    change_dates as dates_changed, add_transfer as transfer_added, early_checkin as early_checkin_<status>)."""
+    prefixes = ACTION_EVENTS.get(kind, (kind,))
     for r in state.responses:
         for ev in ((r.get("order") or {}).get("events") or []):
-            if str(ev.get("kind", "")).startswith(kind):
+            if str(ev.get("kind", "")).startswith(prefixes):
                 return _res(True)
     return _res(False, f"no order event {kind}*")
 

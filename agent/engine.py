@@ -185,6 +185,7 @@ class Engine:
                   image=request.get("image"), action=request.get("action"))
         ctx.profile = self.profiles.get(session.profile_id)
         ctx.old_totals = {v.id: v.totals.rub for v in session.variants}
+        ctx.__dict__["sig_before"] = variant_signature(session.variants)
         ctx.trace["stage_path"].append(session.stage)
         ctx.trace["flags"] = self.flags.as_dict()
         try:
@@ -234,6 +235,7 @@ class Engine:
                 route_kw = {"action": routed["type"]}
             else:
                 self._understand(ctx)
+                self._fix_intent(ctx)
                 route_kw = {"intent": ctx.intent}
                 self._apply_season(ctx)
         self._validate_patch(ctx)
@@ -266,6 +268,8 @@ class Engine:
             STEP_REGISTRY[name](ctx)
             ctx.trace["steps"].append(name)
             ctx.trace["timings_ms"][name] = round((time.perf_counter() - t0) * 1000, 1)
+        if ctx.present == "present.update" and not ctx.stop:
+            self._check_noop_rebuild(ctx)
         if ctx.present and not ctx.message and not ctx.stop:
             self._present(ctx)
         if ctx.present in STAGE_OF_CARD and not ctx.error and (ctx.variants or ctx.destination_items):
@@ -333,6 +337,51 @@ class Engine:
         ctx.post_purchase = out.get("post_purchase")
         ctx.trace["understand"] = {"intent": ctx.intent, "patch": ctx.patch, "refs": ctx.refs}
 
+    def _fix_intent(self, ctx):
+        """route_intent (code rules on the understand intent by stage); a paid order is read from the mock."""
+        s = ctx.session
+        paid = False
+        if ctx.intent == "post_purchase" and s.order_id:
+            from .steps import tool_safe
+            order = tool_safe(ctx, "order_get", {"order_id": s.order_id}, cache=False)
+            # the mock is down: keep post_purchase, its step answers honestly
+            paid = order is None or order.get("status") in ("paid", "changed")
+        intent, patch, note = route_intent(ctx.intent, s.stage, ctx.text, ctx.patch, ctx.refs, paid,
+                                           ctx.post_purchase)
+        if note is None:
+            return
+        ctx.intent, ctx.patch = intent, patch
+        if intent != "post_purchase":
+            ctx.post_purchase = None
+        ctx.trace["notes"].append(note)
+        ctx.trace["understand"]["routed_intent"] = intent
+
+    # ------------------------------------------------------------ an empty rebuild (s17)
+    def _check_noop_rebuild(self, ctx):
+        """A rebuild request that changed nothing (no brief path, the same variants): the update card says once,
+        plainly, what cannot be guaranteed; the same request again right after gets a short code answer with
+        the closest real option instead of the identical card (never «ничего не менял» twice in a row)."""
+        s = ctx.session
+        if ctx.action is not None or ctx.changed or ctx.shift_days or not ctx.variants:
+            return
+        sig = variant_signature(ctx.variants)
+        if sig != ctx.__dict__.get("sig_before"):
+            return
+        prev = s.results.get(NOOP_REBUILD_KEY)
+        prev = prev.data if prev is not None and isinstance(prev.data, dict) else {}
+        repeat = prev.get("turn") == s.turn - 1 and prev.get("sig") == sig
+        store_result(s, CachedResult(key=NOOP_REBUILD_KEY, kind="noop_rebuild", params={}, fetched_at=s.clock(),
+                                     data={"turn": s.turn, "sig": sig}))
+        ctx.trace["notes"].append("rebuild: nothing changed" + (" again -> code answer" if repeat else ""))
+        if not repeat:
+            return
+        best = s.variant(card_hint(s.brief, ctx.variants)) or ctx.variants[0]
+        P.record_shown(s, "variant", [(v.id, v.title or P.VARIANT_TITLES.get(v.id, v.id)) for v in ctx.variants])
+        title = best.title or P.VARIANT_TITLES.get(best.id, best.id)
+        ctx.message = (f"Пересобрал ещё раз — подборка та же: вариантов, где это гарантировано, у меня нет. "
+                       f"Ближе всего — «{title}», {P.fmt_rub(best.totals.rub)} за всё. Можно взять его или "
+                       f"поменять даты, бюджет или район — напишите, что можно сдвинуть.")
+
     # ------------------------------------------------------------ 3. patch validation
     def _validate_patch(self, ctx):
         issues = self.hooks.run("after_understand", ctx, kinds=("validate",))
@@ -355,6 +404,16 @@ class Engine:
             return
         k = sets["dates.shift_days"]
         s = ctx.session
+        if ctx.intent == "post_purchase" and s.order_id and isinstance(k, int):
+            # a move of the booked trip: shifted from the booked dates by post_purchase, never from the
+            # variants on screen (after a rebook they are already the shifted ones — s16)
+            sets.pop("dates.shift_days")
+            pp = dict(ctx.post_purchase or {"kind": "change_dates"})
+            pp["params"] = {**dict(pp.get("params") or {}), "shift_days": k}
+            pp["kind"] = pp.get("kind") or "change_dates"
+            ctx.post_purchase = pp
+            ctx.trace["notes"].append(f"shift_days {k} -> post_purchase params (from the booked dates)")
+            return
         shown = [v for v in (s.variant(i.id) for i in s.shown.variants) if v is not None] or list(s.variants)
         span = None
         for v in shown:
@@ -512,7 +571,7 @@ class Engine:
         if card in ("present.variants", "present.update"):
             labels = P.record_shown(s, "variant", [(v.id, v.title or P.VARIANT_TITLES.get(v.id, v.id))
                                                    for v in ctx.variants])
-            items = [P.variant_item(v, labels[v.id], self._district_counts(ctx, v)) for v in ctx.variants]
+            hint, items = self._items(ctx, labels)
             cap = int(self.skill.rules.get("max_upsell", 2)) * 2
             changes = rebuilt = None
             if card == "present.update":
@@ -521,12 +580,12 @@ class Engine:
                           for vid in list(ctx.old_totals) + [i for i in new_totals if i not in ctx.old_totals]
                           if ctx.old_totals.get(vid) != new_totals.get(vid)]
                 changes, rebuilt = ctx.changes + totals, ctx.rebuilt
-            return P.variants_input(s, items, recommended_hint(ctx.variants), ctx.questions, ctx.upsell[:cap],
-                                    ctx.chips, changes, rebuilt)
+            return P.variants_input(s, items, hint, ctx.questions, ctx.upsell[:cap],
+                                    ctx.chips, changes, rebuilt, request=ctx.text if ctx.action is None else "")
         if card == "present.compare":
             labels = {i.id: i.label for i in s.shown.variants}
-            items = [P.variant_item(v, labels.get(v.id, str(n + 1)), self._district_counts(ctx, v))
-                     for n, v in enumerate(ctx.variants)]
+            labels = {v.id: labels.get(v.id, str(n + 1)) for n, v in enumerate(ctx.variants)}
+            _, items = self._items(ctx, labels)
             return P.compare_input(s, items, P.compare_dimensions(s.brief), ctx.chips)
         if card == "present.info":
             return P.info_input(s, ctx.info_question, ctx.info_facts, ctx.chips)
@@ -535,6 +594,15 @@ class Engine:
             return P.aftercare_input(s, order_summary(ctx.order) if ctx.order else None, ctx.aftercare_result,
                                      ctx.chips)
         return P.fallback_input(s, ctx.text or "", ctx.fallback_reason, ctx.chips)
+
+    def _items(self, ctx, labels):
+        """(card hint, variant items) with the ready price gaps: diff_rub from the card's recommended item,
+        over_budget_rub above brief.budget_rub.max."""
+        hint = card_hint(ctx.session.brief, ctx.variants)
+        base = next((v.totals.rub for v in ctx.variants if v.id == hint), None)
+        budget = budget_max(ctx.session.brief)
+        return hint, [P.variant_item(v, labels[v.id], self._district_counts(ctx, v), base_rub=base, budget_max=budget)
+                      for v in ctx.variants]
 
     def _district_counts(self, ctx, variant):
         if variant.hotel is None:
@@ -576,6 +644,66 @@ class Engine:
 
 
 # ---------------------------------------------------------------- default hooks and guards
+
+def budget_max(brief):
+    return ((brief.values().get("budget_rub") or {}).get("max")) or None
+
+
+def card_hint(brief, variants):
+    """The variant a card recommends: the fit hint, budget-consistent (variants.md rule 4)."""
+    return P.card_hint(variants, recommended_hint(variants), budget_max(brief))
+
+
+# «пересоберите», «соберите заново», «другой отель / номер»: a rebuild request, whatever intent understand saw
+REBUILD_RE = re.compile(r"пересоб[её]р|пересобра|пересборк|(?:собер|подбер)\w*\s+(?:заново|по-другому|друг)|"
+                        r"(?:друг|ин)(?:ой|ую|ие|ое|ого)\s+(?:отел|номер|вариант|гостиниц|жил)", re.I)
+PRE_PAY_STAGES = ("selection", "cart", "checkout")
+
+
+def is_rebuild_request(text):
+    return bool(REBUILD_RE.search(text or ""))
+
+
+def route_intent(intent, stage, text, patch, refs=(), paid=False, post_purchase=None):
+    """Code fixes of the understand intent by stage, before routing -> (intent, patch, note | None).
+
+    - post_purchase without a paid order is never «сначала оплатим»: a change of the trip is a refine
+      (dates from its params go to the patch); a bare question about the stay is info;
+    - in selection / cart / checkout a rebuild request («пересоберите…») or a new condition (a non-empty patch
+      without a variant ref) is a refine that rebuilds the variants, even when understand said
+      choose / cart / checkout / info (s02, s04, s17).
+    """
+    sets = dict((patch or {}).get("set") or {})
+    unsets = list((patch or {}).get("unset") or [])
+    rebuild = is_rebuild_request(text)
+    if intent == "post_purchase" and not paid:
+        pp = post_purchase or {}
+        params = dict(pp.get("params") or {})
+        if pp.get("kind") == "change_dates":
+            nd = params.get("new_dates") if isinstance(params.get("new_dates"), dict) else params
+            start, end = nd.get("check_in") or nd.get("start"), nd.get("check_out") or nd.get("end")
+            if start:
+                sets.setdefault("dates.start", start)
+                if end:
+                    sets.setdefault("dates.end", end)
+            elif isinstance(params.get("shift_days"), int):
+                sets.setdefault("dates.shift_days", params["shift_days"])
+        new = "refine" if (sets or unsets or rebuild or pp.get("kind") == "change_dates") else "info"
+        return new, {"set": sets, "unset": unsets}, f"intent post_purchase without a paid order -> {new}"
+    if stage in PRE_PAY_STAGES and intent in ("choose", "cart", "checkout", "info"):
+        variant_ref = any((r or {}).get("kind") == "variant" for r in refs or [])
+        if rebuild or ((sets or unsets) and not variant_ref and intent in ("choose", "cart")):
+            return "refine", {"set": sets, "unset": unsets}, f"intent {intent} with a rebuild request -> refine"
+    return intent, {"set": sets, "unset": unsets}, None
+
+
+def variant_signature(variants):
+    """What the user sees of a variant set: ids, totals and the offers behind every step."""
+    return [[v.id, int(v.totals.rub), [s.offer_id for s in v.steps]] for v in variants]
+
+
+NOOP_REBUILD_KEY = "engine:noop_rebuild"
+
 
 def validate_patch_hook(ctx):
     """after_understand: every patch path must apply on its own; dates must be sane (not past, end > start)."""

@@ -59,7 +59,9 @@
         "title": "Дешевле",
         "totals": {
           "rub": 56400,
-          "door_to_door_hours": 7.4
+          "door_to_door_hours": 7.4,
+          "out_hours": 3.2,
+          "back_hours": 3.3
         },
         "steps": [
           {
@@ -166,7 +168,10 @@
             "price": 0.62,
             "time": 0.62
           }
-        }
+        },
+        "diff_rub": 31700,
+        "diff_word": "дешевле",
+        "over_budget_rub": null
       },
       {
         "id": "fastest",
@@ -174,7 +179,9 @@
         "title": "Быстрее",
         "totals": {
           "rub": 88100,
-          "door_to_door_hours": 6.5
+          "door_to_door_hours": 6.5,
+          "out_hours": 2.9,
+          "back_hours": 3.0
         },
         "steps": [
           {
@@ -273,7 +280,10 @@
             "price": 0.81,
             "time": 0.81
           }
-        }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
       },
       {
         "id": "comfort",
@@ -281,7 +291,9 @@
         "title": "Комфортнее",
         "totals": {
           "rub": 131200,
-          "door_to_door_hours": 7.0
+          "door_to_door_hours": 7.0,
+          "out_hours": 3.2,
+          "back_hours": 3.3
         },
         "steps": [
           {
@@ -385,7 +397,10 @@
             "price": 0.74,
             "time": 0.74
           }
-        }
+        },
+        "diff_rub": 43100,
+        "diff_word": "дороже",
+        "over_budget_rub": null
       }
     ],
     "recommended_hint": "fastest",
@@ -427,7 +442,8 @@
       "flights",
       "stay",
       "transfers"
-    ]
+    ],
+    "request": "а если на 2 дня позже?"
   },
   "image": null,
   "expect": [

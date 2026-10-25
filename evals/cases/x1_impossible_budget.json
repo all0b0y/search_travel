@@ -61,7 +61,9 @@
         "title": "Дешевле",
         "totals": {
           "rub": 103200,
-          "door_to_door_hours": 11.5
+          "door_to_door_hours": 11.5,
+          "out_hours": 6.2,
+          "back_hours": 4.5
         },
         "steps": [
           {
@@ -138,7 +140,10 @@
             "price": 0.2,
             "time": 0.2
           }
-        }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": 88200
       },
       {
         "id": "fastest",
@@ -146,7 +151,9 @@
         "title": "Быстрее",
         "totals": {
           "rub": 130900,
-          "door_to_door_hours": 10.4
+          "door_to_door_hours": 10.4,
+          "out_hours": 6.2,
+          "back_hours": 4.5
         },
         "steps": [
           {
@@ -216,7 +223,10 @@
             "price": 0.15,
             "time": 0.15
           }
-        }
+        },
+        "diff_rub": 27700,
+        "diff_word": "дороже",
+        "over_budget_rub": 115900
       }
     ],
     "recommended_hint": "cheapest",

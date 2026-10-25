@@ -73,7 +73,9 @@
         "title": "Дешевле",
         "totals": {
           "rub": 10800,
-          "door_to_door_hours": 0.0
+          "door_to_door_hours": 0.0,
+          "out_hours": null,
+          "back_hours": null
         },
         "steps": [
           {
@@ -125,7 +127,10 @@
             "price": 0.6,
             "time": 0.6
           }
-        }
+        },
+        "diff_rub": 8700,
+        "diff_word": "дешевле",
+        "over_budget_rub": null
       },
       {
         "id": "fastest",
@@ -133,7 +138,9 @@
         "title": "В центре",
         "totals": {
           "rub": 19500,
-          "door_to_door_hours": 0.0
+          "door_to_door_hours": 0.0,
+          "out_hours": null,
+          "back_hours": null
         },
         "steps": [
           {
@@ -192,7 +199,10 @@
             "price": 0.82,
             "time": 0.82
           }
-        }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
       },
       {
         "id": "comfort",
@@ -200,7 +210,9 @@
         "title": "Комфортнее",
         "totals": {
           "rub": 31200,
-          "door_to_door_hours": 0.0
+          "door_to_door_hours": 0.0,
+          "out_hours": null,
+          "back_hours": null
         },
         "steps": [
           {
@@ -253,7 +265,10 @@
             "price": 0.77,
             "time": 0.77
           }
-        }
+        },
+        "diff_rub": 11700,
+        "diff_word": "дороже",
+        "over_budget_rub": null
       }
     ],
     "recommended_hint": "fastest",

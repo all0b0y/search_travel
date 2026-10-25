@@ -7,7 +7,8 @@ by id. When the card failed (degraded turn) the code-written Note texts are used
 import re
 
 from . import payloads as P
-from .steps import _arrival, _hhmm_after, _hotel_checkin, _order_has_transfers, recommended_hint
+from .steps import (_arrival, _hhmm_after, _hotel_checkin, _order_has_transfers, pay_label, pending_order,
+                    recommended_hint, tool_safe)
 
 MAX_ITEMS = 6
 SEVERITY = {"block": "blocking", "warn": "warning", "blocking": "blocking", "warning": "warning", "info": "info"}
@@ -54,8 +55,15 @@ def step_out(step):
 
 def code_why(variant):
     title = variant.title or P.VARIANT_TITLES.get(variant.id, variant.id)
-    return (f"«{title}»: {P.fmt_rub(variant.totals.rub)} за всё, "
-            f"{P.fmt_hours(variant.totals.door_to_door_hours)} в дороге.")
+    t = variant.totals
+    out_h, back_h = getattr(t, "out_hours", None), getattr(t, "back_hours", None)
+    if out_h is not None and back_h is not None:
+        road = f"туда {P.fmt_hours(out_h)}, обратно {P.fmt_hours(back_h)}"
+    elif out_h is not None or back_h is not None:
+        road = f"в пути {P.fmt_hours(out_h if out_h is not None else back_h)} в одну сторону"
+    else:
+        road = f"{P.fmt_hours(t.door_to_door_hours)} в дороге"
+    return f"«{title}»: {P.fmt_rub(t.rub)} за всё, {road}."
 
 
 def _texts(out_item, key, notes):
@@ -165,9 +173,16 @@ def build_actions(ctx, cards, order):
                             "payload": {"variant_ids": list(dict.fromkeys(v.id for v in shown))[:4]}})
     if s.stage == "cart" and s.cart_id:
         actions.append({"type": "checkout", "label": "Оформить", "payload": {"travellers": [], "contact": None}})
-    if order and order["status"] == "pending_payment" and not any(i["severity"] == "blocking" for i in order["issues"]):
-        actions.append({"type": "pay", "label": f"Оплатить {P.fmt_rub(order['total_rub'])}",
-                        "payload": {"order_id": order["order_id"]}})
+    if order and order["status"] == "pending_payment":
+        if not any(i["severity"] == "blocking" for i in order["issues"]):
+            actions.append({"type": "pay", "label": pay_label(order["total_rub"]),
+                            "payload": {"order_id": order["order_id"]}})
+        elif s.stage == "checkout":
+            # a blocker is never a dead end: the other variants are one tap away (a new cart, a new order)
+            for v in [v for v in s.variants if v.id != s.chosen_variant_id][:3]:
+                actions.append({"type": "choose_variant",
+                                "label": f"Выбрать «{v.title or P.VARIANT_TITLES.get(v.id, v.id)}»",
+                                "payload": {"variant_id": v.id}})
     if s.stage in ("ordered", "aftercare") and s.order_id:
         arr, checkin = _arrival(ctx), _hotel_checkin(ctx)
         if arr is not None and (checkin is None or arr < checkin):   # early check-in only if they arrive early
@@ -275,12 +290,19 @@ def build_response(ctx):
             rec = (output or {}).get("recommended_id")
             if rec in comparison["variant_ids"]:
                 comparison["recommended_id"] = rec
-    order = order_out(ctx.order, ctx.order_issues)
+    order_src, order_extra = ctx.order, ctx.order_issues
+    if order_src is None:   # an info question / small talk / error at checkout still shows the order and its button
+        order_src, order_extra = pending_order(ctx)
+    cart = ctx.cart
+    if cart is None and s.stage == "cart" and s.cart_id and not ctx.order:
+        cart = tool_safe(ctx, "cart_get", {"session_id": s.id}, cache=False)
+        cart = cart if cart and cart.get("status", "open") == "open" else None
+    order = order_out(order_src, order_extra)
     response = {
         "session_id": s.id, "turn": s.turn, "stage": s.stage, "message": build_message(ctx),
         "chips": [chip_out(c) for c in ctx.chips] if not ctx.error else [],
         "questions": [question_out(q) for q in ctx.questions][:2] if not ctx.error else [],
-        "cards": cards, "comparison": comparison, "cart": cart_out(ctx.cart), "order": order,
+        "cards": cards, "comparison": comparison, "cart": cart_out(cart), "order": order,
         "actions": [], "files": dict(ctx.files),
     }
     response["actions"] = build_actions(ctx, cards, order)

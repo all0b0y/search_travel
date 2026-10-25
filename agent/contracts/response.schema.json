@@ -675,6 +675,14 @@
             "door_to_door_hours": {
               "type": "number",
               "minimum": 0
+            },
+            "out_hours": {
+              "type": ["number", "null"],
+              "minimum": 0
+            },
+            "back_hours": {
+              "type": ["number", "null"],
+              "minimum": 0
             }
           }
         },

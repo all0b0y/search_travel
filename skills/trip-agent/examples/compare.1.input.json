@@ -75,7 +75,9 @@
       "title": "Дешевле",
       "totals": {
         "rub": 56400,
-        "door_to_door_hours": 7.4
+        "door_to_door_hours": 6.5,
+        "out_hours": 3.2,
+        "back_hours": 3.3
       },
       "steps": [
         {
@@ -182,7 +184,10 @@
           "comfort": 0.4,
           "district": 0.8
         }
-      }
+      },
+      "diff_rub": 72500,
+      "diff_word": "дешевле",
+      "over_budget_rub": null
     },
     {
       "id": "comfort",
@@ -190,7 +195,9 @@
       "title": "Комфортнее",
       "totals": {
         "rub": 128900,
-        "door_to_door_hours": 6.9
+        "door_to_door_hours": 6.7,
+        "out_hours": 3.3,
+        "back_hours": 3.4
       },
       "steps": [
         {
@@ -294,7 +301,10 @@
           "comfort": 1.0,
           "district": 0.8
         }
-      }
+      },
+      "diff_rub": 0,
+      "diff_word": null,
+      "over_budget_rub": null
     }
   ],
   "dimensions": [

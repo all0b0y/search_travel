@@ -610,8 +610,14 @@ class Step(Model):
 
 
 class Totals(Model):
+    """`door_to_door_hours`: both directions together (transport + planned transfers, no buffers).
+    `out_hours` / `back_hours`: the same door-to-door time for one direction (1 decimal), null when the
+    variant has no such direction (stay only). prefs.max_travel_hours is a one-way limit: compare it with
+    these, never with door_to_door_hours."""
     rub: int
     door_to_door_hours: float
+    out_hours: Optional[float] = None
+    back_hours: Optional[float] = None
 
 
 class Note(Model):

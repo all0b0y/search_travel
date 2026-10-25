@@ -1,0 +1,81 @@
+{
+  "today": "2026-10-25",
+  "stage": "cart",
+  "brief": {
+    "origin": null,
+    "destination": {
+      "id": "dubai",
+      "name": "Дубай",
+      "country": "ОАЭ"
+    },
+    "traits": null,
+    "dates": {
+      "start": "2026-12-15",
+      "end": "2026-12-19",
+      "month": 12,
+      "window": null,
+      "nights": null,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "other",
+      "adults": 2,
+      "children": 0,
+      "children_ages": null,
+      "pets": []
+    },
+    "budget_rub": null,
+    "scope": null,
+    "prefs": null,
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [
+    "destination.id",
+    "destination.country",
+    "party.segment"
+  ],
+  "assumptions": [],
+  "question": "Ночь с 14 на 15 декабря входит в бронь или нет?",
+  "facts": [
+    {
+      "kind": "variant",
+      "id": "comfort",
+      "title": "Комфортнее",
+      "total_rub": 258820,
+      "legs": [
+        {
+          "type": "flight",
+          "from": "VKO",
+          "to": "DWC",
+          "carrier": "Пример Авиа",
+          "dep_date": "2026-12-14",
+          "dep_time": "14:05",
+          "arr_date": "2026-12-14",
+          "arr_time": "20:29",
+          "price_rub": 41200
+        }
+      ],
+      "stay": {
+        "name": "Отель «Ритц» (пример)",
+        "stars": 5,
+        "check_in_date": "2026-12-15",
+        "check_in_time": "14:00",
+        "check_out_date": "2026-12-19",
+        "check_out_time": "12:00"
+      },
+      "nights_without_stay": [
+        {
+          "from": "2026-12-14",
+          "to": "2026-12-15"
+        }
+      ]
+    },
+    {
+      "kind": "warnings",
+      "items": [
+        "Прибытие 14.12, а заезд только 15.12: ночь без отеля"
+      ]
+    }
+  ]
+}

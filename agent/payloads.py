@@ -301,7 +301,20 @@ def step_item(step):
             "carrier": step.carrier, "price_rub": int(round(rub)) if rub is not None else None}
 
 
-def variant_item(variant, label, district_counts=None):
+def price_gap(total_rub, base_rub, budget_max=None):
+    """Ready money numbers for a card (the model never subtracts):
+    diff_rub = |total - base| (base = the recommended item; 0 for it), diff_word = «дешевле» / «дороже» / None,
+    over_budget_rub = total - brief.budget_rub.max when above it, else None."""
+    total = int(total_rub)
+    diff = total - int(base_rub) if base_rub is not None else 0
+    over = total - int(budget_max) if budget_max and total > int(budget_max) else None
+    return {"diff_rub": abs(diff), "diff_word": "дешевле" if diff < 0 else "дороже" if diff > 0 else None,
+            "over_budget_rub": over}
+
+
+def variant_item(variant, label, district_counts=None, base_rub=None, budget_max=None):
+    """One variant for present.variants / update / compare. `base_rub` = the recommended item's total
+    (diff_rub is measured from it), `budget_max` = brief.budget_rub.max."""
     hotel = None
     if variant.hotel is not None:
         hotel = {"name": variant.hotel.name, "stars": variant.hotel.stars, "rating": variant.hotel.rating,
@@ -310,7 +323,21 @@ def variant_item(variant, label, district_counts=None):
             "totals": variant.totals.model_dump(mode="json"), "steps": [step_item(s) for s in variant.steps],
             "hotel": hotel, "facts": dict(variant.facts), "sacrifices": [_note(n) for n in variant.sacrifices],
             "risks": [_note(n) for n in variant.risks], "not_for": [_note(n) for n in variant.not_for],
-            "fit": variant.fit.model_dump(mode="json") if variant.fit else None}
+            "fit": variant.fit.model_dump(mode="json") if variant.fit else None,
+            **price_gap(variant.totals.rub, base_rub, budget_max)}
+
+
+def card_hint(variants, hint, budget_max=None):
+    """The item the card recommends: the code's hint, unless it is above the budget and another item fits
+    (then the fitting one with the highest fit.score) — the same rule the variants card states."""
+    by_id = {v.id: v for v in variants}
+    rec = by_id.get(hint)
+    if rec is None or not budget_max or rec.totals.rub <= budget_max:
+        return hint
+    fitting = [v for v in variants if v.totals.rub <= budget_max]
+    if not fitting:
+        return hint
+    return max(fitting, key=lambda v: (v.fit.score if v.fit else 0.0, -v.totals.rub)).id
 
 
 def upsell_item(c):
@@ -318,7 +345,10 @@ def upsell_item(c):
             "price_rub": c.price_rub, "reason": c.reason}
 
 
-def variants_input(session, variant_items, recommended_hint, questions, upsell, chips=(), changes=None, rebuilt=None):
+def variants_input(session, variant_items, recommended_hint, questions, upsell, chips=(), changes=None, rebuilt=None,
+                   request=None):
+    """present.variants; with `changes` it is present.update, which also gets `request` (the user's words,
+    so a wish that is no filter can be named honestly)."""
     payload = common(session, chips)
     payload["items"] = variant_items
     payload["recommended_hint"] = recommended_hint
@@ -327,6 +357,7 @@ def variants_input(session, variant_items, recommended_hint, questions, upsell, 
     if changes is not None:
         payload["changes"] = changes
         payload["rebuilt"] = list(rebuilt or [])
+        payload["request"] = request or ""
     return payload
 
 

@@ -6,6 +6,7 @@ Edit the reference outputs here, not in the JSON files: the script rewrites the 
 import copy
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -190,10 +191,48 @@ def note(code, text, **data):
     return {"code": code, "text": text, "data": data}
 
 
-def variant(id_, label, title, rub, hours, steps, hotel, facts, sacrifices=(), risks=(), not_for=(), fit=0.7, breakdown=None):
-    return {"id": id_, "label": label, "title": title, "totals": {"rub": rub, "door_to_door_hours": hours},
+def _one_way(steps):
+    """Door-to-door hours per direction from the steps (like ranking: transport + transfers, no buffers)."""
+    idx = next((i for i, s in enumerate(steps) if s["type"] == "stay"), None)
+    moves = [s for s in steps if s["type"] != "stay"]
+    out, back = (moves[:1], moves[1:]) if idx is None else (
+        [s for s in steps[:idx]], [s for s in steps[idx + 1:]])
+    span = lambda s: (datetime.fromisoformat(s["end"]) - datetime.fromisoformat(s["start"])).total_seconds() / 3600
+    return [round(sum(span(s) for s in xs), 1) if xs else None for xs in (out, back)]
+
+
+def variant(id_, label, title, rub, steps, hotel, facts, sacrifices=(), risks=(), not_for=(), fit=0.7, breakdown=None):
+    out, back = _one_way(steps)
+    return {"id": id_, "label": label, "title": title,
+            "totals": {"rub": rub, "door_to_door_hours": round((out or 0) + (back or 0), 1), "out_hours": out,
+                       "back_hours": back},
             "steps": steps, "hotel": hotel, "facts": facts, "sacrifices": list(sacrifices), "risks": list(risks),
             "not_for": list(not_for), "fit": {"score": fit, "breakdown": breakdown or {}}}
+
+
+def card_hint(items, hint, budget):
+    """variants.md rule 4 by code: an over-budget hint gives way to the best fitting item."""
+    rec = next((i for i in items if i["id"] == hint), None)
+    if rec is None or not budget or rec["totals"]["rub"] <= budget:
+        return hint
+    fit = [i for i in items if i["totals"]["rub"] <= budget]
+    return max(fit, key=lambda i: (i["fit"]["score"], -i["totals"]["rub"]))["id"] if fit else hint
+
+
+def with_gaps(b, items, hint=None):
+    """Ready money numbers per item (agent/payloads.price_gap): diff_rub / diff_word vs the card's
+    recommended item, over_budget_rub above brief.budget_rub.max."""
+    budget = (b.values().get("budget_rub") or {}).get("max")
+    hint = card_hint(items, hint or max(items, key=lambda i: i["fit"]["score"])["id"], budget) if items else None
+    base = next((i["totals"]["rub"] for i in items if i["id"] == hint), None)
+    out = []
+    for i in items:
+        i = copy.deepcopy(i)
+        d = i["totals"]["rub"] - base
+        i.update(diff_rub=abs(d), diff_word="дешевле" if d < 0 else "дороже" if d > 0 else None,
+                 over_budget_rub=i["totals"]["rub"] - budget if budget and i["totals"]["rub"] > budget else None)
+        out.append(i)
+    return out
 
 
 def hotel(name, stars, rating, labels, **counts):
@@ -202,9 +241,14 @@ def hotel(name, stars, rating, labels, **counts):
 
 def v_input(b, stage, items, hint, questions=(), upsell=(), assumptions=(), **extra):
     d = common(b, stage, list(assumptions))
-    d.update({"items": items, "recommended_hint": hint, "questions": list(questions), "upsell_candidates": list(upsell)})
+    d.update({"items": with_gaps(b, items, hint), "recommended_hint": hint, "questions": list(questions),
+              "upsell_candidates": list(upsell)})
     d.update(extra)
     return d
+
+
+def c_input(b, chips, items, dimensions):
+    return dict(common(b, "selection", chips), items=with_gaps(b, items), dimensions=dimensions)
 
 
 def P(message, items, rec, upsell=()):
@@ -224,7 +268,7 @@ def sochi_variants(shift=0, totals=(56400, 90300, 128900)):
     d = lambda day: f"2026-11-{day + shift:02d}"
     c, f, m = totals
     return [
-        variant("cheapest", "1", "Дешевле", c, 7.4, [
+        variant("cheapest", "1", "Дешевле", c, [
             step("flight", "SVO", "AER", f"{d(12)}T06:40+03:00", f"{d(12)}T09:05+03:00", 11200, "Пример Авиа"),
             step("transfer", "AER", LAV, f"{d(12)}T09:50+03:00", f"{d(12)}T10:40+03:00", 600),
             step("stay", LAV, LAV, f"{d(12)}T14:00+03:00", f"{d(19)}T12:00+03:00", c - 22800),
@@ -236,7 +280,7 @@ def sochi_variants(shift=0, totals=(56400, 90300, 128900)):
              note("beach_far", "До моря 900 м", beach_m=900), note("no_meals", "Без питания")],
             [note("non_refundable", "Отель без бесплатной отмены")], [], 0.71,
             {"price": 1.0, "time": 0.6, "comfort": 0.4, "district": 0.8}),
-        variant("fastest", "2", "Быстрее", f, 6.5, [
+        variant("fastest", "2", "Быстрее", f, [
             step("flight", "SVO", "AER", f"{d(12)}T08:15+03:00", f"{d(12)}T10:40+03:00", 14800, "Пример Авиа"),
             step("transfer", "AER", BRZ, f"{d(12)}T11:20+03:00", f"{d(12)}T11:50+03:00", 1900),
             step("stay", BRZ, BRZ, f"{d(12)}T15:00+03:00", f"{d(19)}T12:00+03:00", f - 37600),
@@ -248,7 +292,7 @@ def sochi_variants(shift=0, totals=(56400, 90300, 128900)):
             [note("price_more", f"Дороже «Дешевле» на {f - c:,} ₽".replace(",", " "), diff_rub=f - c)], [],
             [note("lively_seekers", "Не для тех, кто ищет бары и ночную жизнь: вечером вокруг тихо")], 0.86,
             {"price": 0.6, "time": 1.0, "comfort": 0.8, "district": 0.9}),
-        variant("comfort", "3", "Комфортнее", m, 6.9, [
+        variant("comfort", "3", "Комфортнее", m, [
             step("flight", "SVO", "AER", f"{d(12)}T08:15+03:00", f"{d(12)}T10:40+03:00", 14800, "Пример Авиа"),
             step("transfer", "AER", ROS, f"{d(12)}T11:20+03:00", f"{d(12)}T12:15+03:00", 3200),
             step("stay", ROS, ROS, f"{d(12)}T14:00+03:00", f"{d(19)}T12:00+03:00", m - 40200),
@@ -269,13 +313,13 @@ EARLY = {"candidate_id": "u_fastest_early_checkin", "variant_id": "fastest", "ki
 
 # variants.1 — entry C, Sochi couple, early check-in upsell
 write("present.variants", 1, v_input(SOCHI, "selection", sochi_variants(), "fastest", upsell=[EARLY], assumptions=SOCHI_CHIPS),
-      P("Сочи, 12–19 ноября — советую «Быстрее»: 90 300 ₽ за всё и 6,5 ч в дороге туда и обратно, отель на 4 звезды с завтраками "
-        "и бесплатной отменой. «Дешевле» — 56 400 ₽, но вылет в 06:40 и отель без отмены. «Комфортнее» — 128 900 ₽ "
+      P("Сочи, 12–19 ноября — советую «Быстрее»: 90 300 ₽ за всё, туда 2,9 ч, обратно 3 ч, отель на 4 звезды с завтраками "
+        "и бесплатной отменой. «Дешевле» — 56 400 ₽, на 33 900 ₽ дешевле, но вылет в 06:40 и отель без отмены. «Комфортнее» — 128 900 ₽ "
         "за курорт на 5 звёзд с полупансионом и морем в 120 м. Считал, что вы летите из Москвы и хотите тихий район — "
         "если не так, поправьте чипами.",
         [it("cheapest", "Самый бюджетный: 56 400 ₽ за перелёт, трансферы и 7 ночей в тихом гостевом доме.",
             ["Вылет в 06:40 — придётся рано встать", "До моря 900 м", "Без питания"], ["Нет бесплатной отмены"]),
-         it("fastest", "Лучший баланс: 6,5 ч в дороге, отель на 4 звезды с рейтингом 8.7, завтраки и море в 350 м.",
+         it("fastest", "Лучший баланс: туда 2,9 ч, обратно 3 ч, отель на 4 звезды с рейтингом 8.7, завтраки и море в 350 м.",
             ["Дороже «Дешевле» на 33 900 ₽"], [], ["Тем, кто ищет бары и ночную жизнь: вечером вокруг тихо"]),
          it("comfort", "Для полного отдыха: курорт на 5 звёзд с рейтингом 9.2, полупансион и море в 120 м.",
             ["Дороже «Быстрее» на 38 600 ₽"], ["Трансфер от аэропорта 55 минут"],
@@ -297,16 +341,16 @@ SUN, GAR, PAL = "Отель «Лара Сан» (пример)", "Отель «�
 
 def antalya_variants():
     return [
-        variant("cheapest", "1", "Дешевле", 98400, 11.2, [
-            step("flight", "VKO", "AYT", "2026-11-14T20:30+03:00", "2026-11-14T23:55+03:00", 31200, "Пример Авиа"),
+        variant("cheapest", "1", "Дешевле", 98400, [
+            step("flight", "VKO", "AYT", "2026-11-14T17:45+03:00", "2026-11-14T23:55+03:00", 31200, "Пример Авиа"),
             step("stay", SUN, SUN, "2026-11-15T00:30+03:00", "2026-11-21T12:00+03:00", 39400),
-            step("flight", "AYT", "VKO", "2026-11-21T15:10+03:00", "2026-11-21T18:40+03:00", 27800, "Пример Авиа")],
+            step("flight", "AYT", "VKO", "2026-11-21T15:10+03:00", "2026-11-21T20:10+03:00", 27800, "Пример Авиа")],
             hotel(SUN, 3, 7.9, ["family"], playgrounds=4, cafes=6, bars=1),
             {"nights": 7, "meals": "breakfast", "free_cancellation": False, "beach_m": 700},
             [note("stars_low", "3 звезды, детского клуба нет")],
             [note("night_arrival", "Прилёт в 23:55, в отеле будете после полуночи", time="23:55"),
              note("non_refundable", "Отель без бесплатной отмены")], [], 0.74),
-        variant("fastest", "2", "Быстрее", 121700, 9.1, [
+        variant("fastest", "2", "Быстрее", 121700, [
             step("flight", "SVO", "AYT", "2026-11-14T09:40+03:00", "2026-11-14T13:05+03:00", 34900, "Пример Авиа"),
             step("transfer", "AYT", GAR, "2026-11-14T13:50+03:00", "2026-11-14T14:30+03:00", 2400),
             step("stay", GAR, GAR, "2026-11-14T14:00+03:00", "2026-11-21T12:00+03:00", 52300),
@@ -316,7 +360,7 @@ def antalya_variants():
             {"nights": 7, "meals": "all_inclusive", "free_cancellation": True, "beach_m": 300, "kids_club": True},
             [note("price_more", "Дороже «Дешевле» на 23 300 ₽", diff_rub=23300)], [],
             [note("party_seekers", "Не для тех, кто ищет ночную жизнь: вокруг спокойно")], 0.88),
-        variant("comfort", "3", "Комфортнее", 164500, 9.4, [
+        variant("comfort", "3", "Комфортнее", 164500, [
             step("flight", "SVO", "AYT", "2026-11-14T09:40+03:00", "2026-11-14T13:05+03:00", 34900, "Пример Авиа"),
             step("transfer", "AYT", PAL, "2026-11-14T13:50+03:00", "2026-11-14T14:45+03:00", 3100),
             step("stay", PAL, PAL, "2026-11-14T14:00+03:00", "2026-11-21T12:00+03:00", 92800),
@@ -341,7 +385,7 @@ write("present.variants", 2, v_input(ANT, "selection", antalya_variants(), "fast
         "поправьте чипами, если не так. И подскажите, сколько лет ребёнку: от этого зависит цена.",
         [it("cheapest", "Самый недорогой: 98 400 ₽ за перелёт и 7 ночей с завтраками в семейном районе.",
             ["3 звезды, детского клуба нет"], ["Прилёт в 23:55 — в отеле будете после полуночи", "Нет бесплатной отмены"]),
-         it("fastest", "Дневной перелёт, трансферы включены, «всё включено» и детский клуб — 9,1 ч в дороге за обе стороны.",
+         it("fastest", "Дневной перелёт, трансферы включены, «всё включено» и детский клуб — туда 4,1 ч, обратно 4,2 ч.",
             ["Дороже «Дешевле» на 23 300 ₽"], [], ["Тем, кто ищет ночную жизнь: вокруг спокойно"]),
          it("comfort", "Курорт на 5 звёзд с рейтингом 9.3: «всё включено», детский клуб и пляж в 50 м.",
             ["Дороже «Быстрее» на 42 800 ₽"], ["Бесплатная отмена только до 31 октября"])],
@@ -360,18 +404,18 @@ VOL, BAU, RIV = "Апарт-отель «Волга» (пример)", "Отел
 
 def kazan_variants():
     return [
-        variant("cheapest", "1", "Дешевле", 14700, 0.0, [
+        variant("cheapest", "1", "Дешевле", 14700, [
             step("stay", VOL, VOL, "2026-10-30T14:00+03:00", "2026-11-02T12:00+03:00", 14700)],
             hotel(VOL, 2, 8.0, ["quiet"], cafes=3, bars=0),
             {"nights": 3, "meals": "none", "free_cancellation": True, "distance_center_m": 3200},
             [note("far_center", "До центра 3,2 км", distance_center_m=3200), note("no_meals", "Без завтрака")], [], [], 0.69),
-        variant("custom-1", "2", "В центре", 24900, 0.0, [
+        variant("custom-1", "2", "В центре", 24900, [
             step("stay", BAU, BAU, "2026-10-30T14:00+03:00", "2026-11-02T12:00+03:00", 24900)],
             hotel(BAU, 3, 8.6, ["walkable", "lively"], cafes=24, bars=9),
             {"nights": 3, "meals": "breakfast", "free_cancellation": True, "distance_center_m": 400},
             [note("price_more", "Дороже «Дешевле» на 10 200 ₽", diff_rub=10200)], [],
             [note("light_sleepers", "Не для тех, кто чутко спит: улица шумная до ночи")], 0.84),
-        variant("comfort", "3", "Комфортнее", 41300, 0.0, [
+        variant("comfort", "3", "Комфортнее", 41300, [
             step("stay", RIV, RIV, "2026-10-30T14:00+03:00", "2026-11-02T12:00+03:00", 41300)],
             hotel(RIV, 5, 9.1, ["quiet"], cafes=6, bars=2),
             {"nights": 3, "meals": "breakfast", "free_cancellation": True, "distance_center_m": 1800, "spa": True},
@@ -382,8 +426,8 @@ def kazan_variants():
 
 write("present.variants", 3, v_input(KZN, "selection", kazan_variants(), "comfort", assumptions=KZN_CHIPS),
       P("Казань, 3 ночи — советую «В центре»: 24 900 ₽ с завтраками, отель на 3 звезды в 400 м от центра, всё пешком. "
-        "«Дешевле» — 14 700 ₽, но до центра 3,2 км. «Комфортнее» — 5 звёзд со спа за 41 300 ₽, это выше вашего бюджета "
-        "30 000 ₽. Поставил даты 30 октября – 2 ноября и двоих гостей — поправьте чипами, если не так. "
+        "«Дешевле» — 14 700 ₽, но до центра 3,2 км. «Комфортнее» — 5 звёзд со спа за 41 300 ₽, это на 11 300 ₽ выше "
+        "вашего бюджета 30 000 ₽. Поставил даты 30 октября – 2 ноября и двоих гостей — поправьте чипами, если не так. "
         "Дорогу до Казани добавлю одной кнопкой, если нужна.",
         [it("cheapest", "Самый бюджетный: 14 700 ₽ за 3 ночи в тихом апарт-отеле с бесплатной отменой.",
             ["До центра 3,2 км", "Без завтрака"]),
@@ -406,13 +450,13 @@ write("present.update", 1, v_input(SOCHI2, "selection", sochi_variants(2, (51900
                                                    ("totals.cheapest.rub", 56400, 51900),
                                                    ("totals.fastest.rub", 90300, 84100),
                                                    ("totals.comfort.rub", 128900, 124300)),
-                                   rebuilt=["flights", "stay", "transfers"]),
+                                   rebuilt=["flights", "stay", "transfers"], request="а если на 2 дня позже?"),
       P("Сдвинул на 2 дня: теперь 14–21 ноября, и стало дешевле. «Быстрее» — 84 100 ₽ вместо 90 300 ₽, его и советую: "
-        "те же 6,5 ч в дороге и отель на 4 звезды с завтраками. «Дешевле» — 51 900 ₽ вместо 56 400 ₽, «Комфортнее» — "
+        "туда 2,9 ч, обратно 3 ч и отель на 4 звезды с завтраками. «Дешевле» — 51 900 ₽ вместо 56 400 ₽, «Комфортнее» — "
         "124 300 ₽ вместо 128 900 ₽.",
         [it("cheapest", "Самый бюджетный: 51 900 ₽ за всё, тихий гостевой дом.",
             ["Вылет в 06:40 — придётся рано встать", "До моря 900 м", "Без питания"], ["Нет бесплатной отмены"]),
-         it("fastest", "Тот же баланс, но дешевле: 84 100 ₽, 6,5 ч в дороге, завтраки и море в 350 м.",
+         it("fastest", "Тот же баланс, но дешевле: 84 100 ₽, туда 2,9 ч, завтраки и море в 350 м.",
             ["Дороже «Дешевле» на 32 200 ₽"], [], ["Тем, кто ищет бары и ночную жизнь: вечером вокруг тихо"]),
          it("comfort", "Курорт на 5 звёзд с полупансионом и морем в 120 м — теперь 124 300 ₽.",
             ["Дороже «Быстрее» на 40 200 ₽"], ["Трансфер от аэропорта 55 минут"],
@@ -424,7 +468,7 @@ write("present.update", 1, v_input(SOCHI2, "selection", sochi_variants(2, (51900
 ANT2, _ = apply_patch(ANT, {"set": {"party.pets": ["dog"], "constraints.add": ["pet:dog"]}})
 av = antalya_variants()
 pet_cheap = copy.deepcopy(av[0])
-pet_cheap.update(totals={"rub": 104900, "door_to_door_hours": 11.2})
+pet_cheap.update(totals=dict(av[0]["totals"], rub=104900))
 pet_cheap["hotel"] = hotel("Апарт-отель «Лара Парк» (пример)", 3, 8.0, ["family", "quiet"], playgrounds=2, cafes=4)
 pet_cheap["facts"] = {"nights": 7, "meals": "none", "free_cancellation": False, "pets_allowed": True, "pet_fee_rub": 3500}
 pet_cheap["sacrifices"] = [note("no_meals", "Без питания"), note("pet_fee", "Доплата за собаку 3 500 ₽", pet_fee_rub=3500)]
@@ -435,7 +479,7 @@ write("present.update", 2, v_input(ANT2, "selection", [pet_cheap, pet_comfort], 
                                    changes=changes(("party.pets", [], ["dog"]), ("constraints", [], ["pet:dog"]),
                                                    ("totals.cheapest.rub", 98400, 104900),
                                                    ("totals.fastest.rub", 121700, None)),
-                                   rebuilt=["stay"]),
+                                   rebuilt=["stay"], request="мы едем с собакой, так можно?"),
       P("С собакой пускают не во все отели, поэтому осталось два варианта: «Быстрее» с собакой собрать не "
         "получилось. Советую «Комфортнее» — 164 500 ₽, собаке можно без доплаты. «Дешевле» подорожал: 104 900 ₽ "
         "вместо 98 400 ₽, плюс 3 500 ₽ за собаку.",
@@ -451,15 +495,34 @@ write("present.update", 3, v_input(KZN2, "selection", [], None,
                                    assumptions=KZN_CHIPS,
                                    changes=changes(("party.pets", [], ["dog"]), ("constraints", [], ["pet:dog", "kitchen"]),
                                                    ("budget_rub.max", 30000, 15000)),
-                                   rebuilt=["stay"]),
+                                   rebuilt=["stay"], request="с собакой, нужна кухня и не дороже 15 000 ₽"),
       P("С собакой, кухней и до 15 000 ₽ на 30 октября – 2 ноября в Казани ничего не нашлось. Можно поднять "
         "бюджет — выберите кнопкой, и я сразу пересоберу.",
         [], None))
 
+ANT3, _ = apply_patch(ANT, {"set": {"constraints.add": ["crib"]}})
+crib = antalya_variants()
+for v in crib:
+    v["risks"] = [note("crib_on_request", "Детскую кроватку дают только по запросу, заранее не гарантируют")] + v["risks"]
+write("present.update", 4, v_input(ANT3, "selection", crib, "fastest", assumptions=ANT_CHIPS, changes=[], rebuilt=[],
+                                   request="пересоберите, пожалуйста, чтобы кроватка точно была в номере"),
+      P("Гарантированной кроватки в номере нет ни в одном варианте: везде её дают только по запросу. Ближе всего — "
+        "«Быстрее» за 121 700 ₽: «всё включено», детский клуб, а кроватку можно попросить при бронировании. "
+        "«Дешевле» на 23 300 ₽ дешевле, но с той же оговоркой и ночным прилётом.",
+        [it("cheapest", "Самый недорогой: 98 400 ₽ за перелёт и 7 ночей с завтраками.",
+            ["3 звезды, детского клуба нет"],
+            ["Кроватку дают только по запросу", "Прилёт в 23:55 — в отеле будете после полуночи", "Нет бесплатной отмены"]),
+         it("fastest", "Ближе всего к запросу: дневной рейс, «всё включено» и детский клуб.",
+            ["Дороже «Дешевле» на 23 300 ₽"], ["Кроватку дают только по запросу — попросите при бронировании"],
+            ["Тем, кто ищет ночную жизнь: вокруг спокойно"]),
+         it("comfort", "Курорт на 5 звёзд: «всё включено», детский клуб и пляж в 50 м.",
+            ["Дороже «Быстрее» на 42 800 ₽"],
+            ["Кроватку дают только по запросу", "Бесплатная отмена только до 31 октября"])],
+        "fastest"))
+
 # ---------------------------------------------------------------- compare
 sv = sochi_variants()
-write("present.compare", 1, dict(common(SOCHI, "selection", SOCHI_CHIPS), items=[sv[0], sv[2]],
-                                 dimensions=["price", "comfort"]),
+write("present.compare", 1, c_input(SOCHI, SOCHI_CHIPS, [sv[0], sv[2]], ["price", "comfort"]),
       P("По цене выигрывает «Дешевле»: 56 400 ₽ против 128 900 ₽. По комфорту — «Комфортнее»: курорт на 5 звёзд с рейтингом 9.2 "
         "и полупансионом против гостевого дома на 2 звезды без питания. Цена у вас на первом месте, поэтому советую «Дешевле», "
         "если готовы к раннему вылету в 06:40.",
@@ -469,22 +532,20 @@ write("present.compare", 1, dict(common(SOCHI, "selection", SOCHI_CHIPS), items=
             ["Дороже «Быстрее» на 38 600 ₽"], ["Трансфер от аэропорта 55 минут"],
             ["Тем, кто любит гулять по городу: до центра далеко"])],
         "cheapest"))
-write("present.compare", 2, dict(common(ANT, "selection", ANT_CHIPS), items=antalya_variants(),
-                                 dimensions=["time", "price"]),
-      P("Быстрее всех доберётесь с «Быстрее»: 9,1 ч в дороге за обе стороны, у «Комфортнее» 9,4 ч, у «Дешевле» 11,2 ч "
-        "и ночной прилёт. По цене впереди «Дешевле» — 98 400 ₽, «Быстрее» стоит 121 700 ₽, «Комфортнее» — 164 500 ₽. "
-        "Время для вас важнее, так что советую «Быстрее».",
-        [it("cheapest", "Самый дешёвый, но самый долгий: 11,2 ч и прилёт в 23:55.",
+write("present.compare", 2, c_input(ANT, ANT_CHIPS, antalya_variants(), ["time", "price"]),
+      P("Быстрее всех доберётесь с «Быстрее»: туда 4,1 ч, обратно 4,2 ч, у «Комфортнее» 4,3 и 4,4 ч, у «Дешевле» "
+        "6,2 и 5 ч и ночной прилёт. По цене впереди «Дешевле» — 98 400 ₽, на 23 300 ₽ дешевле «Быстрее» за 121 700 ₽, "
+        "«Комфортнее» — 164 500 ₽. Время для вас важнее, так что советую «Быстрее».",
+        [it("cheapest", "Самый дешёвый, но самый долгий: туда 6,2 ч с пересадкой и прилёт в 23:55.",
             ["3 звезды, детского клуба нет"], ["Прилёт в 23:55", "Нет бесплатной отмены"]),
-         it("fastest", "Меньше всего времени в пути — 9,1 ч, дневной рейс и трансферы.",
+         it("fastest", "Меньше всего времени в пути: туда 4,1 ч, обратно 4,2 ч, дневной рейс и трансферы.",
             ["Дороже «Дешевле» на 23 300 ₽"], [], ["Тем, кто ищет ночную жизнь"]),
-         it("comfort", "Почти так же быстро — 9,4 ч, но дороже всех.",
+         it("comfort", "Почти так же быстро — туда 4,3 ч, обратно 4,4 ч, но дороже всех.",
             ["Дороже «Быстрее» на 42 800 ₽"], ["Бесплатная отмена только до 31 октября"])],
         "fastest"))
 KZNW, _ = apply_patch(KZN, {"set": {"prefs.district": "walkable"}})
 kv = kazan_variants()
-write("present.compare", 3, dict(common(KZNW, "selection", KZN_CHIPS), items=[kv[0], kv[1]],
-                                 dimensions=["district", "price"]),
+write("present.compare", 3, c_input(KZNW, KZN_CHIPS, [kv[0], kv[1]], ["district", "price"]),
       P("Вы хотели, чтобы всё было рядом, — тут сильнее «В центре»: до центра 400 м, кругом кафе. «Дешевле» в тихом "
         "районе, до центра 3,2 км. По цене «Дешевле» выгоднее: 14 700 ₽ против 24 900 ₽. Советую «В центре»: "
         "район для вас важнее, и он в бюджете.",
@@ -601,6 +662,20 @@ write("present.info", 3, i_input(FAM, "inspiration", "Нужна ли виза �
       I("Про визы у меня нет данных, поэтому гадать не буду. Проверьте на сайте консульства Египта, а я пока подберу "
         "поездку."))
 
+DXB = brief({"destination.name": "Дубай", "dates.start": "2026-12-15", "dates.end": "2026-12-19", "party.adults": 2},
+            [("destination.id", "dubai", "inferred"), ("destination.country", "ОАЭ", "inferred")])
+RITZ = "Отель «Ритц» (пример)"
+write("present.info", 4, i_input(DXB, "cart", "Ночь с 14 на 15 декабря входит в бронь или нет?", [
+    {"kind": "variant", "id": "comfort", "title": "Комфортнее", "total_rub": 258820,
+     "legs": [{"type": "flight", "from": "VKO", "to": "DWC", "carrier": "Пример Авиа", "dep_date": "2026-12-14",
+               "dep_time": "14:05", "arr_date": "2026-12-14", "arr_time": "20:29", "price_rub": 41200}],
+     "stay": {"name": RITZ, "stars": 5, "check_in_date": "2026-12-15", "check_in_time": "14:00",
+              "check_out_date": "2026-12-19", "check_out_time": "12:00"},
+     "nights_without_stay": [{"from": "2026-12-14", "to": "2026-12-15"}]},
+    {"kind": "warnings", "items": ["Прибытие 14.12, а заезд только 15.12: ночь без отеля"]}]),
+      I("Нет, ночь с 14 на 15 декабря в бронь не входит: прилёт 14 декабря в 20:29, а заезд в «Ритц» только "
+        "15 декабря с 14:00. Скажите — пересоберу так, чтобы отель был с 14-го."))
+
 # ---------------------------------------------------------------- aftercare
 ORDER = {"order_id": "o_ex_sochi", "status": "paid", "title": "Сочи, 12–19 ноября, вдвоём", "total_rub": 90300,
          "items": [{"kind": "flight", "title": "Москва → Сочи", "start": "2026-11-12T08:15+03:00", "booking_number": "PA1234"},
@@ -629,6 +704,26 @@ write("present.aftercare", 3, a_input(ORDER, {"kind": "change_dates", "available
                                                         "difference_rub": 4200, "penalty_rub": 0}}),
       I("На 14–21 ноября перенести можно. Новая цена — 94 500 ₽ вместо 90 300 ₽, доплата 4 200 ₽, штрафа нет. "
         "Если подходит — напишите «переносим», и я подтвержу."))
+
+KGD_ORDER = {"order_id": "o_ex_kgd", "status": "paid", "total_rub": 25430,
+             "items": [{"item_id": "oi_1", "kind": "flight", "title": "Москва → Калининград", "price_rub": 6600,
+                        "start": "2026-11-20T09:10+03:00", "end": "2026-11-20T10:35+02:00", "booking_number": "PA2001"},
+                       {"item_id": "oi_2", "kind": "hotel", "title": "Отель «Балтика» (пример), 3 ночи", "price_rub": 9800,
+                        "start": "2026-11-20T14:00+02:00", "end": "2026-11-23T12:00+02:00", "booking_number": "BL3003"},
+                       {"item_id": "oi_3", "kind": "flight", "title": "Калининград → Москва", "price_rub": 6600,
+                        "start": "2026-11-23T15:20+02:00", "end": "2026-11-23T18:40+03:00", "booking_number": "PA2002"},
+                       {"item_id": "oi_4", "kind": "transfer", "title": "Такси", "price_rub": 2430, "start": None,
+                        "end": None, "booking_number": "TX4004"}]}
+write("present.aftercare", 4, a_input(KGD_ORDER, {
+    "kind": "change_dates", "available": False, "reason": "tickets_not_exchangeable",
+    "new_dates": {"check_in": "2026-11-21", "check_out": "2026-11-24"},
+    "if_cancelled": {"hotel_refund_rub": 9800, "hotel_penalty_rub": 0, "tickets_refund_rub": 0,
+                     "tickets_lost_rub": 13200, "other_rub": 2430, "refund_rub": 9800, "lost_rub": 13200},
+    "new_trip": {"title": "Быстрее", "total_rub": 25900, "check_in": "2026-11-21", "check_out": "2026-11-24"},
+    "extra_rub": 16100}),
+      I("Перенести этот заказ нельзя: билеты без обмена, доплатой за сдвиг это не решить. Если его отменить, за отель "
+        "вернётся 9 800 ₽, а 13 200 ₽ за билеты не вернут. Та же поездка на 21–24 ноября — 25 900 ₽, с учётом "
+        "возврата это 16 100 ₽ сверху."))
 
 # ---------------------------------------------------------------- fallback
 def f_input(b, stage, message, reason):

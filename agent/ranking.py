@@ -69,8 +69,11 @@ RANKING_DEFAULTS = {
     "fit_weights": {"budget": 0.25, "time": 0.15, "district": 0.15, "meals": 0.1, "cancellation": 0.07,
                     "stars": 0.08, "beach": 0.1, "constraints": 0.05, "rating": 0.05},
     "comfort_weights": {"stars": 0.2, "rating": 0.25, "meals": 0.15, "cancellation": 0.1, "direct": 0.1,
-                        "fare": 0.05, "transfer": 0.05, "district": 0.1, "car_class": 0.1},
+                        "fare": 0.05, "transfer": 0.05, "district": 0.1, "car_class": 0.1, "cot": 0.15},
     "comfort_legs": 2,                # extra transport offers kept per direction for comfort (fare, class)
+    "unused_night_penalty": 0.05,     # comfort minus this when arriving after midnight (first night unused)
+    "max_hours_relax_tolerance_h": 1.0,   # nothing within max_travel_hours: keep journeys this close to the best
+    "flex_shift_min_saving_pct": 10,  # flexible_days: another start day only when this much cheaper overall
 }
 SENSITIVITY_DEFAULTS = {"price_delta_pct": 10, "top_changes": True, "max_reruns": 12}
 
@@ -174,6 +177,7 @@ class Combo:
     stay_start: Optional[datetime] = None
     stay_end: Optional[datetime] = None
     comfort: float = 0.0
+    unused_night: bool = False             # arrives after midnight: the first booked night is not used
     relaxed: tuple = ()
     key: tuple = field(default_factory=tuple)
 
@@ -248,12 +252,24 @@ def _party_ok(h, brief):
         return False
     if party is not None and _is_dorm(room) and (party.segment in ("couple", "family") or party.children):
         return False   # a bed in a shared dorm is not a stay for a couple or a family
+    if is_gendered_room(room):
+        return False   # men-/women-only room: the traveller's gender is never known
     return True
 
 
 def _is_dorm(room) -> bool:
     name = str(room.get("name") or "").casefold()
-    return room.get("bed") == "bunk" or "общем номере" in name or "dorm" in name
+    return room.get("bed") == "bunk" or "общем номере" in name or "общий номер" in name or "dorm" in name
+
+
+# the traveller's gender is never known: a men-/women-only room is never offered (the catalog names
+# them «Женский общий номер»; the other spellings guard data from other sources)
+GENDERED_ROOM_WORDS = ("женск", "мужск", "female", "male", "women", "ladies", "girls", "boys")
+
+
+def is_gendered_room(room) -> bool:
+    name = str((room or {}).get("name") or "").casefold()
+    return any(w in name for w in GENDERED_ROOM_WORDS)
 
 
 def _penalty_rub(h, canc):
@@ -271,9 +287,11 @@ def _free_cancel(h) -> bool:
 def _pref_fails(h, brief) -> list[str]:
     """User-given prefs this hotel does not meet (hard filters, relaxed only when nothing is left)."""
     prefs = brief.prefs.value
-    if prefs is None:
-        return []
     bad = []
+    if wants_crib(brief) and _infant_cot(h) not in GUARANTEED_COT:
+        bad.append(CRIB)
+    if prefs is None:
+        return bad
     if _user(brief, "prefs.stars_min") and prefs.stars_min and (h.get("stars") or 0) < prefs.stars_min:
         bad.append("prefs.stars_min")
     if _user(brief, "prefs.meals") and prefs.meals != "any" and MEALS_RANK.get(h.get("meals"), 0) < MEALS_RANK[prefs.meals]:
@@ -287,10 +305,45 @@ def _pref_fails(h, brief) -> list[str]:
     return bad
 
 
+CRIB = "constraints.crib"          # relaxed marker: no hotel with a guaranteed cot
+GUARANTEED_COT = ("free", "paid")  # ostrovok KidsPolicy.infant_cot; on_request / none are not a promise
+COT_COMFORT = {"free": 1.0, "paid": 0.6, "on_request": 0.2, "none": 0.0}
+# hotel prefs in relaxation order: when no hotel meets them all, the smallest set is dropped, the
+# earliest paths in this list first (a cot for a toddler is dropped last)
+RELAX_ORDER = ("prefs.beach_max_m", "prefs.stars_min", "prefs.meals", "prefs.free_cancellation", CRIB)
+
+
+def wants_crib(brief) -> bool:
+    return "crib" in (brief.constraints.value or [])
+
+
+def _infant_cot(h):
+    return (h.get("kids_policy") or {}).get("infant_cot")
+
+
+def _relax_hotels(hotels, brief):
+    """Hotels that meet the user's hotel prefs -> (hotels, relaxed paths). When none meets them all, the
+    smallest set of prefs is dropped (ties: earlier in RELAX_ORDER first); the paths reported are those
+    the kept hotels actually miss."""
+    from itertools import combinations
+    fails = [(h, set(_pref_fails(h, brief))) for h in hotels]
+    strict = [h for h, f in fails if not f]
+    if strict or not hotels:
+        return strict, ()
+    paths = sorted({p for _, f in fails for p in f},
+                   key=lambda p: RELAX_ORDER.index(p) if p in RELAX_ORDER else -1)
+    for n in range(1, len(paths) + 1):
+        for drop in combinations(paths, n):
+            kept = [h for h, f in fails if f <= set(drop)]
+            if kept:
+                return kept, tuple(sorted({p for h, f in fails if f <= set(drop) for p in f}))
+    return hotels, tuple(paths)
+
+
 RELAXED_RU = {"prefs.stars_min": "с нужной звёздностью", "prefs.meals": "с нужным питанием",
               "prefs.free_cancellation": "с бесплатной отменой", "prefs.beach_max_m": "так близко к пляжу",
               "prefs.max_travel_hours": "с дорогой в нужное время", "prefs.arrive_before": "с прибытием к нужному времени",
-              "prefs.no_night_flights": "без ночных рейсов"}
+              "prefs.no_night_flights": "без ночных рейсов", CRIB: "с гарантированной детской кроваткой"}
 
 
 # ---------------------------------------------------------------- district
@@ -366,6 +419,9 @@ def _pick_transfers(options, point):
     return [by_id[i] for i in picks]
 
 
+RED_EYE_UNTIL_HOUR = 6   # a return leaving before this hour on the day after check-out is a night flight
+
+
 def _evaluate(c: Combo, rules, rr, factor) -> bool:
     """Compute times and totals; False when the pieces do not fit together."""
     buffers = _buffers(rules)
@@ -382,8 +438,9 @@ def _evaluate(c: Combo, rules, rr, factor) -> bool:
         late_end = (rules.get("late_checkin") or DEFAULT_LATE_CHECKIN)[1]
         if arrival >= day0 + timedelta(days=1, hours=int(late_end[:2]), minutes=int(late_end[3:5])):
             return False  # the first night is lost
-        if (check_in - arrival) > timedelta(hours=24):
-            return False  # arrives a day before the stay
+        if arrival.date() < check_in.date():
+            return False  # arrives a day before the stay: a night without a bed
+        c.unused_night = arrival.date() > check_in.date()   # after midnight: the first night is paid, not used
         c.stay_start = max(check_in, arrival)
     else:
         c.stay_start = check_in
@@ -398,6 +455,10 @@ def _evaluate(c: Combo, rules, rr, factor) -> bool:
             return False  # leaves before the last night is over
         if leave - check_out > timedelta(hours=rr["max_wait_after_checkout_h"]):
             return False
+        if c.back.dep.date() > check_out.date() and c.back.dep.hour >= RED_EYE_UNTIL_HOUR:
+            return False  # leaves the next morning or later: a night without a bed
+        # a red-eye (00:00-05:59 the night after check-out) is fine: the evening goes to the airport, the
+        # night is spent travelling, and max_wait_after_checkout_h above already bounds the wait
         c.stay_end = min(check_out, leave)
     else:
         c.stay_end = check_out
@@ -445,6 +506,8 @@ def _comfort(c: Combo, brief, districts, segments, rr) -> float:
             "meals": MEALS_RANK.get(h.get("meals"), 0) / 4,
             "cancellation": 1.0 if _free_cancel(h) else 0.0,
         })
+        if wants_crib(brief):
+            parts["cot"] = COT_COMFORT.get(_infant_cot(h), 0.0)
     if legs:
         parts["direct"] = 1.0 if all(l.stops == 0 for l in legs) else 0.0
         parts["fare"] = sum((1.0 if l.baggage else 0) * 0.5 + (0.5 if l.refundable else 0) for l in legs) / len(legs)
@@ -526,11 +589,18 @@ def _legs(results, direction, brief, rr, today, soft=True):
     return _prune_legs(legs, rr["max_legs"], int(rr.get("comfort_legs", 0))), tuple(relaxed)
 
 
+def _one_way_hours(c) -> float:
+    return max(c.out_hours, c.back_hours)
+
+
 def _max_hours_ok(c, brief):
+    """prefs.max_travel_hours is a ONE-WAY limit («не дольше 5 часов в дороге» = each direction):
+    the longer of the two door-to-door directions (transport + planned transfer) must fit it; the
+    round-trip sum (door_to_door_hours) is never compared with it."""
     prefs = brief.prefs.value
     if prefs is None or not prefs.max_travel_hours or not _user(brief, "prefs.max_travel_hours"):
         return True
-    return max(c.out_hours, c.back_hours) <= prefs.max_travel_hours
+    return _one_way_hours(c) <= prefs.max_travel_hours
 
 
 # ---------------------------------------------------------------- variant assembly
@@ -639,6 +709,7 @@ def _facts(c: Combo, brief, districts, segments, rr):
         "pets_allowed": h.get("pets_allowed"),
         "children_allowed": kids.get("children_allowed"),
         "min_child_age": kids.get("min_child_age"),
+        "infant_cot": kids.get("infant_cot"),
         "early_checkin_available": early.get("available"),
         "early_checkin_price_rub": early.get("price_rub"),
     }
@@ -772,6 +843,11 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
     if c.hotel is not None and c.out is not None and c.arrival is not None and in_clock_window(c.arrival.strftime("%H:%M"), late_window):
         out.append(_note("late_checkin", f"Заселение поздно, в {c.arrival:%H:%M} — отель стоит предупредить",
                          time=c.arrival.strftime("%H:%M")))
+    if c.unused_night and c.arrival is not None:
+        out.append(_note("unused_first_night",
+                         f"Приезд {c.arrival:%d.%m} в {c.arrival:%H:%M}, а заезд с {facts['check_in_date'][8:10]}."
+                         f"{facts['check_in_date'][5:7]} — первая ночь оплачена, но не используется",
+                         arrival=c.arrival.strftime("%H:%M"), check_in_date=facts["check_in_date"]))
     wait = facts.get("wait_after_checkout_min")
     if wait and wait > rr["wait_after_checkout_min"]:
         out.append(_note("wait_after_checkout", f"После выезда из отеля {fmt_hours(wait / 60)} ч до отправления",
@@ -785,6 +861,10 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
         if path == TICKETS_REFUNDABLE:
             head.append(_note("non_refundable_only", "Возвратных билетов на эти даты нет — в варианте невозвратные",
                               field="prefs.free_cancellation"))
+            continue
+        if path == CRIB:
+            head.append(_note("relaxed_pref", "Отелей с гарантированной кроваткой не нашли — кроватка только по запросу",
+                              field=path, infant_cot=_infant_cot(c.hotel or {})))
             continue
         if path == "prefs.arrive_before" and prefs is not None and prefs.arrive_before:
             text = f"Рейсов с прибытием до {prefs.arrive_before} не нашли — показываем ближайшие"
@@ -985,6 +1065,20 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
       prefs.no_night_flights (no flight leaving or landing in ranking.night_window), and refundable fares
       under prefs.free_cancellation. Each is relaxed per direction when nothing passes: risk
       `relaxed_pref` (or `non_refundable_only` for tickets).
+    - Dates never mix: an outbound reaching the hotel on a day before the check-in date (a night without
+      a bed) or a return leaving on a day after the check-out date is never paired (an overnight leg
+      arriving on the check-in morning is fine); arriving after midnight (first night paid, not used)
+      is allowed with risk `unused_first_night` and loses to an equal variant (cheapest tie-break,
+      comfort minus ranking.unused_night_penalty). results["date_shift"] (steps.run_search moved the
+      whole trip inside flexible_days) -> facts.dates_shifted_days + risk `dates_shifted`.
+    - prefs.max_travel_hours is ONE-WAY: each direction's door-to-door hours (totals.out_hours /
+      back_hours) must fit; when none fits, the journeys within ranking.max_hours_relax_tolerance_h of
+      the best one-way time are kept with `relaxed_pref`.
+    - Rooms: men-/women-only rooms are never offered (is_gendered_room; the gender is never known);
+      shared dorms never for couples/families. Constraint `crib`: hotels with a guaranteed cot
+      (kids_policy.infant_cot free/paid; free scores higher in comfort) — a relaxable hotel pref like
+      stars/meals/cancellation/beach; when no hotel meets them all, the fewest prefs are dropped
+      (RELAX_ORDER, the cot last) with a `relaxed_pref` note each.
     Returns [] when there are no hotel offers for a scope with "stay", or no out + back pair for a
     tickets-only scope (honest "no data"; the engine says so).
     """
@@ -998,6 +1092,7 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     results = results or {}
     scope = _scope(brief)
     dest = results.get("destination") or {}
+    shift = results.get("date_shift") or None   # flexible_days: the whole trip moved (steps.run_search)
     dest_name = dest.get("name") or (brief.destination.value.name if brief.destination.value else None)
 
     want_stay = "stay" in scope
@@ -1005,13 +1100,7 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     hotels_all = [h for h in hotels_all if _party_ok(h, brief)]
     if want_stay and not hotels_all:
         return []
-    strict = [h for h in hotels_all if not _pref_fails(h, brief)]
-    relaxed_paths: tuple = ()
-    if strict:
-        hotels = strict
-    else:
-        hotels = hotels_all
-        relaxed_paths = tuple(sorted({p for h in hotels_all for p in _pref_fails(h, brief)}))
+    hotels, relaxed_paths = _relax_hotels(hotels_all, brief)
     hotels = _prune_hotels(hotels, rr["max_hotels"], brief, districts, segs)
 
     want_transport = bool(scope & {"flights", "trains"})
@@ -1060,17 +1149,21 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
         timed = [c for c in combos if _max_hours_ok(c, brief)]
         if timed:
             combos = timed
-        elif combos:
+        elif combos:   # nothing within the one-way limit: the journeys nearest to it, said so
+            best = min(_one_way_hours(c) for c in combos)
+            combos = [c for c in combos if _one_way_hours(c) <= best + rr["max_hours_relax_tolerance_h"]]
             for c in combos:
                 c.relaxed = tuple(sorted(set(c.relaxed) | {"prefs.max_travel_hours"}))
     if not combos:
         return []
     for c in combos:
         c.comfort = _comfort(c, brief, districts, segs, rr)
+        if c.unused_night:   # loses to an equal variant that uses every booked night
+            c.comfort = round(c.comfort - rr["unused_night_penalty"], 4)
 
     picked: list[tuple[str, Combo]] = []
     notes: dict[str, list[str]] = {}
-    cheapest = min(combos, key=lambda c: (c.rub, c.hours, -c.comfort))
+    cheapest = min(combos, key=lambda c: (c.rub, c.unused_night, c.hours, -c.comfort))
     picked.append(("cheapest", cheapest))
     if door:
         min_h = min(c.hours for c in combos)
@@ -1142,11 +1235,18 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
             hotel = VariantHotel(hotel_id=c.hotel["hotel_id"], offer_id=c.hotel["offer_id"], name=c.hotel["name"],
                                  stars=c.hotel.get("stars"), rating=c.hotel.get("rating"), district=dp)
         risks = _risks(c, f, brief, rules, rr, steps)
+        if shift and shift.get("days"):
+            f["dates_shifted_days"] = int(shift["days"])
+            f["requested_check_in_date"] = shift.get("requested_check_in")
+            risks.insert(0, _shift_note(shift, f))
         if no_transport:
             from .state import Note
             risks.insert(0, Note(code="no_transport", text="Билеты не нашлись — показываем только проживание"))
         v = Variant(id=vid, title=TITLES.get(vid, vid), destination_id=dest.get("id") or (brief.destination.value.id if brief.destination.value else None),
-                    steps=steps, totals=Totals(rub=c.rub, door_to_door_hours=c.hours), hotel=hotel, facts=f,
+                    steps=steps, totals=Totals(rub=c.rub, door_to_door_hours=c.hours,
+                                               out_hours=round(c.out_hours, 1) if c.out is not None else None,
+                                               back_hours=round(c.back_hours, 1) if c.back is not None else None),
+                    hotel=hotel, facts=f,
                     risks=risks, not_for=_not_for(c, f, brief, districts, rr))
         variants.append(v)
     for v in variants:
@@ -1154,6 +1254,18 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
         v.sacrifices = _sacrifices({"id": v.id, "facts": v.facts}, others, rr, brief)
         v.fit = fit(brief, v, rules, segs)
     return variants
+
+
+def _shift_note(shift, facts):
+    """The trip was moved inside the user's flexible days (check-in, check-out and both legs together)."""
+    def dm(iso):
+        return f"{iso[8:10]}.{iso[5:7]}" if iso else ""
+    why = ("на исходные даты собрать поездку не получилось" if shift.get("reason") == "no_options"
+           else "так заметно дешевле")
+    start = facts.get("check_in_date") or facts.get("out_date")
+    return _note("dates_shifted", f"Даты сдвинуты в пределах ±{shift.get('flex_days')} дн.: заезд {dm(start)} "
+                                  f"вместо {dm(shift.get('requested_check_in'))} — {why}",
+                 days=int(shift["days"]), requested=shift.get("requested_check_in"), reason=shift.get("reason"))
 
 
 def _coincide_text(vid, also):

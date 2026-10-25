@@ -22,7 +22,7 @@ BINDING_KEYS = {
     "understand": COMMON_KEYS | {"shown", "pending_questions", "history", "message", "has_image"},
     "present.destinations": COMMON_KEYS | {"items", "questions", "image", "insight"},
     "present.variants": COMMON_KEYS | {"items", "recommended_hint", "questions", "upsell_candidates"},
-    "present.update": COMMON_KEYS | {"items", "recommended_hint", "questions", "upsell_candidates", "changes"},
+    "present.update": COMMON_KEYS | {"items", "recommended_hint", "questions", "upsell_candidates", "changes", "request"},
     "present.compare": COMMON_KEYS | {"items", "dimensions"},
     "present.info": COMMON_KEYS | {"question", "facts"},
     "present.aftercare": COMMON_KEYS | {"order", "result"},
@@ -30,7 +30,8 @@ BINDING_KEYS = {
 }
 DEST_ITEM_KEYS = {"id", "label", "name", "country", "price_from_rub", "nights", "party_label", "weather",
                   "travel_time_h", "match", "facts"}
-VARIANT_ITEM_KEYS = {"id", "label", "title", "totals", "steps", "hotel", "facts", "sacrifices", "risks", "not_for", "fit"}
+VARIANT_ITEM_KEYS = {"id", "label", "title", "totals", "steps", "hotel", "facts", "sacrifices", "risks", "not_for", "fit",
+                     "diff_rub", "diff_word", "over_budget_rub"}
 STEP_KEYS = {"type", "from", "to", "start", "end", "carrier", "price_rub"}
 MIN_EXAMPLES = {"understand": 8}
 PRESENT_CARDS = [c for c in BINDING_KEYS if c != "understand"]
@@ -223,7 +224,7 @@ def test_example_input_binding_keys(stem, card, inp, out):
         for item in inp["items"]:
             assert set(item) == VARIANT_ITEM_KEYS, stem
             assert all(set(s) == STEP_KEYS for s in item["steps"]), stem
-            assert set(item["totals"]) == {"rub", "door_to_door_hours"}
+            assert set(item["totals"]) == {"rub", "door_to_door_hours", "out_hours", "back_hours"}
     if card in ("present.variants", "present.update"):
         item_ids = {i.get("id") for i in inp.get("items") or []}
         for c in inp["upsell_candidates"]:

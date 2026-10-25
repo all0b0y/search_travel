@@ -12,7 +12,7 @@
   "routes": [
     {"id": "act.choose_destination", "when": {"action": ["choose_destination"]},
      "steps": ["apply_patch", "search", "build_variants", "check", "sensitivity", "ask_or_assume", "upsell"], "present": "present.variants"},
-    {"id": "act.answer.update", "when": {"action": ["answer_question", "set_chip"], "has": ["destination"], "stage": ["selection", "cart"]},
+    {"id": "act.answer.update", "when": {"action": ["answer_question", "set_chip"], "has": ["destination"], "stage": ["selection", "cart", "checkout"]},
      "steps": ["apply_patch", "search", "build_variants", "check", "sensitivity", "ask_or_assume", "upsell"], "present": "present.update"},
     {"id": "act.answer.variants", "when": {"action": ["answer_question", "set_chip"], "has": ["destination"]},
      "steps": ["apply_patch", "search", "build_variants", "check", "sensitivity", "ask_or_assume", "upsell"], "present": "present.variants"},
@@ -47,7 +47,7 @@
      "steps": ["resolve_refs", "apply_patch", "search", "build_variants", "check", "sensitivity", "ask_or_assume", "upsell"], "present": "present.variants"},
     {"id": "f.choose_variant", "when": {"intent": ["choose"], "stage": ["selection", "cart"]},
      "steps": ["resolve_refs", "cart_add"], "present": null},
-    {"id": "e.rebuild", "when": {"intent": ["refine", "answer"], "has": ["destination"], "stage": ["selection", "cart"]},
+    {"id": "e.rebuild", "when": {"intent": ["refine", "answer"], "has": ["destination"], "stage": ["selection", "cart", "checkout"]},
      "steps": ["apply_patch", "search", "build_variants", "check", "sensitivity", "ask_or_assume", "upsell"], "present": "present.update"},
     {"id": "bcd.variants", "when": {"intent": ["new_trip", "refine", "answer"], "has": ["destination"]},
      "steps": ["apply_patch", "search", "build_variants", "check", "sensitivity", "ask_or_assume", "upsell"], "present": "present.variants"},

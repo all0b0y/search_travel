@@ -160,8 +160,8 @@ def test_attention_skips_info_and_joins_readably():
     issues = [{"severity": "info", "message": "Отправление в 10:10, до расчётного часа 12:00"},
               {"severity": "warning", "message": "Между посадкой и трансфером 20 мин — нужно не меньше 45."},
               {"severity": "blocking", "message": "Трансфер подаётся раньше посадки самолёта"}]
-    assert attention(issues) == ("между посадкой и трансфером 20 мин — нужно не меньше 45; "
-                                 "трансфер подаётся раньше посадки самолёта.")
+    assert attention(issues) == ("трансфер подаётся раньше посадки самолёта; "
+                                 "между посадкой и трансфером 20 мин — нужно не меньше 45.")   # blockers first
     assert attention([issues[0]]) == ""
 
 

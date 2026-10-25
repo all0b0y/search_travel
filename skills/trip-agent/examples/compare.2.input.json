@@ -80,14 +80,16 @@
       "title": "Дешевле",
       "totals": {
         "rub": 98400,
-        "door_to_door_hours": 11.2
+        "door_to_door_hours": 11.2,
+        "out_hours": 6.2,
+        "back_hours": 5.0
       },
       "steps": [
         {
           "type": "flight",
           "from": "VKO",
           "to": "AYT",
-          "start": "2026-11-14T20:30+03:00",
+          "start": "2026-11-14T17:45+03:00",
           "end": "2026-11-14T23:55+03:00",
           "carrier": "Пример Авиа",
           "price_rub": 31200
@@ -106,7 +108,7 @@
           "from": "AYT",
           "to": "VKO",
           "start": "2026-11-21T15:10+03:00",
-          "end": "2026-11-21T18:40+03:00",
+          "end": "2026-11-21T20:10+03:00",
           "carrier": "Пример Авиа",
           "price_rub": 27800
         }
@@ -157,7 +159,10 @@
       "fit": {
         "score": 0.74,
         "breakdown": {}
-      }
+      },
+      "diff_rub": 23300,
+      "diff_word": "дешевле",
+      "over_budget_rub": null
     },
     {
       "id": "fastest",
@@ -165,7 +170,9 @@
       "title": "Быстрее",
       "totals": {
         "rub": 121700,
-        "door_to_door_hours": 9.1
+        "door_to_door_hours": 8.3,
+        "out_hours": 4.1,
+        "back_hours": 4.2
       },
       "steps": [
         {
@@ -257,7 +264,10 @@
       "fit": {
         "score": 0.88,
         "breakdown": {}
-      }
+      },
+      "diff_rub": 0,
+      "diff_word": null,
+      "over_budget_rub": null
     },
     {
       "id": "comfort",
@@ -265,7 +275,9 @@
       "title": "Комфортнее",
       "totals": {
         "rub": 164500,
-        "door_to_door_hours": 9.4
+        "door_to_door_hours": 8.7,
+        "out_hours": 4.3,
+        "back_hours": 4.4
       },
       "steps": [
         {
@@ -359,7 +371,10 @@
       "fit": {
         "score": 0.83,
         "breakdown": {}
-      }
+      },
+      "diff_rub": 42800,
+      "diff_word": "дороже",
+      "over_budget_rub": null
     }
   ],
   "dimensions": [

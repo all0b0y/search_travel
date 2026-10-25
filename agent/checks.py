@@ -181,16 +181,115 @@ def fill_rub(variant, rates):
 
 # ---------------------------------------------------------------- chain
 
-def origin_points(brief) -> set[str]:
+def _opendata_paths() -> tuple[str, ...]:
+    """The open-data databases the mock and the engine read (env as in ostrovok_mcp/db.py)."""
+    import os
+    from pathlib import Path
+    repo = Path(__file__).resolve().parent.parent
+    out = []
+    for env, default in (("OPENDATA_DB", "data/opendata.sqlite"), ("OPENDATA_EXTRA_DB", "runtime/opendata_extra.sqlite")):
+        p = Path(os.environ.get(env) or default)
+        p = p if p.is_absolute() else repo / p
+        if p.is_file():
+            out.append(str(p))
+    return tuple(out)
+
+
+def _city_places_from_opendata(city: str) -> dict:
+    """Stations and airports of a city from the open-data catalog (`destinations.stations` / `airports`).
+
+    These are the records the mock sells trains and flights from (ostrovok_mcp/geo.resolve_city), so a
+    station listed there belongs to that city. Exact name/id/alias match only — never a fuzzy guess.
+    Read-only local SQLite; {} when the city is not in the catalog or the databases are missing."""
+    import os
+    import sqlite3
+    paths = _opendata_paths()
+    key = (norm(city), tuple((p, os.path.getmtime(p)) for p in paths))
+    if key in _PLACES_CACHE:
+        return _PLACES_CACHE[key]
+    found = {"stations": [], "airports": []}
+    for p in paths:
+        try:
+            con = sqlite3.connect(f"file:{p}?mode=ro", uri=True)
+            con.row_factory = sqlite3.Row
+            try:
+                cols = {r[1] for r in con.execute("PRAGMA table_info(destinations)")}
+                pick = ", ".join(c for c in ("id", "name_ru", "name_en", "aliases", "stations", "airports") if c in cols)
+                rows = [dict(r) for r in con.execute(f"SELECT {pick} FROM destinations")] if pick else []
+            finally:
+                con.close()
+        except sqlite3.Error:
+            continue
+        for r in rows:
+            names = [r.get("id"), r.get("name_ru"), r.get("name_en")] + _json_list(r.get("aliases"))
+            if key[0] in {norm(n) for n in names if n}:
+                for k in ("stations", "airports"):
+                    found[k] += [x for x in _json_list(r.get(k)) if x and x not in found[k]]
+    _PLACES_CACHE[key] = found
+    return found
+
+
+def _json_list(value) -> list:
+    import json
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except ValueError:
+            return []
+    return [str(x) for x in value] if isinstance(value, list) else []
+
+
+_PLACES_CACHE: dict = {}
+# city name -> {"stations": [...], "airports": [...]}; replaceable (tests, another catalog)
+PLACE_SOURCE = _city_places_from_opendata
+
+
+def city_places(city) -> dict:
+    """Known stations/airports of a city (see PLACE_SOURCE); {} when unknown. Never raises."""
+    if not city:
+        return {}
+    try:
+        return PLACE_SOURCE(str(city)) or {}
+    except Exception:
+        return {}
+
+
+def origin_stations(brief) -> set[str]:
     origin = brief.origin.value
     if origin is None:
         return set()
-    return {norm(origin.city), *(norm(c) for c in origin.iata)}
+    return {norm(s) for s in city_places(origin.city).get("stations") or [] if s}
+
+
+def origin_points(brief) -> set[str]:
+    """Places that count as the origin: the city itself, the brief's airports and the city's catalog
+    stations and airports (a train from «Казанский вокзал» leaves Moscow)."""
+    origin = brief.origin.value
+    if origin is None:
+        return set()
+    places = city_places(origin.city)
+    return {norm(origin.city), *(norm(c) for c in origin.iata),
+            *(norm(s) for s in (places.get("stations") or []) + (places.get("airports") or []) if s)}
 
 
 def _at_origin(place, points, city) -> bool:
     p = norm(place)
     return p in points or bool(city and p.startswith(city + " "))  # "москва ленинградская" (a station)
+
+
+LEAVE_WORD = {"train": "Отправление", "flight": "Вылет"}
+
+
+def _origin_issue_text(step, origin_city, first: bool) -> str:
+    """Plain Russian without declining names: «Отправление туда — Курский вокзал, а это не город Казань»."""
+    if first:
+        word = LEAVE_WORD.get(step.get("type"), "Начало маршрута")
+        where = step["from"]
+        lead = f"{word} туда" if step.get("type") in LEAVE_WORD else word
+    else:
+        where = step["to"]
+        lead = "Прибытие обратно" if step.get("type") in LEAVE_WORD else "Конец маршрута"
+    return f"{lead} — {where}, а это не город {origin_city}"
 
 
 def return_index(steps):
@@ -207,9 +306,10 @@ def check_chain(steps, brief, vid=None) -> list[dict]:
     """Every step starts where the previous one ended; door-to-door variants start and end at the origin.
 
     The origin check runs only when the brief knows the origin's IATA codes or some step names the
-    origin city (otherwise the airports are unknown here and the check would be a guess). A gap between a
-    flight/train arrival and the stay (no transfer found) only warns: the traveller gets there alone.
-    Tickets only (no stay): the return may leave from another airport/station of the destination.
+    origin city or one of its catalog stations (otherwise the airports are unknown here and the check
+    would be a guess). A station or airport the catalog lists for the origin city counts as the origin.
+    A gap between a flight/train arrival and the stay (no transfer found) only warns: the traveller gets
+    there alone. Tickets only (no stay): the return may leave from another airport/station of the destination.
     """
     found = []
     if not steps:
@@ -218,23 +318,22 @@ def check_chain(steps, brief, vid=None) -> list[dict]:
     origin = brief.origin.value
     if transport and origin is not None:
         points, city = origin_points(brief), norm(origin.city)
-        named = any(_at_origin(s[end], {city}, city) for s in steps for end in ("from", "to"))
+        named_points = {city} | origin_stations(brief)
+        named = any(_at_origin(s[end], named_points, city) for s in steps for end in ("from", "to"))
         if origin.iata or named:
             if not _at_origin(steps[0]["from"], points, city):
-                found.append(issue("chain_origin", "block",
-                                   f"Маршрут начинается в {steps[0]['from']}, а вылет из {origin.city}",
-                                   variant=vid, step=steps[0]["id"], place=steps[0]["from"]))
+                found.append(issue("chain_origin", "block", _origin_issue_text(steps[0], origin.city, True),
+                                   variant=vid, step=steps[0]["id"], place=steps[0]["from"], end="start"))
             if not _at_origin(steps[-1]["to"], points, city):
-                found.append(issue("chain_origin", "block",
-                                   f"Маршрут заканчивается в {steps[-1]['to']}, а не в {origin.city}",
-                                   variant=vid, step=steps[-1]["id"], place=steps[-1]["to"]))
+                found.append(issue("chain_origin", "block", _origin_issue_text(steps[-1], origin.city, False),
+                                   variant=vid, step=steps[-1]["id"], place=steps[-1]["to"], end="finish"))
     back_at = return_index(steps)
     for k, (a, b) in enumerate(zip(steps, steps[1:])):
         if norm(a["to"]) == norm(b["from"]) or k + 1 == back_at:
             continue
         gap_ok = (a["type"] in TRANSPORT and b["type"] == "stay") or (a["type"] == "stay" and b["type"] in TRANSPORT)
         if gap_ok:
-            found.append(issue("no_transfer", "warn", f"Между {a['to']} и {b['from']} нет трансфера — добираться самим",
+            found.append(issue("no_transfer", "warn", f"Трансфер от «{a['to']}» до «{b['from']}» не найден — добираться самим",
                                variant=vid, step=b["id"], **{"from": a["to"], "to": b["from"]}))
         else:
             found.append(issue("chain_break", "block", f"{a['id']} заканчивается в {a['to']}, а следующий шаг начинается в {b['from']}",
@@ -328,7 +427,10 @@ def arrival_at_stay(steps):
 
 
 def check_stay(steps, rules, vid=None) -> list[dict]:
-    """Arrival vs check-in: a lost night blocks; arriving in the late check-in window warns."""
+    """Arrival vs check-in: a lost night blocks; arriving on a day before the check-in date blocks too
+    (a night without a bed: the flight lands the evening before and the hotel starts the next day — an
+    overnight train/flight arriving on the check-in morning is fine); arriving after midnight of the
+    check-in day warns (the first night is paid but not used); the late check-in window warns."""
     found = []
     i = _stay_index(steps)
     if i is None:
@@ -337,6 +439,15 @@ def check_stay(steps, rules, vid=None) -> list[dict]:
     arrival = arrival_at_stay(steps)
     if arrival is not None:
         start = ts(stay["start"])
+        if arrival.date() < start.date():
+            found.append(issue("night_without_hotel", "block",
+                               f"Прибытие {arrival:%d.%m} в {arrival:%H:%M}, а заезд только с {start:%d.%m}: ночь без отеля",
+                               variant=vid, step=stay["id"], arrival=arrival.isoformat(), check_in=start.date().isoformat()))
+        elif start.hour + start.minute / 60 < _late_end_hour(rules) and minutes(arrival, start) <= 0:
+            # the stay starts at the arrival after midnight: the night before it is booked but not used
+            found.append(issue("unused_first_night", "warn",
+                               f"Приезд {arrival:%d.%m} в {arrival:%H:%M}: первая ночь оплачена, но не используется",
+                               variant=vid, step=stay["id"], arrival=arrival.isoformat()))
         if minutes(start, arrival) > 0:
             check_in_day = datetime.combine(start.date(), datetime.min.time(), tzinfo=start.tzinfo)
             if arrival >= check_in_day + timedelta(days=1, hours=_late_end_hour(rules)):
@@ -526,4 +637,4 @@ def as_dates(value) -> date | None:
 __all__ = ["check_variant", "check_variant_set", "check_chain", "check_timing", "check_stay", "check_dates",
            "check_budget", "check_party", "check_totals", "connection_risks", "required_gap", "parse_cbr_xml",
            "to_rub", "fill_rub", "issue", "blocking", "fmt_rub", "fmt_hours", "fmt_int", "plural",
-           "nights_text", "in_clock_window", "arrival_at_stay", "return_index"]
+           "nights_text", "in_clock_window", "arrival_at_stay", "return_index", "origin_points", "city_places"]

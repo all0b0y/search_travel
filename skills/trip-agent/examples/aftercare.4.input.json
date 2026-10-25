@@ -1,0 +1,130 @@
+{
+  "today": "2026-10-25",
+  "stage": "aftercare",
+  "brief": {
+    "origin": {
+      "city": "Москва",
+      "iata": [
+        "SVO",
+        "VKO",
+        "DME"
+      ]
+    },
+    "destination": {
+      "id": "sochi",
+      "name": "Сочи",
+      "country": "Россия"
+    },
+    "traits": null,
+    "dates": {
+      "start": "2026-11-12",
+      "end": "2026-11-19",
+      "month": 11,
+      "window": null,
+      "nights": 7,
+      "flexible_days": 0
+    },
+    "party": {
+      "segment": "couple",
+      "adults": 2,
+      "children": 0,
+      "children_ages": null,
+      "pets": []
+    },
+    "budget_rub": null,
+    "scope": null,
+    "prefs": {
+      "meals": "any",
+      "free_cancellation": null,
+      "stars_min": null,
+      "direct_only": null,
+      "max_travel_hours": null,
+      "district": "quiet",
+      "beach_max_m": null,
+      "transport": "any",
+      "arrive_before": null,
+      "no_night_flights": null,
+      "domestic": null
+    },
+    "constraints": null,
+    "mood": null
+  },
+  "assumed": [
+    "origin.city",
+    "origin.iata",
+    "destination.id",
+    "destination.country",
+    "dates.nights",
+    "party.segment",
+    "prefs.district"
+  ],
+  "assumptions": [],
+  "order": {
+    "order_id": "o_ex_kgd",
+    "status": "paid",
+    "total_rub": 25430,
+    "items": [
+      {
+        "item_id": "oi_1",
+        "kind": "flight",
+        "title": "Москва → Калининград",
+        "price_rub": 6600,
+        "start": "2026-11-20T09:10+03:00",
+        "end": "2026-11-20T10:35+02:00",
+        "booking_number": "PA2001"
+      },
+      {
+        "item_id": "oi_2",
+        "kind": "hotel",
+        "title": "Отель «Балтика» (пример), 3 ночи",
+        "price_rub": 9800,
+        "start": "2026-11-20T14:00+02:00",
+        "end": "2026-11-23T12:00+02:00",
+        "booking_number": "BL3003"
+      },
+      {
+        "item_id": "oi_3",
+        "kind": "flight",
+        "title": "Калининград → Москва",
+        "price_rub": 6600,
+        "start": "2026-11-23T15:20+02:00",
+        "end": "2026-11-23T18:40+03:00",
+        "booking_number": "PA2002"
+      },
+      {
+        "item_id": "oi_4",
+        "kind": "transfer",
+        "title": "Такси",
+        "price_rub": 2430,
+        "start": null,
+        "end": null,
+        "booking_number": "TX4004"
+      }
+    ]
+  },
+  "result": {
+    "kind": "change_dates",
+    "available": false,
+    "reason": "tickets_not_exchangeable",
+    "new_dates": {
+      "check_in": "2026-11-21",
+      "check_out": "2026-11-24"
+    },
+    "if_cancelled": {
+      "hotel_refund_rub": 9800,
+      "hotel_penalty_rub": 0,
+      "tickets_refund_rub": 0,
+      "tickets_lost_rub": 13200,
+      "other_rub": 2430,
+      "refund_rub": 9800,
+      "lost_rub": 13200
+    },
+    "new_trip": {
+      "title": "Быстрее",
+      "total_rub": 25900,
+      "check_in": "2026-11-21",
+      "check_out": "2026-11-24"
+    },
+    "extra_rub": 16100
+  }
+}

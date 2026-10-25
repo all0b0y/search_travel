@@ -156,11 +156,15 @@
       "fare": 0.05,
       "transfer": 0.05,
       "district": 0.1,
-      "car_class": 0.1
+      "car_class": 0.1,
+      "cot": 0.15
     },
     "fastest_hours_tolerance": 0.25,
     "fastest_price_weight": 0.5,
     "comfort_max_extra_hours": 3,
-    "comfort_legs": 2
+    "comfort_legs": 2,
+    "unused_night_penalty": 0.05,
+    "max_hours_relax_tolerance_h": 1.0,
+    "flex_shift_min_saving_pct": 10
   }
 }

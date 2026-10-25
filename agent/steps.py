@@ -976,28 +976,115 @@ def _overnight_before(value, check_in):
     return out
 
 
+def _flex_days(brief):
+    return max(0, min(3, int((brief.values().get("dates") or {}).get("flexible_days") or 0)))
+
+
+def _ranking_rule(ctx, key, default):
+    return ((ctx.rules or {}).get("ranking") or {}).get(key, default)
+
+
 def run_search(ctx, brief, dest, check_in, check_out, track=True):
-    """Every search the scope needs, in parallel, cached by params. -> (results, districts, called_tools)."""
+    """Every search the scope needs, in parallel, cached by params. -> (results, districts, called_tools).
+
+    All offers of one result share ONE date set: outbound on check-in (or the overnight leg arriving on
+    it), hotel check-in..check-out, return on check-out. `dates.flexible_days` never mixes dates: the
+    user's own dates come first; within ±flexible_days the whole trip moves (check-in = the arrival day,
+    check-out = check-in + nights, the hotel/return/transfer searches re-run for the moved dates) only
+    when the user's dates build no variant, or another start day is cheaper overall by
+    rules.ranking.flex_shift_min_saving_pct. A moved trip carries results["date_shift"]
+    ({days, flex_days, requested_check_in, reason: "no_options"|"cheaper"}); ranking turns it into
+    facts.dates_shifted_days and a `dates_shifted` risk note.
+    """
+    results, districts, called = _search_dates(ctx, brief, dest, check_in, check_out)
+    flex = _flex_days(brief)
+    if not flex:
+        return results, districts, called
+    base = [v for v in build(ctx, brief, results, districts, pin=False) if not v.facts.get("no_transport")]
+    base_min = min((v.totals.rub for v in base), default=None)
+    tickets = _transport_min(results)
+    pct = float(_ranking_rule(ctx, "flex_shift_min_saving_pct", 10)) / 100
+    nights = (check_out - check_in).days
+    for days, est in _flex_shifts(ctx, brief, dest, check_in, check_out, flex, results):
+        if base_min is not None and (est is None or tickets is None or est > tickets - pct * base_min):
+            continue   # the user's dates work and this day's tickets cannot make the trip clearly cheaper
+        ci = check_in + timedelta(days=days)
+        r2, d2, c2 = _search_dates(ctx, brief, dest, ci, ci + timedelta(days=nights))
+        called = sorted(set(called) | set(c2))
+        moved = [v for v in build(ctx, brief, r2, d2, pin=False) if not v.facts.get("no_transport")]
+        if not moved:
+            continue
+        cheapest = min(v.totals.rub for v in moved)
+        if base_min is None or cheapest <= base_min * (1 - pct):
+            r2["date_shift"] = {"days": days, "flex_days": flex, "requested_check_in": check_in.isoformat(),
+                                "reason": "no_options" if base_min is None else "cheaper"}
+            return r2, d2, called
+    return results, districts, called
+
+
+def _transport_min(results):
+    """Cheapest outbound + return tickets of a result (None without both)."""
+    def low(*keys):
+        prices = [o.get("price_rub") for k in keys for o in results.get(k) or [] if o.get("price_rub") is not None]
+        return min(prices) if prices else None
+    out, back = low("flights_out", "trains_out"), low("flights_back", "trains_back")
+    return None if out is None or back is None else out + back
+
+
+def _flex_shifts(ctx, brief, dest, check_in, check_out, flex, results):
+    """Candidate shifts within ±flex days -> [(days, cheapest tickets for that date set | None)], nearest
+    first. The flight window comes from one search_flights(flex_days=flex) each way (cached); a day with
+    no flight pair keeps est None (trains are searched per day only when that day is tried)."""
+    scope = results.get("scope") or []
+    est = {}
+    transport = (brief.values().get("prefs") or {}).get("transport") or "any"
+    jobs = (_flight_jobs(ctx, brief, dest, check_in, check_out, flex)
+            if "flights" in scope and transport != "train" else {})
+    if jobs:
+        found = _parallel(ctx, jobs, tolerant=True)
+        outs = (found.get("flights.out") or {}).get("offers", [])
+        backs = (found.get("flights.back") or {}).get("offers", [])
+        nights = (check_out - check_in).days
+        for days in range(-flex, flex + 1):
+            ci = check_in + timedelta(days=days)
+            co = ci + timedelta(days=nights)
+            o = [f["price_rub"] for f in outs if _dt(f["arr"]).date() == ci]
+            b = [f["price_rub"] for f in backs if _dt(f["dep"]).date() == co]
+            if o and b:
+                est[days] = min(o) + min(b)
+    shifts = [d for d in range(-flex, flex + 1) if d and check_in + timedelta(days=d) >= ctx.session.today()]
+    priced = sorted((d for d in shifts if d in est), key=lambda d: (est[d], abs(d), d))
+    rest = sorted((d for d in shifts if d not in est), key=lambda d: (abs(d), d))
+    return [(d, est[d]) for d in priced] + [(d, None) for d in rest]
+
+
+def _flight_jobs(ctx, brief, dest, check_in, check_out, flex=0):
+    o_iata = resolve_origin_iata(ctx)
+    d_iata = dest.get("airports") or []
+    if not (o_iata and d_iata):
+        return {}
+    adults, children, infants = _flight_party(brief, check_in)
+    base = {"adults": adults, "children": children, "infants": infants, "flex_days": flex,
+            "today": ctx.session.today().isoformat()}
+    return {"flights.out": ("search_flights", {**base, "origin_iata": o_iata, "dest_iata": d_iata,
+                                               "date": check_in.isoformat()}),
+            "flights.back": ("search_flights", {**base, "origin_iata": d_iata, "dest_iata": o_iata,
+                                                "date": check_out.isoformat()})}
+
+
+def _search_dates(ctx, brief, dest, check_in, check_out):
+    """The searches of one date set (flights on the exact days, never a flex window)."""
     v = brief.values()
     scope = v.get("scope") or list(P.SCOPE_FULL)
     transport = (v.get("prefs") or {}).get("transport") or "any"
     today = ctx.session.today().isoformat()
     party = _party_payload(brief)
-    adults, children, infants = _flight_party(brief, check_in)
     pax = party["adults"] + len(party["children_ages"])
     origin = v.get("origin") or {}
-    flex = min(3, int((v.get("dates") or {}).get("flexible_days") or 0))
     before = len(ctx.trace["tools"])
     jobs = {}
     if "flights" in scope and transport != "train":
-        o_iata = resolve_origin_iata(ctx)
-        d_iata = dest.get("airports") or []
-        if o_iata and d_iata:
-            base = {"adults": adults, "children": children, "infants": infants, "flex_days": flex, "today": today}
-            jobs["flights.out"] = ("search_flights", {**base, "origin_iata": o_iata, "dest_iata": d_iata,
-                                                       "date": check_in.isoformat()})
-            jobs["flights.back"] = ("search_flights", {**base, "origin_iata": d_iata, "dest_iata": o_iata,
-                                                        "date": check_out.isoformat()})
+        jobs.update(_flight_jobs(ctx, brief, dest, check_in, check_out))
     if "trains" in scope or transport == "train":
         base = {"passengers": pax, "today": today}
         jobs["trains.out"] = ("search_trains", {**base, "origin_city": origin.get("city") or "",
@@ -1014,8 +1101,11 @@ def run_search(ctx, brief, dest, check_in, check_out, track=True):
         jobs["hotels"] = ("search_hotels", {"destination_id": dest["id"], "check_in": check_in.isoformat(),
                                             "check_out": check_out.isoformat(), "adults": party["adults"],
                                             "children_ages": party["children_ages"], "filters": _hotel_filters(brief),
-                                            "limit": 20, "today": today})
+                                            "limit": 40 if "crib" in (v.get("constraints") or []) else 20,
+                                            "today": today})
     out = _parallel(ctx, jobs)
+    if out.get("hotels"):
+        out["hotels"] = {**out["hotels"], "offers": _ungendered_rooms(ctx, jobs["hotels"][1], out["hotels"].get("offers") or [])}
     results = {"origin": origin, "destination": dest, "check_in": check_in.isoformat(),
                "check_out": check_out.isoformat(), "party": party, "scope": list(scope),
                "flights_out": (out.get("flights.out") or {}).get("offers", []),
@@ -1066,6 +1156,26 @@ def run_search(ctx, brief, dest, check_in, check_out, track=True):
                 districts[h["osm_id"]] = prof
     called = sorted({t["tool"] for t in ctx.trace["tools"][before:] if not t.get("cached")})
     return results, districts, called
+
+
+def _ungendered_rooms(ctx, payload, offers):
+    """The mock offers each hotel's cheapest room; when that is a men-/women-only room (we never know
+    the traveller's gender) the hotel's cheapest other room is asked for instead (search_hotels with
+    hotel_id + all_rooms); a hotel without one is dropped."""
+    from .ranking import is_gendered_room
+    bad = [o for o in offers if is_gendered_room(o.get("room"))]
+    if not bad:
+        return offers
+    jobs = {o["hotel_id"]: ("search_hotels", {**payload, "hotel_id": o["hotel_id"], "all_rooms": True, "limit": 40})
+            for o in bad}
+    found = _parallel(ctx, jobs, tolerant=True)
+    swap = {}
+    for hid, value in found.items():
+        rooms = [o for o in (value or {}).get("offers", []) if not is_gendered_room(o.get("room"))]
+        if rooms:
+            swap[hid] = min(rooms, key=lambda o: (o.get("price_total_rub") or 0, o.get("offer_id") or ""))
+    return [swap[o["hotel_id"]] if is_gendered_room(o.get("room")) and o["hotel_id"] in swap else o
+            for o in offers if not is_gendered_room(o.get("room")) or o["hotel_id"] in swap]
 
 
 def _parallel(ctx, jobs, tolerant=False):
@@ -1558,10 +1668,15 @@ def _leg_fact(step, offer):
 
 
 def _stay_fact(variant, offer):
+    """The stay as the info card sees it: dates AND times of check-in / check-out (local), terms, distances."""
     h, o = variant.hotel, offer or {}
     c = o.get("cancellation") or {}
+    stay = next((st for st in variant.steps if st.type == "stay"), None)
+    ci, co = (stay.start if stay else None) or o.get("check_in"), (stay.end if stay else None) or o.get("check_out")
     out = {"name": h.name, "stars": h.stars, "rating": h.rating, "meals": o.get("meals"),
-           "room": (o.get("room") or {}).get("name"), "check_in": o.get("check_in"), "check_out": o.get("check_out"),
+           "room": (o.get("room") or {}).get("name"),
+           "check_in_date": ci[:10] if ci else None, "check_in_time": _hhmm(ci),
+           "check_out_date": co[:10] if co else None, "check_out_time": _hhmm(co),
            "cancellation": {"free_until": c.get("free_until"), "penalty_pct": c.get("penalty_pct"),
                             "free": bool(c.get("free_until"))} if c else None,
            "pets_allowed": o.get("pets_allowed"), "early_checkin": o.get("early_checkin"),
@@ -1569,13 +1684,71 @@ def _stay_fact(variant, offer):
     return {k: v for k, v in out.items() if v is not None}
 
 
+def nights_without_stay(variant):
+    """Nights between the arrival and the check-in date (and between check-out and the trip home) that no
+    booked stay covers: [{"from": "2026-12-14", "to": "2026-12-15"}] = the night from the 14th to the 15th."""
+    idx = next((i for i, st in enumerate(variant.steps) if st.type == "stay"), None)
+    if idx is None:
+        return []
+    stay = variant.steps[idx]
+    ci, co = _date(stay.start), _date(stay.end)
+    before = [st for st in variant.steps[:idx] if st.type in ("flight", "train")]
+    after = [st for st in variant.steps[idx + 1:] if st.type in ("flight", "train")]
+    nights = []
+    if before and _date(before[-1].end) < ci:
+        d = _date(before[-1].end)
+        while d < ci:
+            nights.append(d)
+            d += timedelta(days=1)
+    if after and co < _date(after[0].start):
+        d = co
+        while d < _date(after[0].start):
+            nights.append(d)
+            d += timedelta(days=1)
+    return [{"from": d.isoformat(), "to": (d + timedelta(days=1)).isoformat()} for d in nights]
+
+
 def variant_fact(ctx, variant):
-    """Facts about a shown/chosen variant for present.info: transport legs and the stay terms."""
+    """Facts about a shown/chosen variant for present.info: transport legs (local dates and times), the stay
+    (check-in / check-out dates and times, terms) and the nights no booked stay covers."""
     legs = [_leg_fact(st, find_offer(ctx, st.offer_id)) for st in variant.steps if st.type in ("flight", "train",
                                                                                                 "transfer")]
     stay = _stay_fact(variant, find_offer(ctx, variant.hotel.offer_id)) if variant.hotel else None
-    return {"kind": "variant", "id": variant.id, "title": variant.title or P.VARIANT_TITLES.get(variant.id, variant.id),
-            "total_rub": variant.totals.rub, "legs": legs, "stay": stay}
+    out = {"kind": "variant", "id": variant.id, "title": variant.title or P.VARIANT_TITLES.get(variant.id, variant.id),
+           "total_rub": variant.totals.rub, "legs": legs, "stay": stay}
+    gaps = nights_without_stay(variant) if variant.hotel else []
+    if gaps:
+        out["nights_without_stay"] = gaps
+    return out
+
+
+def cancel_quote(order, now):
+    """What cancelling the booked order would return by its terms — ready numbers for the cards.
+
+    Hotel: free until `free_until`, else the penalty (penalty_pct of the price, rounded like the mock);
+    flights: refundable fares come back, the rest is lost; items without stated terms go to other_rub.
+    """
+    q = {"hotel_refund_rub": 0, "hotel_penalty_rub": 0, "tickets_refund_rub": 0, "tickets_lost_rub": 0,
+         "other_rub": 0}
+    for i in order.get("items") or []:
+        if i.get("status") == "cancelled":
+            continue
+        price = int(i.get("price_rub") or 0)
+        offer = (i.get("details") or {}).get("offer") or {}
+        if i.get("kind") == "hotel" and offer.get("cancellation"):
+            c = offer["cancellation"]
+            free = bool(c.get("free_until")) and now <= _dt(c["free_until"])
+            pct = 100 if c.get("penalty_pct") is None else int(c["penalty_pct"])
+            penalty = 0 if free else int(round(price * pct / 100 / 10.0)) * 10
+            q["hotel_penalty_rub"] += min(penalty, price)
+            q["hotel_refund_rub"] += price - min(penalty, price)
+        elif i.get("kind") == "flight" and "refundable" in (offer.get("fare") or {}):
+            q["tickets_refund_rub" if offer["fare"]["refundable"] else "tickets_lost_rub"] += price
+        else:
+            q["other_rub"] += price
+    q["refund_rub"] = q["hotel_refund_rub"] + q["tickets_refund_rub"]
+    q["lost_rub"] = q["hotel_penalty_rub"] + q["tickets_lost_rub"]
+    return q
 
 
 def order_terms_fact(order):
@@ -1621,12 +1794,39 @@ def step_info_lookup(ctx):
     if ctx.session.order_id:
         order = tool_safe(ctx, "order_get", {"order_id": ctx.session.order_id}, cache=False)
         if order:
-            fact = {"kind": "order", "id": order["order_id"], "data": order_summary(order)}
+            fact = {"kind": "order", "id": order["order_id"],
+                    "data": order_summary(order, checkout_issues(ctx.session, order["order_id"]))}
             terms = order_terms_fact(order)
             if terms:
                 fact["terms"] = terms
+            if order.get("status") in ("paid", "changed"):
+                fact["if_cancelled"] = cancel_quote(order, ctx.session.clock())
             facts.append(fact)
+    warnings = open_warnings(ctx)
+    if warnings:
+        facts.append({"kind": "warnings", "items": warnings})
     ctx.info_facts = facts
+
+
+def open_warnings(ctx):
+    """Open warnings / blockers of the cart (cart stage) and of the current order: the info card never
+    contradicts them (s20: «ночь без отеля» in the cart vs «да, ночь входит»)."""
+    s = ctx.session
+    issues = []
+    if s.cart_id and s.stage == "cart":
+        cart = tool_safe(ctx, "cart_get", {"session_id": s.id}, cache=False)
+        issues += list((cart or {}).get("issues") or [])
+    if s.order_id and s.stage in ("checkout", "ordered", "aftercare"):
+        order = tool_safe(ctx, "order_get", {"order_id": s.order_id}, cache=False)
+        issues += list((order or {}).get("issues") or [])
+    issues += [i for i in ctx.order_issues or []]
+    out = []
+    for i in issues:
+        sev = str(i.get("severity") or "").lower()
+        msg = str(i.get("message") or "").strip()
+        if sev in ("warning", "warn", "blocking", "block") and msg and msg not in out:
+            out.append(msg)
+    return out
 
 
 # ---------------------------------------------------------------- cart / checkout / pay / aftercare
@@ -1729,17 +1929,95 @@ def step_checkout(ctx):
     hook_issues = ctx.engine.hooks.run("after_travellers", ctx, kinds=("validate",))
     ctx.order = tool(ctx, "order_get", {"order_id": out["order_id"]}, cache=False)
     ctx.order_issues = list(hook_issues)
-    msg = f"Заказ собран, осталось оплатить {P.fmt_rub(ctx.order['total_rub'])}."
-    problems = attention(list(ctx.order.get("issues") or []) + list(hook_issues))
+    save_checkout_issues(ctx, out["order_id"], hook_issues)
+    ctx.message = checkout_text(ctx.order, hook_issues)
+
+
+# ---------------------------------------------------------------- order at checkout (pay or a way forward)
+
+CHECKOUT_ISSUES_KIND = "checkout_issues"
+BLOCK_SEVERITIES = ("block", "blocking")
+
+
+def pay_label(total_rub) -> str:
+    """The pay button's label (respond.build_actions) — also named in texts and info facts."""
+    return f"Оплатить {P.fmt_rub(total_rub or 0)}"
+
+
+def _checkout_issues_key(order_id):
+    return f"{CHECKOUT_ISSUES_KIND}:{order_id}"
+
+
+def save_checkout_issues(ctx, order_id, issues):
+    """Keep the after_travellers issues of an order for the later turns of the checkout stage (an info
+    question must not lose a blocker, nor invent one)."""
+    data = {"order_id": order_id, "issues": [as_issue(i) for i in issues or []]}
+    with ctx.lock:
+        store_result(ctx.session, CachedResult(key=_checkout_issues_key(order_id), kind=CHECKOUT_ISSUES_KIND,
+                                               params={"order_id": order_id}, fetched_at=ctx.session.clock(),
+                                               data=json.loads(json.dumps(data, ensure_ascii=False, default=str))))
+
+
+def checkout_issues(session, order_id) -> list:
+    rec = session.results.get(_checkout_issues_key(order_id)) if order_id else None
+    data = rec.data if rec is not None and isinstance(rec.data, dict) else {}
+    return list(data.get("issues") or [])
+
+
+def order_blockers(order, extra_issues=()) -> list:
+    return [i for i in list((order or {}).get("issues") or []) + list(extra_issues or [])
+            if (i.get("severity") or "").lower() in BLOCK_SEVERITIES]
+
+
+def pending_order(ctx):
+    """The session's order while it waits for payment in the checkout stage, for turns that did not load it
+    (an info question, small talk, an error): every checkout response carries the order and its pay button.
+    -> (order, extra_issues) or (None, [])."""
+    s = ctx.session
+    if s.stage != "checkout" or not s.order_id:
+        return None, []
+    order = tool_safe(ctx, "order_get", {"order_id": s.order_id}, cache=False)
+    if not order:
+        return None, []
+    return order, checkout_issues(s, order["order_id"])
+
+
+def checkout_text(order, extra_issues=()) -> str:
+    total = order.get("total_rub") or 0
+    issues = list(order.get("issues") or []) + list(extra_issues or [])
+    if order_blockers(order, extra_issues):
+        problems = attention(order_blockers(order, extra_issues))
+        return (f"Заказ собран на {P.fmt_rub(total)}, но оплатить его пока нельзя: {problems} "
+                "Выберите другой вариант кнопкой ниже или напишите, что поменять, — пересоберу.")
+    msg = f"Заказ собран, осталось оплатить {P.fmt_rub(total)} — кнопка «{pay_label(total)}»."
+    problems = attention(issues)
     if problems:
         msg += " Обратите внимание: " + problems
-    ctx.message = msg
+    return msg
 
 
-def order_summary(order):
-    return {"order_id": order["order_id"], "status": order["status"], "total_rub": order["total_rub"],
-            "items": [{k: i.get(k) for k in ("item_id", "kind", "title", "price_rub", "booking_number", "status",
-                                             "start", "end")} for i in order.get("items") or []]}
+def payment_fact(order, extra_issues=()) -> dict | None:
+    """What the user can do about paying (for card facts): the pay button's label, or why there is none."""
+    if (order or {}).get("status") != "pending_payment":
+        return None
+    blockers = order_blockers(order, extra_issues)
+    if blockers:
+        return {"pay_button": None, "can_pay": False,
+                "blocked_by": [str(i.get("message") or i.get("code")) for i in blockers][:2],
+                "next_step": "выбрать другой вариант кнопкой «Беру …» или написать, что поменять"}
+    label = pay_label(order.get("total_rub"))
+    return {"pay_button": label, "can_pay": True,
+            "next_step": f"нажать кнопку «{label}» — оплата картой (демо) сразу подтверждает заказ"}
+
+
+def order_summary(order, extra_issues=()):
+    out = {"order_id": order["order_id"], "status": order["status"], "total_rub": order["total_rub"],
+           "items": [{k: i.get(k) for k in ("item_id", "kind", "title", "price_rub", "booking_number", "status",
+                                            "start", "end")} for i in order.get("items") or []]}
+    pay = payment_fact(order, extra_issues)
+    if pay is not None:
+        out["payment"] = pay
+    return out
 
 
 def render_files(ctx, order):
@@ -1772,7 +2050,22 @@ def step_pay(ctx):
     order_id = ((ctx.action or {}).get("payload") or {}).get("order_id") or s.order_id
     if not order_id or order_id != s.order_id:
         ctx.fail("bad_request", "Не нашёл заказ для оплаты — оформите корзину ещё раз.")
-    tool(ctx, "pay", {"order_id": order_id, "method": "mock_card", "now": now_iso(ctx)}, cache=False)
+    blockers = [i for i in checkout_issues(s, order_id) if (i.get("severity") or "").lower() in BLOCK_SEVERITIES]
+    if blockers:
+        ctx.fail("bad_request", f"Оплатить этот заказ пока нельзя: {attention(blockers)} "
+                                "Выберите другой вариант или напишите, что поменять, — пересоберу.")
+    try:
+        tool(ctx, "pay", {"order_id": order_id, "method": "mock_card", "now": now_iso(ctx)}, cache=False)
+    except ToolError as exc:
+        kind = next((k for k in ("blocking_issues", "order_cancelled", "order_not_found")
+                     if k == exc.code or str(exc.message).startswith(k)), None)
+        if kind is None:
+            raise
+        order = tool_safe(ctx, "order_get", {"order_id": order_id}, cache=False) or {}
+        problems = attention(order_blockers(order)) if kind == "blocking_issues" else ""
+        ctx.fail("bad_request", ("Оплатить этот заказ пока нельзя: " + problems + " Выберите другой вариант или "
+                                 "напишите, что поменять, — пересоберу.") if problems else
+                 "Этот заказ уже не оплатить — выберите вариант заново, соберу новый заказ.")
     ctx.order = tool(ctx, "order_get", {"order_id": order_id}, cache=False)
     s.stage = "ordered"
     ctx.files = render_files(ctx, ctx.order)
@@ -1790,17 +2083,35 @@ def step_pay(ctx):
                                              else offers[0]) + " — пишите.")
 
 
-def attention(issues) -> str:
-    """Cart/order issues worth a sentence: warnings and blockers ("info" notes stay in the cart card)."""
-    texts = []
+ATTENTION_MAX = 2
+ATTENTION_RANK = {"block": 0, "blocking": 0, "warn": 1, "warning": 1}
+
+
+def attention(issues, limit=ATTENTION_MAX) -> str:
+    """Cart/order issues worth a sentence: at most `limit`, blockers first, one per code ("info" notes stay
+    in the cart card). Several missing transfers are one note."""
+    picked = []
     for i in issues or []:
         sev = (i.get("severity") or "").lower()
-        if sev in ("info", "") or not i.get("message"):
+        if sev not in ATTENTION_RANK or not i.get("message"):
             continue
-        t = i["message"].strip().rstrip(".")
+        picked.append((ATTENTION_RANK[sev], i))
+    picked.sort(key=lambda p: p[0])   # stable: the producer's order within a severity
+    by_code = {}
+    for _, i in picked:
+        by_code.setdefault(i.get("code") or i["message"], []).append(i)
+    texts = []
+    for code, group in by_code.items():
+        if code == "no_transfer" and len(group) > 1:
+            t = "Трансферов до отеля и обратно нет — добираться самим"
+        else:
+            t = group[0]["message"]
+        t = t.strip().rstrip(".")
         t = t[:1].lower() + t[1:] if t[:2] != t[:2].upper() else t
         if t not in texts:
             texts.append(t)
+        if len(texts) >= limit:
+            break
     return ("; ".join(texts) + ".") if texts else ""
 
 
@@ -1881,14 +2192,14 @@ def step_post_purchase(ctx):
             return
         ctx.order = order
         if not _dates_changeable(ctx):
-            _rebook_on_dates(ctx, new)        # a fare without exchange: the same trip anew on the new dates
+            _unmovable(ctx, order, new)       # a fare without exchange: the same trip anew, or the numbers
             return
         confirm = bool(params.get("confirm"))
         result = tool(ctx, "order_change_dates", {"order_id": s.order_id, "new_dates": new, "confirm": confirm,
                                                   "now": now_iso(ctx)}, cache=False)
         if not result.get("available") and any(i.get("code") == "flight_change_not_allowed"
                                                 for i in result.get("issues") or []):
-            _rebook_on_dates(ctx, new)
+            _unmovable(ctx, order, new)
             return
         result = {**result, "new_dates": new}
         store_result(s, CachedResult(key=CHANGE_QUOTE_KEY, kind="order_change_dates", params={},
@@ -1975,6 +2286,48 @@ def _new_dates_problem(ctx, new):
     if co <= ci:
         return "Дата выезда должна быть позже заезда — напишите даты ещё раз."
     return None
+
+
+REBOOK_KEY = "aftercare:rebook"
+
+
+def _stay_dates(variant):
+    stay = next((st for st in variant.steps if st.type == "stay"), None)
+    return (stay.start[:10], stay.end[:10]) if stay else None
+
+
+def _unmovable(ctx, order, new):
+    """The booked trip cannot move (tickets without exchange). The first request rebuilds the same trip on the
+    new dates; the same request again (the variants for those dates are already there) is answered with the
+    numbers instead of an identical rebuild (s16): what cancelling returns and what the new trip costs."""
+    s = ctx.session
+    rec = s.results.get(REBOOK_KEY)
+    done = rec.data if rec is not None and isinstance(rec.data, dict) else {}
+    target = (new["check_in"], new["check_out"])
+    ready = [v for v in s.variants if _stay_dates(v) == target]
+    if done.get("order_id") == s.order_id and done.get("new_dates") == new and ready:
+        _no_move_answer(ctx, order, new, ready)
+        return
+    store_result(s, CachedResult(key=REBOOK_KEY, kind="rebook", params={}, fetched_at=s.clock(),
+                                 data={"order_id": s.order_id, "new_dates": new}))
+    _rebook_on_dates(ctx, new)
+
+
+def _no_move_answer(ctx, order, new, variants):
+    s = ctx.session
+    same = next((v for v in variants if v.id == s.chosen_variant_id), None)
+    trip = same or s.variant(recommended_hint(variants)) or variants[0]
+    quote = cancel_quote(order, s.clock())
+    gap = trip.totals.rub - quote["refund_rub"]
+    result = {"kind": "change_dates", "available": False, "reason": "tickets_not_exchangeable", "new_dates": new,
+              "if_cancelled": quote,
+              "new_trip": {"title": trip.title or P.VARIANT_TITLES.get(trip.id, trip.id),
+                           "total_rub": trip.totals.rub, "check_in": new["check_in"], "check_out": new["check_out"]}}
+    result["extra_rub" if gap >= 0 else "saving_rub"] = abs(gap)
+    ctx.order = order
+    ctx.aftercare_result = result
+    ctx.present = "present.aftercare"
+    ctx.trace["notes"].append("post_purchase: same unmovable change again -> cancel quote + new trip price")
 
 
 def _rebook_on_dates(ctx, new):
