@@ -1,0 +1,68 @@
+{
+  "id": "bu_02_fifty",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Псков из Питера, я один, поездом. На всю поездку полтинник, больше не вывезу.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/budget_rub.max",
+      "value": 50000,
+      "casefold": true
+    },
+    {
+      "type": "any_of",
+      "of": [
+        {
+          "type": "path_equals",
+          "path": "/patch/set/party.adults",
+          "value": 1
+        },
+        {
+          "type": "path_equals",
+          "path": "/patch/set/party.segment",
+          "value": "solo"
+        }
+      ]
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/prefs.transport",
+      "value": "train",
+      "casefold": true
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}

@@ -1,0 +1,99 @@
+{
+  "id": "bu_37_compare",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Екатеринбург",
+        "iata": [
+          "SVX"
+        ]
+      },
+      "destination": {
+        "id": "bukhara",
+        "name": "Бухара",
+        "country": "Узбекистан"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2027-03-04",
+        "end": "2027-03-08",
+        "month": 3,
+        "window": null,
+        "nights": 4,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "solo",
+        "adults": 1,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [
+      {
+        "label": "1",
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле"
+      },
+      {
+        "label": "2",
+        "kind": "variant",
+        "id": "fastest",
+        "title": "Быстрее"
+      },
+      {
+        "label": "3",
+        "kind": "variant",
+        "id": "comfort",
+        "title": "Комфортнее"
+      }
+    ],
+    "pending_questions": [],
+    "history": [],
+    "message": "Сравните первый и третий: за счёт чего третий дороже? Пока ни один не выбираю.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "compare"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/budget_rub.max"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}

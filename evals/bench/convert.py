@@ -129,6 +129,25 @@ def convert_cases(src, places, problems):
     return out
 
 
+def check_transport(s, routes, problems):
+    """A transport check the routes table (given to the author) says is impossible for the person's pair."""
+    p = s["persona"]
+    home = p["profile"]["home_city"]
+    names = [n for m in p["hidden"]["must"] if m["name"] == "destination_in" for n in (m.get("args") or {}).get("names", [])]
+    for m in p["hidden"]["must"]:
+        args = m.get("args") or {}
+        for n in names:
+            r = (routes.get(home) or {}).get(n)
+            if r is None:
+                continue
+            if m["name"] == "direct_flights_only" and r["flight"] != "direct":
+                problems.append(f"{s['id']}: direct_flights_only but {home} -> {n} is {r['flight']}")
+            if m["name"] == "transport_is" and args.get("kind") == "flight" and not r["flight"]:
+                problems.append(f"{s['id']}: transport_is flight but no flight {home} -> {n}")
+            if m["name"] == "transport_is" and args.get("kind") == "train" and not r["train"]:
+                problems.append(f"{s['id']}: transport_is train but no train {home} -> {n}")
+
+
 def check_scenario(path, places, problems):
     s = read_json(path)
     sid = s.get("id")
@@ -166,6 +185,11 @@ def main(argv=None):
     problems = []
     cases = convert_cases(version / "source" / "cases.json", places, problems)
     scenarios = [check_scenario(p, places, problems) for p in sorted((version / "source" / "scenarios").glob("*.json"))]
+    routes_path = version / "source" / "routes.json"
+    if routes_path.exists():
+        routes = read_json(routes_path)
+        for sc in scenarios:
+            check_transport(sc, routes, problems)
     for p in problems:
         print("PROBLEM", p)
     if problems:
