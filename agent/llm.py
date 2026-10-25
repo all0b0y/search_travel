@@ -94,11 +94,42 @@ def validate_output(text, schema):
         return None, [f"invalid JSON: {exc}"]
     if not isinstance(data, dict):
         return None, ["the reply must be a JSON object"]
+    data = drop_unknown_enum_items(data, schema)
     validator = jsonschema.Draft7Validator(schema)
     errors = sorted(validator.iter_errors(data), key=lambda e: list(e.absolute_path))
     if errors:
         return None, [f"{'/'.join(str(p) for p in e.absolute_path) or '$'}: {e.message}" for e in errors[:5]]
     return data, []
+
+
+def drop_unknown_enum_items(data, schema, root=None):
+    """Arrays whose items are an enum keep only the allowed values (a stray «coast» next to «beach» is
+    dropped instead of failing the whole reply). Scalars are left to validation."""
+    root = root or schema
+    if isinstance(schema, dict) and "$ref" in schema and schema["$ref"].startswith("#/"):
+        node = root
+        for part in schema["$ref"][2:].split("/"):
+            node = node.get(part, {}) if isinstance(node, dict) else {}
+        schema = node
+    if not isinstance(schema, dict):
+        return data
+    if isinstance(data, dict):
+        props = schema.get("properties") or {}
+        return {k: drop_unknown_enum_items(v, props.get(k, {}), root) for k, v in data.items()}
+    if isinstance(data, list):
+        items = schema.get("items")
+        if isinstance(items, dict):
+            target = items
+            if "$ref" in target and target["$ref"].startswith("#/"):
+                node = root
+                for part in target["$ref"][2:].split("/"):
+                    node = node.get(part, {}) if isinstance(node, dict) else {}
+                target = node
+            enum = target.get("enum") if isinstance(target, dict) else None
+            if enum is not None:
+                return [x for x in data if x in enum]
+            return [drop_unknown_enum_items(x, items, root) for x in data]
+    return data
 
 
 def retry_message(errors):

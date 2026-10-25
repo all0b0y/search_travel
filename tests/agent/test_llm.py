@@ -243,3 +243,11 @@ def test_non_transient_errors_are_not_retried(monkeypatch):
     with __import__("pytest").raises(llm.LLMError):
         Bad().complete(llm.LLMRequest(card="x", system="s", user="{}", schema={"type": "object"}))
     assert Bad.calls == 1
+
+
+def test_unknown_enum_items_are_dropped_not_fatal():
+    from agent.llm import validate_output
+    schema = {"type": "object", "properties": {"traits": {"type": "object", "properties": {
+        "landscape": {"type": "array", "items": {"enum": ["beach", "mountains"]}}}}}}
+    data, errors = validate_output('{"traits": {"landscape": ["beach", "coast"]}}', schema)
+    assert errors == [] and data == {"traits": {"landscape": ["beach"]}}
