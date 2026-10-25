@@ -238,6 +238,7 @@ class Engine:
                 self._fix_intent(ctx)
                 route_kw = {"intent": ctx.intent}
                 self._apply_season(ctx)
+                self._read_rebuild_wishes(ctx)
         self._validate_patch(ctx)
         self._resolve_shift(ctx)
         if ctx.stop:
@@ -252,6 +253,8 @@ class Engine:
             if "dates.end" not in ctx.patch["unset"]:
                 ctx.patch["unset"].append("dates.end")
             ctx.trace["notes"].append("dates: end not after start, end recomputed from nights")
+            tentative, _, _ = prepare_brief(ctx, s.brief, ctx.patch)
+        if self._drop_contradicting_destination(ctx, tentative):
             tentative, _, _ = prepare_brief(ctx, s.brief, ctx.patch)
         route = self.skill.match_route(stage=s.stage, brief=tentative, **route_kw)
         if route is None:
@@ -378,6 +381,11 @@ class Engine:
         best = s.variant(card_hint(s.brief, ctx.variants)) or ctx.variants[0]
         P.record_shown(s, "variant", [(v.id, v.title or P.VARIANT_TITLES.get(v.id, v.id)) for v in ctx.variants])
         title = best.title or P.VARIANT_TITLES.get(best.id, best.id)
+        tried = next((n.text for n in best.risks if n.code == "budget_fit"), None)
+        if tried:   # the date / cheaper-hotel search ran and found nothing better: say what was tried
+            ctx.message = (f"{tried}. Ближе всего — «{title}», {P.fmt_rub(best.totals.rub)} за всё. Можно взять его, "
+                           f"поднять бюджет, сократить поездку на ночь или посмотреть другое направление.")
+            return
         ctx.message = (f"Пересобрал ещё раз — подборка та же: вариантов, где это гарантировано, у меня нет. "
                        f"Ближе всего — «{title}», {P.fmt_rub(best.totals.rub)} за всё. Можно взять его или "
                        f"поменять даты, бюджет или район — напишите, что можно сдвинуть.")
@@ -474,6 +482,66 @@ class Engine:
         if drop:
             unsets.append("dates.end")
             ctx.trace["notes"].append("dates: stale end dropped (new start or nights)")
+
+    # ------------------------------------------------------------ a change of trip kind / a rebuild wish
+    def _read_rebuild_wishes(self, ctx):
+        """«другие числа / даты», «подешевле / попроще» without exact values: build_variants then searches other
+        start days and cheaper hotels (steps.fit_budget) instead of answering with the same variants."""
+        if ctx.intent not in ("new_trip", "refine", "answer") or not ctx.text:
+            return
+        sets = ctx.patch["set"]
+        if wants_other_dates(ctx.text) and not ({"dates.start", "dates.shift_days"} & set(sets)):
+            ctx.ask_other_dates = True
+            ctx.trace["notes"].append("wish: other dates without values -> date search")
+        if wants_cheaper(ctx.text) and "budget_rub.max" not in sets:   # a new budget is the exact value
+            ctx.ask_cheaper = True
+            ctx.trace["notes"].append("wish: cheaper without values -> cheaper search")
+
+    def _drop_contradicting_destination(self, ctx, tentative):
+        """The kind of trip changed this turn and the chosen destination no longer fits it: prefs.domestic set
+        while the destination is abroad, prefs.transport = train set while no train goes there from the origin,
+        or «другую страну / другой город» without naming one. The destination is unset (the patch and the trace
+        show it) and the turn goes to the destinations route with the new prefs and the budget. A destination
+        named in the same message is never dropped."""
+        from .steps import _origin_place, _passes_dest_prefs, destination_record
+        sets, unsets = ctx.patch["set"], ctx.patch["unset"]
+        if ctx.destination_hint or "destination.name" in sets or "destination.name" in unsets:
+            return False
+        if ctx.action is None and ctx.intent not in ("new_trip", "refine", "answer"):
+            return False
+        if ctx.action is not None and ctx.action.get("type") not in ("set_chip", "answer_question"):
+            return False
+        dest = tentative.values().get("destination") or {}
+        if not dest.get("id"):
+            return False
+        rec = destination_record(ctx, dest_id=dest["id"])
+        if rec is None:
+            return False
+        prefs = tentative.values().get("prefs") or {}
+        origin = _origin_place(ctx, tentative)
+        why = None
+        if sets.get("prefs.domestic") is True and prefs.get("domestic"):
+            home = (origin or {}).get("country_code") or "RU"
+            if rec.get("country_code") and rec["country_code"] != home:
+                why = f"prefs.domestic: {dest['id']} is not in {home}"
+        if why is None and sets.get("prefs.transport") == "train" and prefs.get("transport") == "train":
+            if not _passes_dest_prefs(rec, origin, True, False):
+                why = f"prefs.transport train: no train to {dest['id']} from {(origin or {}).get('id')}"
+        if why is None and ctx.text:
+            m = OTHER_PLACE_RE.search(ctx.text)
+            if m:
+                why = f"«{m.group(0)}» without a name"
+                ctx.other_country = "стран" in m.group(0).casefold()
+        if why is None:
+            return False
+        unsets.append("destination.name")
+        ctx.dropped_destination = rec
+        if ctx.action is None and ctx.intent == "answer":
+            ctx.intent = "refine"
+        ctx.trace["notes"].append(f"destination {dest['id']} dropped ({why}) -> destinations")
+        if isinstance(ctx.trace.get("understand"), dict):
+            ctx.trace["understand"]["patch"] = ctx.patch
+        return True
 
     # ------------------------------------------------------------ model calls
     def _call_card(self, ctx, card, payload, images=(), rerun_issues=None):
@@ -679,6 +747,25 @@ def is_rebuild_request(text):
     return bool(REBUILD_RE.search(text or ""))
 
 
+# «другие числа / даты», «сдвиньте даты», «перенесите поездку» — without exact values the date search runs
+OTHER_DATES_RE = re.compile(r"(?:друг|ин)(?:ие|ую|ой|ое|ими|их|ая)\s+(?:числ|дат|дн[иеяй]|недел)|"
+                            r"сдвин\w*\s+(?:дат|поездк|на\s+друг)|перенес\w*\s+(?:дат|поездк)|"
+                            r"(?:поменя|смен|измен)\w*\s+дат", re.I)
+# «подешевле», «попроще», «что-нибудь дешевле» (not the variant title «Дешевле» alone)
+CHEAPER_RE = re.compile(r"подешевл|попроще|поскромнее|(?:что-нибудь|что-то|ещё|еще|вариант\w*|отел\w*)\s+дешевле|"
+                        r"дешевле\s+(?:есть|найд|можно|бы|вариант|отел)", re.I)
+# «другую страну / другой город / другое направление» without naming one
+OTHER_PLACE_RE = re.compile(r"(?:друг|ин)(?:ая|ую|ой|ое|ие|ого)\s+(?:стран|город|направлен|мест[оа]|курорт)", re.I)
+
+
+def wants_other_dates(text):
+    return bool(OTHER_DATES_RE.search(text or ""))
+
+
+def wants_cheaper(text):
+    return bool(CHEAPER_RE.search(text or ""))
+
+
 def route_intent(intent, stage, text, patch, refs=(), paid=False, post_purchase=None):
     """Code fixes of the understand intent by stage, before routing -> (intent, patch, note | None).
 
@@ -690,7 +777,7 @@ def route_intent(intent, stage, text, patch, refs=(), paid=False, post_purchase=
     """
     sets = dict((patch or {}).get("set") or {})
     unsets = list((patch or {}).get("unset") or [])
-    rebuild = is_rebuild_request(text)
+    rebuild = is_rebuild_request(text) or wants_other_dates(text) or wants_cheaper(text)
     if intent == "post_purchase" and not paid:
         pp = post_purchase or {}
         params = dict(pp.get("params") or {})

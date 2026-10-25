@@ -1324,10 +1324,13 @@ def _shift_note(shift, facts):
     """The trip was moved inside the user's flexible days (check-in, check-out and both legs together)."""
     def dm(iso):
         return f"{iso[8:10]}.{iso[5:7]}" if iso else ""
-    why = ("на исходные даты собрать поездку не получилось" if shift.get("reason") == "no_options"
-           else "так заметно дешевле")
+    why = {"no_options": "на исходные даты собрать поездку не получилось",
+           "budget": "так укладываемся в бюджет", "cheaper": "так дешевле",
+           "other_dates": "вы просили другие числа"}.get(shift.get("reason"), "так заметно дешевле")
     start = facts.get("check_in_date") or facts.get("out_date")
-    return _note("dates_shifted", f"Даты сдвинуты в пределах ±{shift.get('flex_days')} дн.: заезд {dm(start)} "
+    head = ("Сдвинул даты" if shift.get("auto")    # moved by the engine (rescue / budget), not the user's ± days
+            else f"Даты сдвинуты в пределах ±{shift.get('flex_days')} дн.")
+    return _note("dates_shifted", f"{head}: заезд {dm(start)} "
                                   f"вместо {dm(shift.get('requested_check_in'))} — {why}",
                  days=int(shift["days"]), requested=shift.get("requested_check_in"), reason=shift.get("reason"))
 

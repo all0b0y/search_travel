@@ -154,6 +154,11 @@ class Ctx:
     fallback_reason: str = "unknown"
     stop: bool = False
     reroute: Any = None
+    extra_actions: list = field(default_factory=list)      # actions a no_data answer offers (other destinations)
+    ask_other_dates: bool = False                          # «другие числа / даты» without exact values
+    ask_cheaper: bool = False                              # «подешевле / попроще» without exact values
+    dropped_destination: Optional[dict] = None             # a destination dropped by a change of trip kind
+    other_country: bool = False                            # «другую страну»: the dropped one's country too
     trace: dict = field(default_factory=new_trace)
     flash_calls: int = 0
     lock: threading.RLock = field(default_factory=threading.RLock)
@@ -546,10 +551,17 @@ def normalize_brief(ctx, brief):
         if not start and not dates.get("month"):
             brief = assume(brief, "dates.month", (ctx.session.today() + timedelta(days=30)).month, "default")
     # scope
+    transport = (brief.values().get("prefs") or {}).get("transport")
     if not brief.has("scope"):
-        transport = (brief.values().get("prefs") or {}).get("transport")
         scope = ["trains", "stay", "transfers"] if transport == "train" else list(P.SCOPE_FULL)
         brief = assume(brief, "scope", scope, "default")
+    elif brief.source_of("scope") != "user" and transport in ("train", "plane"):
+        # the transport changed after the default scope was set («а поездом?»): the assumed scope follows it,
+        # else ranking keeps looking for flights and builds stay-only variants (h10)
+        scope = list(brief.values().get("scope") or [])
+        swap = ("flights", "trains") if transport == "train" else ("trains", "flights")
+        if swap[0] in scope and swap[1] not in scope:
+            brief = assume(brief, "scope", [swap[1] if s == swap[0] else s for s in scope], "default")
     return brief
 
 
@@ -772,6 +784,10 @@ def step_find_destinations(ctx):
     recs = [r for r in recs if r and r.get("id")]
     if ctx.image_place:
         recs = [ctx.image_place] + [r for r in recs if r["id"] != ctx.image_place["id"]]
+    if ctx.dropped_destination:   # a change of trip kind dropped it: never suggest it again in the same answer
+        gone = ctx.dropped_destination
+        recs = [r for r in recs if r["id"] != gone.get("id") and not (
+            ctx.other_country and gone.get("country_code") and r.get("country_code") == gone["country_code"])]
     if narrowed:
         origin = _origin_place(ctx, ctx.brief)
         recs = [r for r in recs if _passes_dest_prefs(r, origin, train, domestic)]
@@ -1151,9 +1167,10 @@ def _flight_jobs(ctx, brief, dest, check_in, check_out, flex=0):
                                                 "date": check_out.isoformat()})}
 
 
-def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None):
+def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None, hotel_cap=None):
     """The searches of one date set (flights on the exact days, never a flex window). `hotel_id`: only that
-    hotel, every fitting room (search_hotels all_rooms) — the checkout re-price of a chosen variant."""
+    hotel, every fitting room (search_hotels all_rooms) — the checkout re-price of a chosen variant.
+    `hotel_cap`: only stays up to that total (search_hotels max_price_total, a wider list) — the budget fit."""
     v = brief.values()
     scope = v.get("scope") or list(P.SCOPE_FULL)
     transport = (v.get("prefs") or {}).get("transport") or "any"
@@ -1178,13 +1195,30 @@ def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None):
                                                          "dest_city": dest["name"],
                                                          "date": (check_in - timedelta(days=1)).isoformat()})
     if "stay" in scope:
+        filters = _hotel_filters(brief)
+        if hotel_cap is not None:
+            filters["max_price_total"] = int(hotel_cap)
         jobs["hotels"] = ("search_hotels", {"destination_id": dest["id"], "check_in": check_in.isoformat(),
                                             "check_out": check_out.isoformat(), "adults": party["adults"],
-                                            "children_ages": party["children_ages"], "filters": _hotel_filters(brief),
-                                            "limit": 40 if "crib" in (v.get("constraints") or []) or hotel_id else 20,
+                                            "children_ages": party["children_ages"], "filters": filters,
+                                            "limit": 40 if "crib" in (v.get("constraints") or []) or hotel_id
+                                            or hotel_cap is not None else 20,
                                             "today": today, **({"hotel_id": hotel_id, "all_rooms": True}
                                                                if hotel_id else {})})
     out = _parallel(ctx, jobs)
+    if "flights.out" in jobs and "stay" in scope:
+        # every flight of the check-in day lands on a later day (eastern origins: OVB 22:25 -> MCT 11:25 next
+        # day): the first night is lost and nothing pairs with the stay (h01 Muscat no_data). Overnight flights
+        # of the evening before that land on the check-in day are the trip the quote priced, like overnight trains.
+        outs = (out.get("flights.out") or {}).get("offers", [])
+        if outs and not any(_dt(o.get("arr")) and _dt(o["arr"]).date() == check_in for o in outs):
+            name, payload = jobs["flights.out"]
+            prev = tool_safe(ctx, name, {**payload, "date": (check_in - timedelta(days=1)).isoformat()})
+            extra = _overnight_before(prev, check_in)
+            if extra:
+                out["flights.out"] = {**out["flights.out"], "offers": extra + outs}
+                ctx.trace["notes"].append(f"flights: {len(extra)} overnight outbound(s) of the evening before "
+                                          f"{check_in.isoformat()} added (none of that day lands on it)")
     if out.get("hotels"):
         out["hotels"] = {**out["hotels"], "offers": _ungendered_rooms(ctx, jobs["hotels"][1], out["hotels"].get("offers") or [])}
     results = {"origin": origin, "destination": dest, "check_in": check_in.isoformat(),
@@ -1311,10 +1345,8 @@ def step_search(ctx):
                     "search_transfers": "transfers"}.get(t, t) for t in called if t.startswith("search_")]
     for i in ctx.engine.hooks.run("after_search", ctx, kinds=("validate",)):
         ctx.issues.append(i)
-    scope = results["scope"]
-    if "stay" in scope and not results["hotels"]:
-        ctx.fail("no_data", f"На {P.fmt_date_range(check_in, check_out)} в «{dest['name']}» свободных отелей под "
-                            "ваши условия не нашлось. Попробуйте сдвинуть даты или ослабить фильтры.")
+    # no hotels on these dates is no dead end here: build_variants tries the neighbouring dates first and
+    # then says in plain words what is missing (no_build_message)
 
 
 # ---------------------------------------------------------------- variants
@@ -1398,11 +1430,317 @@ def step_build_variants(ctx):
         step_search(ctx)
     if ctx.swap:
         return _swap_hotel(ctx)
+    first = ctx.results
     ctx.variants = build(ctx, ctx.brief, ctx.results, ctx.districts)
+    if not ctx.variants:
+        ctx.variants = rescue_dates(ctx)
+    if ctx.variants:
+        ctx.variants = fit_budget(ctx, ctx.variants)
     ctx.session.variants = ctx.variants
     if not ctx.variants:
-        ctx.fail("no_data", "Собрать поездку из найденного не получилось: не хватает билетов или отелей на эти даты. "
-                            "Попробуйте другие даты.")
+        ctx.extra_actions = other_destination_actions(ctx)
+        ctx.fail("no_data", no_build_message(ctx, first))
+
+
+# ---------------------------------------------------------------- a build that gives nothing / nothing in budget
+# (held-out level-3 run): a chosen destination that builds nothing on its dates tries the flexible window
+# (±RESCUE_FLEX_DAYS, then ±1 night) before giving up, and then says in plain words what is missing with the
+# other shown destinations one tap away; a budget no variant fits (or «другие числа» / «подешевле» without
+# values) tries other start days in the same month, then cheaper hotels, then both, and reports the change
+# in facts (budget_fit, budget_rub, budget_dropped_prefs) and a risk note the update card can say.
+
+RESCUE_FLEX_DAYS = 3
+BUDGET_SHIFT_DAYS = 3
+BUDGET_COMBINED_TRIES = 3
+# comfort prefs a budget fit may drop when the user never set them (segment defaults, profile guesses)
+COMFORT_DEFAULTS = (("district", "any"), ("meals", "any"), ("free_cancellation", None), ("stars_min", None))
+COMFORT_RU = {"district": "район", "meals": "питание", "free_cancellation": "бесплатная отмена",
+              "stars_min": "звёздность"}
+
+
+def _built(ctx, brief, results, districts):
+    """Door-to-door variants of a result (stay-only `no_transport` ones never count as built)."""
+    want_transport = bool(set(results.get("scope") or []) & {"flights", "trains"})
+    out = build(ctx, brief, results, districts, pin=False)
+    return [v for v in out if not (want_transport and v.facts.get("no_transport"))] if want_transport else out
+
+
+def _low(variants):
+    return min((v.totals.rub for v in variants), default=None)
+
+
+def _moved_brief(brief, check_in, check_out, base_in, base_out):
+    """The brief for a trip moved from base dates: the user's own dates stay and the flexible days widen to
+    cover the move (checks then accept it); inferred dates simply move. A changed number of nights is inferred."""
+    if (check_in, check_out) == (base_in, base_out):
+        return brief
+    nights, base_nights = (check_out - check_in).days, (base_out - base_in).days
+    if brief.source_of("dates.start") == "user" or brief.source_of("dates.end") == "user":
+        days = max(abs((check_in - base_in).days), abs((check_out - base_out).days))
+        if days > _flex_days(brief):
+            brief = assume(brief, "dates.flexible_days", min(3, days), "inferred")
+    else:
+        brief = assume(brief, "dates.start", check_in.isoformat(), "inferred")
+        brief = assume(brief, "dates.end", check_out.isoformat(), "inferred")
+    if nights != base_nights:
+        brief = assume(brief, "dates.nights", nights, "inferred")
+    return brief
+
+
+def _date_changes(ctx, base_in, base_out, check_in, check_out):
+    rows = []
+    if check_in != base_in:
+        rows.append({"field": "dates.start", "before": base_in.isoformat(), "after": check_in.isoformat()})
+    if check_out != base_out:
+        rows.append({"field": "dates.end", "before": base_out.isoformat(), "after": check_out.isoformat()})
+    if (check_out - check_in).days != (base_out - base_in).days:
+        rows.append({"field": "dates.nights", "before": (base_out - base_in).days,
+                     "after": (check_out - check_in).days})
+    known = {r["field"] for r in ctx.changes}
+    ctx.changes += [r for r in rows if r["field"] not in known]
+
+
+def _adopt(ctx, brief, results, districts):
+    """Make a found result the turn's result: the brief, results and the pinned variants."""
+    ctx.session.brief = brief
+    ctx.results, ctx.districts = results, districts
+    for kind in ("flights", "stay", "transfers") if "flights" in (results.get("scope") or []) else ("stay",):
+        if kind not in ctx.rebuilt:
+            ctx.rebuilt.append(kind)
+    return build(ctx, brief, results, districts)
+
+
+def rescue_dates(ctx):
+    """Nothing builds on the dates: the same trip ±RESCUE_FLEX_DAYS days (whole trip moved), then one night
+    shorter / longer (also within the window). -> pinned variants or []."""
+    res = ctx.results or {}
+    if not res.get("check_in") or not res.get("check_out"):
+        return []
+    dest = res.get("destination") or current_destination(ctx)
+    base_in, base_out = _date(res["check_in"]), _date(res["check_out"])
+    nights = (base_out - base_in).days
+    brief = ctx.session.brief
+    flexed = brief if _flex_days(brief) >= RESCUE_FLEX_DAYS else assume(
+        brief, "dates.flexible_days", RESCUE_FLEX_DAYS, "inferred")
+    tries = [] if flexed is brief else [nights]
+    tries += [n for n in (nights - 1, nights + 1) if n >= 1]
+    for n in tries:
+        b2 = flexed if n == nights else assume(flexed, "dates.nights", n, "inferred")
+        r2, d2, _ = run_search(ctx, b2, dest, base_in, base_in + timedelta(days=n))
+        if not _built(ctx, b2, r2, d2):
+            continue
+        ci, co = _date(r2["check_in"]), _date(r2["check_out"])
+        shift = r2.get("date_shift")
+        if shift:
+            shift.update(auto=True, flex_days=RESCUE_FLEX_DAYS)
+        moved = _moved_brief(brief, ci, co, base_in, base_out)
+        variants = _adopt(ctx, moved, r2, d2)
+        _date_changes(ctx, base_in, base_out, ci, co)
+        if n != nights:
+            for v in variants:
+                v.facts["nights_changed_from"] = nights
+                v.risks.insert(0, _risk_note("nights_changed", f"На {n} {P.plural(n, 'ночь', 'ночи', 'ночей')} вместо "
+                                                               f"{nights}: на {nights} не стыкуется ни на одни даты рядом",
+                                             nights=n, requested=nights))
+        ctx.trace["notes"].append(f"rescue: nothing on {base_in}..{base_out}, built on {ci}..{co}")
+        return variants
+    ctx.trace["notes"].append(f"rescue: nothing within ±{RESCUE_FLEX_DAYS} days and ±1 night of {base_in}")
+    return []
+
+
+def _risk_note(code, text, **data):
+    from .state import Note
+    return Note(code=code, text=text, data=data)
+
+
+def _comfort_free_brief(brief):
+    """The brief without the comfort prefs the user never set -> (brief, dropped pref paths)."""
+    prefs = brief.values().get("prefs") or {}
+    dropped = []
+    for key, default in COMFORT_DEFAULTS:
+        if brief.source_of(f"prefs.{key}") == "user" or prefs.get(key) in (default, None):
+            continue
+        brief = assume(brief, f"prefs.{key}", default, "inferred")
+        dropped.append(f"prefs.{key}")
+    return brief, dropped
+
+
+def fit_budget(ctx, variants):
+    """budget_rub.max set and every variant above it — or «другие числа» / «подешевле» without values: other
+    start days in the same month (±BUDGET_SHIFT_DAYS), then cheaper hotels (the user's hard prefs stay; comfort
+    prefs nobody set are dropped; stays capped by what the tickets leave of the budget), then both. The first
+    that fits is taken; when nothing fits, the closest cheaper result is shown and said so."""
+    s = ctx.session
+    res = ctx.results or {}
+    budget = (s.brief.values().get("budget_rub") or {}).get("max")
+    low = _low(variants)
+    if not res.get("check_in") or not res.get("check_out") or low is None:
+        return variants
+    over = bool(budget) and low > budget
+    if not (over or ctx.ask_other_dates or ctx.ask_cheaper):
+        return variants
+    target = budget if over else (low - 1 if ctx.ask_cheaper else None)
+    reason = "budget" if over else ("cheaper" if ctx.ask_cheaper else "other_dates")
+    dest = res.get("destination") or current_destination(ctx)
+    base_in, base_out = _date(res["check_in"]), _date(res["check_out"])
+    requested = _date((res.get("date_shift") or {}).get("requested_check_in")) or base_in
+    nights = (base_out - base_in).days
+    brief = s.brief
+    scope = set(res.get("scope") or [])
+    fits = (lambda m: m is not None and (target is None or m <= target))
+    best = None   # (low, label, brief, results, districts, dropped)
+
+    def consider(label, b2, r2, d2, dropped=()):
+        nonlocal best
+        m = _low(_built(ctx, b2, r2, d2))
+        if m is not None and (best is None or m < best[0]):
+            best = (m, label, b2, r2, d2, list(dropped))
+        return fits(m)
+
+    shifts = [(d, est) for d, est in _flex_shifts(ctx, brief, dest, base_in, base_out, BUDGET_SHIFT_DAYS, res)
+              if (base_in + timedelta(days=d)).month == base_in.month and base_in + timedelta(days=d) != requested]
+    found = None
+    # 1. other start days in the same month
+    for d, est in shifts:
+        if target is not None and est is not None and est >= target:
+            continue   # the tickets alone are over
+        ci = base_in + timedelta(days=d)
+        r2, d2, _ = _search_dates(ctx, brief, dest, ci, ci + timedelta(days=nights))
+        if consider("dates", brief, r2, d2):
+            found = best
+            break
+    # 2. cheaper hotels on the dates shown, 3. both (only when a price target exists)
+    if found is None and target is not None and "stay" in scope:
+        cheap, dropped = _comfort_free_brief(brief)
+        tickets = _transport_min(res) if scope & {"flights", "trains"} else 0
+        if tickets is not None and target - tickets > 0:
+            r2, d2, _ = _search_dates(ctx, cheap, dest, base_in, base_out, hotel_cap=target - tickets)
+            if consider("hotel", cheap, r2, d2, dropped):
+                found = best
+        tried = 0
+        for d, est in shifts:
+            if found is not None or tried >= BUDGET_COMBINED_TRIES:
+                break
+            if est is None or est >= target:
+                continue
+            tried += 1
+            ci = base_in + timedelta(days=d)
+            r2, d2, _ = _search_dates(ctx, cheap, dest, ci, ci + timedelta(days=nights), hotel_cap=target - est)
+            if consider("dates_and_hotel", cheap, r2, d2, dropped):
+                found = best
+    pick = found or (best if best is not None and best[0] < low and target is not None else None)
+    if pick is None:
+        status = "not_found" if (over or ctx.ask_cheaper) else "other_dates_not_found"
+        _mark_budget(variants, status, budget, low, [])
+        ctx.trace["notes"].append(f"budget fit ({reason}): nothing found (±{BUDGET_SHIFT_DAYS} days"
+                                  + (", cheaper hotels)" if target is not None else ")"))
+        return variants
+    m, label, b2, r2, d2, dropped = pick
+    ci, co = _date(r2["check_in"]), _date(r2["check_out"])
+    if ci != base_in:
+        r2["date_shift"] = {"days": (ci - requested).days, "flex_days": BUDGET_SHIFT_DAYS,
+                            "requested_check_in": requested.isoformat(), "reason": reason, "auto": True,
+                            **({"budget_rub": int(budget)} if over else {})}
+    moved = _moved_brief(b2, ci, co, base_in, base_out)
+    out = _adopt(ctx, moved, r2, d2)
+    _date_changes(ctx, base_in, base_out, ci, co)
+    for p in dropped:
+        before = (brief.values().get("prefs") or {}).get(p.split(".", 1)[1])
+        ctx.changes.append({"field": p, "before": before, "after": (moved.values().get("prefs") or {}).get(
+            p.split(".", 1)[1])})
+    status = label if found is not None else "not_found"
+    _mark_budget(out, status, budget, _low(out), dropped)
+    ctx.trace["notes"].append(f"budget fit ({reason}): {label} {base_in}->{ci} low {low}->{_low(out)}"
+                              + ("" if found is not None else " (closest, still over)"))
+    return out
+
+
+def _mark_budget(variants, status, budget, low, dropped):
+    """facts.budget_fit (dates|hotel|dates_and_hotel|not_found), facts.budget_rub, facts.budget_dropped_prefs and a
+    `budget_fit` risk note the update card can say («сдвинул на 8–16 декабря — так укладываемся в 180 000 ₽»)."""
+    if not status:
+        return
+    for v in variants:
+        v.facts["budget_fit"] = status
+        if budget:
+            v.facts["budget_rub"] = int(budget)
+        if dropped:   # facts are scalars: the dropped comfort prefs as a ready Russian list
+            v.facts["budget_dropped_prefs"] = ", ".join(COMFORT_RU[p.split(".", 1)[1]] for p in dropped)
+    stay = lambda v: next((st for st in v.steps if st.type == "stay"), None)  # noqa: E731
+    for v in variants:
+        st = stay(v)
+        span = P.fmt_date_range(st.start[:10], st.end[:10]) if st is not None else None
+        fits = bool(budget) and v.totals.rub <= budget
+        tail = f" — так укладываемся в {P.fmt_rub(budget)}" if fits else ""
+        if status == "not_found":
+            text = f"Пробовал другие числа (±{BUDGET_SHIFT_DAYS} дня) и отели попроще — дешевле {P.fmt_rub(low)} "
+            text += (f"не выходит, это выше бюджета {P.fmt_rub(budget)}" if budget and low > budget
+                     else "не нашлось")
+        elif status == "other_dates_not_found":
+            text = f"Соседние числа (±{BUDGET_SHIFT_DAYS} дня) в этом месяце не собираются — оставил эти даты"
+        elif status == "dates":
+            text = f"Сдвинул на {span}{tail}" if span else f"Сдвинул даты{tail}"
+        elif status == "hotel":
+            text = f"Взял отели попроще{tail}"
+        else:
+            text = f"Сдвинул на {span} и взял отели попроще{tail}"
+        if dropped and status != "not_found":
+            text += " (без условий: " + ", ".join(COMFORT_RU[p.split('.', 1)[1]] for p in dropped) + ")"
+        v.risks = [n for n in v.risks if n.code != "dates_shifted"] if status in ("dates", "dates_and_hotel") else v.risks
+        v.risks.insert(0, _risk_note("budget_fit", text, status=status, budget=int(budget) if budget else None,
+                                     fits=fits))
+
+
+def other_destination_actions(ctx):
+    """choose_destination actions for the destinations already shown (except the one that did not build)."""
+    current = (ctx.session.brief.values().get("destination") or {}).get("id")
+    out = []
+    for item in ctx.session.shown.destinations:
+        if item.id != current and len(out) < 5:
+            out.append({"type": "choose_destination", "label": f"Смотреть {item.title}",
+                        "payload": {"destination_id": item.id}})
+    return out
+
+
+def no_build_message(ctx, results):
+    """What exactly is missing, in plain words (never «нет данных»), plus the way out."""
+    s = ctx.session
+    v = s.brief.values()
+    res = results or ctx.results or {}
+    origin = (v.get("origin") or {}).get("city") or "город вылета"
+    dest = (res.get("destination") or {}).get("name") or (v.get("destination") or {}).get("name") or "туда"
+    ci, co = res.get("check_in"), res.get("check_out")
+    when = P.fmt_date_range(ci, co) if ci and co else "эти даты"
+    scope = set(res.get("scope") or [])
+    trains_only = (v.get("prefs") or {}).get("transport") == "train" or ("trains" in scope and "flights" not in scope)
+    word = "поездов" if trains_only else "рейсов"
+    outs = (res.get("flights_out") or []) + (res.get("trains_out") or [])
+    backs = (res.get("flights_back") or []) + (res.get("trains_back") or [])
+    want_transport = bool(scope & {"flights", "trains"})
+    if "stay" in scope and not res.get("hotels"):
+        reason = f"на {when} в «{dest}» свободных отелей под ваши условия не нашлось"
+    elif want_transport and not outs:
+        reason = f"по маршруту {origin} — {dest} на {when} нет {word} туда"
+    elif want_transport and not backs:
+        reason = f"по маршруту {origin} — {dest} на {when} нет {word} обратно"
+    elif "stay" in scope:
+        reason = (f"по маршруту {origin} — {dest} на {when} нет {word}, которые стыкуются с отелем: "
+                  f"прилёт не попадает в даты заезда или обратный вылет — в даты выезда")
+    else:
+        reason = f"билеты туда и обратно на {when} не стыкуются между собой"
+    text = (f"Собрать поездку не получилось: {reason}. Соседние даты (±{RESCUE_FLEX_DAYS} дня) и на ночь "
+            f"короче или длиннее тоже не собираются.")
+    others = [a["label"].removeprefix("Смотреть ") for a in ctx.extra_actions]
+    if others:
+        text += f" Можно посмотреть другие места из подборки — например, {others[0]} — или назвать другие даты."
+    else:
+        text += " Можно назвать другие даты или другое направление — соберу заново."
+    agent_said = list(getattr(getattr(s, "history", None), "agent", None) or [])
+    last = agent_said[-1] if agent_said else None
+    if last == text:   # the same dead end twice: name the next step, not the same sentence
+        text = (f"Всё так же: {reason}. " + (f"Давайте посмотрим {others[0]} — кнопка ниже, или назовите "
+                                             f"другой месяц." if others else "Назовите другой месяц или город."))
+    return text
 
 
 def _swap_hotel(ctx):

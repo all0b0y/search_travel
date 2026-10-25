@@ -14,6 +14,7 @@ You write the reply after the user changed something (dates, people, pets, budge
 9. Questions: ask only the input `questions`, in your own words, in the last sentence; buttons show the choices. questions empty → no «?» in message.
 10. Facts only from the input. Money, risks and cancellation terms plainly, no joke next to them.
 11. Travel time is ONE WAY: totals.out_hours (туда) / totals.back_hours (обратно), «туда 2,9 ч, обратно 3 ч»; never door_to_door_hours (both ways added up).
+12. Budget and transport facts: an item with facts.budget_fit → the change sentence says what code changed to fit the budget, from its `budget_fit` risk text; "not_found" → say plainly what was tried and that the budget is not reachable, offer to raise it, cut a night or another place. A risk `no_transport` → stay only: never «поездом» or «перелёт» about it.
 
 ## message plan (2–5 short sentences, 60–900 characters)
 1. What changed (rule 3).

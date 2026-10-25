@@ -152,12 +152,26 @@ def test_entry_e_dog_reruns_only_hotels_and_transfers(h):
 
 
 def test_entry_e_budget_down_reuses_cache(h):
+    """A lower budget the variants still fit reuses the cached searches; a budget nothing fits runs the budget
+    fit (other start days in the month, cheaper hotels) instead of answering with the same selection (holdout
+    h01 / s05), and still never repeats the searches of the dates on screen."""
     _to_selection(h)
+    h.understand(u(intent="refine", set={"budget_rub.max": 100000}))
+    before = len(h.ostrovok.calls)
+    r = h.turn("до 100 тысяч")
+    searches = [t for t, _ in h.ostrovok.calls[before:] if t.startswith("search_")]
+    assert searches == [] and r["cards"]["variants"]
     h.understand(u(intent="refine", set={"budget_rub.max": 60000}))
     before = len(h.ostrovok.calls)
     r = h.turn("подешевле, до 60 тысяч")
-    searches = [t for t, _ in h.ostrovok.calls[before:] if t.startswith("search_")]
-    assert searches == [] and r["cards"]["variants"]
+    assert r["cards"]["variants"]
+    shown_in = h.session().variants[0].facts.get("check_in_date")
+    for t, p in h.ostrovok.calls[before:]:
+        if t == "search_hotels" and p.get("check_in") == shown_in:
+            assert (p.get("filters") or {}).get("max_price_total"), p     # only the capped (cheaper) list
+        if t == "search_flights" and not p.get("flex_days"):
+            assert p["date"] not in (shown_in, h.session().variants[0].facts.get("check_out_date")), p
+    assert all(v.facts.get("budget_fit") == "not_found" for v in h.session().variants)
 
 
 def _buy(h):

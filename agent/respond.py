@@ -164,6 +164,10 @@ def build_actions(ctx, cards, order):
     for d in cards["destinations"]:
         actions.append({"type": "choose_destination", "label": f"Смотреть {d['name']}",
                         "payload": {"destination_id": d["id"]}})
+    # a no_data answer is never a dead end: the other destinations already shown are one tap away
+    for a in getattr(ctx, "extra_actions", None) or []:
+        if a not in actions:
+            actions.append(dict(a))
     if s.stage == "selection" and s.variants and not ctx.error:
         shown = [v for v in (s.variant(i.id) for i in s.shown.variants) if v is not None] or list(s.variants)
         for v in shown:
