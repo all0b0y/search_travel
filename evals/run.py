@@ -163,6 +163,12 @@ def run_case_once(case, run_index, backend, skill):
                            latency_ms=int((time.monotonic() - started) * 1000))
                 return rec
     data = polish_output(res.data)
+    if case["card"] == "understand" and isinstance(data, dict):
+        # like the engine: deterministic code-side normalisation of the patch before it reaches the brief
+        from agent.engine import month_only_start
+        patch = data.get("patch") or {}
+        if data.get("intent") in ("new_trip", "refine", "answer") and isinstance(patch.get("set"), dict):
+            rec["normalized"] = month_only_start(patch["set"], case["input"].get("message") or "")
     ok, results = evaluate_all(case["expect"], data, case["input"], card.schema)
     rec["rerun"] = rerun
     rec.update(ok=ok, results=results, output=data, latency_ms=res.latency_ms, usage=res.usage, model=res.model,

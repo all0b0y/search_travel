@@ -235,6 +235,8 @@ class Engine:
             else:
                 self._understand(ctx)
                 route_kw = {"intent": ctx.intent}
+                if ctx.intent in ("new_trip", "refine", "answer") and month_only_start(ctx.patch["set"], ctx.text):
+                    ctx.trace["notes"].append("dates: a month without a day -> dates.month, not the 1st")
                 self._apply_season(ctx)
         self._validate_patch(ctx)
         self._resolve_shift(ctx)
@@ -629,6 +631,30 @@ _SEASON_RE = {
 # an explicit month or a numeric date beats the season («летом, в августе» -> August)
 _MONTH_WORD_RE = re.compile(r"(?<![а-яё])(январ|феврал|март|апрел|ма[йяе](?![а-яё]*к)|майск|июн|июл|август|сентябр|"
                             r"октябр|ноябр|декабр|новогодн)|\d{1,2}[./]\d{1,2}", re.I)
+
+
+_MONTH_STEMS = ("январ", "феврал", "март", "апрел", "ма[йяе](?![а-яё])", "июн", "июл", "август", "сентябр",
+                "октябр", "ноябр", "декабр")
+# a day was said: «5 января», «5–12 января», «05.01», «с 5-го», «числа», «в начале / середине / конце», holidays
+_DAY_HINT_RE = re.compile(r"\d{1,2}(?:\s*[-–—]\s*\d{1,2})?\s*(?:январ|феврал|март|апрел|ма[йяе]|июн|июл|август|сентябр|"
+                          r"октябр|ноябр|декабр)|\d{1,2}[./]\d{1,2}|\d{1,2}\s*-?\s*(?:го|е)(?![а-яё])|числ|"
+                          r"начал|середин|конц|кон[её]ц|выходн|праздник|новогод", re.I)
+
+
+def month_only_start(sets, text):
+    """«в январе на 10 ночей» read as dates.start = the 1st: no day was said, so it is dates.month.
+    Changes `sets` in place; True when it did."""
+    start = _iso_date(sets.get("dates.start"))
+    if start is None or start.day != 1 or _DAY_HINT_RE.search(text or ""):
+        return False
+    if not re.search(r"(?<![а-яё])" + _MONTH_STEMS[start.month - 1], text or "", re.I):
+        return False
+    end = _iso_date(sets.pop("dates.end", None))
+    sets.pop("dates.start")
+    if end is not None and end > start and "dates.nights" not in sets:
+        sets["dates.nights"] = (end - start).days
+    sets["dates.month"] = start.month
+    return True
 
 
 def _season_of(text):

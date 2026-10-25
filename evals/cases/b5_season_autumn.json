@@ -37,9 +37,22 @@
       "casefold": true
     },
     {
-      "type": "path_equals",
-      "path": "/patch/set/dates.month",
-      "value": 11
+      "type": "predicate",
+      "name": "any_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "path_equals",
+            "path": "/patch/set/dates.month",
+            "value": 10
+          },
+          {
+            "type": "path_equals",
+            "path": "/patch/set/dates.month",
+            "value": 11
+          }
+        ]
+      }
     },
     {
       "type": "path_equals",
@@ -57,5 +70,5 @@
     }
   ],
   "runs": 5,
-  "notes": "«осенью» with today 2026-10-25 -> the first autumn month after October = 11 (the code applies the same rule)."
+  "notes": "«осенью» with today 2026-10-25: October or November from the model are both fine — the engine sets the exact season month in code (season_month: November) and shows it as a chip."
 }

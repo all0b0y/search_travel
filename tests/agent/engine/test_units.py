@@ -196,3 +196,17 @@ def test_origin_equal_to_destination_is_dropped():
                                  "unset": []})
     codes = {(i["code"], (i.get("data") or {}).get("path")) for i in validate_patch_hook(ctx)}
     assert ("origin_is_destination", "origin.city") in codes
+
+
+def test_month_without_a_day_is_a_month_not_the_first():
+    from agent.engine import month_only_start
+    sets = {"dates.start": "2027-01-01", "dates.nights": 10}
+    assert month_only_start(sets, "тянет на юг, к морю, в январе на 10 ночей")    # «10 ночей» is not a day
+    assert sets == {"dates.month": 1, "dates.nights": 10}
+    sets = {"dates.start": "2027-01-01", "dates.end": "2027-01-08"}
+    assert month_only_start(sets, "хотим в январе на недельку к морю")
+    assert sets == {"dates.month": 1, "dates.nights": 7}
+    for text in ("с 1 января", "1–8 января", "01.01", "с 1-го, в январе", "в начале января", "на новогодние в январе",
+                 "в феврале"):
+        sets = {"dates.start": "2027-01-01"}
+        assert month_only_start(sets, text) is False and sets == {"dates.start": "2027-01-01"}
