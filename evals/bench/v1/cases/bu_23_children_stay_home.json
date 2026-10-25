@@ -89,10 +89,19 @@
       "value": "refine"
     },
     {
-      "type": "path_equals",
-      "path": "/patch/set/party.adults",
-      "value": 2,
-      "casefold": true
+      "type": "any_of",
+      "of": [
+        {
+          "type": "path_equals",
+          "path": "/patch/set/party.adults",
+          "value": 2
+        },
+        {
+          "type": "path_equals",
+          "path": "/patch/set/party.segment",
+          "value": "couple"
+        }
+      ]
     },
     {
       "type": "path_equals",
@@ -101,10 +110,13 @@
       "casefold": true
     },
     {
-      "type": "path_equals",
+      "type": "path_in",
       "path": "/patch/set/party.children_ages",
-      "value": [],
-      "casefold": true
+      "values": [
+        [],
+        null
+      ],
+      "allow_absent": true
     }
   ],
   "runs": 5,

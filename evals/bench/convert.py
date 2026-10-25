@@ -65,8 +65,31 @@ def empty_brief():
                               "constraints", "mood")}
 
 
+# equivalent readings under the understand contract (segments.json defaults, no_hostel implies no_dorm):
+# the benchmark checks meaning, not one of several correct spellings of it
+def _contains(path, value):
+    return {"type": "predicate", "name": "contains", "args": {"path": path, "values": [value]}}
+
+
+def equivalent(e):
+    """An expectation with an equivalent reading -> an any_of assertion, else None."""
+    if e.get("set") == "party.children_ages" and e.get("equals") == []:
+        return {"type": "path_in", "path": "/patch/set/party.children_ages", "values": [[], None], "allow_absent": True}
+    if e.get("set") == "party.adults" and e.get("equals") in (1, 2):
+        seg = {1: "solo", 2: "couple"}[e["equals"]]
+        return {"type": "any_of", "of": [{"type": "path_equals", "path": "/patch/set/party.adults", "value": e["equals"]},
+                                         {"type": "path_equals", "path": "/patch/set/party.segment", "value": seg}]}
+    if e.get("constraint") == "no_dorm":
+        return {"type": "any_of", "of": [_contains("/patch/set/constraints.add", "no_dorm"),
+                                         _contains("/patch/set/constraints.add", "no_hostel")]}
+    return None
+
+
 def assertion(e, problems, cid):
     """The short format of BRIEF.md -> the runner's assertion."""
+    eq = equivalent(e)
+    if eq is not None:
+        return eq
     if "intent" in e:
         return {"type": "path_equals", "path": "/intent", "value": e["intent"]}
     if "set" in e:

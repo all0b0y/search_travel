@@ -36,10 +36,19 @@
       "value": "new_trip"
     },
     {
-      "type": "path_equals",
-      "path": "/patch/set/party.adults",
-      "value": 2,
-      "casefold": true
+      "type": "any_of",
+      "of": [
+        {
+          "type": "path_equals",
+          "path": "/patch/set/party.adults",
+          "value": 2
+        },
+        {
+          "type": "path_equals",
+          "path": "/patch/set/party.segment",
+          "value": "couple"
+        }
+      ]
     },
     {
       "type": "path_equals",

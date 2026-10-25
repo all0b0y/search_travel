@@ -13,7 +13,7 @@ import jsonschema
 
 from .common import MISSING, get_path, iter_strings, number_pool, numbers_in_text, resolve, same_number
 
-ASSERTION_TYPES = ("schema", "path_equals", "path_in", "path_absent", "path_present", "max_items", "regex_absent",
+ASSERTION_TYPES = ("schema", "path_equals", "path_in", "path_absent", "path_present", "any_of", "max_items", "regex_absent",
                    "numbers_subset", "ids_subset", "predicate")
 
 # output keys whose strings are not shown to the user (ids)
@@ -96,6 +96,17 @@ def a_path_present(a, output, inp, schema):
     return _res(bool(present), "" if present else f"{a['path']} is absent")
 
 
+def a_any_of(a, output, inp, schema):
+    """Passes when one of `of` (assertions) passes: equivalent readings of one meaning."""
+    details = []
+    for sub in a["of"]:
+        r = evaluate(sub, output, inp, schema)
+        if r["ok"]:
+            return _res(True)
+        details.append(r["detail"])
+    return _res(False, " | ".join(d for d in details if d)[:300])
+
+
 def a_max_items(a, output, inp, schema):
     vals = _values(a, output)
     if not vals:
@@ -174,7 +185,7 @@ def a_predicate(a, output, inp, schema):
 
 TYPE_FUNCS = {
     "schema": a_schema, "path_equals": a_path_equals, "path_in": a_path_in, "path_absent": a_path_absent,
-    "path_present": a_path_present,
+    "path_present": a_path_present, "any_of": a_any_of,
     "max_items": a_max_items, "regex_absent": a_regex_absent, "numbers_subset": a_numbers_subset,
     "ids_subset": a_ids_subset, "predicate": a_predicate,
 }

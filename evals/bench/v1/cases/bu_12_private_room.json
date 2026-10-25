@@ -46,14 +46,29 @@
       }
     },
     {
-      "type": "predicate",
-      "name": "contains",
-      "args": {
-        "path": "/patch/set/constraints.add",
-        "values": [
-          "no_dorm"
-        ]
-      }
+      "type": "any_of",
+      "of": [
+        {
+          "type": "predicate",
+          "name": "contains",
+          "args": {
+            "path": "/patch/set/constraints.add",
+            "values": [
+              "no_dorm"
+            ]
+          }
+        },
+        {
+          "type": "predicate",
+          "name": "contains",
+          "args": {
+            "path": "/patch/set/constraints.add",
+            "values": [
+              "no_hostel"
+            ]
+          }
+        }
+      ]
     },
     {
       "type": "path_absent",

@@ -205,3 +205,15 @@ def test_evaluate_all_reports_each():
 def test_every_registered_predicate_is_callable():
     for name, fn in PREDICATES.items():
         assert callable(fn), name
+
+
+def test_any_of_passes_when_one_reading_passes():
+    out = {"intent": "new_trip", "patch": {"set": {"party.segment": "solo"}}}
+    either = {"type": "any_of", "of": [{"type": "path_equals", "path": "/patch/set/party.adults", "value": 1},
+                                       {"type": "path_equals", "path": "/patch/set/party.segment", "value": "solo"}]}
+    assert ev(either, out)["ok"]
+    neither = {"type": "any_of", "of": [{"type": "path_equals", "path": "/patch/set/party.adults", "value": 2},
+                                        {"type": "path_equals", "path": "/patch/set/party.segment", "value": "couple"}]}
+    assert not ev(neither, out)["ok"]
+    assert ev({"type": "path_present", "path": "/patch/set/party.segment"}, out)["ok"]
+    assert not ev({"type": "path_present", "path": "/patch/set/party.adults"}, out)["ok"]

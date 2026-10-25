@@ -42,10 +42,19 @@
       "casefold": true
     },
     {
-      "type": "path_equals",
-      "path": "/patch/set/party.adults",
-      "value": 1,
-      "casefold": true
+      "type": "any_of",
+      "of": [
+        {
+          "type": "path_equals",
+          "path": "/patch/set/party.adults",
+          "value": 1
+        },
+        {
+          "type": "path_equals",
+          "path": "/patch/set/party.segment",
+          "value": "solo"
+        }
+      ]
     },
     {
       "type": "path_equals",
