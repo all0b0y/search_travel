@@ -104,8 +104,10 @@ class TestProblems:
         assert ("price_no_rate", "cheapest", "s2") in codes(run(d)[1], "block")
 
     def test_over_budget(self):
+        # an overrun warns even for a user budget: the user may pick it knowingly and must be able to pay
         _, issues = run(doc(), lisbon_brief(**{"budget_rub.max": 100000}))
-        assert ("budget", "comfort", None) in codes(issues, "block")
+        assert ("budget", "comfort", None) in codes(issues, "warn")
+        assert ("budget", "comfort", None) not in codes(issues, "block")
         assert ("budget", "cheapest", None) not in codes(issues)
 
     def test_assumed_budget_only_warns(self):

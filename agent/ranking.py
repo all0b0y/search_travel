@@ -225,7 +225,12 @@ def _soft_leg_filters(brief, direction, rr):
     out = []
     if direction == "out" and prefs.arrive_before and _user(brief, "prefs.arrive_before"):
         limit = prefs.arrive_before
-        out.append(("prefs.arrive_before", lambda l: l.arr.strftime("%H:%M") <= limit))
+        dates = brief.dates.value
+        start = dates.start if dates is not None else None
+        # «прилететь до 14:00» = by 14:00 local on the travel day: a 01:53 landing the next night is not
+        # «before 14:00» (the clock alone said it was, s11)
+        out.append(("prefs.arrive_before",
+                    lambda l: (l.arr.date(), l.arr.strftime("%H:%M")) <= (start or l.dep.date(), limit)))
     if prefs.no_night_flights and _user(brief, "prefs.no_night_flights"):
         out.append(("prefs.no_night_flights", lambda l: not _night_flight(l, rr)))
     if prefs.free_cancellation and _user(brief, "prefs.free_cancellation"):

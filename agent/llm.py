@@ -97,6 +97,7 @@ def validate_output(text, schema):
     if not isinstance(data, dict):
         return None, ["the reply must be a JSON object"]
     data = drop_unknown_enum_items(data, schema)
+    data = cut_long_arrays(data, schema)
     validator = jsonschema.Draft7Validator(schema)
     errors = sorted(validator.iter_errors(data), key=lambda e: list(e.absolute_path))
     if errors:
@@ -131,6 +132,28 @@ def drop_unknown_enum_items(data, schema, root=None):
             if enum is not None:
                 return [x for x in data if x in enum]
             return [drop_unknown_enum_items(x, items, root) for x in data]
+    return data
+
+
+def cut_long_arrays(data, schema, root=None):
+    """Arrays longer than their schema's maxItems keep the first maxItems (a model copying five risks into a
+    three-risk slot loses the tail, not the whole reply)."""
+    root = root or schema
+    if isinstance(schema, dict) and "$ref" in schema and schema["$ref"].startswith("#/"):
+        node = root
+        for part in schema["$ref"][2:].split("/"):
+            node = node.get(part, {}) if isinstance(node, dict) else {}
+        schema = node
+    if not isinstance(schema, dict):
+        return data
+    if isinstance(data, dict):
+        props = schema.get("properties") or {}
+        return {k: cut_long_arrays(v, props.get(k, {}), root) for k, v in data.items()}
+    if isinstance(data, list):
+        cap = schema.get("maxItems")
+        items = schema.get("items") if isinstance(schema.get("items"), dict) else {}
+        out = [cut_long_arrays(x, items, root) for x in data]
+        return out[:cap] if isinstance(cap, int) else out
     return data
 
 

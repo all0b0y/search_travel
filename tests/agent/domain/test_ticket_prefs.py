@@ -161,3 +161,18 @@ def test_free_cancellation_without_refundable_fares_says_so():
     for v in vs:
         assert codes(v.risks)[0] == "non_refundable_only"
         assert "non_refundable" in codes(v.risks)
+
+
+def test_arrive_before_means_the_travel_day_not_the_clock_alone():
+    """s11: a 21:35 departure landing at 01:53 the next night is not «до 14:00»; the 08:20 -> 12:37 one is."""
+    from types import SimpleNamespace
+    from datetime import date, datetime, timedelta, timezone
+    from agent.ranking import _soft_leg_filters
+    from agent.state import Brief, apply_patch
+    brief, _ = apply_patch(Brief(), {"set": {"dates.start": "2026-11-20", "dates.end": "2026-11-23",
+                                             "prefs.arrive_before": "14:00"}})
+    keep = dict(_soft_leg_filters(brief, "out", {"night_window": ["23:00", "06:00"]}))["prefs.arrive_before"]
+    msk, ekb = timezone(timedelta(hours=3)), timezone(timedelta(hours=5))
+    night = SimpleNamespace(dep=datetime(2026, 11, 20, 21, 35, tzinfo=msk), arr=datetime(2026, 11, 21, 1, 53, tzinfo=ekb))
+    morning = SimpleNamespace(dep=datetime(2026, 11, 20, 8, 20, tzinfo=msk), arr=datetime(2026, 11, 20, 12, 37, tzinfo=ekb))
+    assert keep(morning) and not keep(night)

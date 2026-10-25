@@ -534,7 +534,9 @@ def check_budget(variant, brief) -> list[dict]:
     rub = variant.totals.rub
     if rub <= budget.max:
         return []
-    sev = "block" if brief.source_of("budget_rub.max") == "user" else "warn"
+    # a warning, never a block: ranking already prefers what fits, the cards say plainly when nothing does,
+    # and a variant the user picks knowingly must stay payable (s05: a 3 080 ₽ overrun blocked the order)
+    sev = "warn"
     return [issue("budget", sev, f"{fmt_rub(rub)} — больше бюджета {fmt_rub(budget.max)}",
                   variant=variant.id, total_rub=rub, budget_rub=budget.max, over_rub=rub - budget.max)]
 
