@@ -1,7 +1,7 @@
 """Guide mode (AGENT_PLAN.md decisions 23-26, «Режим «гид»»), behind the flag `guide`.
 
 On a free-text turn the pipeline's route runs as before (the default plan), but instead of its `present` card a
-reasoning model (card `guide`, prompt skills/trip-agent/guide.md) sees a compact context and the default plan's
+model (card `guide`, prompt skills/trip-agent/guide.md; reasoning = rules.json guide.thinking, "off") sees a compact context and the default plan's
 results, may call the engine's steps as tools (at most `guide.max_tool_rounds` rounds), and writes the reply. Code
 keeps the numbers, the cards, the actions and the checks:
 
@@ -36,11 +36,13 @@ from . import steps as S
 from .hooks import as_issue, blocking, issue
 from .llm import LLMError, LLMRequest
 from .mcp_client import ToolError
-from .state import ALLOWED_PATCH_PATHS, ALLOWED_UNSET_PATHS, Choice, PatchError, Question, apply_patch, assume
+from .state import (ALLOWED_PATCH_PATHS, ALLOWED_UNSET_PATHS, OBJECT_FIELDS, Choice, PatchError, Question, apply_patch,
+                    assume)
 
 CARD = "guide"
 TOOLS = ("rebuild", "find_savings", "check_road", "find_destinations", "place_info", "compare")
-DEFAULTS = {"turn_budget_s": 15, "fallback_reserve_s": 3, "max_tool_rounds": 2, "max_calls_per_round": 3,
+DEFAULTS = {"turn_budget_s": 15, "fallback_reserve_s": 3, "speculative_present": True, "speculative_reserve_s": 0.5,
+            "speculative_wait_min_s": 3, "max_tool_rounds": 2, "max_calls_per_round": 3,
             "max_context_chars": 24000, "history_exchanges": 4, "agent_text_chars": 300, "message_chars": [40, 1100],
             "max_questions": 1, "savings_shift_days": 3, "savings_places": 3, "auto_tools": {"cheaper": "find_savings"},
             "cards": ["present.variants", "present.update", "present.destinations", "present.compare", "present.info",
@@ -388,6 +390,38 @@ def _reconcile(patch, brief, state):
     return patch
 
 
+def as_proposals(before, after, guide_patch, turn_patch):
+    """The guide's own changes stay proposals: apply_patch marks every touched field source="user", so a field the
+    guide's patch touched gets source "inferred" again when its value differs from before the tool (or was not the
+    person's before) — unless this turn's understood patch said exactly that value. Later turns, chips and the
+    budget fit then treat it as the agent's offer, not the person's words («только прямые» said this turn and
+    rebuilt with connecting flights by the guide: direct_only false is inferred)."""
+    t_set, t_unset = (turn_patch or {}).get("set") or {}, set((turn_patch or {}).get("unset") or [])
+
+    def said(path, value):
+        return (path in t_set and t_set[path] == value) or (path in t_unset and value is None)
+
+    paths = list((guide_patch or {}).get("set") or {}) + list((guide_patch or {}).get("unset") or [])
+    bv, av = before.values(), after.values()
+    out = after
+    for top in dict.fromkeys(p.partition(".")[0] for p in paths):
+        if top in OBJECT_FIELDS and top not in ("origin", "destination"):
+            for sub, value in (av.get(top) or {}).items():
+                path = f"{top}.{sub}"
+                if out.source_of(path) != "user" or said(path, value):
+                    continue
+                if (bv.get(top) or {}).get(sub) != value or before.source_of(path) != "user":
+                    out = assume(out, path, value, "inferred")
+        elif av.get(top) not in (None, []) and out.source_of(top) == "user" and (
+                bv.get(top) != av.get(top) or before.source_of(top) != "user"):
+            name = {"destination": "destination.name", "origin": "origin.city"}.get(top, top)
+            if said(name, (av[top] or {}).get(name.partition(".")[2]) if top in ("origin", "destination")
+                    else av[top]):
+                continue
+            out = assume(out, top, av[top], "inferred")
+    return out
+
+
 def _relabel(variants, state, titles=None):
     out, ids = [], {}
     for v in variants:
@@ -421,7 +455,9 @@ def tool_rebuild(engine, ctx, args, state, call):
     if unknown:
         return {"ok": False, "why": f"«{unknown}» нет в каталоге"}, None, sub
     sub.patch = _reconcile(patch, sub.session.brief, state)
+    before = sub.session.brief
     S.STEP_REGISTRY["apply_patch"](sub)
+    sub.session.brief = as_proposals(before, sub.session.brief, sub.patch, ctx.patch)
     if not sub.session.brief.has("destination"):
         why = (f"«{sub.unknown_destination}» нет в каталоге" if sub.unknown_destination else
                "нет направления — для выбора места есть find_destinations")
@@ -514,6 +550,34 @@ def _price_parts(v):
         key = {"flight": "tickets_rub", "train": "tickets_rub", "stay": "stay_rub"}.get(st.type, "transfers_rub")
         parts[key] += int(rub or 0)
     return {k: val for k, val in parts.items() if val}
+
+
+MAIN_TRAITS = ("sea", "mountains", "nature", "city")
+
+
+def main_trait(rec):
+    """A place's main trait: its catalog kind when that is one (city / nature), else the first of sea, mountains,
+    nature, city among its tags (a resort by the sea -> sea, a ski village -> mountains)."""
+    kind = (rec or {}).get("kind")
+    if kind in MAIN_TRAITS:
+        return kind
+    tags = [t for t in S._json_list((rec or {}).get("tags")) if isinstance(t, str)]
+    return next((t for t in MAIN_TRAITS if t in tags), kind)
+
+
+def same_class(cand, rec, origin, brief):
+    """A similar place for find_savings must be of the trip's class: abroad vs at home (the origin's country) and
+    the same main trait — unless the person asked otherwise (prefs.domestic set by them: their wish decides home /
+    abroad; traits they named: the candidate shares one of them)."""
+    home = (origin or {}).get("country_code") or "RU"
+    if brief.source_of("prefs.domestic") != "user" or (brief.values().get("prefs") or {}).get("domestic") is None:
+        if ((cand.get("country_code") or "") != home) != ((rec.get("country_code") or "") != home):
+            return False
+    traits = brief.values().get("traits") or []
+    if traits and brief.source_of("traits") == "user":
+        tags = set(S._json_list(cand.get("tags")))
+        return any(t in tags for t in traits)
+    return main_trait(cand) == main_trait(rec)
 
 
 def tool_find_savings(engine, ctx, args, state, call):
@@ -654,6 +718,7 @@ def tool_find_savings(engine, ctx, args, state, call):
         train_only, domestic = S._dest_prefs(brief)
         recs = [r for r in (S.norm_destination(x) for x in found) if r and r.get("id") and r["id"] != dest["id"]]
         recs = [r for r in recs if S._passes_dest_prefs(r, origin, train_only, domestic, sub, nights)]
+        recs = [r for r in recs if same_class(r, rec, origin, brief)]
         recs.sort(key=lambda r: r.get("country_code") != rec.get("country_code"))
         dates = (ci.isoformat(), co.isoformat())
         plane = [] if train_only else [r for r in recs if S._json_list(r.get("airports"))][:6]
@@ -850,9 +915,12 @@ def tool_find_destinations(engine, ctx, args, state, call):
     if "destination.name" not in patch["set"] and "destination.name" not in patch["unset"]:
         patch["unset"].append("destination.name")
     sub.patch = patch
+    before = sub.session.brief
     try:
         for name in DEST_STEPS:
             S.STEP_REGISTRY[name](sub)
+            if name == "apply_patch":
+                sub.session.brief = as_proposals(before, sub.session.brief, patch, ctx.patch)
     except S.StepError as exc:
         if exc.code != "no_data":
             raise
@@ -1054,16 +1122,19 @@ def _call(engine, ctx, payload, deadline, g, round_label, rerun_issues=None):
         except FutureTimeout as exc:
             record.update(ok=False, error="timeout", latency_ms=round((time.perf_counter() - t0) * 1000))
             ctx.trace["calls"].append(record)
+            _round_failed(g, round_label, t0, user, "timeout")
             raise GuideFailed(f"budget: guide call over {round(left, 1)} s") from exc
         except LLMError as exc:
             record.update(ok=False, error=str(exc)[:300], retries=exc.retries, tokens=exc.usage,
                           latency_ms=exc.latency_ms or round((time.perf_counter() - t0) * 1000))
             ctx.trace["calls"].append(record)
+            _round_failed(g, round_label, t0, user, "llm", exc.usage)
             raise GuideFailed(f"llm: {str(exc)[:200]}") from exc
         except Exception as exc:   # noqa: BLE001 - a transport failure of the backend: the pipeline answers
             record.update(ok=False, error=f"{type(exc).__name__}: {str(exc)[:200]}",
                           latency_ms=round((time.perf_counter() - t0) * 1000))
             ctx.trace["calls"].append(record)
+            _round_failed(g, round_label, t0, user, "transport")
             raise GuideFailed(f"llm: {type(exc).__name__}: {str(exc)[:200]}") from exc
     finally:
         ex.shutdown(wait=False)
@@ -1073,9 +1144,21 @@ def _call(engine, ctx, payload, deadline, g, round_label, rerun_issues=None):
     budget = ctx.trace["budget"]
     budget["guide_calls"] = budget.get("guide_calls", 0) + 1
     g["rounds"].append({"round": round_label, "ms": round((time.perf_counter() - t0) * 1000, 1),
+                        "latency_ms": res.latency_ms, "usage": round_usage(res.usage),
                         "context_chars": len(user), "calls": [c.get("tool") for c in res.data.get("calls") or []],
                         "reply": res.data.get("reply") is not None})
     return res.data
+
+
+def round_usage(usage):
+    """Tokens of one guide round for the trace: input, cached, output, reasoning."""
+    u = usage or {}
+    return {k: int(u.get(f"{k}_tokens") or 0) for k in ("input", "cached", "output", "reasoning")}
+
+
+def _round_failed(g, round_label, t0, user, error, usage=None):
+    g["rounds"].append({"round": round_label, "ms": round((time.perf_counter() - t0) * 1000, 1), "error": error,
+                        "context_chars": len(user), **({"usage": round_usage(usage)} if usage else {})})
 
 
 # ---------------------------------------------------------------- the shown set and the guards
@@ -1321,13 +1404,166 @@ def commit(engine, ctx, reply, plan, state, tool_results):
         ctx.extra_actions = [a for a in ctx.extra_actions if a not in acts] + acts
 
 
+# ---------------------------------------------------------------- code repairs of formal issues
+
+REPAIRABLE = {"too_many_questions"}
+
+
+def repair_questions(reply, max_questions=1):
+    """«Вопросов 2»: keep the final question (the reply's `question` when it is not in the message, else the last
+    question sentence) and drop the other question sentences -> a repaired copy, or None when fewer than 2 sentences
+    of the message would be left (the model fix-up then rewrites it)."""
+    from .guards import _sentences, question_count
+    msg = reply.get("message") or ""
+    q = reply.get("question")
+    separate = bool(q and (q.get("text") or "").strip() and q["text"].strip() not in msg)
+    sents = _sentences(msg)
+    asked = [x for x in sents if question_count(x)]
+    keep = set() if separate else ({asked[-1]} if asked else set())
+    drop = [x for x in asked if x not in keep]
+    if not drop:
+        return None
+    left = [x for x in sents if x not in drop]
+    if len(left) < 2 or question_count(" ".join(left)) + (1 if separate else 0) > max_questions:
+        return None
+    out = msg
+    for x in drop:
+        out = out.replace(x, "", 1)
+    out = re.sub(r"[ \t]{2,}", " ", re.sub(r"\s+([.,!?…])", r"\1", out)).strip()
+    return dict(reply, message=out)
+
+
+# ---------------------------------------------------------------- dead ends: the likely fixes run by code
+
+HOTEL_RELAX = (("meals", "any"), ("stars_min", -1), ("district", "any"), ("free_cancellation", None))
+
+
+def hotel_relaxations(brief):
+    """The hotel filters a dead end may relax, one at a time: [(path, value)] (value None = unset). Filters the
+    person never set (segment defaults, profile guesses) come back as `base` — relaxed in every rebuild."""
+    prefs = brief.values().get("prefs") or {}
+    own, base = [], {}
+    for key, to in HOTEL_RELAX:
+        cur = prefs.get(key)
+        if cur in (None, "any", False):
+            continue
+        if key == "stars_min":
+            to = int(cur) - 1 if int(cur) > 2 else None
+        path = f"prefs.{key}"
+        if brief.source_of(path) == "user":
+            own.append((path, to))
+        else:
+            base[path] = to
+    return own, base
+
+
+def _direct(o):
+    return not o.get("stops")
+
+
+def dead_end(engine, ctx, failure, screen):
+    """-> {why: [codes], calls: [auto tool calls]} when the default plan built nothing (or only stays for lack of
+    a road) or the turn asks about a failure that still stands (the screen shows nothing built); else None.
+    Fixes by the failure kind, from what the engine already found (ctx.transport_gap, the search results):
+    direct-only with no direct flight but connecting ones -> rebuild direct_only false + check_road (days with
+    direct flights); no flight at all but a train -> rebuild by train; the hotel filters leave no hotel -> one
+    rebuild per filter relaxed (meals, stars −1, district, free cancellation; the road fix rides along); ≤ 3."""
+    s = ctx.session
+    stay_only = bool(ctx.variants) and all(v.facts.get("no_transport") for v in ctx.variants)
+    standing = (failure is None and not ctx.variants and not (screen or {}).get("variants")
+                and s.brief.has("destination") and _last_turn_failed(s))
+    if failure is None and not stay_only and not standing:
+        return None
+    if failure is not None and failure.code != "no_data":
+        return None
+    brief = s.brief
+    if not brief.has("destination"):
+        return None
+    results = ctx.results
+    if standing or not results:
+        sub = _sub_ctx(ctx)
+        sub.patch = {"set": {}, "unset": []}
+        try:
+            S.STEP_REGISTRY["apply_patch"](sub)
+            S.STEP_REGISTRY["search"](sub)
+        except (S.StepError, ToolError, PatchError):
+            return None
+        results = sub.results
+    if not results:
+        return None
+    v = brief.values()
+    prefs = v.get("prefs") or {}
+    scope = list(results.get("scope") or v.get("scope") or [])
+    fo, fb = results.get("flights_out") or [], results.get("flights_back") or []
+    to, tb = results.get("trains_out") or [], results.get("trains_back") or []
+    gap = ctx.transport_gap or {}
+    why, road, check = [], {}, False
+    if scope and set(scope) & {"flights", "trains"}:
+        if gap.get("code") == "direct_only" or (prefs.get("direct_only") and fo and fb and not (
+                any(_direct(o) for o in fo) and any(_direct(o) for o in fb))):
+            why.append("no_direct_flights")
+            road, check = {"prefs.direct_only": False}, True
+        elif gap.get("code") == "plane_fixed" or ("flights" in scope and prefs.get("transport") != "train"
+                                                   and not (fo and fb) and not (to and tb) and _train_ok(ctx, brief)):
+            why.append("no_flights_train_exists")
+            road = {"prefs.transport": "train"}
+            if "flights" in scope:
+                road["scope"] = [("trains" if x == "flights" else x) for x in scope]
+        elif gap.get("code") == "train_fixed":
+            why.append("no_trains_plane_exists")
+            road = {"prefs.transport": "plane"}
+            if "trains" in scope:
+                road["scope"] = [("flights" if x == "trains" else x) for x in scope]
+    own, base, hotel = [], {}, "stay" in scope and not results.get("hotels")
+    if hotel:
+        why.append("no_hotel_under_filters")
+        own, base = hotel_relaxations(brief)
+    if not why:
+        return None
+    cap = int(settings(engine.skill.rules)["max_calls_per_round"])
+    calls = [{"tool": "check_road", "args": {}}] if check else []
+
+    def rebuild(extra):
+        sets = dict(road)
+        sets.update({p: v for p, v in extra.items() if v is not None})
+        return {"tool": "rebuild", "args": {"set": sets, "unset": [p for p, v in extra.items() if v is None]}}
+
+    if hotel:
+        for path, to in own[:max(1, cap - len(calls))]:
+            calls.append(rebuild({**base, path: to}))
+        if not own and base:
+            calls.append(rebuild(base))
+    elif road:
+        calls.append(rebuild({}))
+    return {"why": why, "calls": calls[:cap]}
+
+
+def _train_ok(ctx, brief):
+    try:
+        origin = S._origin_place(ctx, brief)
+        rec = S.destination_record(ctx, dest_id=(brief.values().get("destination") or {}).get("id")) or {}
+        return bool(origin) and bool(S.train_reachable(origin, rec))
+    except Exception:   # noqa: BLE001 - a missing record just means no train fix
+        return False
+
+
+def _last_turn_failed(session):
+    """The last turn ended in a dead end: its no_data answer, or a guide reply on a failed default plan."""
+    last = (session.trace[-1] if session.trace else {}) or {}
+    g = last.get("guide") or {}
+    return (last.get("error") or {}).get("code") == "no_data" or bool(g.get("dead_end") and g.get("show") != "variants")
+
+
 # ---------------------------------------------------------------- the loop
 
-def run_guide(engine, ctx, failure=None, code_message=None):
-    """One guide turn on top of the default plan's results -> True (the reply is in ctx) or False (fallback)."""
+def run_guide(engine, ctx, failure=None, code_message=None, speculative=False):
+    """One guide turn on top of the default plan's results -> True (the reply is in ctx) or False (fallback).
+    speculative: the pipeline's present is already running next to the guide, so a fallback costs no new model
+    call and the guide may use the turn budget up to `speculative_reserve_s` instead of `fallback_reserve_s`."""
     cfg = settings(engine.skill.rules)
     started = ctx.__dict__.get("turn_started") or time.perf_counter()
-    deadline = started + float(cfg["turn_budget_s"]) - float(cfg["fallback_reserve_s"])
+    reserve = float(cfg["speculative_reserve_s"] if speculative else cfg["fallback_reserve_s"])
+    deadline = started + float(cfg["turn_budget_s"]) - reserve
     t0 = time.perf_counter()
     g = {"rounds": [], "tools": [], "fallback": None, "used": False}
     ctx.trace["guide"] = g
@@ -1341,8 +1577,19 @@ def run_guide(engine, ctx, failure=None, code_message=None):
         # a wish whose tool is certain («подешевле» -> find_savings) runs before round 1: one model round less
         auto = [{"tool": t, "args": {}} for w, t in (cfg.get("auto_tools") or {}).items()
                 if w in (default.get("wishes") or []) and t in TOOL_FUNCS and state.base_variants()]
+        auto = auto[:1]
+        # a dead end: code runs the likely fixes too (the guide then answers with whole trips in one call)
+        de = dead_end(engine, ctx, failure, screen)
+        if de is not None:
+            default["dead_end"] = {"why": de["why"], "auto_fixes": len(de["calls"])}
+            g["dead_end"] = de
+            auto += de["calls"][:max(0, int(cfg["max_calls_per_round"]) - len(auto))]
         if auto:
-            tool_results += [dict(r, auto=True) for r in run_tools(engine, ctx, auto[:1], state, deadline, g)]
+            ran = [dict(r, auto=True) for r in run_tools(engine, ctx, auto, state, deadline, g)]
+            # auto rebuilds that built nothing are left out — unless none built (then the attempts are the news)
+            kept = [r for r in ran if r["tool"] != "rebuild" or r["result"].get("ok")]
+            tried = [r for r in ran if r["tool"] == "rebuild"]
+            tool_results += kept if any(r["result"].get("ok") for r in tried) or not tried else ran
         rounds = int(cfg["max_tool_rounds"])
         payload, reply = None, None
         for round_no in range(1, rounds + 2):
@@ -1358,21 +1605,26 @@ def run_guide(engine, ctx, failure=None, code_message=None):
             if reply is None:
                 raise GuideFailed("no_reply" if not last else "no_reply after the last tool round")
             break
-        plan, issues = resolve_show(ctx, reply, state, default_card)
-        q = reply.get("question")
-        pool = guard_input(engine, ctx, plan, state, default, screen, tool_results, q)
-        issues += check_reply(engine, ctx, reply, plan, pool, tool_results)
+        plan, issues = _checked(engine, ctx, reply, state, default_card, default, screen, tool_results)
         _hook(ctx, "guide", issues)
+        if blocking(issues):
+            _rejected(ctx, g, round_no, reply, blocking(issues))
+            fixed = _repair(engine, ctx, reply, blocking(issues), cfg)
+            if fixed is not None:
+                plan2, issues2 = _checked(engine, ctx, fixed, state, default_card, default, screen, tool_results)
+                _hook(ctx, "guide.repair", issues2)
+                if not blocking(issues2):
+                    g["repaired"] = sorted({i["code"] for i in blocking(issues)})
+                    reply, plan, issues = fixed, plan2, issues2
         if blocking(issues):
             out2 = _call(engine, ctx, payload, deadline, g, "fixup", rerun_issues=blocking(issues))
             reply2 = out2.get("reply")
             if reply2 is None:
                 raise GuideFailed("guard: the fix-up gave no reply")
-            plan, issues2 = resolve_show(ctx, reply2, state, default_card)
-            pool = guard_input(engine, ctx, plan, state, default, screen, tool_results, reply2.get("question"))
-            issues2 += check_reply(engine, ctx, reply2, plan, pool, tool_results)
+            plan, issues2 = _checked(engine, ctx, reply2, state, default_card, default, screen, tool_results)
             _hook(ctx, "guide.fixup", issues2)
             if blocking(issues2):
+                _rejected(ctx, g, "fixup", reply2, blocking(issues2))
                 raise GuideFailed("guard: " + "; ".join(f"{i['code']}" for i in blocking(issues2))[:300])
             reply = reply2
         commit(engine, ctx, reply, plan, state, tool_results)
@@ -1387,6 +1639,31 @@ def run_guide(engine, ctx, failure=None, code_message=None):
     finally:
         g["ms"] = round((time.perf_counter() - t0) * 1000, 1)
         ctx.trace["timings_ms"]["guide"] = g["ms"]
+
+
+def _checked(engine, ctx, reply, state, default_card, default, screen, tool_results):
+    plan, issues = resolve_show(ctx, reply, state, default_card)
+    pool = guard_input(engine, ctx, plan, state, default, screen, tool_results, reply.get("question"))
+    issues += check_reply(engine, ctx, reply, plan, pool, tool_results)
+    return plan, issues
+
+
+def _repair(engine, ctx, reply, issues, cfg):
+    """Formal issues code can fix without a model call (guide mode only) -> the repaired reply or None."""
+    codes = {i["code"] for i in issues}
+    if not codes or not codes <= REPAIRABLE:
+        return None
+    return repair_questions(reply, int(cfg["max_questions"]))
+
+
+def _rejected(ctx, g, round_label, reply, issues):
+    """A reply the guards blocked: kept in the trace for debugging only (debug sessions)."""
+    if not getattr(ctx.session, "debug", False):
+        return
+    g.setdefault("rejected", []).append({
+        "round": round_label, "message": (reply or {}).get("message"), "question": (reply or {}).get("question"),
+        "show": (reply or {}).get("show"), "recommended_id": (reply or {}).get("recommended_id"),
+        "issues": [{"code": i["code"], "message": i.get("message")} for i in issues]})
 
 
 def _hook(ctx, name, issues):

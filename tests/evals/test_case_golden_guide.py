@@ -51,13 +51,18 @@ def test_g2_further():
 
 def test_g3_dead_end():
     cid = "g3_guide_dead_end_acts"
-    good = {"calls": [{"tool": "check_road", "args": {}}, {"tool": "rebuild", "args": {"set": {"prefs.transport":
-                                                                                              "train"}}}],
-            "reply": None}
+    inp = _input(cid)
+    rb = next(t for t in inp["tool_results"] if t["tool"] == "rebuild" and t.get("auto"))["result"]
+    total = next(v["total_rub"] for v in rb["variants"] if v["id"] == rb["recommended_id"])
+    good = _reply(f"Самолётов из Екатеринбурга в Краснодар в данных нет — собрал поездом: {_rub(total)} за билеты "
+                  f"туда и обратно. Берёте?", rec=rb["recommended_id"])
     assert run(cid, good) == (True, [])
-    assert run(cid, _reply("Самолётов в Краснодар нет, поездом та же поездка — от 21 310 ₽: нажмите «Поехать "
-                           "поездом».", show="none"))[0]
-    assert not run(cid, _reply("Собрать поездку не получилось.", show="none"))[0]
+    # the fix is already in the input: another tool round, stays without cards or «не получилось» all fail
+    again = {"calls": [{"tool": "rebuild", "args": {"set": {"prefs.transport": "train"}}}], "reply": None}
+    assert not run(cid, again)[0]
+    assert not run(cid, _reply("Самолётов в Краснодар нет, поездом та же поездка — от 21 310 ₽: нажмите «Поехать "
+                               "поездом».", show="none"))[0]
+    assert not run(cid, _reply("Собрать поездку не получилось.", rec=rb["recommended_id"]))[0]
 
 
 def test_g4_g5_g6():

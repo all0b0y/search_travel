@@ -5,8 +5,8 @@
   нашлось».
 - g2: the same trip after the guide showed the cheapest lever; «всё равно дорого, давай ещё дешевле» → savings from
   the new trip: a cheaper lever or a cheaper place, never «если готовы поднять бюджет» alone.
-- g3: Екатеринбург → Краснодар, tickets only, plane fixed: the default plan failed (no flight in the data) → the guide
-  checks the road / rebuilds (or answers with the way out), never repeats «не получилось».
+- g3: Екатеринбург → Краснодар, tickets only, plane fixed: the default plan failed (no flight in the data) and code
+  rebuilt it by train before round 1 (auto) → the guide shows the train trips in one reply, never «не получилось».
 - g4: «хочу к тёплому морю в феврале, не знаю куда» from Москва → places: the default plan's or find_destinations'.
 - g5: a shown Kazan trip, «а какая там погода будет?» → a plain answer (show none or the shown variants) from the
   info facts, no tools needed.
@@ -157,11 +157,11 @@ def cases(inputs):
              unsure="When find_savings finds no lever below the shown trip, a cheaper place or an honest «дешевле этой "
                     "поездки нет» with the price parts is right; the regex then only bans the claim when places exist."),
         case("g3_guide_dead_end_acts", "guide", "guide", inputs["dead_end"],
-             [pred("guide_calls", tools=["check_road", "rebuild", "find_destinations"], reply_ok=True),
+             [pred("guide_replies"), a("path_equals", path="/reply/show", value="variants"),
               a("regex_absent", path="/reply/message", pattern=DEAD_REPEAT)] + REPLY_COMMON,
-             "Tickets only, plane fixed, no flight Екатеринбург — Краснодар: the default plan failed. The guide checks "
-             "the road or rebuilds (by train), or replies with the way out from the failure text — never «не "
-             "получилось» again."),
+             "Tickets only, plane fixed, no flight Екатеринбург — Краснодар: the default plan failed and code already "
+             "rebuilt it by train before round 1 (auto, default_plan.dead_end). The guide replies in this one call, "
+             "shows the train trips and says plainly that it is the train — never «не получилось» again."),
         case("g4_guide_vague_wish_places", "guide", "guide", inputs["vague"],
              [pred("guide_calls", tools=["find_destinations"], reply_ok=True),
               a("path_in", path="/reply/show", values=["destinations"])] + REPLY_COMMON,

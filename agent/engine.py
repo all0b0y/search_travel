@@ -81,6 +81,90 @@ def _default_opendata():
     return OpenData()
 
 
+class _CtxAcct:
+    """Budget and trace records of a model call written straight into the turn (the default)."""
+
+    def __init__(self, ctx):
+        self.ctx = ctx
+
+    @property
+    def flash_calls(self):
+        return self.ctx.flash_calls
+
+    @flash_calls.setter
+    def flash_calls(self, value):
+        self.ctx.flash_calls = value
+
+    @property
+    def reruns(self):
+        return self.ctx.trace["budget"].setdefault("reruns", {})
+
+    @property
+    def calls(self):
+        return self.ctx.trace["calls"]
+
+    @property
+    def notes(self):
+        return self.ctx.trace["notes"]
+
+    @property
+    def hooks(self):
+        return self.ctx.trace["hooks"]
+
+    @property
+    def jev(self):
+        return self.ctx.trace["jev"]
+
+    def set_limit(self, limit):
+        self.ctx.trace["budget"].update(flash_calls=self.ctx.flash_calls, limit=limit)
+
+
+class PresentRun:
+    """The model part of one present card, detached from the turn: its budget counters, call / hook / note
+    records and output stay here until `Engine._present_finish` applies them (main thread). `start` runs it in a
+    daemon thread (guide mode's speculative present); `discard` drops a result nobody will use."""
+
+    def __init__(self, card, payload, flash_calls, reruns):
+        self.card, self.payload = card, payload
+        self.flash_calls, self.reruns, self.limit = flash_calls, dict(reruns), None
+        self.calls, self.hooks, self.notes, self.jev = [], [], [], []
+        self.out, self.has_output, self.degraded, self.error = None, False, False, None
+        self.ms = None
+        self.shown = self.chips = None
+        self.started = self.waited_ms = None
+        self.discarded = False
+        self._done = threading.Event()
+
+    def set_limit(self, limit):
+        self.limit = limit
+
+    def start(self, engine):
+        self.started = time.perf_counter()
+
+        def work():
+            try:
+                engine._present_call(self)
+            except BaseException as exc:   # noqa: BLE001 - re-raised in the main thread by _present_finish
+                self.error = exc
+            finally:
+                self._done.set()
+
+        threading.Thread(target=work, name=f"present-{self.card}", daemon=True).start()
+        return self
+
+    def join(self, timeout):
+        t0 = time.perf_counter()
+        done = self._done.wait(max(0.0, timeout))
+        self.waited_ms = round((time.perf_counter() - t0) * 1000, 1)
+        return done
+
+    def elapsed_ms(self):
+        return round((time.perf_counter() - self.started) * 1000, 1) if self.started else None
+
+    def discard(self):
+        self.discarded = True
+
+
 class Engine:
     def __init__(self, skill=None, backend=None, jev=None, ostrovok=None, opendata=None, flags=None, store=None,
                  profiles=None, clock=None, *, domain=None, hooks=None, prefetcher=None, lazy_city=None,
@@ -305,17 +389,35 @@ class Engine:
 
     def _guide(self, ctx, failure):
         """Guide mode (agent/guide.py) on the default plan's results; on any guide failure the pipeline path:
-        the default plan's code answer, its dead end (the StepError again) or its present card."""
-        from .guide import run_guide
+        the default plan's code answer, its dead end (the StepError again) or its present card — started
+        speculatively next to the guide when the card needs a model call (`guide.speculative_present`)."""
+        from .guide import run_guide, settings
+        cfg = settings(self.skill.rules)
         code_message = ctx.message
         ctx.message = None
-        if run_guide(self, ctx, failure=failure, code_message=code_message):
+        spec = None
+        if failure is None and not code_message and ctx.present and cfg.get("speculative_present"):
+            spec = self._speculative_present(ctx)
+        ok = run_guide(self, ctx, failure=failure, code_message=code_message, speculative=spec is not None)
+        if spec is not None:
+            g = ctx.trace["guide"]
+            g["speculative"] = {"card": spec.card, "started_ms": round((spec.started - ctx.__dict__.get(
+                "turn_started", spec.started)) * 1000, 1), "used": False, "discarded": bool(ok)}
+        if ok:
+            if spec is not None:
+                spec.discard()
+                ctx.trace["guide"]["speculative"]["ms_at_discard"] = spec.elapsed_ms()
             return
         ctx.message = code_message
         if failure is not None:
             raise failure
         if ctx.present and not ctx.message:
-            self._present(ctx)
+            if spec is not None:
+                left = ctx.__dict__.get("turn_started", time.perf_counter()) + float(cfg["turn_budget_s"]) \
+                    - time.perf_counter()
+                self._finish_speculative(ctx, spec, max(left, float(cfg.get("speculative_wait_min_s", 3))))
+            else:
+                self._present(ctx)
 
     # ------------------------------------------------------------ 1. actions
     def _map_action(self, ctx):
@@ -704,21 +806,23 @@ class Engine:
         return True
 
     # ------------------------------------------------------------ model calls
-    def _call_card(self, ctx, card, payload, images=(), rerun_issues=None):
+    def _call_card(self, ctx, card, payload, images=(), rerun_issues=None, acct=None):
+        """One model call of `card`. acct: where the budget and the trace records go — the turn (default) or a
+        detached PresentRun (a present call in a worker thread touches no ctx)."""
+        acct = acct if acct is not None else _CtxAcct(ctx)
         spec = self.skill.card(card)
-        budget = ctx.trace["budget"]
         limit = int(self.skill.rules.get("max_flash_calls_per_turn", 2))
-        reruns = budget.setdefault("reruns", {})
+        reruns = acct.reruns
         if rerun_issues is not None:
             max_rerun = int((self.skill.rules.get("retries") or {}).get("card_rerun_on_hook_fail", 1))
             if reruns.get(card, 0) >= max_rerun:
                 raise BudgetExceeded(f"rerun budget exceeded for {card}")
             reruns[card] = reruns.get(card, 0) + 1
         else:
-            if ctx.flash_calls >= limit:
+            if acct.flash_calls >= limit:
                 raise BudgetExceeded(f"model call budget exceeded ({limit}) at {card}")
-            ctx.flash_calls += 1
-        budget.update(flash_calls=ctx.flash_calls, limit=limit)
+            acct.flash_calls += 1
+        acct.set_limit(limit)
         system = rerun_system(self.skill.system_prompt(card), rerun_issues)
         req = LLMRequest(card=card, system=system, user=json.dumps(payload, ensure_ascii=False, default=str),
                          schema=spec.schema, images=list(images), thinking=spec.thinking, max_tokens=spec.max_tokens,
@@ -731,54 +835,115 @@ class Engine:
             record.update(ok=False, error=str(exc), retries=exc.retries,
                           latency_ms=exc.latency_ms or round((time.perf_counter() - t0) * 1000),
                           tokens=exc.usage, cost=(exc.usage or {}).get("cost_usd"))
-            ctx.trace["calls"].append(record)
+            acct.calls.append(record)
             raise
         record.update(ok=True, model=res.model, provider=res.provider, tokens=res.usage, latency_ms=res.latency_ms,
                       cost=res.usage.get("cost_usd"), retries=res.retries)
-        ctx.trace["calls"].append(record)
+        acct.calls.append(record)
         if card.startswith("present."):
-            ctx.trace["notes"].extend(repair_output_ids(res.data, payload))
+            acct.notes.extend(repair_output_ids(res.data, payload))
             fix_star_glyphs(res.data)
         return res.data
 
     # ------------------------------------------------------------ 7. present
+    # Split in three so guide mode can run the model part speculatively in a worker thread (AGENT_PLAN.md «As
+    # built: guide mode»): prepare (main thread: chips, the card input) -> call (the model call, the guards, one
+    # rerun; writes only into its PresentRun) -> finish (main thread: the run's records and output into ctx).
     def _present(self, ctx):
+        run = self._present_prepare(ctx)
+        self._present_call(run)
+        self._present_finish(ctx, run)
+
+    def _present_prepare(self, ctx):
         card = ctx.present
         ctx.chips = self._chips(ctx, card)
         payload = self._card_input(ctx, card)
         ctx.card_input = payload
         self.hooks.run("before_present", ctx)
-        try:
-            out = self._call_card(ctx, card, payload)
-        except LLMError:
-            ctx.degraded = True
-            ctx.trace["notes"].append(f"{card}: model failed, code texts used")
-            return
-        issues = self._guard(ctx, card, payload, out)
-        if blocking(issues):
-            try:
-                out2 = self._call_card(ctx, card, payload, rerun_issues=blocking(issues))
-                issues2 = self._guard(ctx, card, payload, out2)
-            except LLMError:
-                out2, issues2 = None, [issue("llm_error", "rerun failed")]
-            if out2 is not None and not blocking(issues2):
-                out = out2
-            else:
-                ctx.degraded = True
-                ctx.trace["notes"].append(f"{card}: guard failed twice, code texts used")
-                out = None
-        ctx.card_output = out
+        return PresentRun(card, payload, ctx.flash_calls, ctx.trace["budget"].get("reruns") or {})
 
-    def _guard(self, ctx, card, payload, out):
+    def _present_call(self, run):
+        """The model part of present on a detached PresentRun (no ctx): safe to run in a worker thread."""
+        card, payload = run.card, run.payload
+        t0 = time.perf_counter()
+        try:
+            try:
+                out = self._call_card(None, card, payload, acct=run)
+            except LLMError:
+                run.degraded = True
+                run.notes.append(f"{card}: model failed, code texts used")
+                return run
+            issues = self._guard(None, card, payload, out, acct=run)
+            if blocking(issues):
+                try:
+                    out2 = self._call_card(None, card, payload, rerun_issues=blocking(issues), acct=run)
+                    issues2 = self._guard(None, card, payload, out2, acct=run)
+                except LLMError:
+                    out2, issues2 = None, [issue("llm_error", "rerun failed")]
+                if out2 is not None and not blocking(issues2):
+                    out = out2
+                else:
+                    run.degraded = True
+                    run.notes.append(f"{card}: guard failed twice, code texts used")
+                    out = None
+            run.out, run.has_output = out, True
+            return run
+        finally:
+            run.ms = round((time.perf_counter() - t0) * 1000, 1)
+
+    def _present_finish(self, ctx, run):
+        budget = ctx.trace["budget"]
+        budget.setdefault("reruns", {}).update(run.reruns)
+        if run.limit is not None:
+            ctx.flash_calls = run.flash_calls
+            budget.update(flash_calls=run.flash_calls, limit=run.limit)
+        ctx.trace["calls"].extend(run.calls)
+        ctx.trace["hooks"].extend(run.hooks)
+        ctx.trace["jev"].extend(run.jev)
+        ctx.trace["notes"].extend(run.notes)
+        if run.error is not None:
+            raise run.error
+        if run.degraded:
+            ctx.degraded = True
+        if run.has_output:
+            ctx.card_output = run.out
+
+    def _speculative_present(self, ctx):
+        """Guide mode: start the pipeline's present for the default plan in a worker thread (the model call is
+        I/O-bound and overlaps the guide's calls). The prepared screen (shown labels), chips and card input are
+        kept in the run and the turn's own are restored, so the guide sees the turn as without it."""
+        s = ctx.session
+        shown, chips, card_input = s.shown.model_copy(deep=True), ctx.chips, ctx.card_input
+        run = self._present_prepare(ctx)
+        run.shown, run.chips = s.shown, ctx.chips
+        s.shown, ctx.chips, ctx.card_input = shown, chips, card_input
+        run.start(self)
+        return run
+
+    def _finish_speculative(self, ctx, run, wait_s):
+        """The guide failed: wait for the speculative present (at most `wait_s`) and finish the pipeline path."""
+        done = run.join(wait_s)
+        ctx.session.shown, ctx.chips, ctx.card_input = run.shown, run.chips, run.payload
+        g = ctx.trace.get("guide")
+        if isinstance(g, dict):
+            g["speculative"] = dict(g.get("speculative") or {}, used=done, waited_ms=run.waited_ms, ms=run.ms)
+        if not done:
+            ctx.degraded = True
+            ctx.trace["notes"].append(f"{run.card}: speculative present over the turn budget, code texts used")
+            return
+        self._present_finish(ctx, run)
+
+    def _guard(self, ctx, card, payload, out, acct=None):
+        acct = acct if acct is not None else _CtxAcct(ctx)
         issues = basic_card_guard(card, payload, out)
         check = self.domain.get("check_card_output", required=False)
         if check is not None:
             issues += [as_issue(i) for i in check(card, payload, out, self.skill.rules) or []]
         if self.flags.jev_guard:
-            issues += guard_card_output(self.jev, card, payload, out, self.skill, ctx.trace["jev"])
+            issues += guard_card_output(self.jev, card, payload, out, self.skill, acct.jev)
         verdict = "block" if blocking(issues) else ("warn" if issues else "ok")
-        ctx.trace["hooks"].append({"event": "after_present", "name": "card_guard", "kind": "validate",
-                                   "verdict": verdict, "issues": issues, "card": card})
+        acct.hooks.append({"event": "after_present", "name": "card_guard", "kind": "validate",
+                           "verdict": verdict, "issues": issues, "card": card})
         return issues
 
     def _chips(self, ctx, card):

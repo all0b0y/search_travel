@@ -17,7 +17,7 @@ def test_guide_card_from_rules():
     skill = load_skill()
     card = skill.card("guide")
     assert "guide" not in skill.cards                       # outside turns.json routes
-    assert card.thinking == skill.rules["guide"]["thinking"] == "low"
+    assert card.thinking == skill.rules["guide"]["thinking"] == "off"   # owner 2026-10-25: no reasoning
     assert card.temperature == skill.rules["guide"]["temperature"]
     assert card.schema["required"] == ["calls", "reply"]
     system = skill.system_prompt("guide")

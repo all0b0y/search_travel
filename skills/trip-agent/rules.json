@@ -274,11 +274,14 @@
     "\\bтолько\\s+(?:машин|авто|виз|страхов|экскурс|круиз)\\w*\\b"
   ],
   "guide": {
-    "thinking": "low",
+    "thinking": "off",
     "temperature": 0.6,
     "max_tokens": 1800,
     "turn_budget_s": 15,
     "fallback_reserve_s": 3,
+    "speculative_present": true,
+    "speculative_reserve_s": 0.5,
+    "speculative_wait_min_s": 3,
     "max_tool_rounds": 2,
     "max_calls_per_round": 3,
     "max_context_chars": 24000,

@@ -16,6 +16,8 @@ from .test_scopes import live  # noqa: F401 - the fixture
 GUIDE = "stage1,guide"
 ISTANBUL = {"origin.city": "Москва", "destination.name": "Стамбул", "dates.start": "2026-12-08",
             "dates.end": "2026-12-12", "party.segment": "couple", "party.adults": 2}
+SOCHI = {"origin.city": "Москва", "destination.name": "Сочи", "dates.start": "2026-12-14", "dates.end": "2026-12-19",
+         "party.segment": "couple", "party.adults": 2}
 KRASNODAR_TICKETS = {"origin.city": "Екатеринбург", "destination.name": "Краснодар", "dates.month": 8,
                      "dates.nights": 7, "party.segment": "couple", "party.adults": 2, "scope": ["flights"],
                      "prefs.transport": "plane"}
@@ -464,6 +466,7 @@ def test_rebuild_to_another_place_and_an_unknown_one(live):
 
 @pytest.mark.parametrize("live", [GUIDE], indirect=True)
 def test_a_cheaper_place_named_in_the_reply_is_one_tap_away(live):
+    """A Sochi trip (a domestic sea resort): find_savings offers cheaper places of the same class."""
     h = live
 
     def pick(c, req):
@@ -473,7 +476,14 @@ def test_a_cheaper_place_named_in_the_reply_is_one_tap_away(live):
         return reply(f"Дешевле всего — {lv['change_ru']}: {lv['total_rub']} ₽. Совсем бюджетно — {p['name']}: от "
                      f"{p['price_from_rub']} ₽ за ту же поездку.", rec=lv["variant_id"])
 
-    r, s, _, _ = _savings_turn(h, pick)
+    Script(h, lambda c, req: reply("Сочи на 5 ночей — советую отмеченный вариант.", rec=c["default_plan"][
+        "recommended_id"]), pick)
+    h.understand(u(set=SOCHI))
+    h.turn("Москва — Сочи, 14–19 декабря, вдвоём")
+    s = h.backend.scripts["guide"]
+    h.understand(u(intent="refine"))
+    r = h.turn("а можно подешевле?")
+    assert guide_trace(r)["used"] is True, guide_trace(r)
     place = s.ctx()["tool_results"][0]["result"]["places"][0]
     assert {"type": "choose_destination", "label": f"Смотреть {place['name']}",
             "payload": {"destination_id": place["id"]}} in r["actions"]

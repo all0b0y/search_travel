@@ -349,7 +349,7 @@ def _check_rules(data):
         _fail(f, "sensitivity.price_delta_pct must be a number")
 
 
-GUIDE_DEFAULTS = {"thinking": "low", "temperature": None, "max_tokens": 1800}
+GUIDE_DEFAULTS = {"thinking": "off", "temperature": None, "max_tokens": 1800}
 
 
 def _load_guide_card(root, rules):
