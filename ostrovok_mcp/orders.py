@@ -566,6 +566,132 @@ def _rebuild_shifted(kind: str, params: dict, days: int, today: str) -> dict | N
     return None
 
 
+# transfer timing around its flight / train (the same buffers the agent plans with, compat_issues checks them)
+AFTER_ARRIVAL_MIN = {"flight_baggage": 75, "flight": 45, "train": 10}
+BEFORE_DEPARTURE_MIN = {"international": 180, "domestic": 120, "train": 30}
+RIDE_FACTOR = 1.2   # planned ride = duration x factor, rounded up to 5 minutes
+
+
+def _leg_points(it: dict) -> tuple[dict, dict]:
+    """({iata|station} of departure, {iata|station} of arrival) of a flight / train item."""
+    off = it["details"]["offer"]
+    if it["kind"] == "flight":
+        return {"iata": off["origin_iata"]}, {"iata": off["dest_iata"]}
+    return {"station": off.get("from_station")}, {"station": off.get("to_station")}
+
+
+def _same_point(a: dict, b: dict) -> bool:
+    ka = a.get("iata") or a.get("station")
+    kb = b.get("iata") or b.get("station")
+    return bool(ka) and str(ka).casefold() == str(kb or "").casefold()
+
+
+def _transfer_leg(tr: dict, transport: list[dict]) -> dict | None:
+    """The flight / train a transfer item serves: the arrival it picks up from (or the departure it brings to),
+    at the transfer's point, the closest in time (within a day)."""
+    off = tr["details"]["offer"]
+    point, at = off["point"], geo.parse_iso(tr["start"])
+    best, best_gap = None, None
+    for it in transport:
+        dep_pt, arr_pt = _leg_points(it)
+        if off["reverse"] and _same_point(point, dep_pt):
+            gap = abs((geo.parse_iso(it["start"]) - at).total_seconds())
+        elif not off["reverse"] and _same_point(point, arr_pt):
+            gap = abs((at - geo.parse_iso(it["end"])).total_seconds())
+        else:
+            continue
+        if gap < 86400 and (best_gap is None or gap < best_gap):
+            best, best_gap = it, gap
+    return best
+
+
+def _planned_ride(duration_min: int) -> int:
+    return int(-(-duration_min * RIDE_FACTOR // 5) * 5)
+
+
+def transfer_time_for(leg_kind: str, leg_offer: dict, leg_start: str, leg_end: str, reverse: bool,
+                      duration_min: int) -> datetime:
+    """Pickup time of a transfer for its flight / train: after landing + the baggage / passport buffer, or
+    departure - the check-in buffer - the planned ride."""
+    if not reverse:
+        if leg_kind == "train":
+            buf = AFTER_ARRIVAL_MIN["train"]
+        else:
+            buf = AFTER_ARRIVAL_MIN["flight_baggage" if (leg_offer.get("baggage") or {}).get("checked_kg")
+                                    else "flight"]
+        return geo.parse_iso(leg_end) + timedelta(minutes=buf)
+    if leg_kind == "train":
+        buf = BEFORE_DEPARTURE_MIN["train"]
+    else:
+        buf = BEFORE_DEPARTURE_MIN["international" if leg_offer.get("international") else "domestic"]
+    return geo.parse_iso(leg_start) - timedelta(minutes=buf + _planned_ride(duration_min))
+
+
+def _retime_transfer(params: dict, at: datetime, today: str) -> dict | None:
+    """The transfer at a new pickup time, same kind first (a shuttle / bus may not run at night: then a taxi
+    or a private car)."""
+    for kind in dict.fromkeys([params["k"], "taxi", "private"]):
+        new = dict(params, at=geo.iso(at), t=today, k=kind)
+        offer = transfers.build(new)
+        if offer is not None:
+            return {"params": new, "offer": offer}
+    return None
+
+
+def _fits(tr_start: datetime, tr_end: datetime, leg: dict, reverse: bool) -> bool:
+    """Does a transfer meet its leg with the usual buffers (no long wait either)?"""
+    off = leg["details"]["offer"]
+    if not reverse:
+        gap = (tr_start - geo.parse_iso(leg["end"])).total_seconds() / 60
+        return (AFTER_ARRIVAL_MIN["train"] if leg["kind"] == "train" else 30) <= gap <= 240
+    need = BEFORE_DEPARTURE_MIN["train" if leg["kind"] == "train" else
+                                ("international" if off.get("international") else "domestic")]
+    gap = (geo.parse_iso(leg["start"]) - tr_end).total_seconds() / 60
+    return need <= gap <= need + 180
+
+
+def _moved_transfers(items: list[dict], changes: list[dict], d_in: int, d_out: int, old_ci: date, today: str,
+                     issues: list[dict]) -> list[dict]:
+    """Transfers move with the trip: each is re-timed to its own flight / train after the change (the pickup
+    keeps its old distance to the leg when that fitted, else the usual buffers), re-quoted at the new time.
+    A transfer whose leg is not in the order moves by whole days, as the stay does."""
+    transport = [i for i in items if i["kind"] in ("flight", "train") and i["status"] != "cancelled"]
+    new_leg = {c["item"]["item_id"]: c for c in changes if c["item"]["kind"] in ("flight", "train")}
+    out = []
+    for tr in [i for i in items if i["kind"] == "transfer" and i["status"] != "cancelled"]:
+        params, off = tr["details"]["params"], tr["details"]["offer"]
+        reverse = bool(off["reverse"])
+        leg = _transfer_leg(tr, transport)
+        start, end = geo.parse_iso(tr["start"]), geo.parse_iso(tr["end"])
+        if leg is None:
+            days = d_in if start.date() <= old_ci else d_out
+            res = _rebuild_shifted("transfer", params, days, today) if days else {"params": params, "offer": None}
+        else:
+            c = new_leg.get(leg["item_id"])
+            if c is None and _fits(start, end, leg, reverse):
+                continue                                  # its leg did not move and it still fits
+            moved = {**leg, "start": c["offer"]["dep"], "end": c["offer"]["arr"],
+                     "details": {**leg["details"], "offer": c["offer"]}} if c else leg
+            ref_old = geo.parse_iso(leg["start"] if reverse else leg["end"])
+            ref_new = geo.parse_iso(moved["start"] if reverse else moved["end"])
+            at = start + (ref_new - ref_old) if _fits(start, end, leg, reverse) else transfer_time_for(
+                leg["kind"], moved["details"]["offer"], moved["start"], moved["end"], reverse, off["duration_min"])
+            if not _fits(at, at + (end - start), moved, reverse):
+                at = transfer_time_for(leg["kind"], moved["details"]["offer"], moved["start"], moved["end"],
+                                       reverse, off["duration_min"])
+            if geo.iso(at) == params["at"]:
+                continue
+            res = _retime_transfer(params, at, today)
+        if res is None:
+            issues.append(_issue("transfer_unavailable", f"«{tr['title']}»: на новое время трансфера нет",
+                                 "blocking", [tr["item_id"]]))
+            continue
+        if res["offer"] is None:
+            continue
+        out.append({"item": tr, "params": res["params"], "offer": res["offer"], "fee": 0})
+    return out
+
+
 def change_dates(order_id: str, check_in: date, check_out: date, confirm: bool, now: str) -> dict:
     today = geo.parse_iso(now).date()
     with db.state() as conn:
@@ -602,7 +728,7 @@ def change_dates(order_id: str, check_in: date, check_out: date, confirm: bool, 
                                      "warning", [hotel_it["item_id"]]))
             changes.append({"item": hotel_it, "params": new_hotel_params, "offer": new_hotel, "fee": penalty})
         for it in items:
-            if it["kind"] in ("hotel",) or it["status"] == "cancelled":
+            if it["kind"] in ("hotel", "transfer") or it["status"] == "cancelled":
                 continue
             start = geo.parse_iso(it["start"]).date()
             delta = d_in if start <= old_ci else d_out
@@ -627,12 +753,19 @@ def change_dates(order_id: str, check_in: date, check_out: date, confirm: bool, 
             elif it["kind"] == "train":
                 fee = TRAIN_CHANGE_FEE * it["details"]["party"]["passengers"]
             changes.append({"item": it, "params": res["params"], "offer": res["offer"], "fee": fee})
+        changes += _moved_transfers(items, changes, d_in, d_out, old_ci, today.isoformat(), issues)
+        if any(i["code"] == "transfer_unavailable" for i in issues):
+            available = False
         old_total = row["total_rub"]
         fees = sum(c["fee"] for c in changes)
         new_payloads = [(c, item_payload(c["item"]["kind"], c["offer"], c["params"])) for c in changes]
         new_total = old_total - sum(c["item"]["price_rub"] for c in changes) + sum(p["price_rub"] for _, p in new_payloads) + fees
         quote = {"old_total_rub": old_total, "new_total_rub": max(0, new_total), "difference_rub": new_total - old_total,
                  "penalty_rub": fees}
+        moved = [{"item_id": c["item"]["item_id"], "kind": c["item"]["kind"], "title": pl["title"],
+                  "old_start": c["item"]["start"], "new_start": pl["start"], "new_end": pl["end"],
+                  "old_price_rub": c["item"]["price_rub"], "new_price_rub": pl["price_rub"] + c["fee"]}
+                 for c, pl in new_payloads]
         applied, order = False, None
         if confirm and available:
             for c, pl in new_payloads:
@@ -654,7 +787,7 @@ def change_dates(order_id: str, check_in: date, check_out: date, confirm: bool, 
             if new_issues:
                 issues.extend(new_issues)
         return {"order_id": order_id, "available": available, "quote": quote, "applied": applied, "order": order,
-                "issues": issues, "synthetic": True}
+                "issues": issues, "moved": moved, "synthetic": True}
 
 
 def add_transfer(order_id: str, offer_id: str, now: str) -> dict:
@@ -667,8 +800,27 @@ def add_transfer(order_id: str, offer_id: str, now: str) -> dict:
         items = _items(conn, "order_items", "order_id", order_id)
         if any(i["offer_id"] == offer_id for i in items):
             return order_out(conn, order_id)
-        item_id = "oi_" + rng.hexid(order_id, offer_id, n=12)
         paid = row["status"] in ("paid", "changed")
+        same_way = next((i for i in items if i["kind"] == "transfer" and i["status"] != "cancelled"
+                         and jdump(i["details"]["params"]["fr"]) == jdump(params["fr"])
+                         and i["details"]["params"]["h"] == params["h"]
+                         and bool(i["details"]["params"]["rv"]) == bool(params["rv"])), None)
+        if same_way is not None:
+            # the same way (airport -> hotel, or back) at another time: the booked transfer is re-timed
+            delta = payload["price_rub"] - same_way["price_rub"]
+            conn.execute("UPDATE order_items SET offer_id = ?, title = ?, price_rub = ?, start_at = ?, end_at = ?, "
+                         "details = ?, status = ? WHERE item_id = ?",
+                         (offer_id, payload["title"], payload["price_rub"], payload["start"], payload["end"],
+                          jdump(payload["details"]), "changed" if paid else same_way["status"], same_way["item_id"]))
+            conn.execute("UPDATE orders SET total_rub = total_rub + ?, updated_at = ? WHERE order_id = ?",
+                         (delta, now, order_id))
+            _event(conn, order_id, now, "transfer_changed", {"item_id": same_way["item_id"],
+                                                             "price_rub": payload["price_rub"], "delta_rub": delta})
+            order = order_out(conn, order_id)
+            order["issues"] = _merge_issues([i for i in order["issues"] if not i["code"].startswith("transfer_too")],
+                                            compat_issues([dict(i) for i in order["items"]]))
+            return order
+        item_id = "oi_" + rng.hexid(order_id, offer_id, n=12)
         it = {"item_id": item_id, "kind": "transfer"}
         conn.execute("INSERT INTO order_items (item_id, order_id, offer_id, kind, title, price_rub, booking_number, "
                      "status, start_at, end_at, details) VALUES (?,?,?,?,?,?,?,?,?,?,?)",

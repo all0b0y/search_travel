@@ -425,17 +425,23 @@
       {
         "field": "totals.cheapest.rub",
         "before": 56400,
-        "after": 56400
+        "after": 56400,
+        "delta_rub": 0,
+        "delta_word": null
       },
       {
         "field": "totals.fastest.rub",
         "before": 90300,
-        "after": 88100
+        "after": 88100,
+        "delta_rub": 2200,
+        "delta_word": "дешевле"
       },
       {
         "field": "totals.comfort.rub",
         "before": 131200,
-        "after": 131200
+        "after": 131200,
+        "delta_rub": 0,
+        "delta_word": null
       }
     ],
     "rebuilt": [

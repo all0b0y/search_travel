@@ -65,7 +65,9 @@ def test_checkout_with_infant_rechecks_party(make):
     assert party["children_ages"] == [0] and party["children"] == 1        # exact ages from checkout
     assert seen[-1]["children_ages"] == [0]                                # after_travellers re-check ran
     codes = {i["code"] for i in r["order"]["issues"]}
-    assert {"infant_fare", "party_changed"} <= codes
+    # another party than the cart was priced for: the variant is re-priced for the travellers in this turn
+    # (third level-3 run); the party_changed warning stays only when that re-price is impossible
+    assert "infant_fare" in codes and ("party_changed" in codes or r["message"].startswith("Пересчитал на троих"))
     assert any(hk["event"] == "after_travellers" for hk in r["debug"]["hooks"])
     assert any(a["type"] == "pay" for a in r["actions"])
 
@@ -215,7 +217,7 @@ def test_card_guard_reruns_once_then_degrades(make):
     assert "invented_number" in h.backend.requests[-1].system
     assert r["debug"]["degraded"] and r["debug"]["budget"]["reruns"] == {"present.variants": 1}
     assert r["cards"]["variants"][0]["why"].startswith("«Дешевле»")       # code text, nothing invented
-    assert r["message"].startswith("Вот варианты")
+    assert r["message"].startswith("Советую «")              # code text: the recommended variant with its price
 
 
 def test_present_llm_error_degrades(make):

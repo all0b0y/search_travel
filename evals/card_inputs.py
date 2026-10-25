@@ -128,10 +128,13 @@ _CARD_PROPS = {
                          "reason": {"enum": ["smalltalk", "out_of_scope", "unknown"]}},
 }
 # changes rows: brief paths (dates.shift_days, dates.start, party.pets, ...) and per-variant totals
-# `totals.<variant_id>.rub` (after null = the variant is gone); `rebuilt` lists what was searched again.
+# `totals.<variant_id>.rub` (after null = the variant is gone) with the ready gap delta_rub = |after - before| and
+# delta_word «дешевле» / «дороже» (null when equal, new or gone); `rebuilt` lists what was searched again.
 CHANGE_FIELD = {"type": "string", "pattern": r"^([a-z_]+(\.[a-z_]+)?|totals\.(cheapest|fastest|comfort|custom-[0-9]+)\.rub)$"}
 _CARD_PROPS["present.update"] = dict(_CARD_PROPS["present.variants"], changes={
-    "type": "array", "items": _obj(["field", "before", "after"], {"field": CHANGE_FIELD})},
+    "type": "array", "items": _obj(["field", "before", "after"], {
+        "field": CHANGE_FIELD, "delta_rub": {"type": ["integer", "null"], "minimum": 0},
+        "delta_word": {"enum": ["дешевле", "дороже", None]}})},
     rebuilt={"type": "array", "items": {"enum": ["flights", "trains", "stay", "transfers"]}},
     request={"type": "string"})   # the user's words (a wish that is no filter is named from them)
 

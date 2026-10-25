@@ -150,9 +150,10 @@ class Allowed:
 
     def add_num(self, x):
         x = float(x)
-        self.nums.add(round(x, 6))
-        self.nums.add(float(round(x)))
-        self.nums.add(round(x, 1))
+        for v in (x, abs(x)):   # «−3,2°» for an input -3.2: the sign in the text is not part of the token
+            self.nums.add(round(v, 6))
+            self.nums.add(float(round(v)))
+            self.nums.add(round(v, 1))
 
     def add_text(self, text):
         for kind, value, _ in tokens(text):
@@ -295,7 +296,9 @@ def latin_issues(output, card_input, g=None) -> list:
     allowed = {w.casefold() for w in LATIN_OK | set((g or {}).get("latin_allowed") or [])}
     in_text = " ".join(_strings(card_input)).casefold()
     # single lowercase Latin values of the input are enum codes («walkable», «breakfast», «coupe»), not names
-    codes = {s.casefold() for s in _strings(card_input) if re.fullmatch(r"[a-z][a-z_\-]*", s)} - allowed
+    singles = {s.casefold() for s in _strings(card_input) if re.fullmatch(r"[a-z][a-z_\-]*", s)} - allowed
+    in_names = {w.casefold() for s in _strings(card_input) if " " in s.strip() for w in LATIN_WORD.findall(s)}
+    codes = singles - in_names
     found, seen = [], set()
     for text in _strings(output):
         for w in LATIN_WORD.findall(text):

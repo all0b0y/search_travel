@@ -13,7 +13,8 @@ from .steps import (_arrival, _hhmm_after, _hotel_checkin, _order_has_transfers,
 MAX_ITEMS = 6
 SEVERITY = {"block": "blocking", "warn": "warning", "blocking": "blocking", "warning": "warning", "info": "info"}
 EVENT_TEXT = {"created": "Заказ создан", "paid": "Оплачено картой (демо)", "early_checkin_requested": "Запрошен ранний заезд",
-              "dates_changed": "Даты изменены", "transfer_added": "Добавлен трансфер", "changed": "Заказ изменён",
+              "dates_changed": "Даты изменены", "transfer_added": "Добавлен трансфер",
+              "transfer_changed": "Трансфер перенесён", "changed": "Заказ изменён",
               "cancelled": "Заказ отменён"}
 STEP_TITLE = {"flight": "Перелёт", "train": "Поезд", "transfer": "Трансфер", "taxi": "Такси", "stay": "Проживание"}
 
@@ -197,15 +198,278 @@ def build_actions(ctx, cards, order):
 
 # ---------------------------------------------------------------- message
 
-DEGRADED = {
-    "present.destinations": "Вот направления под ваш запрос — цены и погода посчитаны по данным каталога.",
-    "present.variants": "Вот варианты поездки — цифры посчитаны по данным каталога.",
-    "present.update": "Пересобрал варианты с учётом изменений — цифры посчитаны по данным каталога.",
-    "present.compare": "Сравнение вариантов — в таблице ниже.",
-    "present.info": "Точного ответа в данных нет — не буду выдумывать.",
-    "present.aftercare": "Запрос по заказу отправлен — статус ниже.",
-    "present.fallback": "Я помогаю с поездками: куда поехать, подобрать билеты и отель, оформить. С чего начнём?",
-}
+FALLBACK_TEXT = "Я помогаю с поездками: куда поехать, подобрать билеты и отель, оформить. С чего начнём?"
+
+
+def _day(iso):
+    """«21 ноября» from an ISO date / datetime."""
+    from datetime import date as _date_cls
+    d = _date_cls.fromisoformat(str(iso)[:10])
+    return f"{d.day} {P.MONTHS_GEN[d.month - 1]}"
+
+
+def _clock(iso):
+    s = str(iso or "")
+    return s[11:16] if len(s) >= 16 and s[10] == "T" else None
+
+
+def _title(v):
+    return v.title or P.VARIANT_TITLES.get(v.id, v.id)
+
+
+def _road(v):
+    t = v.totals
+    out_h, back_h = getattr(t, "out_hours", None), getattr(t, "back_hours", None)
+    if out_h is not None and back_h is not None:
+        return f", туда {P.fmt_hours(out_h)}, обратно {P.fmt_hours(back_h)}"
+    if out_h is not None or back_h is not None:
+        return f", в пути {P.fmt_hours(out_h if out_h is not None else back_h)} в одну сторону"
+    return ""
+
+
+def _variants_text(ctx, update=False):
+    variants = list(ctx.variants or [])
+    if not variants:
+        return ("Под новые условия вариантов не нашлось — можно сдвинуть даты, бюджет или район, и я пересоберу."
+                if update else "Вариантов под этот запрос не нашлось — можно сдвинуть даты, бюджет или район.")
+    hint = (ctx.card_input or {}).get("recommended_hint")
+    best = next((v for v in variants if v.id == hint), None) or next(
+        (v for v in variants if v.id == recommended_hint(variants)), variants[0])
+    before = {}
+    for row in (ctx.card_input or {}).get("changes") or []:
+        field = str(row.get("field") or "")
+        if field.startswith("totals.") and row.get("before") is not None:
+            before[field.split(".")[1]] = row["before"]
+    was = f" (было {P.fmt_rub(before[best.id])})" if best.id in before else ""
+    head = "Пересобрал варианты. " if update else ""
+    text = f"{head}Советую «{_title(best)}»: {P.fmt_rub(best.totals.rub)} за всё{was}{_road(best)}."
+    others = [f"«{_title(v)}» — {P.fmt_rub(v.totals.rub)}" for v in variants if v.id != best.id][:2]
+    if others:
+        text += " Ещё " + " и ".join(others) + "."
+    return text
+
+
+def _destinations_text(ctx):
+    items = list(ctx.destination_items or [])[:3]
+    if not items:
+        return "Подходящих направлений не нашлось — расскажите чуть больше, что хочется, и я подберу."
+    parts = [f"{i['name']} — от {P.fmt_rub(i['price_from_rub'])}" if i.get("price_from_rub") else i["name"]
+             for i in items]
+    return "Куда можно поехать: " + ", ".join(parts) + ". Выберите направление — подберу варианты поездки."
+
+
+def _compare_text(ctx):
+    rec = (ctx.comparison or {}).get("recommended_id")
+    v = ctx.session.variant(rec) if rec else None
+    if v is None:
+        return "Сравнил варианты — разница по цене, дороге и отелю в таблице ниже."
+    return (f"Сравнил варианты в таблице ниже. Советую «{_title(v)}»: {P.fmt_rub(v.totals.rub)} за всё"
+            f"{_road(v)}.")
+
+
+INFO_TOPICS = (
+    ("transfer", re.compile(r"трансфер|такси|машин|забер|встрет", re.I)),
+    ("refund", re.compile(r"возврат|вернут|сдать|обмен|поменять билет", re.I)),
+    ("cancel", re.compile(r"отмен", re.I)),
+    ("baggage", re.compile(r"багаж|чемодан", re.I)),
+    ("flight", re.compile(r"рейс|вылет|прил[её]т|перел[её]т|самол|билет|пересад|прям", re.I)),
+    ("hotel", re.compile(r"отел|засел|выезд|номер|заезд", re.I)),
+    ("weather", re.compile(r"погод|море|вод[аы]|тепл|холод|дожд|купа", re.I)),
+)
+
+
+def _topic(question):
+    return next((name for name, rx in INFO_TOPICS if rx.search(question or "")), None)
+
+
+def _order_item_line(i):
+    start, end = i.get("start"), i.get("end")
+    if not start:
+        return f"«{i['title']}»"
+    way = P.transfer_way(i["title"]) if i.get("kind") == "transfer" else None
+    line = (f"трансфер {way} — {_day(start)} в {_clock(start)}" if way
+            else f"«{i['title']}» — {_day(start)} в {_clock(start)}")
+    if i.get("kind") in ("flight", "train") and end:
+        line += f", прибытие в {_clock(end)}"
+    elif i.get("kind") == "hotel" and end:
+        line = f"«{i['title']}» — заезд {_day(start)} с {_clock(start)}, выезд {_day(end)} до {_clock(end)}"
+    return line
+
+
+def _fare_word(leg):
+    if leg.get("refundable") is True:
+        word = "возвратные"
+    elif leg.get("refundable") is False:
+        word = "невозвратные"
+    else:
+        return None
+    if leg.get("exchange_allowed") is False:
+        word += ", без обмена"
+    elif leg.get("exchange_fee_rub") == 0:
+        word += ", обмен бесплатно"
+    elif leg.get("exchange_fee_rub"):
+        word += f", обмен за {P.fmt_rub(leg['exchange_fee_rub'])}"
+    return word
+
+
+def _variant_info(topic, facts):
+    lines = []
+    for f in facts:
+        title, legs, stay = f.get("title") or f.get("id"), f.get("legs") or [], f.get("stay") or {}
+        flights = [leg for leg in legs if leg.get("type") in ("flight", "train")]
+        if topic == "refund":
+            words = list(dict.fromkeys(w for w in (_fare_word(leg) for leg in flights) if w))
+            if words:
+                lines.append(f"в «{title}» билеты {' / '.join(words)}")
+        elif topic == "cancel":
+            c = stay.get("cancellation") or {}
+            if c.get("free_until"):
+                lines.append(f"в «{title}» отель можно отменить бесплатно до {_day(c['free_until'])}")
+            elif c.get("penalty_pct") is not None:
+                lines.append(f"в «{title}» отмена отеля со штрафом {c['penalty_pct']} %")
+        elif topic == "baggage":
+            kg = [leg.get("baggage_checked_kg") for leg in flights if leg.get("type") == "flight"]
+            if kg:
+                lines.append(f"в «{title}» " + ("багаж " + f"{kg[0]} кг" if kg[0] else "без багажа"))
+        elif topic == "transfer":
+            trs = [leg for leg in legs if leg.get("type") == "transfer"]
+            if trs:
+                lines.append(f"в «{title}» трансферы: " + ", ".join(
+                    f"{leg.get('from')} → {leg.get('to')} {_day(leg['dep_date'])} в {leg.get('dep_time')}"
+                    for leg in trs if leg.get("dep_date") and leg.get("dep_time")))
+        elif topic == "hotel" and stay.get("check_in_date"):
+            lines.append(f"в «{title}» заезд {_day(stay['check_in_date'])} с {stay.get('check_in_time')}, выезд "
+                         f"{_day(stay['check_out_date'])} до {stay.get('check_out_time')}")
+        elif flights:
+            lines.append(f"в «{title}» " + "; ".join(
+                f"{leg.get('flight_no') or leg.get('train_no') or leg.get('from')} {_day(leg['dep_date'])}: "
+                f"{leg.get('dep_time')} – {leg.get('arr_time')}" for leg in flights if leg.get("dep_date")))
+    lines = [ln for ln in lines if ln and not ln.endswith(": ")]
+    if not lines:
+        return None
+    text = "; ".join(lines[:3])
+    return text[:1].upper() + text[1:] + "."
+
+
+def _info_text(ctx):
+    facts = [f for f in ctx.info_facts or [] if isinstance(f, dict)]
+    topic = _topic(ctx.info_question or ctx.text or "")
+    order = next((f for f in facts if f.get("kind") == "order"), None)
+    variants = [f for f in facts if f.get("kind") == "variant"]
+    if variants and ctx.session.stage in ("selection", "cart"):
+        order = None                       # a question about the variants on screen, not the old order
+    if order is not None:
+        items = [i for i in (order.get("data") or {}).get("items") or [] if i.get("status") != "cancelled"]
+        kinds = {"transfer": ("transfer",), "flight": ("flight", "train"), "refund": ("flight", "train"),
+                 "baggage": ("flight", "train"), "hotel": ("hotel",), "cancel": ("hotel",)}.get(topic)
+        picked = [i for i in items if kinds is None or i.get("kind") in kinds] or items
+        terms = [t for t in order.get("terms") or [] if _fare_word(t)]
+        if topic == "refund" and terms:
+            return "По вашему заказу: " + "; ".join(f"«{t['title']}» — {_fare_word(t)}" for t in terms[:3]) + "."
+        if picked:
+            text = "По вашему заказу: " + "; ".join(_order_item_line(i) for i in picked[:4]) + "."
+            if topic == "cancel" and (order.get("if_cancelled") or {}).get("refund_rub") is not None:
+                q = order["if_cancelled"]
+                text += f" Если отменить сейчас, вернётся {P.fmt_rub(q['refund_rub'])}"
+                text += f", а {P.fmt_rub(q['lost_rub'])} не вернут." if q.get("lost_rub") else "."
+            return text
+    if variants:
+        text = _variant_info(topic, variants)
+        if text:
+            return text
+    hotel = next((f for f in facts if f.get("kind") == "hotel"), None)
+    pol = ((hotel or {}).get("data") or {}).get("policies") or {}
+    if hotel is not None and topic in ("hotel", None) and pol.get("check_in_from"):
+        name = (hotel.get("data") or {}).get("name") or "отеле"
+        return (f"В «{name}» заселение с {pol['check_in_from']}"
+                + (f", выезд до {pol['check_out_until']}." if pol.get("check_out_until") else "."))
+    clim = next((f for f in facts if f.get("kind") == "climate"), None)
+    data = (clim or {}).get("data") or {}
+    if clim is not None and data.get("air_max_c") is not None and topic in ("weather", None):
+        text = f"В {P.MONTHS_PREP[int(clim['month']) - 1]} днём обычно до {data['air_max_c']}°"
+        if data.get("sea_c") is not None:
+            text += f", море около {data['sea_c']}°"
+        return text + "."
+    warn = next((f for f in facts if f.get("kind") == "warnings" and f.get("items")), None)
+    if warn is not None:
+        return "Обратите внимание: " + str(warn["items"][0]).rstrip(".") + "."
+    return ("Точного ответа на это у меня нет. Спросите, пожалуйста, иначе — про билеты, отель, даты или "
+            "трансфер, — и я подскажу.")
+
+
+def _aftercare_text(ctx):
+    r = ctx.aftercare_result or {}
+    kind = r.get("kind") or r.get("action")
+    if kind == "early_checkin":
+        t = r.get("requested_time") or r.get("time")
+        regular = f" Обычное заселение — с {r['check_in_from']}." if r.get("check_in_from") else ""
+        hotel = f" в «{r['hotel']}»" if r.get("hotel") else ""
+        if r.get("status") == "granted":
+            price = (f" Доплата — {P.fmt_rub(r['price_rub'])}." if r.get("price_rub")
+                     else " Без доплаты." if r.get("price_rub") == 0 else "")
+            return f"Готово: ранний заезд{hotel} в {t} подтвердили.{price}"
+        if r.get("status") == "on_request":
+            return f"Запрос на заезд{hotel} в {t} отправил — отель подтвердит позже, пока это не гарантия.{regular}"
+        return f"Ранний заезд{hotel} в {t} отель не даёт.{regular}"
+    if kind == "change_dates":
+        nd, q = r.get("new_dates") or {}, r.get("quote") or {}
+        when = P.fmt_date_range(nd["check_in"], nd["check_out"]) if nd.get("check_in") and nd.get("check_out") else ""
+        if r.get("reason") == "tickets_not_exchangeable":
+            c = r.get("if_cancelled") or {}
+            text = (f"Перенести этот заказ нельзя: билеты без обмена. Если его отменить, вернётся "
+                    f"{P.fmt_rub(c.get('refund_rub') or 0)}, а {P.fmt_rub(c.get('lost_rub') or 0)} не вернут.")
+            trip = r.get("new_trip") or {}
+            if trip.get("total_rub"):
+                text += f" Та же поездка на {when} — {P.fmt_rub(trip['total_rub'])}."
+            return text
+        if not r.get("available"):
+            why = next((i.get("message") for i in r.get("issues") or [] if i.get("message")), None)
+            return f"На {when} перенести не получится" + (f": {why[:1].lower() + why[1:]}." if why else ".")
+        money = ""
+        if q.get("new_total_rub") is not None and q.get("old_total_rub") is not None:
+            diff = int(q.get("difference_rub") or 0)
+            money = f" Новая цена — {P.fmt_rub(q['new_total_rub'])} вместо {P.fmt_rub(q['old_total_rub'])}"
+            money += (f", доплата {P.fmt_rub(diff)}" if diff > 0 else f", вернём {P.fmt_rub(-diff)}" if diff < 0 else "")
+            money += (f", штраф {P.fmt_rub(q['penalty_rub'])}." if q.get("penalty_rub") else ", штрафа нет.")
+        if r.get("applied"):
+            moved = [m for m in r.get("moved") or [] if m.get("kind") == "transfer" and m.get("new_time")]
+            tail = "".join(f" Трансфер {P.transfer_way(m['title']) or ''} теперь {_day(m['new_date'])} в "
+                           f"{m['new_time']}.".replace("  ", " ") for m in moved[:2])
+            return f"Перенёс: теперь {when}.{money}{tail}"
+        return f"На {when} перенести можно.{money} Если подходит — напишите «переносим», и я подтвержу."
+    if kind == "add_transfer":
+        done = r.get("transfers") or []
+        if done:
+            return " ".join(f"Трансфер {P.transfer_way(d['title']) or ''} {'перенёс' if d.get('replaced') else 'добавил'}: "
+                            f"{_day(d['start'])} в {d['time']}, {P.fmt_rub(d['price_rub'])}.".replace("  ", " ")
+                            for d in done[:2])
+        return f"Трансфер добавил в заказ — итого {P.fmt_rub(r.get('total_rub') or 0)}."
+    return "С заказом всё в порядке — подробности ниже."
+
+
+def code_text(ctx):
+    """The message of a degraded turn (the card failed or its guard failed twice): a short useful Russian text
+    built by code from the same card input — never about models or data."""
+    card = ctx.present or ""
+    try:
+        if card == "present.variants":
+            return _variants_text(ctx)
+        if card == "present.update":
+            return _variants_text(ctx, update=True)
+        if card == "present.destinations":
+            return _destinations_text(ctx)
+        if card == "present.compare":
+            return _compare_text(ctx)
+        if card == "present.info":
+            return _info_text(ctx)
+        if card == "present.aftercare":
+            return _aftercare_text(ctx)
+    except (KeyError, TypeError, ValueError, IndexError, AttributeError) as exc:
+        ctx.trace["errors"].append(f"code_text {card}: {type(exc).__name__}: {exc}")
+        return {"present.info": "Точного ответа на это у меня нет — спросите, пожалуйста, иначе.",
+                "present.aftercare": "Запрос по заказу выполнен — состояние заказа ниже."}.get(
+            card, "Вот что получилось — подробности в карточках ниже.")
+    return FALLBACK_TEXT if card == "present.fallback" else "Готово."
 
 
 def build_message(ctx):
@@ -216,9 +480,7 @@ def build_message(ctx):
     elif ctx.card_output and ctx.card_output.get("message"):
         body = ctx.card_output["message"]
     else:
-        body = DEGRADED.get(ctx.present or "", "Готово.")
-        if ctx.present == "present.info" and ctx.info_facts:
-            body = "Вот что есть в данных по вашему вопросу — без пересказа моделью."
+        body = code_text(ctx)
     return " ".join(ctx.notes + [calm_risks(body)]).strip()
 
 

@@ -57,6 +57,18 @@ def fmt_date_range(start, end):
     return f"{s.day} {MONTHS_GEN[s.month - 1]} – {e.day} {MONTHS_GEN[e.month - 1]}"
 
 
+def transfer_way(title):
+    """«до отеля» / «в аэропорт» / «на вокзал» from a mock transfer title («Трансфер (такси): KGD → «Ял»»,
+    «Трансфер (такси): «Ял» → KGD»), or None when it is not one."""
+    head, sep, route = str(title or "").partition(": ")
+    if not sep or "→" not in route:
+        return None
+    if not route.lstrip().startswith("«"):
+        return "до отеля"
+    to = route.split("→", 1)[1].strip()
+    return "в аэропорт" if len(to) == 3 and to.isalpha() and to.isupper() else "на вокзал"
+
+
 def party_label(party):
     if not party:
         return "состав не указан"

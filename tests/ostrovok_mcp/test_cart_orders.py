@@ -254,3 +254,50 @@ def test_state_is_never_written_to_catalog(trip, mock_env):
         tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     assert "carts" not in tables
     assert (mock_env["tmp"] / "state.sqlite").exists()
+
+
+def _gap_ok(order):
+    """Every transfer meets its flight: pickup after landing, at the airport >= 120 min before departure."""
+    flights = [i for i in order["items"] if i["kind"] == "flight"]
+    for tr in [i for i in order["items"] if i["kind"] == "transfer"]:
+        off = tr["details"]["offer"]
+        if off["reverse"]:
+            f = next(f for f in flights if f["details"]["offer"]["origin_iata"] == "AER")
+            gap = (datetime.fromisoformat(f["start"]) - datetime.fromisoformat(tr["end"])).total_seconds() / 60
+            assert 120 <= gap <= 300, (tr["start"], f["start"], gap)
+        else:
+            f = next(f for f in flights if f["details"]["offer"]["dest_iata"] == "AER")
+            gap = (datetime.fromisoformat(tr["start"]) - datetime.fromisoformat(f["end"])).total_seconds() / 60
+            assert 30 <= gap <= 240, (tr["start"], f["end"], gap)
+
+
+def test_change_dates_moves_transfers_with_their_flights(trip):
+    """s16: the trip moved a day, the return flight moved to another hour, the transfer kept its old time."""
+    out, back = trip["out"], trip["back"]
+    add("s16", out, "flight")
+    add("s16", trip["stay"], "hotel")
+    add("s16", back, "flight")
+    add("s16", transfer(iso_shift(out["arr"], 75)), "transfer")
+    tr_back = transfer(iso_shift(back["dep"], -120 - 60), reverse=True)
+    cart = add("s16", tr_back, "transfer")
+    order = s.checkout({"cart_id": cart["cart_id"], "travellers": ADULTS, "contact": CONTACT, "now": NOW})
+    s.pay({"order_id": order["order_id"], "method": "mock_card", "now": NOW})
+    _gap_ok(s.order_get({"order_id": order["order_id"]}))
+    q = s.order_change_dates({"order_id": order["order_id"], "new_dates": {"check_in": "2026-11-15",
+                              "check_out": "2026-11-22"}, "confirm": True, "now": NOW})
+    c.OrderChangeDatesOut.model_validate(q)
+    assert q["applied"], q["issues"]
+    assert {m["kind"] for m in q["moved"]} >= {"flight", "hotel", "transfer"}
+    assert not [i for i in q["issues"] if i["code"].startswith("transfer_too")]
+    order = s.order_get({"order_id": order["order_id"]})
+    _gap_ok(order)
+    assert order["total_rub"] == q["quote"]["new_total_rub"]
+    # a transfer of the same way at another time re-times the booked one (no duplicate, total adjusted)
+    back_tr = next(i for i in order["items"] if i["kind"] == "transfer" and i["details"]["offer"]["reverse"])
+    later = transfer(iso_shift(back_tr["start"], -30), reverse=True, kind="private")
+    upd = s.order_add_transfer({"order_id": order["order_id"], "offer_id": later["offer_id"], "now": NOW})
+    c.Order.model_validate(upd)
+    trs = [i for i in upd["items"] if i["kind"] == "transfer"]
+    assert len(trs) == 2 and later["offer_id"] in {i["offer_id"] for i in trs}
+    assert upd["total_rub"] == order["total_rub"] - back_tr["price_rub"] + later["price_rub"]
+    assert upd["events"][-1]["kind"] == "transfer_changed"

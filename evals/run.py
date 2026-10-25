@@ -381,7 +381,7 @@ def inject_profile(engine, profile_id, profile):
         return True
     from agent.profiles import Profile  # sibling (ENGINE-A)
     put(Profile(id=profile_id, home_city=profile["home_city"], home_iata=HOME_IATA.get(profile["home_city"], []),
-                age=profile.get("age")))
+                age=profile.get("age"), travellers=list(profile.get("travellers") or [])))
     return True
 
 

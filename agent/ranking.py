@@ -74,13 +74,16 @@ RANKING_DEFAULTS = {
     "unused_night_penalty": 0.05,     # comfort minus this when arriving after midnight (first night unused)
     "max_hours_relax_tolerance_h": 1.0,   # nothing within max_travel_hours: keep journeys this close to the best
     "flex_shift_min_saving_pct": 10,  # flexible_days: another start day only when this much cheaper overall
+    "max_dorm_hotels": 3,             # dorm-bed offers kept when private rooms exist (never crowd them out)
+    "dorm_fit_factor": 0.5,           # fit x this for a dorm bed the user did not ask for (never the pick)
 }
 SENSITIVITY_DEFAULTS = {"price_delta_pct": 10, "top_changes": True, "max_reruns": 12}
 
 MEALS_RANK = {"none": 0, "breakfast": 1, "half_board": 2, "full_board": 3, "all_inclusive": 4}
 MEALS_RU = {"none": "без питания", "breakfast": "завтраки", "half_board": "полупансион",
             "full_board": "полный пансион", "all_inclusive": "всё включено", "any": "любое"}
-TITLES = {"cheapest": "Дешевле", "fastest": "Быстрее", "comfort": "Комфортнее", "custom-1": "Удачнее по району"}
+TITLES = {"cheapest": "Дешевле", "fastest": "Быстрее", "comfort": "Комфортнее", "custom-1": "Удачнее по району",
+          "custom-2": "Свой номер подешевле"}
 SEA_TRAITS = {"sea", "beach", "island"}
 CAR_CLASS_COMFORT = {"sv": 1.0, "coupe": 0.6, "seat": 0.4, "platzkart": 0.2}
 COMFORT_TRANSFER = {"private": 1.0, "taxi": 0.8, "shuttle": 0.4, "public": 0.1}
@@ -252,9 +255,33 @@ def _party_ok(h, brief):
         return False
     if party is not None and _is_dorm(room) and (party.segment in ("couple", "family") or party.children):
         return False   # a bed in a shared dorm is not a stay for a couple or a family
+    if _is_dorm(room) and DORM_NEVER in (brief.constraints.value or []):
+        return False   # «отдельный номер», «не хостел» (steps.room_cues)
     if is_gendered_room(room):
         return False   # men-/women-only room: the traveller's gender is never known
     return True
+
+
+DORM_OK = "hostel"       # constraint: the user asked for a hostel / a dorm bed (steps.room_cues)
+DORM_NEVER = "no_dorm"   # constraint: the user asked for a private room
+
+
+def wants_dorm(brief) -> bool:
+    return DORM_OK in (brief.constraints.value or [])
+
+
+def _hotel_is_dorm(h) -> bool:
+    return h is not None and _is_dorm(h.get("room") or {})
+
+
+def _private_first(combos, brief):
+    """Combos without a dorm bed when there are any (unless the user asked for a hostel): «Комфортнее»,
+    «Быстрее», the location pick and the recommended variant are never a bed in a shared room when a
+    private room exists; only «Дешевле» may be one."""
+    if wants_dorm(brief):
+        return combos
+    private = [c for c in combos if not _hotel_is_dorm(c.hotel)]
+    return private or combos
 
 
 def _is_dorm(room) -> bool:
@@ -548,7 +575,15 @@ def _prune_legs(legs, n, extra=0):
     return list(keep.values())
 
 
-def _prune_hotels(hotels, n, brief, districts, segments):
+def _prune_hotels(hotels, n, brief, districts, segments, max_dorms=None):
+    """Cheapest half + best quality up to n. Dorm beds never crowd out private rooms: unless the user
+    asked for a hostel, at most `max_dorms` cheapest dorm offers stay next to the private ones."""
+    if max_dorms is not None and not wants_dorm(brief):
+        dorms = [h for h in hotels if _hotel_is_dorm(h)]
+        private = [h for h in hotels if not _hotel_is_dorm(h)]
+        if dorms and private:
+            keep = sorted(dorms, key=lambda h: (h["price_total_rub"], h["offer_id"]))[:max(0, int(max_dorms))]
+            return keep + _prune_hotels(private, max(1, n - len(keep)), brief, districts, segments)
     if len(hotels) <= n:
         return hotels
     def quality(h):
@@ -704,6 +739,7 @@ def _facts(c: Combo, brief, districts, segments, rr):
         "distance_beach_m": h.get("distance_beach_m"),
         "distance_center_m": h.get("distance_center_m"),
         "room_name": room.get("name"),
+        "dorm_bed": True if _is_dorm(room) else None,
         "room_capacity_adults": room.get("capacity_adults"),
         "room_capacity_children": room.get("capacity_children"),
         "pets_allowed": h.get("pets_allowed"),
@@ -857,6 +893,9 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
     # what the user asked for and did not get goes first: the list is capped
     prefs = brief.prefs.value
     head = []
+    if _hotel_is_dorm(c.hotel):   # never hidden by the cap: a bed in a shared room, not a private room
+        head.append(_note("dorm_bed", "Это койка в общем номере хостела, а не отдельный номер",
+                          room=((c.hotel or {}).get("room") or {}).get("name")))
     for path in c.relaxed:
         if path == TICKETS_REFUNDABLE:
             head.append(_note("non_refundable_only", "Возвратных билетов на эти даты нет — в варианте невозвратные",
@@ -1030,6 +1069,10 @@ def fit(brief, variant, rules, segments=None):
     w = rr["fit_weights"]
     total = sum(w.get(k, 0) for k in b)
     score = sum(w.get(k, 0) * v for k, v in b.items()) / total if total else 0.0
+    if f.get("dorm_bed") and not wants_dorm(brief):
+        # a bed in a shared room is never the code's pick over a private room (only «Дешевле» may be one)
+        b["room"] = 0.0
+        score *= rr["dorm_fit_factor"]
     return Fit(score=round(max(0.0, min(1.0, score)), 3), breakdown=b)
 
 
@@ -1037,6 +1080,8 @@ def recommended_hint(variants):
     """The code's pick: highest fit (ties: cheapest, fastest, comfort order). None for no variants."""
     if not variants:
         return None
+    private = [v for v in variants if not (v.facts or {}).get("dorm_bed")]
+    variants = private or list(variants)   # a bed in a shared room is never the pick when a room exists
     best = max(enumerate(variants), key=lambda iv: ((iv[1].fit.score if iv[1].fit else 0), -iv[0]))
     return best[1].id
 
@@ -1075,7 +1120,10 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
       back_hours) must fit; when none fits, the journeys within ranking.max_hours_relax_tolerance_h of
       the best one-way time are kept with `relaxed_pref`.
     - Rooms: men-/women-only rooms are never offered (is_gendered_room; the gender is never known);
-      shared dorms never for couples/families. Constraint `crib`: hotels with a guaranteed cot
+      shared dorms never for couples/families. Dorm beds (unless the user asked for a hostel, constraint
+      `hostel`) never crowd out private rooms (ranking.max_dorm_hotels), only «Дешевле» may be one (risk
+      `dorm_bed`, facts.dorm_bed, fit x ranking.dorm_fit_factor); constraint `no_dorm` drops them.
+      Constraint `crib`: hotels with a guaranteed cot
       (kids_policy.infant_cot free/paid; free scores higher in comfort) — a relaxable hotel pref like
       stars/meals/cancellation/beach; when no hotel meets them all, the fewest prefs are dropped
       (RELAX_ORDER, the cot last) with a `relaxed_pref` note each.
@@ -1101,7 +1149,7 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     if want_stay and not hotels_all:
         return []
     hotels, relaxed_paths = _relax_hotels(hotels_all, brief)
-    hotels = _prune_hotels(hotels, rr["max_hotels"], brief, districts, segs)
+    hotels = _prune_hotels(hotels, rr["max_hotels"], brief, districts, segs, rr["max_dorm_hotels"])
 
     want_transport = bool(scope & {"flights", "trains"})
     if not (want_stay or want_transport):
@@ -1165,34 +1213,42 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     notes: dict[str, list[str]] = {}
     cheapest = min(combos, key=lambda c: (c.rub, c.unused_night, c.hours, -c.comfort))
     picked.append(("cheapest", cheapest))
+    # only «Дешевле» may be a dorm bed (unless the user asked for a hostel): the rest come from private rooms
+    private = _private_first(combos, brief)
+    dorm_cheapest = _hotel_is_dorm(cheapest.hotel) and not _hotel_is_dorm(private[0].hotel)
+    if dorm_cheapest:   # the cheapest private room right next to the dorm bed
+        picked.append(("custom-2", min(private, key=lambda c: (c.rub, c.unused_night, c.hours, -c.comfort))))
+    low_id, ref = picked[-1]   # the cheapest variant with a private room (or «Дешевле» itself)
     if door:
-        min_h = min(c.hours for c in combos)
-        near = [c for c in combos if c.hours <= min_h + rr["fastest_hours_tolerance"]]
+        min_h = min(c.hours for c in private)
+        near = [c for c in private if c.hours <= min_h + rr["fastest_hours_tolerance"]]
         base = min(c.rub for c in near) or 1
         fastest = max(near, key=lambda c: (round(c.comfort - rr["fastest_price_weight"] * (c.rub / base - 1), 6),
                                            -c.hours, -c.rub))
-        if fastest.key != cheapest.key and cheapest.hours - fastest.hours >= rr["fastest_min_gain_h"]:
+        if fastest.key != ref.key and ref.hours - fastest.hours >= rr["fastest_min_gain_h"]:
             picked.append(("fastest", fastest))
         else:
-            notes.setdefault("cheapest", []).append("fastest")
+            notes.setdefault(low_id, []).append("fastest")
     taken = {c.key for _, c in picked}
     budget = brief.budget_rub.value.max if brief.budget_rub.value else None
-    cap = budget if budget else cheapest.rub * rr["comfort_price_cap_ratio"]
-    pool = [c for c in combos if c.key not in taken and c.rub <= max(cap, cheapest.rub)]
+    cap = budget if budget else ref.rub * rr["comfort_price_cap_ratio"]
+    pool = [c for c in private if c.key not in taken and c.rub <= max(cap, ref.rub)]
     if door:   # comfort is about the stay, not about a long detour: keep its journey near the fastest one
         min_hours = min(c.hours for c in combos)
         near = [c for c in pool if c.hours <= min_hours + rr["comfort_max_extra_hours"]]
         pool = near or pool
-    best_other = max(c.comfort for _, c in picked)
+    rooms = [c for _, c in picked if not (dorm_cheapest and _hotel_is_dorm(c.hotel))]
+    best_other = max((c.comfort for c in rooms), default=None)
     comfort = max(pool, key=lambda c: (c.comfort, -c.rub)) if pool else None
-    if comfort is not None and comfort.comfort >= best_other + rr["comfort_min_gain"]:
+    if comfort is not None and (best_other is None or comfort.comfort >= best_other + rr["comfort_min_gain"]):
         picked.append(("comfort", comfort))
     else:
-        winner = max(picked, key=lambda pc: pc[1].comfort)[0]
+        winner = max([pc for pc in picked if any(pc[1] is r for r in rooms)] or picked,
+                     key=lambda pc: pc[1].comfort)[0]
         notes.setdefault(winner, []).append("comfort")
     if not door and want_stay:
         taken = {c.key for _, c in picked}
-        rest = [c for c in combos if c.key not in taken and c.rub <= max(cap, cheapest.rub)]
+        rest = [c for c in private if c.key not in taken and c.rub <= max(cap, ref.rub)]
         def loc(c):
             d = district_fit(brief, district_of(c.hotel, districts), segs)
             beach = c.hotel.get("distance_beach_m")
@@ -1202,7 +1258,10 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
             best_loc = max(rest, key=lambda c: (loc(c), -c.rub))
             if loc(best_loc) > max(loc(c) for _, c in picked) + 0.05:
                 picked.append(("custom-1", best_loc))
-    picked = picked[: rules.get("max_variants", 3)]
+    limit = rules.get("max_variants", 3)
+    if dorm_cheapest and len(picked) > limit:   # the private-room cards go first; the fastest may give way
+        picked = [pc for pc in picked if pc[0] != "fastest"] or picked
+    picked = picked[:limit]
 
     # assemble
     drafts = []
@@ -1271,7 +1330,7 @@ def _shift_note(shift, facts):
 def _coincide_text(vid, also):
     names = {"fastest": "самым быстрым", "comfort": "самым комфортным"}
     base = {"cheapest": "Самый дешёвый вариант", "fastest": "Самый быстрый вариант", "comfort": "Комфортный вариант",
-            "custom-1": "Этот вариант"}[vid]
+            "custom-1": "Этот вариант", "custom-2": "Этот вариант"}.get(vid, "Этот вариант")
     return f"{base} оказался и {' и '.join(names[a] for a in also)} — отдельной карточки нет."
 
 
@@ -1342,6 +1401,8 @@ def _askable(brief, path):
     if path == "party.children_ages":
         party = brief.party.value
         return bool(party and party.children and not party.children_ages)
+    if top == "party" and brief.source_of("party.segment") in ("profile", "inferred"):
+        return False   # saved travellers or the user's own words (a business trip): a chip, not a question
     if top == "destination":
         return False
     return True

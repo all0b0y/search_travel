@@ -165,6 +165,13 @@
     "comfort_legs": 2,
     "unused_night_penalty": 0.05,
     "max_hours_relax_tolerance_h": 1.0,
-    "flex_shift_min_saving_pct": 10
+    "flex_shift_min_saving_pct": 10,
+    "max_dorm_hotels": 3,
+    "dorm_fit_factor": 0.5
+  },
+  "rooms": {
+    "format": "Code rules on the user's message (steps.prepare_brief), checked before the understand patch is normalised. private_cues first: a match adds constraint no_dorm (dorm beds are never offered) and drops hostel; else dorm_cues adds constraint hostel (dorm beds may be any variant). Without either, a dorm bed may only be «Дешевле» for solo/friends when a private room exists (ranking).",
+    "private_cues": ["отдельный номер", "отдельном номере", "отдельная комната", "отдельную комнату", "отдельной комнат", "номер на одного", "не хостел", "без хостел", "не в хостел", "не общий номер", "не в общем", "свой номер", "своём номере", "своем номере", "это же хостел"],
+    "dorm_cues": ["хостел в ", "в хостеле", "хостел подойд", "хостел ок", "можно хостел", "можно в хостел", "хочу хостел", "хочу в хостел", "койко", "место в общем номере", "hostel", "dorm"]
   }
 }

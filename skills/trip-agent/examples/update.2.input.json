@@ -307,12 +307,16 @@
     {
       "field": "totals.cheapest.rub",
       "before": 98400,
-      "after": 104900
+      "after": 104900,
+      "delta_rub": 6500,
+      "delta_word": "дороже"
     },
     {
       "field": "totals.fastest.rub",
       "before": 121700,
-      "after": null
+      "after": null,
+      "delta_rub": null,
+      "delta_word": null
     }
   ],
   "rebuilt": [

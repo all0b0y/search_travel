@@ -130,7 +130,7 @@ def test_entry_e_shift_days_against_shown_dates(h):
     import json
     payload = json.loads(h.backend.requests[-1].user)
     assert payload["changes"][0] == {"field": "dates.shift_days", "before": 0, "after": 2}
-    assert {"flights", "hotels"} <= set(payload["rebuilt"])
+    assert {"flights", "stay"} <= set(payload["rebuilt"])
 
 
 def test_entry_e_shift_without_anything_shown_asks(h):

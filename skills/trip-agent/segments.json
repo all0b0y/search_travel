@@ -1,5 +1,5 @@
 {
-  "format": "segments: {<party.segment>: {label (Russian chip text), party: default {adults, children} applied with source default for the sub-fields the user did not give (Foundation decision 2), prefs: default prefs (source default, shown as chips), district_weights: {lively, quiet, family, walkable} weights for ranking hotels by OSM district scores (sum 1), jev_criteria: English criterion for Jev segment routing (is this message this segment?), jev_district: English prior for Jev district inference for this segment}}. Segments not listed (other) use neutral weights 0.25 each and party {adults: 2, children: 0}. district: Russian chip labels and English Jev choice descriptions of the four OSM district labels.",
+  "format": "segments: {<party.segment>: {label (Russian chip text), party: default {adults, children} applied with source default for the sub-fields the user did not give (Foundation decision 2), prefs: default prefs (source default, shown as chips), district_weights: {lively, quiet, family, walkable} weights for ranking hotels by OSM district scores (sum 1), jev_criteria: English criterion for Jev segment routing (is this message this segment?), jev_district: English prior for Jev district inference for this segment, cues (optional): lowercase substrings of the user's message that imply this segment when the user named no party, e.g. a business trip -> solo; code assumes the segment with source inferred, shown as a chip}}. With no party said and no cue, the profile's saved travellers give the party (source profile), else questions.json party.segment's recommended choice. Segments not listed (other) use neutral weights 0.25 each and party {adults: 2, children: 0}. district: Russian chip labels and English Jev choice descriptions of the four OSM district labels.",
   "district": {
     "lively": {"label": "движ", "jev": "Bars, clubs, events and late cafes nearby; noise at night is acceptable."},
     "quiet": {"label": "тихо", "jev": "Few bars and little traffic; calm evenings, good sleep."},
@@ -11,6 +11,7 @@
       "label": "один",
       "party": {"adults": 1, "children": 0},
       "prefs": {"district": "walkable"},
+      "cues": ["командировк", "по работе", "на конференци", "деловая поездка", "деловую поездку", "рабочая поездка", "рабочую поездку", "бизнес-поездк", "business trip"],
       "district_weights": {"lively": 0.35, "quiet": 0.1, "family": 0.0, "walkable": 0.55},
       "jev_criteria": "One adult travelling alone: 'один', 'одна', 'сам', 'в одиночку'; no partner, children or friends mentioned.",
       "jev_district": "A solo traveller usually wants to walk everywhere; choose lively only when the messages mention bars, clubs or parties, quiet when they mention rest or sleep."

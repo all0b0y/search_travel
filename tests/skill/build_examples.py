@@ -439,7 +439,16 @@ write("present.variants", 3, v_input(KZN, "selection", kazan_variants(), "comfor
 
 # ---------------------------------------------------------------- update
 def changes(*rows):
-    return [{"field": f, "before": b, "after": a} for f, b, a in rows]
+    """changes rows as the engine sends them: a totals row carries the ready gap (engine.total_change)."""
+    out = []
+    for f, b, a in rows:
+        row = {"field": f, "before": b, "after": a}
+        if f.startswith("totals."):
+            d = a - b if a is not None and b is not None else None
+            row.update(delta_rub=abs(d) if d is not None else None,
+                       delta_word=None if not d else "дешевле" if d < 0 else "дороже")
+        out.append(row)
+    return out
 
 
 SOCHI2, _ = apply_patch(SOCHI, {"set": {"dates.shift_days": 2}})
@@ -724,6 +733,29 @@ write("present.aftercare", 4, a_input(KGD_ORDER, {
       I("Перенести этот заказ нельзя: билеты без обмена, доплатой за сдвиг это не решить. Если его отменить, за отель "
         "вернётся 9 800 ₽, а 13 200 ₽ за билеты не вернут. Та же поездка на 21–24 ноября — 25 900 ₽, с учётом "
         "возврата это 16 100 ₽ сверху."))
+
+KGD_CHANGED = {"order_id": "o_ex_kgd", "status": "changed", "total_rub": 35680,
+               "items": [{"item_id": "oi_1", "kind": "flight", "title": "Перелёт SVO → KGD, SU1006", "price_rub": 13900,
+                          "start": "2026-11-21T09:10:00+03:00", "end": "2026-11-21T09:45:00+02:00",
+                          "booking_number": "PA2001", "status": "changed"},
+                         {"item_id": "oi_2", "kind": "hotel", "title": "Ял: Стандартный, 3 ноч., завтраки",
+                          "price_rub": 9800, "start": "2026-11-21T14:00:00+02:00", "end": "2026-11-24T12:00:00+02:00",
+                          "booking_number": "BL3003", "status": "changed"},
+                         {"item_id": "oi_4", "kind": "transfer", "title": "Трансфер (такси): «Ял» → KGD",
+                          "price_rub": 1240, "start": "2026-11-24T04:40:00+02:00", "end": "2026-11-24T05:20:00+02:00",
+                          "booking_number": "TX4004", "status": "changed"},
+                         {"item_id": "oi_3", "kind": "flight", "title": "Перелёт KGD → SVO, SU1007", "price_rub": 10740,
+                          "start": "2026-11-24T07:55:00+02:00", "end": "2026-11-24T10:30:00+03:00",
+                          "booking_number": "PA2002", "status": "changed"}]}
+write("present.aftercare", 5, a_input(KGD_CHANGED, {
+    "kind": "change_dates", "order_id": "o_ex_kgd", "available": True, "applied": True,
+    "new_dates": {"check_in": "2026-11-21", "check_out": "2026-11-24"},
+    "quote": {"old_total_rub": 35230, "new_total_rub": 35680, "difference_rub": 450, "penalty_rub": 2500},
+    "issues": [],
+    "moved": [{"kind": "transfer", "title": "Трансфер (такси): «Ял» → KGD", "way": "в аэропорт", "new_start": "2026-11-24T04:40:00+02:00",
+               "new_date": "2026-11-24", "new_time": "04:40", "old_time": "12:40", "new_price_rub": 1240}]}),
+      I("Перенёс: теперь 21–24 ноября, итого 35 680 ₽ вместо 35 230 ₽ — доплата 450 ₽ и штраф 2 500 ₽ за обмен "
+        "билета. Трансфер в аэропорт теперь 24 ноября в 04:40, под новый рейс в 07:55."))
 
 # ---------------------------------------------------------------- fallback
 def f_input(b, stage, message, reason):

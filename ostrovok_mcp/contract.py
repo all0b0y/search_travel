@@ -538,6 +538,18 @@ class DatesQuote(Model):
     penalty_rub: Rub = 0
 
 
+class MovedItem(Model):
+    """One order item a date change moves (flights / trains re-booked, the stay, transfers re-timed)."""
+    item_id: str
+    kind: ItemKind
+    title: str
+    old_start: Optional[IsoDateTime] = None
+    new_start: Optional[IsoDateTime] = None
+    new_end: Optional[IsoDateTime] = None
+    old_price_rub: Rub
+    new_price_rub: Rub               # incl. the exchange fee of that item
+
+
 class OrderChangeDatesOut(Model):
     order_id: str
     available: bool
@@ -545,6 +557,7 @@ class OrderChangeDatesOut(Model):
     applied: bool = False
     order: Optional[Order] = None   # the updated order when applied
     issues: list[Issue] = PField(default_factory=list)
+    moved: list[MovedItem] = PField(default_factory=list)   # what the change moves (quoted or applied)
     synthetic: bool = True
 
 

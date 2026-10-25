@@ -34,7 +34,7 @@ from .state import (Brief, CachedResult, PatchError, Question, UpsellCandidate, 
                     changed_paths)
 from .steps_spec import STEP_NAMES
 
-RESULTS_CAP = 80          # cached tool results kept per session
+RESULTS_CAP = 300         # cached tool results kept per session (80 evicted the shown variants' offers)
 TRANSFER_HOTELS = 40      # every hotel offer gets transfer quotes: ranking may pick any of them
 ITEM_KINDS = {"flight": "flight", "train": "train", "stay": "hotel", "transfer": "transfer"}
 UPSELL_ITEM_KIND = {"transfer": "transfer", "early_checkin": "hotel", "room_upgrade": "hotel",
@@ -402,6 +402,75 @@ def recommended(ctx, path):
     return P.recommended_value(ctx.skill, path, profile_value(ctx.profile, path), patterns.get(path))
 
 
+PARTY_KEYS = ("segment", "adults", "children", "children_ages")
+
+
+def segment_for(adults, children):
+    return "family" if children else "solo" if adults == 1 else "couple" if adults == 2 else "friends"
+
+
+def user_party(brief):
+    """True when the user said anything about who travels."""
+    return brief.party.value is not None and any(brief.source_of(f"party.{k}") == "user" for k in PARTY_KEYS)
+
+
+def _cue_in(text, cues):
+    return bool(text) and any(str(c).casefold() in text for c in cues or [])
+
+
+def segment_cue(ctx):
+    """A segment the user's message implies without naming the party (segments.json `cues`: a business
+    trip -> solo), or None."""
+    text = (ctx.text or "").casefold()
+    for name, seg in (ctx.skill.segments or {}).items():
+        if _cue_in(text, (seg or {}).get("cues")):
+            return name
+    return None
+
+
+def party_of_ages(ages):
+    """Ages on the trip start -> {segment, adults, children, children_ages} (adults are 18+)."""
+    kids = sorted(a for a in ages if a < 18)
+    adults = len(ages) - len(kids)
+    return {"segment": segment_for(adults, len(kids)), "adults": adults, "children": len(kids),
+            "children_ages": kids or None}
+
+
+def profile_party(ctx, brief):
+    """The party of the profile's saved travellers, ages on the trip start (dates.start, else today), or None."""
+    saved = list(getattr(ctx.profile, "travellers", None) or [])
+    if not saved:
+        return None
+    day = _date((brief.values().get("dates") or {}).get("start")) or ctx.session.today()
+    ages = [_age_on(t.birth_date, day) for t in saved]
+    if any(a < 0 for a in ages):
+        return None
+    party = party_of_ages(ages)
+    return party if party["adults"] >= 1 else None
+
+
+def room_cues(ctx, brief):
+    """rules.json `rooms` on the user's message: «отдельный номер», «не хостел» -> constraint no_dorm (dorm
+    beds never offered); «хостел» -> constraint hostel (dorm beds may be any variant). The user's own
+    words, read by code (understand.md has no room for them)."""
+    rooms = (ctx.rules or {}).get("rooms") or {}
+    text = (ctx.text or "").casefold()
+    have = set(brief.values().get("constraints") or [])
+    if _cue_in(text, rooms.get("private_cues")):
+        add, drop = "no_dorm", "hostel"
+    elif _cue_in(text, rooms.get("dorm_cues")):
+        add, drop = "hostel", "no_dorm"
+    else:
+        return brief
+    if add in have and drop not in have:
+        return brief
+    patch = {"set": {"constraints.add": [add]}, "unset": []}
+    if drop in have:
+        patch["set"]["constraints.remove"] = [drop]
+    new, _ = apply_patch(brief, patch)
+    return new
+
+
 def normalize_brief(ctx, brief):
     """Profile values, segment defaults, party counts, nights/month/scope defaults (never over the user)."""
     skill = ctx.skill
@@ -411,21 +480,30 @@ def normalize_brief(ctx, brief):
         city = recommended(ctx, "origin.city")
         if city:
             brief = assume(brief, "origin", {"city": city, "iata": []}, "default")
-    # party (decision 2)
+    # party (decision 2): the user's words > a segment cue («командировка» -> solo) > the profile's saved
+    # travellers > the recommended segment's defaults
     party = brief.values().get("party")
-    if party is None:
-        seg = recommended(ctx, "party.segment") or "other"
-        brief = assume(brief, "party.segment", seg, "default")
+    cue = segment_cue(ctx)
+    if cue and not user_party(brief) and (party or {}).get("segment") != cue:
+        brief = assume(brief, "party.segment", cue, "inferred")
+    elif party is None:
+        saved = profile_party(ctx, brief)
+        if saved:
+            for key in ("segment", "adults", "children", "children_ages"):
+                brief = assume(brief, f"party.{key}", saved[key], "profile")
+        else:
+            seg = recommended(ctx, "party.segment") or "other"
+            brief = assume(brief, "party.segment", seg, "default")
     else:
         if party.get("segment") == "other" and brief.source_of("party.segment") != "user" and (
                 brief.source_of("party.adults") == "user" or brief.source_of("party.children") == "user"):
             a, c = int(party.get("adults") or 0), int(party.get("children") or 0)
-            seg = "family" if c else "solo" if a == 1 else "couple" if a == 2 else "friends"
-            brief = assume(brief, "party.segment", seg, "inferred")
+            brief = assume(brief, "party.segment", segment_for(a, c), "inferred")
     party = brief.values()["party"]
     defaults = ((skill.segments or {}).get(party["segment"]) or {}).get("party") or {}
+    kept = ("user", "profile") if brief.source_of("party.segment") == "profile" else ("user",)
     for key in ("adults", "children"):
-        if key in defaults and brief.source_of(f"party.{key}") != "user" and party.get(key) != defaults[key]:
+        if key in defaults and brief.source_of(f"party.{key}") not in kept and party.get(key) != defaults[key]:
             brief = assume(brief, f"party.{key}", defaults[key], "default")
     party = brief.values()["party"]
     children = int(party.get("children") or 0)
@@ -478,6 +556,7 @@ def normalize_brief(ctx, brief):
 def prepare_brief(ctx, brief, patch, allow_lazy=True):
     """Patch + destination resolution + normalisation -> (brief, changed_paths, unknown_name)."""
     new, changed = apply_patch(brief, patch)
+    new = room_cues(ctx, new)
     unknown = None
     dest = new.values().get("destination")
     if ctx.destination_hint:
@@ -1072,8 +1151,9 @@ def _flight_jobs(ctx, brief, dest, check_in, check_out, flex=0):
                                                 "date": check_out.isoformat()})}
 
 
-def _search_dates(ctx, brief, dest, check_in, check_out):
-    """The searches of one date set (flights on the exact days, never a flex window)."""
+def _search_dates(ctx, brief, dest, check_in, check_out, hotel_id=None):
+    """The searches of one date set (flights on the exact days, never a flex window). `hotel_id`: only that
+    hotel, every fitting room (search_hotels all_rooms) — the checkout re-price of a chosen variant."""
     v = brief.values()
     scope = v.get("scope") or list(P.SCOPE_FULL)
     transport = (v.get("prefs") or {}).get("transport") or "any"
@@ -1101,8 +1181,9 @@ def _search_dates(ctx, brief, dest, check_in, check_out):
         jobs["hotels"] = ("search_hotels", {"destination_id": dest["id"], "check_in": check_in.isoformat(),
                                             "check_out": check_out.isoformat(), "adults": party["adults"],
                                             "children_ages": party["children_ages"], "filters": _hotel_filters(brief),
-                                            "limit": 40 if "crib" in (v.get("constraints") or []) else 20,
-                                            "today": today})
+                                            "limit": 40 if "crib" in (v.get("constraints") or []) or hotel_id else 20,
+                                            "today": today, **({"hotel_id": hotel_id, "all_rooms": True}
+                                                               if hotel_id else {})})
     out = _parallel(ctx, jobs)
     if out.get("hotels"):
         out["hotels"] = {**out["hotels"], "offers": _ungendered_rooms(ctx, jobs["hotels"][1], out["hotels"].get("offers") or [])}
@@ -1226,7 +1307,7 @@ def step_search(ctx):
     check_in, check_out = resolve_dates(ctx, dest)
     results, districts, called = run_search(ctx, ctx.session.brief, dest, check_in, check_out)
     ctx.results, ctx.districts = results, districts
-    ctx.rebuilt = [{"search_flights": "flights", "search_trains": "trains", "search_hotels": "hotels",
+    ctx.rebuilt = [{"search_flights": "flights", "search_trains": "trains", "search_hotels": "stay",
                     "search_transfers": "transfers"}.get(t, t) for t in called if t.startswith("search_")]
     for i in ctx.engine.hooks.run("after_search", ctx, kinds=("validate",)):
         ctx.issues.append(i)
@@ -1595,6 +1676,8 @@ def comparison_rows(ctx, variants):
 
 
 def recommended_hint(variants):
+    private = [v for v in variants if not (v.facts or {}).get("dorm_bed")]
+    variants = private or list(variants)   # a bed in a shared room is never the pick when a room exists
     scored = [v for v in variants if v.fit is not None]
     if scored:
         return max(scored, key=lambda v: v.fit.score).id
@@ -1708,12 +1791,47 @@ def nights_without_stay(variant):
     return [{"from": d.isoformat(), "to": (d + timedelta(days=1)).isoformat()} for d in nights]
 
 
+def _fact_offer(ctx, step, variant=None):
+    """The offer behind a variant step for the info facts. Cached search results are capped per session
+    (RESULTS_CAP), so after a few rebuilds the offers of the shown variants may be gone (s07: «про
+    возвратность нет данных»): then the flight / stay is searched again for exactly that step and matched by
+    its deterministic offer id."""
+    offer = find_offer(ctx, step.offer_id)
+    if offer is not None or not step.offer_id:
+        return offer
+    b, today = ctx.brief.values(), ctx.session.today().isoformat()
+    payload = None
+    if step.type == "flight" and step.from_ and step.to and step.start:
+        adults, children, infants = _flight_party(ctx.brief, _date(step.start))
+        payload = ("search_flights", {"origin_iata": [step.from_], "dest_iata": [step.to], "date": step.start[:10],
+                                      "adults": adults, "children": children, "infants": infants, "flex_days": 0,
+                                      "today": today})
+    elif step.type == "stay" and variant is not None and variant.hotel and (b.get("destination") or {}).get("id"):
+        party = _party_payload(ctx.brief)
+        payload = ("search_hotels", {"destination_id": b["destination"]["id"], "check_in": step.start[:10],
+                                     "check_out": step.end[:10], "adults": party["adults"],
+                                     "children_ages": party["children_ages"], "hotel_id": variant.hotel.hotel_id,
+                                     "all_rooms": True, "limit": 40, "today": today})
+    if payload is None:
+        return None
+    found = tool_safe(ctx, *payload)
+    offer = next((o for o in (found or {}).get("offers") or [] if o.get("offer_id") == step.offer_id), None)
+    meals = ((b.get("prefs") or {}).get("meals"))
+    if offer is None and step.type == "stay" and meals not in (None, "any"):
+        found = tool_safe(ctx, payload[0], {**payload[1], "filters": {"meals": meals}})
+        offer = next((o for o in (found or {}).get("offers") or [] if o.get("offer_id") == step.offer_id), None)
+    ctx.trace["notes"].append(f"info: offer {step.type} re-fetched ({'found' if offer else 'not found'})")
+    return offer
+
+
 def variant_fact(ctx, variant):
     """Facts about a shown/chosen variant for present.info: transport legs (local dates and times), the stay
     (check-in / check-out dates and times, terms) and the nights no booked stay covers."""
-    legs = [_leg_fact(st, find_offer(ctx, st.offer_id)) for st in variant.steps if st.type in ("flight", "train",
-                                                                                                "transfer")]
-    stay = _stay_fact(variant, find_offer(ctx, variant.hotel.offer_id)) if variant.hotel else None
+    legs = [_leg_fact(st, _fact_offer(ctx, st)) for st in variant.steps if st.type in ("flight", "train", "transfer")]
+    stay_step = next((st for st in variant.steps if st.type == "stay"), None)
+    stay_offer = (_fact_offer(ctx, stay_step, variant) if stay_step is not None and stay_step.offer_id
+                  else find_offer(ctx, variant.hotel.offer_id)) if variant.hotel else None
+    stay = _stay_fact(variant, stay_offer) if variant.hotel else None
     out = {"kind": "variant", "id": variant.id, "title": variant.title or P.VARIANT_TITLES.get(variant.id, variant.id),
            "total_rub": variant.totals.rub, "legs": legs, "stay": stay}
     gaps = nights_without_stay(variant) if variant.hotel else []
@@ -1883,6 +2001,153 @@ def _age_on(birth, day):
     return day.year - b.year - ((day.month, day.day) < (b.month, b.day))
 
 
+# ---------------------------------------------------------------- checkout re-price for the travellers
+
+PEOPLE_RU = {1: "одного", 2: "двоих", 3: "троих", 4: "четверых", 5: "пятерых", 6: "шестерых", 7: "семерых"}
+TRANSPORT_STEPS = ("flight", "train")
+
+
+def _item_size(item):
+    """Head count an item was priced for (the mock's cart item details.party), or None."""
+    p = (item.get("details") or {}).get("party") or {}
+    if item.get("kind") == "flight" and "adults" in p:
+        return int(p.get("adults") or 0) + int(p.get("children") or 0) + int(p.get("infants") or 0)
+    if item.get("kind") == "train" and "passengers" in p:
+        return int(p["passengers"])
+    if item.get("kind") == "hotel" and "adults" in p:
+        return int(p["adults"]) + len(p.get("children_ages") or [])
+    return None
+
+
+def _variant_day(variant):
+    starts = [d for d in (_date(st.start) for st in variant.steps if st.start) if d is not None]
+    return min(starts) if starts else None
+
+
+def _variant_dates(variant, items):
+    """(check_in, check_out) the variant was searched on: the hotel item's dates, else the legs' days."""
+    hotel = next((i for i in items if i.get("kind") == "hotel"), None)
+    params = ((hotel or {}).get("details") or {}).get("params") or {}
+    if params.get("ci") and params.get("co"):
+        return _date(params["ci"]), _date(params["co"])
+    stay = next((st for st in variant.steps if st.type == "stay"), None)
+    legs = [st for st in variant.steps if st.type in TRANSPORT_STEPS]
+    if stay is not None:
+        return _date(stay.start), _date(stay.end)
+    if len(legs) >= 2:
+        return _date(legs[0].start), _date(legs[-1].start)
+    return None, None
+
+
+def _same_leg(offer, step):
+    return (_dt(offer.get("dep")) == _dt(step.start) and _dt(offer.get("arr")) == _dt(step.end)
+            and (offer.get("carrier") or None) == (step.carrier or None))
+
+
+def _pin_to_variant(results, variant):
+    """Keep the old variant's own legs and room kind in fresh results (when they are still on sale)."""
+    out = dict(results)
+    legs = [st for st in variant.steps if st.type in TRANSPORT_STEPS]
+    for direction, step in (("out", legs[0] if legs else None), ("back", legs[-1] if len(legs) >= 2 else None)):
+        if step is None:
+            continue
+        found = {k: [o for o in results.get(f"{k}_{direction}") or [] if _same_leg(o, step)]
+                 for k in ("flights", "trains")}
+        if found["flights"] or found["trains"]:
+            out[f"flights_{direction}"], out[f"trains_{direction}"] = found["flights"][:1], found["trains"][:1]
+    if variant.hotel is not None and out.get("hotels"):
+        from .ranking import _is_dorm
+        was_dorm = bool(variant.facts.get("dorm_bed"))
+        meals, free = variant.facts.get("meals"), variant.facts.get("free_cancellation")
+        rooms = [h for h in out["hotels"] if h.get("hotel_id") == variant.hotel.hotel_id
+                 and _is_dorm(h.get("room") or {}) == was_dorm] or [
+                h for h in out["hotels"] if h.get("hotel_id") == variant.hotel.hotel_id]
+        if rooms:
+            def same_terms(h):
+                canc = h.get("cancellation") or {}
+                return (h.get("meals") != meals, bool(canc.get("free_until")) != bool(free),
+                        h.get("price_total_rub") or 0, h.get("offer_id") or "")
+            out["hotels"] = [min(rooms, key=same_terms)]
+    return out
+
+
+def _brief_for_party(ctx, brief, target):
+    """The travellers' party into the brief (the user's own data: source user); an unsaid segment follows."""
+    kids = target["children_ages"] or []
+    patch = {"party.adults": target["adults"], "party.children": len(kids)}
+    if kids:
+        patch["party.children_ages"] = kids
+    new, _ = apply_patch(brief, {"set": patch, "unset": []})
+    if new.source_of("party.segment") != "user":
+        new = assume(new, "party.segment", target["segment"], "inferred")
+    return normalize_brief(ctx, new)
+
+
+def _who_ru(target):
+    n = target["adults"] + target["children"]
+    who = f"на {PEOPLE_RU[n]}" if n in PEOPLE_RU else f"на {n} человек"
+    return who + (f" (детей: {target['children']})" if target["children"] else "")
+
+
+def reprice_for_travellers(ctx, travellers):
+    """The travellers are another party than the cart was priced for (e.g. one traveller for a variant
+    priced for the assumed two adults): rebuild the same variant (the same hotel and legs while they are
+    on sale, else the same kind) for the travellers, refresh the other variants and replace the cart.
+    -> {"old_rub", "new_rub", "who"} or None (nothing to do, or the rebuild failed: the honest blocker stays)."""
+    s = ctx.session
+    variant = s.variant(s.chosen_variant_id) if s.chosen_variant_id else None
+    if variant is None or not s.cart_id:
+        return None
+    day = _variant_day(variant) or _date((s.brief.values().get("dates") or {}).get("start")) or s.today()
+    try:
+        ages = [_age_on(t["birth_date"], day) for t in travellers]
+    except (KeyError, TypeError, ValueError):
+        return None
+    target = party_of_ages(ages)
+    if target["adults"] < 1 or any(a < 0 for a in ages):
+        return None   # the mock's own blocker says why
+    cart = tool_safe(ctx, "cart_get", {"session_id": s.id}, cache=False) or {}
+    items = [i for i in cart.get("items") or [] if i.get("kind") != "transfer"]
+    sizes = {n for n in (_item_size(i) for i in items) if n is not None}
+    party = s.brief.values().get("party") or {}
+    same_split = (int(party.get("adults") or 0), int(party.get("children") or 0)) == (target["adults"],
+                                                                                    target["children"])
+    if sizes <= {len(ages)} and same_split:
+        return None
+    before_brief, before_variants = s.brief, list(s.variants)
+    old_rub = cart.get("total_rub") or variant.totals.rub
+    try:
+        dest = destination_record(ctx, dest_id=variant.destination_id or (
+            (s.brief.values().get("destination") or {}).get("id")))
+        check_in, check_out = _variant_dates(variant, cart.get("items") or [])
+        if dest is None or check_in is None or check_out is None:
+            raise StepError("no_data", "no destination or dates for the re-price")
+        s.brief = _brief_for_party(ctx, s.brief, target)
+        hotel_id = variant.hotel.hotel_id if variant.hotel is not None else None
+        results, districts, _ = _search_dates(ctx, s.brief, dest, check_in, check_out, hotel_id=hotel_id)
+        built = build(ctx, s.brief, _pin_to_variant(results, variant), districts) if (
+            results.get("hotels") or hotel_id is None) else []
+        fresh, fdist, _ = _search_dates(ctx, s.brief, dest, check_in, check_out)
+        others = build(ctx, s.brief, fresh, fdist)
+        if not built:   # the hotel is gone for this party: the same kind of variant from a fresh search
+            built = [v for v in others if v.id == variant.id]
+            ctx.trace["notes"].append("reprice: the variant's hotel has no room for the travellers, same kind rebuilt")
+        if not built:
+            raise StepError("no_data", "the variant does not build for the travellers")
+        new = next((v for v in built if v.id == variant.id), built[0]).model_copy(
+            update={"id": variant.id, "title": variant.title})
+        s.variants = [new] + [v for v in others if v.id != variant.id]
+        ctx.variant_ids, ctx.extras = [variant.id], []
+        step_cart_add(ctx)
+    except (StepError, ToolError, PatchError) as exc:
+        ctx.trace["notes"].append(f"reprice for travellers failed, the blocker stays: {exc}")
+        s.brief, s.variants = before_brief, before_variants
+        return None
+    ctx.variants = list(s.variants)
+    ctx.trace["notes"].append(f"reprice: party {target} -> {variant.id} {old_rub} -> {ctx.cart.get('total_rub')}")
+    return {"old_rub": old_rub, "new_rub": ctx.cart.get("total_rub"), "who": _who_ru(target)}
+
+
 def after_travellers_hook(ctx):
     """Default validate hook `after_travellers`: exact ages -> brief; re-check the chosen variant."""
     travellers = (ctx.checkout_payload or {}).get("travellers") or []
@@ -1922,6 +2187,8 @@ def step_checkout(ctx):
         ctx.message = "Чтобы оформить, нужны имена и даты рождения всех путешественников и контакт для билетов."
         ctx.__dict__["need_travellers"] = True
         return
+    # travellers of another party than the cart was priced for: the same variant re-priced in this turn
+    repriced = reprice_for_travellers(ctx, payload["travellers"])
     out = tool(ctx, "checkout", {"cart_id": s.cart_id, "travellers": payload["travellers"],
                                  "contact": payload.get("contact"), "now": now_iso(ctx)}, cache=False)
     s.order_id = out["order_id"]
@@ -1931,6 +2198,9 @@ def step_checkout(ctx):
     ctx.order_issues = list(hook_issues)
     save_checkout_issues(ctx, out["order_id"], hook_issues)
     ctx.message = checkout_text(ctx.order, hook_issues)
+    if repriced:
+        ctx.message = (f"Пересчитал {repriced['who']}: {P.fmt_rub(ctx.order.get('total_rub') or 0)} вместо "
+                       f"{P.fmt_rub(repriced['old_rub'])}. " + ctx.message)
 
 
 # ---------------------------------------------------------------- order at checkout (pay or a way forward)
@@ -2181,7 +2451,7 @@ def step_post_purchase(ctx):
             return
         result = tool(ctx, "order_request_early_checkin", {"order_id": s.order_id, "time": time_s,
                                                            "now": now_iso(ctx)}, cache=False)
-        result = {**result, "requested_time": time_s}
+        result = {**result, "requested_time": time_s, **_stay_arrival_facts(order, arr)}
     elif kind == "change_dates":
         new = _change_dates_target(ctx, params, order)
         problem = _new_dates_problem(ctx, new)
@@ -2201,21 +2471,21 @@ def step_post_purchase(ctx):
                                                 for i in result.get("issues") or []):
             _unmovable(ctx, order, new)
             return
-        result = {**result, "new_dates": new}
+        result = {**result, "new_dates": new, "moved": _moved_view(result.get("moved"))}
+        result.pop("order", None)           # the card has the order summary; the raw order is noise (s16)
         store_result(s, CachedResult(key=CHANGE_QUOTE_KEY, kind="order_change_dates", params={},
                                      fetched_at=s.clock(),
                                      data={"new_dates": new} if result.get("available") and not result.get("applied")
                                      else {}))
     elif kind == "add_transfer":
         offer_id = params.get("offer_id")
-        if not offer_id:
-            offer_id = _transfer_offer_for_order(ctx, order)
-        if not offer_id:
-            ctx.present = None
-            ctx.message = "Трансфер под этот заказ сейчас не находится — попробуйте позже."
-            return
-        result = order_summary(tool(ctx, "order_add_transfer", {"order_id": s.order_id, "offer_id": offer_id,
-                                                                "now": now_iso(ctx)}, cache=False))
+        if offer_id:
+            result = order_summary(tool(ctx, "order_add_transfer", {"order_id": s.order_id, "offer_id": offer_id,
+                                                                    "now": now_iso(ctx)}, cache=False))
+        else:
+            result = _add_transfers(ctx, order)   # every leg without a fitting transfer, timed to it
+            if result is None:
+                return
     else:
         ctx.present = None
         ctx.message = "Что сделать с заказом: ранний заезд, перенос дат или трансфер?"
@@ -2226,6 +2496,45 @@ def step_post_purchase(ctx):
 
 
 CHANGE_QUOTE_KEY = "aftercare:change_dates"
+
+
+def _moved_view(moved):
+    """The mock's `moved` rows for the aftercare card: ready local date + time of every moved item (a transfer
+    re-timed to its new flight is said in the same confirmation — s16)."""
+    out = []
+    for m in moved or []:
+        new = _dt(m.get("new_start")) if m.get("new_start") else None
+        row = {"kind": m.get("kind"), "title": m.get("title"), "way": P.transfer_way(m.get("title")),
+               "new_start": m.get("new_start"),
+               "new_date": new.date().isoformat() if new else None, "new_time": f"{new:%H:%M}" if new else None,
+               "old_time": _hhmm(m.get("old_start")), "new_price_rub": m.get("new_price_rub")}
+        out.append({k: v for k, v in row.items() if v is not None})
+    return out
+
+
+def _stay_arrival_facts(order, at_hotel):
+    """Ready facts for the early check-in card (s15: the model cited the landing time, the regular check-in and
+    the hotel's name, none of which the input had in plain form): hotel name, regular check-in time, the
+    arrival flight / train landing time and the time they reach the hotel."""
+    items = [i for i in order.get("items") or [] if i.get("status") != "cancelled"]
+    hotel = next((i for i in items if i.get("kind") == "hotel"), None)
+    out = {}
+    if hotel is not None:
+        name = (((hotel.get("details") or {}).get("offer") or {}).get("name")
+                or str(hotel.get("title") or "").split(":")[0].strip() or None)
+        if name:
+            out["hotel"] = name
+        if hotel.get("start"):
+            out["check_in_date"] = hotel["start"][:10]
+            out["check_in_from"] = _hhmm(hotel["start"])
+        ci = _date(hotel["start"]) if hotel.get("start") else None
+        legs = [i for i in items if i.get("kind") in ("flight", "train") and i.get("end")
+                and ci is not None and _date(i["start"]) <= ci]
+        if legs:
+            out["lands_at"] = _hhmm(max(legs, key=lambda i: _dt(i["end"]))["end"])
+    if at_hotel is not None:
+        out["at_hotel_at"] = f"{at_hotel:%H:%M}"
+    return out
 
 
 def _stay_pair(start, end):
@@ -2358,19 +2667,133 @@ def _rebook_on_dates(ctx, new):
              f"на {P.fmt_date_range(new['check_in'], new['check_out'])} заново — текущий заказ остаётся в силе.")
 
 
-def _transfer_offer_for_order(ctx, order):
-    hotel = next((i for i in order.get("items") or [] if i["kind"] == "hotel"), None)
-    flight = next((i for i in order.get("items") or [] if i["kind"] == "flight"), None)
-    hotel_id = ((hotel or {}).get("details") or {}).get("hotel_id")
-    iata = ((flight or {}).get("details") or {}).get("dest_iata")
-    if not (hotel_id and iata and flight.get("end")):
+def _transfer_point(leg, arriving):
+    det = leg.get("details") or {}
+    off = det.get("offer") or det
+    if leg["kind"] == "flight":
+        return {"iata": off.get("dest_iata" if arriving else "origin_iata")}
+    return {"station": off.get("to_station" if arriving else "from_station")}
+
+
+def _transfer_fits(tr, leg, reverse):
+    """The mock's own check (compat_issues): pickup 30 min – 4 h after landing; at the airport at least the
+    check-in buffer before departure (and not more than 3 h on top)."""
+    off = (leg.get("details") or {}).get("offer") or {}
+    if not reverse:
+        gap = (_dt(tr["start"]) - _dt(leg["end"])).total_seconds() / 60
+        return (10 if leg["kind"] == "train" else 30) <= gap <= 240
+    need = 30 if leg["kind"] == "train" else (180 if off.get("international") else 120)
+    gap = (_dt(leg["start"]) - _dt(tr["end"])).total_seconds() / 60
+    return need <= gap <= need + 180
+
+
+def _transfer_pickup(ctx, leg, reverse, duration_min):
+    """Pickup time for a leg, as ranking plans it: landing + the after-flight buffer (75 min with checked
+    baggage, 45 without; trains 10), or departure - the before-departure buffer - the planned ride."""
+    from .checks import DEFAULT_BUFFERS, DEFAULT_TAXI_FACTOR
+    buffers = {**DEFAULT_BUFFERS, **((ctx.rules or {}).get("buffers_min") or {})}
+    off = (leg.get("details") or {}).get("offer") or {}
+    if not reverse:
+        if leg["kind"] == "train":
+            mins = int(((ctx.rules or {}).get("ranking") or {}).get("after_train_min", 10))
+        else:
+            mins = buffers["after_flight_with_baggage" if (off.get("baggage") or {}).get("checked_kg")
+                           else "after_flight"]
+        return _dt(leg["end"]) + timedelta(minutes=mins)
+    before = buffers["before_train"] if leg["kind"] == "train" else buffers[
+        "before_flight_international" if off.get("international") else "before_flight_domestic"]
+    factor = float((ctx.rules or {}).get("taxi_time_factor") or DEFAULT_TAXI_FACTOR)
+    ride = int(-(-duration_min * factor // 5) * 5)
+    return _dt(leg["start"]) - timedelta(minutes=before + ride)
+
+
+def _transfer_offers_for_order(ctx, order):
+    """What add_transfer books: for the arrival leg (airport/station -> hotel) and the departure leg (hotel ->
+    airport/station) that have no transfer meeting them, an offer timed to that leg (a booked transfer of the
+    same way at a wrong time is re-timed: the mock replaces it). -> (picks, fitting): picks = [{offer, leg,
+    reverse, replaces}], fitting = the booked transfers that already meet their legs."""
+    items = [i for i in order.get("items") or [] if i.get("status") != "cancelled"]
+    hotel = next((i for i in items if i["kind"] == "hotel"), None)
+    hdet = (hotel or {}).get("details") or {}
+    hotel_id = (hdet.get("params") or {}).get("h") or (hdet.get("offer") or {}).get("hotel_id") or hdet.get("hotel_id")
+    if not hotel_id or not hotel.get("start"):
+        return [], []
+    ci = _dt(hotel["start"]).date()
+    transport = sorted([i for i in items if i["kind"] in ("flight", "train") and i.get("start")],
+                       key=lambda i: _dt(i["start"]))
+    arrivals = [t for t in transport if _dt(t["start"]).date() <= ci]
+    departures = [t for t in transport if _dt(t["start"]).date() > ci]
+    legs = ([(arrivals[-1], False)] if arrivals else []) + ([(departures[0], True)] if departures else [])
+    transfers = [i for i in items if i["kind"] == "transfer"]
+    pax = len(order.get("travellers") or []) or (lambda p: p["adults"] + len(p["children_ages"]))(
+        _party_payload(ctx.brief))
+    picks, fitting = [], []
+    for leg, reverse in legs:
+        point = _transfer_point(leg, arriving=not reverse)
+        same = [t for t in transfers if bool(((t.get("details") or {}).get("offer") or {}).get("reverse")) == reverse
+                and ((t.get("details") or {}).get("params") or {}).get("fr") == {k: v for k, v in point.items() if v}]
+        ok = [t for t in same if t.get("start") and t.get("end") and _transfer_fits(t, leg, reverse)]
+        if ok:
+            fitting.append(ok[0])
+            continue
+        kind = ((same[0]["details"].get("offer") or {}).get("kind")) if same else None
+        payload = {"from": point, "to": {"hotel_id": hotel_id}, "pax": pax, "today": ctx.session.today().isoformat()}
+        if reverse:
+            payload["reverse"] = True
+        guess = _transfer_pickup(ctx, leg, reverse, 60)
+        offers = ((tool_safe(ctx, "search_transfers", {**payload, "at": guess.isoformat(timespec="seconds")})
+                   or {}).get("offers") or [])
+        pick = next((o for o in offers if o.get("kind") == kind), None) or _cheapest(offers)
+        if pick is None:
+            continue
+        at = _transfer_pickup(ctx, leg, reverse, int(pick["duration_min"]))
+        if at != guess:
+            offers = ((tool_safe(ctx, "search_transfers", {**payload, "at": at.isoformat(timespec="seconds")})
+                       or {}).get("offers") or [])
+            pick = next((o for o in offers if o.get("kind") == pick.get("kind")), None) or _cheapest(offers)
+        if pick is not None:
+            picks.append({"offer": pick, "leg": leg, "reverse": reverse, "at": at,
+                          "replaces": same[0] if same else None})
+    return picks, fitting
+
+
+def _transfer_line(item):
+    """«Такси до отеля — 21 ноября в 10:15» from an order transfer item."""
+    when = _dt(item["start"])
+    return f"«{item['title']}» — {when.day} {P.MONTHS_GEN[when.month - 1]} в {when:%H:%M}"
+
+
+def _add_transfers(ctx, order):
+    """add_transfer without an offer id: book / re-time the transfers the order's legs miss (one call each).
+    -> the aftercare result, or None when there is nothing to do (ctx.message is then set by code)."""
+    s = ctx.session
+    picks, fitting = _transfer_offers_for_order(ctx, order)
+    if not picks:
+        ctx.present = None
+        ctx.order = order
+        if fitting:
+            ctx.message = ("Трансферы в заказе уже под ваши рейсы: " + "; ".join(_transfer_line(t) for t in fitting)
+                           + ".")
+        else:
+            ctx.message = ("Трансфер к этому заказу сейчас не нашёлся: на это время машин нет. До отеля можно "
+                           "доехать на такси на месте.")
         return None
-    party = _party_payload(ctx.brief)
-    out = tool_safe(ctx, "search_transfers", {"from": {"iata": iata}, "to": {"hotel_id": hotel_id}, "at": flight["end"],
-                                              "pax": party["adults"] + len(party["children_ages"]),
-                                              "today": ctx.session.today().isoformat()})
-    best = _cheapest((out or {}).get("offers") or [])
-    return best["offer_id"] if best else None
+    out, done = None, []
+    for p in picks:
+        out = tool(ctx, "order_add_transfer", {"order_id": s.order_id, "offer_id": p["offer"]["offer_id"],
+                                               "now": now_iso(ctx)}, cache=False)
+        item = next((i for i in out.get("items") or [] if i.get("offer_id") == p["offer"]["offer_id"]), None)
+        if item is not None and item.get("start"):
+            done.append({"title": item["title"], "way": P.transfer_way(item["title"]), "start": item["start"], "time": f"{_dt(item['start']):%H:%M}",
+                         "price_rub": int(item["price_rub"]), "replaced": p["replaces"] is not None,
+                         "for": "arrival" if not p["reverse"] else "departure",
+                         "leg_time": f"{_dt(p['leg']['end' if not p['reverse'] else 'start']):%H:%M}"})
+    return {**order_summary(out), "transfers": done}
+
+
+def _transfer_offer_for_order(ctx, order):
+    picks, _ = _transfer_offers_for_order(ctx, order)
+    return picks[0]["offer"]["offer_id"] if picks else None
 
 
 # ---------------------------------------------------------------- analytics

@@ -577,7 +577,7 @@ class Engine:
             changes = rebuilt = None
             if card == "present.update":
                 new_totals = {v.id: v.totals.rub for v in ctx.variants}
-                totals = [{"field": f"totals.{vid}.rub", "before": ctx.old_totals.get(vid), "after": new_totals.get(vid)}
+                totals = [total_change(vid, ctx.old_totals.get(vid), new_totals.get(vid))
                           for vid in list(ctx.old_totals) + [i for i in new_totals if i not in ctx.old_totals]
                           if ctx.old_totals.get(vid) != new_totals.get(vid)]
                 changes, rebuilt = ctx.changes + totals, ctx.rebuilt
@@ -653,6 +653,18 @@ def budget_max(brief):
 def card_hint(brief, variants):
     """The variant a card recommends: the fit hint, budget-consistent (variants.md rule 4)."""
     return P.card_hint(variants, recommended_hint(variants), budget_max(brief))
+
+
+def total_change(variant_id, before, after):
+    """A `changes` row of present.update for one variant's total, with the ready gap (the card never
+    subtracts — s25 «8 510», «11 830»): delta_rub = |after - before|, delta_word «дешевле» / «дороже» / None
+    (None also when the variant is new or gone)."""
+    row = {"field": f"totals.{variant_id}.rub", "before": before, "after": after, "delta_rub": None,
+           "delta_word": None}
+    if before is not None and after is not None:
+        diff = int(after) - int(before)
+        row.update(delta_rub=abs(diff), delta_word="дешевле" if diff < 0 else "дороже" if diff > 0 else None)
+    return row
 
 
 # «пересоберите», «соберите заново», «другой отель / номер»: a rebuild request, whatever intent understand saw

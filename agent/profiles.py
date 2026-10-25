@@ -9,6 +9,7 @@ what the user said (source "user").
 """
 import sqlite3
 import threading
+from datetime import date
 from pathlib import Path
 from typing import Any, Optional
 
@@ -33,6 +34,13 @@ class PastTrip(BaseModel):
     nights: Optional[int] = None
 
 
+class SavedTraveller(BaseModel):
+    """A traveller the user saved in the profile (the checkout form's travellers)."""
+    model_config = ConfigDict(extra="ignore")
+    name: str
+    birth_date: date
+
+
 class Profile(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: str
@@ -42,6 +50,8 @@ class Profile(BaseModel):
     # brief prefs (keys of agent.state.Prefs) plus "segment" (usual party segment) and "nights"
     preferences: dict[str, Any] = PField(default_factory=dict)
     past_trips: list[PastTrip] = PField(default_factory=list)
+    # saved travellers: with no party said, the party is assumed from them (party_from_travellers)
+    travellers: list[SavedTraveller] = PField(default_factory=list)
 
 
 # The demo user lives in Moscow (the Moscow airports are a fact, not a preference); no invented

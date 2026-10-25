@@ -424,7 +424,9 @@
       {
         "field": "totals.fastest.rub",
         "before": 90300,
-        "after": 95900
+        "after": 95900,
+        "delta_rub": 5600,
+        "delta_word": "дороже"
       }
     ],
     "rebuilt": [
