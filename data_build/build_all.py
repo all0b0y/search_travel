@@ -15,7 +15,7 @@ import sys
 
 from .common import log
 
-STAGES = ("airports", "routes", "destinations", "climate", "hotels", "districts", "synthetic", "insights")
+STAGES = ("airports", "routes", "destinations", "climate", "hotels", "districts", "synthetic", "insights", "pois")
 
 
 def parse_stages(s: str) -> list[str]:
@@ -67,6 +67,9 @@ def main(argv: list[str] | None = None) -> int:
         if "insights" in stages:
             from .insights import run_insights
             run_insights()
+        if "pois" in stages:
+            from .pois import run_pois
+            run_pois(only=only, limit=args.limit, resume=args.resume, network=not args.no_network)
     except KeyboardInterrupt:
         log("interrupted; completed destinations are committed, rerun with --resume")
         return 130

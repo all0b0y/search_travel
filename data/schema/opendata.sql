@@ -84,3 +84,25 @@ CREATE TABLE IF NOT EXISTS districts (
     fetched_at      TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_districts_destination ON districts(destination_id);
+
+-- Notable sights and named districts around a destination (data_build/pois.py): the points a user
+-- names («рядом с Айя-Софией», «в районе Султанахмет») or shows on a photo.
+CREATE TABLE IF NOT EXISTS pois (
+    destination_id  TEXT NOT NULL REFERENCES destinations(id),
+    osm_id          TEXT NOT NULL,                   -- 'n123' | 'w123' | 'r123'
+    kind            TEXT NOT NULL,                   -- museum | worship | park | monument | ... | district
+    name            TEXT NOT NULL,                   -- display name for a Russian user
+    name_ru         TEXT,
+    name_en         TEXT,
+    names           TEXT NOT NULL DEFAULT '[]',      -- JSON array: every OSM name and Wikidata label/alias (ru, en, local)
+    lat             REAL NOT NULL,
+    lon             REAL NOT NULL,
+    dist_center_m   INTEGER NOT NULL,                -- from the destination centre (destinations.lat/lon)
+    wikidata        TEXT,                            -- 'Q12506'
+    sitelinks       INTEGER,                         -- Wikidata sitelinks: notability
+    rank            INTEGER NOT NULL,                -- 1 = most notable of its group (sights / districts)
+    source          TEXT NOT NULL,                   -- 'overpass+wikidata' | 'overpass'
+    fetched_at      TEXT NOT NULL,
+    PRIMARY KEY (destination_id, osm_id)
+);
+CREATE INDEX IF NOT EXISTS idx_pois_destination ON pois(destination_id, kind, rank);
