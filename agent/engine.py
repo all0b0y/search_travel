@@ -538,6 +538,12 @@ def validate_patch_hook(ctx):
     for path in unsets:
         if path not in ALLOWED_UNSET_PATHS:
             out.append(issue("patch_unset", f"cannot unset {path}", path=path))
+    origin, dest = sets.get("origin.city"), sets.get("destination.name")
+    if dest is None and brief.destination.value is not None:
+        dest = brief.destination.value.name
+    if isinstance(origin, str) and isinstance(dest, str) and origin.strip().casefold() == dest.strip().casefold():
+        # «в Питер» read as «из Питера» too: the destination is never the origin
+        out.append(issue("origin_is_destination", f"origin equals destination {dest}", path="origin.city"))
     today = ctx.session.today()
     start = sets.get("dates.start")
     if isinstance(start, str):

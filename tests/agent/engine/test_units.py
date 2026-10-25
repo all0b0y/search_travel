@@ -184,3 +184,15 @@ def test_dates_changeable_only_with_exchangeable_flights():
     assert not _dates_changeable(SimpleNamespace(order={"items": [fixed, hotel]}))
     assert _dates_changeable(SimpleNamespace(order={"items": [flex, hotel]}))
     assert _dates_changeable(SimpleNamespace(order={"items": [hotel]}))
+
+
+def test_origin_equal_to_destination_is_dropped():
+    from types import SimpleNamespace
+    from agent.engine import validate_patch_hook
+    from agent.state import Brief
+    from datetime import date
+    ctx = SimpleNamespace(session=SimpleNamespace(brief=Brief(), today=lambda: date(2026, 10, 25)),
+                          patch={"set": {"destination.name": "Санкт-Петербург", "origin.city": "Санкт-Петербург"},
+                                 "unset": []})
+    codes = {(i["code"], (i.get("data") or {}).get("path")) for i in validate_patch_hook(ctx)}
+    assert ("origin_is_destination", "origin.city") in codes
