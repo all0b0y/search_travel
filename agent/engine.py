@@ -398,6 +398,10 @@ class Engine:
 
     # ------------------------------------------------------------ 3. patch validation
     def _validate_patch(self, ctx):
+        both = set(ctx.patch["set"]) & set(ctx.patch["unset"])
+        if both:   # the model set and unset one path: the set is the newer wish (apply_patch would end the turn)
+            ctx.patch["unset"] = [k for k in ctx.patch["unset"] if k not in both]
+            ctx.trace["notes"].append(f"patch: {sorted(both)} both set and unset, kept the set")
         issues = self.hooks.run("after_understand", ctx, kinds=("validate",))
         bad = {(i.get("data") or {}).get("path") for i in blocking(issues)}
         if bad:
