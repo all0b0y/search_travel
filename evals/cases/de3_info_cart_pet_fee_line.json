@@ -1,0 +1,430 @@
+{
+  "id": "de3_info_cart_pet_fee_line",
+  "category": "D",
+  "card": "present.info",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "cart",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "VKO",
+          "SVO",
+          "ZIA",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "sochi",
+        "name": "Сочи",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-20",
+        "end": "2026-11-23",
+        "month": 11,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": [
+          "dog"
+        ]
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "plane",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": [
+        "pet:dog"
+      ],
+      "mood": null
+    },
+    "assumed": [
+      "dates.nights",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [],
+    "question": "А где в корзине собака? Сложил строки — доплаты за неё не вижу",
+    "facts": [
+      {
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле",
+        "total_rub": 52130,
+        "legs": [
+          {
+            "type": "flight",
+            "from": "DME",
+            "to": "AER",
+            "carrier": "Трансаэро",
+            "dep_date": "2026-11-20",
+            "dep_time": "06:30",
+            "arr_date": "2026-11-20",
+            "arr_time": "08:40",
+            "price_rub": 17990,
+            "flight_no": "UN7545",
+            "duration_min": 130,
+            "direct": true,
+            "stops": 0,
+            "baggage_cabin_kg": 10,
+            "refundable": false,
+            "fare": "basic",
+            "exchange_allowed": false,
+            "pets_rule": "На рейсе UN7545 — в салоне в переноске, если вместе с ней до 8 кг, провоз 2 250 ₽; тяжелее 8 кг вместе с переноской — в багажном отсеке как багаж, 4 330 ₽",
+            "pet_fee_rub": 2250
+          },
+          {
+            "type": "transfer",
+            "from": "AER",
+            "to": "МореСолнцеАпарт",
+            "dep_date": "2026-11-20",
+            "dep_time": "09:25",
+            "arr_date": "2026-11-20",
+            "arr_time": "11:25",
+            "price_rub": 120,
+            "kind": "public",
+            "duration_min": 100,
+            "meeting_point": "Остановка общественного транспорта у аэропорта Sochi International Airport"
+          },
+          {
+            "type": "transfer",
+            "from": "МореСолнцеАпарт",
+            "to": "AER",
+            "dep_date": "2026-11-23",
+            "dep_time": "18:40",
+            "arr_date": "2026-11-23",
+            "arr_time": "19:50",
+            "price_rub": 1370,
+            "kind": "taxi",
+            "duration_min": 55,
+            "meeting_point": "У входа в отель «МореСолнцеАпарт»"
+          },
+          {
+            "type": "flight",
+            "from": "AER",
+            "to": "VKO",
+            "carrier": "Трансаэро",
+            "dep_date": "2026-11-23",
+            "dep_time": "21:50",
+            "arr_date": "2026-11-24",
+            "arr_time": "00:02",
+            "price_rub": 17760,
+            "flight_no": "UN4865",
+            "duration_min": 132,
+            "direct": true,
+            "stops": 0,
+            "baggage_cabin_kg": 10,
+            "refundable": false,
+            "fare": "basic",
+            "exchange_allowed": false,
+            "pets_rule": "На рейсе UN4865 — в салоне в переноске, если вместе с ней до 8 кг, провоз 2 460 ₽; тяжелее 8 кг вместе с переноской — в багажном отсеке как багаж, 4 220 ₽",
+            "pet_fee_rub": 2460
+          }
+        ],
+        "stay": {
+          "name": "МореСолнцеАпарт",
+          "stars": 2,
+          "rating": 7.8,
+          "meals": "none",
+          "room": "Студия",
+          "check_in_date": "2026-11-20",
+          "check_in_time": "16:00",
+          "check_out_date": "2026-11-23",
+          "check_out_time": "12:00",
+          "cancellation": {
+            "free_until": "2026-11-19T23:59:00+03:00",
+            "penalty_pct": 50,
+            "free": true
+          },
+          "pets_allowed": true,
+          "early_checkin": {
+            "available": false,
+            "price_rub": null
+          },
+          "distance_beach_m": 1140,
+          "distance_center_m": 2184,
+          "kitchen": true,
+          "step_free": false,
+          "lift": false
+        },
+        "price_pets_rub": 4710
+      },
+      {
+        "kind": "hotel",
+        "id": "h_n12416060227",
+        "data": {
+          "hotel_id": "h_n12416060227",
+          "destination_id": "sochi",
+          "name": "МореСолнцеАпарт",
+          "kind": "apartment",
+          "stars": 2,
+          "rating": 7.8,
+          "reviews": 30,
+          "address": "улица Виноградная 22/1А, Сочи",
+          "distance_beach_m": 1140,
+          "distance_center_m": 2184,
+          "policies": {
+            "check_in_from": "16:00",
+            "check_out_until": "12:00",
+            "pets_allowed": true,
+            "kids_policy": {
+              "children_allowed": true,
+              "min_child_age": null,
+              "infant_cot": "free",
+              "extra_bed_price_rub": null
+            },
+            "early_checkin": {
+              "available": false,
+              "price_rub": null
+            },
+            "cancellation_note": "Бесплатная отмена до 1 дн. до заезда, позже штраф 50 %"
+          },
+          "rooms": [
+            {
+              "room_id": "h_n12416060227_r0",
+              "name": "Студия",
+              "capacity_adults": 2,
+              "capacity_children": 1,
+              "bed": "double",
+              "kitchen": true
+            },
+            {
+              "room_id": "h_n12416060227_r1",
+              "name": "Апартаменты с одной спальней",
+              "capacity_adults": 2,
+              "capacity_children": 2,
+              "bed": "double+sofa",
+              "kitchen": true
+            },
+            {
+              "room_id": "h_n12416060227_r2",
+              "name": "Апартаменты с двумя спальнями",
+              "capacity_adults": 4,
+              "capacity_children": 2,
+              "bed": "double+twin",
+              "kitchen": true
+            }
+          ],
+          "accessibility": {
+            "step_free": false,
+            "lift": false,
+            "synthetic": true
+          }
+        }
+      },
+      {
+        "kind": "district",
+        "id": "node/12416060227",
+        "data": {
+          "osm_id": "node/12416060227",
+          "destination_id": "sochi",
+          "labels": [
+            "quiet",
+            "family",
+            "walkable"
+          ],
+          "scores": {
+            "lively": 0.23,
+            "quiet": 0.655,
+            "family": 0.608,
+            "walkable": 0.741
+          },
+          "counts": {
+            "bar": 2,
+            "beach": 0,
+            "cafe": 11,
+            "convenience": 13,
+            "fast_food": 2,
+            "nightclub": 0,
+            "park": 2,
+            "pedestrian": 0,
+            "pharmacy": 10,
+            "playground": 10,
+            "pub": 0,
+            "restaurant": 0,
+            "station": 0,
+            "stop": 8,
+            "supermarket": 4
+          },
+          "nearest_m": {
+            "beach": 1140,
+            "centre": 2184,
+            "major_road": 81,
+            "railway": 636,
+            "station": 1653,
+            "stop": 107
+          },
+          "source": "overpass",
+          "fetched_at": "2026-10-24T22:10:10Z"
+        }
+      },
+      {
+        "kind": "climate",
+        "id": "sochi",
+        "month": 11,
+        "data": {
+          "destination_id": "sochi",
+          "month": 11,
+          "air_max_c": 15.3,
+          "air_min_c": 8.6,
+          "sea_c": 17.1,
+          "rain_days": 12.4,
+          "sunny_days": 21.0
+        }
+      },
+      {
+        "kind": "cart",
+        "id": "c_66771a942108",
+        "total_rub": 52130,
+        "items": [
+          {
+            "item_id": "ci_6ddb2c551008",
+            "kind": "flight",
+            "title": "Перелёт DME → AER, UN7545",
+            "price_rub": 17990,
+            "pet_fee_rub": 2250,
+            "includes_ru": "в т.ч. собака в салоне — 2 250 ₽"
+          },
+          {
+            "item_id": "ci_acf98cff9a2a",
+            "kind": "transfer",
+            "title": "Трансфер (общественный транспорт): AER → «МореСолнцеАпарт»",
+            "price_rub": 120
+          },
+          {
+            "item_id": "ci_4d4d8016021d",
+            "kind": "hotel",
+            "title": "МореСолнцеАпарт: Студия, 3 ноч., без питания",
+            "price_rub": 14890
+          },
+          {
+            "item_id": "ci_c74ef629bdef",
+            "kind": "transfer",
+            "title": "Трансфер (такси): «МореСолнцеАпарт» → AER",
+            "price_rub": 1370
+          },
+          {
+            "item_id": "ci_71dd7612eb5f",
+            "kind": "flight",
+            "title": "Перелёт AER → VKO, UN4865",
+            "price_rub": 17760,
+            "pet_fee_rub": 2460,
+            "includes_ru": "в т.ч. собака в салоне — 2 460 ₽"
+          }
+        ]
+      },
+      {
+        "kind": "pet_rules",
+        "lines": [
+          "В поездах РЖД кошек и небольших собак возят в закрытой переноске: сумма трёх её сторон — до 180 см, ставят её на место для ручной клади, на животное оформляют перевозочный документ, не больше двух животных на один билет.",
+          "В скоростных поездах («Сапсан», «Ласточка») — только небольших животных в переноске и только на местах для пассажиров с животными; в экономе переноска до 180 см по сумме трёх сторон, в бизнес- и первом классе — до 120 см и до 10 кг вместе с переноской. Крупных собак в «Сапсане» не возят, кроме собак-проводников.",
+          "В поездах дальнего следования крупную собаку везут только в отдельном купе: выкупают все свободные места, собака в наморднике и на поводке.",
+          "Собаки-проводники едут бесплатно во всех вагонах."
+        ]
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only",
+      "args": {
+        "min_cyrillic": 0.7
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 0
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "2[\\s\\u00a0\\u202f]?250|2[\\s\\u00a0\\u202f]?460"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "в\\s+цен|включ|входит|уже\\s+(в|учт)"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "перел[её]т|рейс|билет"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "не\\s+(включ|входит|учтен|учтён)|нет\\s+данных|доплатит"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 0
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "An open cart Moscow → Sochi by plane with a small dog: «где в корзине собака?». The pet fee is inside the two flight lines (cart record items with includes_ru «в т.ч. собака в салоне — … ₽» and pet_fee_rub): the card names those lines and their fee, says it is already in the price and that the total is the sum of the lines — never that the fee is missing or must be paid separately."
+}

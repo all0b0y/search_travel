@@ -1020,6 +1020,16 @@
               "description": "ISO 8601 with UTC offset"
             }
           ]
+        },
+        "pet_fee_rub": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Optional: only on a flight / train line with animals priced in — the pet fee inside this line's price_rub (the total stays the sum of price_rub)."
+        },
+        "includes_ru": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional, with pet_fee_rub: what the line's price includes, ready Russian («в т.ч. кот в салоне — 2 390 ₽»); the title carries it in brackets too."
         }
       }
     },
@@ -1134,6 +1144,16 @@
               "description": "ISO 8601 with UTC offset"
             }
           ]
+        },
+        "pet_fee_rub": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Optional: only on a flight / train line with animals priced in — the pet fee inside this line's price_rub (the total stays the sum of price_rub)."
+        },
+        "includes_ru": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional, with pet_fee_rub: what the line's price includes, ready Russian («в т.ч. кот в салоне — 2 390 ₽»); the title carries it in brackets too."
         }
       }
     },

@@ -203,7 +203,11 @@ def _claim_problem(kind, scope, sentence, items, card, card_input, own=None):
 def change_claim_issues(card, card_input, output):
     """Block `change_claim` for every claim of the CLAIMS table without this turn's evidence; `promise_claim` for an
     offer the response has no means for (one tap that adds the road without an add_road offer, a rebuild by a
-    property no data has, a rebuild by an amenity code already found nowhere)."""
+    property no data has, a rebuild by an amenity code already found nowhere); `budget_claim` for «ничего не
+    укладывается» while code marked items within the budget; `long_train_claim` for a day-long train leg written as
+    decimal hours, or a recommended trip that leaves days before check-in without the leave day."""
+    if card == "present.destinations":
+        return budget_claim_issues(card, card_input, output) + long_train_claim_issues(card, card_input, output)
     if card not in ("present.variants", "present.update", "present.compare", "present.info"):
         return []
     items = _items(card_input)
@@ -232,6 +236,93 @@ def change_claim_issues(card, card_input, output):
                     out.append(_issue("change_claim", "block", f"«{m.group(0)}» — {why}", kind=kind,
                                       phrase=m.group(0)))
             out += _promise_issues(sentence, card, card_input, items)
+    out += budget_claim_issues(card, card_input, output) + long_train_claim_issues(card, card_input, output)
+    return out
+
+
+# «В 25 000 ₽ ничего не укладывается» (or «почти ничего») while code marked places within the budget
+# (destinations items, or the variants' other_places) — the card must name those places instead.
+BUDGET_NONE_RE = re.compile(r"(?:почти\s+)?ничего\s+(?:из\s+\w+\s+)?не\s+(?:уклад|влеза|помеща|вписыва)\w*|"
+                            r"ни\s+одно\w*\s+(?:\w+\s+){0,2}не\s+(?:уклад|влеза|вписыва)\w*|"
+                            r"не\s+(?:уклад|влеза|вписыва)\w*\s+(?:\w+\s+){0,2}(?:ни\s+одно|ничего)|"
+                            r"в\s+(?:этот\s+|ваш\s+)?бюджет\w*\s+(?:пока\s+|почти\s+)?ничего", re.I)
+PLACE_WORDS_RE = re.compile(r"мест|направлен|город|куда", re.I)
+
+
+def _output_texts(output):
+    texts = [output.get("message") or ""]
+    for it in output.get("items") or []:
+        if isinstance(it, dict):
+            for key in ITEM_TEXT_KEYS:
+                texts += _texts(it.get(key))
+    return texts
+
+
+def budget_claim_issues(card, card_input, output):
+    if card == "present.destinations":
+        fits = [i for i in _items(card_input) if _facts_of(i).get("within_budget") is True]
+        need_place_word = False
+    elif card in ("present.variants", "present.update"):
+        fits = [p for p in card_input.get("other_places") or [] if isinstance(p, dict) and p.get("within_budget") is True]
+        need_place_word = True   # the variants themselves may be above the budget: only a claim about places
+    else:
+        return []
+    if not fits:
+        return []
+    names = ", ".join(str(i.get("name")) for i in fits[:3])
+    for text in _output_texts(output):
+        for sentence in _sentences(text):
+            m = BUDGET_NONE_RE.search(sentence)
+            if m and (not need_place_word or PLACE_WORDS_RE.search(sentence)):
+                return [_issue("budget_claim", "block", f"«{m.group(0)}» — в бюджет укладываются: {names}",
+                               kind="nothing_fits", phrase=m.group(0))]
+    return []
+
+
+# a long-distance train (facts out|back_long_train, destinations facts.long_train): its time on board is said as
+# code wrote it (on_road_ru «1 сутки 3 ч»), never as decimal hours («24,1 ч»), and a recommended trip that leaves
+# days before check-in names the leave day (out_road_ru) or «за день / за два дня до заезда»
+LONG_LEG_HOURS = 18
+DECIMAL_HOURS_RE = re.compile(r"(?<![\d.,])(\d{2,3}[.,]\d)\s*(?:ч\b|ч\.|час)", re.I)
+LEAVE_WORDS_RE = re.compile(r"за\s+(?:один\s+|1\s+)?(?:день|сутки|два\s+дня|2\s+дня|три\s+дня|3\s+дня|двое\s+суток)\s+до\s+"
+                            r"(?:заезда|заселения)|накануне\s+(?:заезда|заселения)", re.I)
+LEAVE_DATE_RE = re.compile(r"отправление\s+(\d{1,2}\s+[а-яё]+)", re.I)
+
+
+def _long_item(item):
+    f = _facts_of(item)
+    return bool(f.get("out_long_train") or f.get("back_long_train") or f.get("long_train"))
+
+
+def long_train_claim_issues(card, card_input, output):
+    items = _items(card_input)
+    if not any(_long_item(i) for i in items):
+        return []
+    out = []
+    for text in _output_texts(output):
+        for m in DECIMAL_HOURS_RE.finditer(text):
+            if _f(m.group(1)) >= LONG_LEG_HOURS:
+                out.append(_issue("long_train_claim", "block", f"«{m.group(0)}» — поезд в пути больше суток: "
+                                  f"скажите время в пути словами из on_road_ru", kind="decimal_hours",
+                                  phrase=m.group(0)))
+                break
+        if out:
+            break
+    if card in ("present.variants", "present.update"):
+        rec = str(output.get("recommended_id") or card_input.get("recommended_hint") or "")
+        item = next((i for i in items if str(i.get("id")) == rec), None)
+        f = _facts_of(item) if item else {}
+        if f.get("out_days_before_checkin") and f.get("out_road_ru"):
+            said = [output.get("message") or ""] + [t for it in output.get("items") or [] if isinstance(it, dict)
+                                                   and str(it.get("id")) == rec for k in ITEM_TEXT_KEYS
+                                                   for t in _texts(it.get(k))]
+            text = " ".join(said)
+            m = LEAVE_DATE_RE.search(f["out_road_ru"])
+            leave = m.group(1) if m else None
+            if not (LEAVE_WORDS_RE.search(text) or (leave and leave.casefold() in text.casefold())):
+                out.append(_issue("long_train_claim", "block", f"Поезд туда уходит за {f['out_days_before_checkin']} "
+                                  f"дн. до заезда — назовите день выезда ({leave or 'из out_road_ru'})",
+                                  kind="leave_day", leave=leave))
     return out
 
 

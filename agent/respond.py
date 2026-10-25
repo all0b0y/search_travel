@@ -9,7 +9,7 @@ from datetime import date
 
 from . import payloads as P
 from .steps import (_arrival, _hhmm_after, _hotel_checkin, _order_has_transfers, pay_label, pending_order,
-                    recommended_hint, tool_safe)
+                    pet_fee_note, recommended_hint, road_answer_ru, tool_safe)
 
 MAX_ITEMS = 6
 SEVERITY = {"block": "blocking", "warn": "warning", "blocking": "blocking", "warning": "warning", "info": "info"}
@@ -126,12 +126,22 @@ def destination_cards(ctx, output):
     return cards
 
 
-def cart_out(cart):
+def _pet_item(i, brief):
+    """A ticket line with animals priced in: the fee named on the line (title suffix + pet_fee_rub / includes_ru,
+    optional keys of cart_item / order_item); the line's price_rub already holds it, totals stay the sum."""
+    note = pet_fee_note(i, brief)
+    if not note:
+        return {"title": i["title"]}
+    return {"title": f"{i['title']} ({note['includes_ru']})", **note}
+
+
+def cart_out(cart, brief=None):
     if not cart:
         return None
     return {"cart_id": cart["cart_id"], "status": cart.get("status", "open"),
             "items": [{"item_id": i["item_id"], "offer_id": i["offer_id"], "kind": i["kind"], "title": i["title"],
-                       "price_rub": int(i["price_rub"]), "start": i.get("start"), "end": i.get("end")}
+                       "price_rub": int(i["price_rub"]), "start": i.get("start"), "end": i.get("end"),
+                       **_pet_item(i, brief)}
                       for i in cart.get("items") or []],
             "total_rub": int(cart.get("total_rub") or 0), "issues": [issue_out(i) for i in cart.get("issues") or []]}
 
@@ -146,14 +156,15 @@ def _event_text(e):
     return text
 
 
-def order_out(order, extra_issues=()):
+def order_out(order, extra_issues=(), brief=None):
     if not order:
         return None
     issues = [issue_out(i) for i in order.get("issues") or []] + [issue_out(i) for i in extra_issues]
     return {"order_id": order["order_id"], "status": order["status"],
             "items": [{"item_id": i["item_id"], "kind": i["kind"], "title": i["title"],
                        "price_rub": int(i["price_rub"]), "booking_number": i.get("booking_number"),
-                       "status": i.get("status", "pending"), "start": i.get("start"), "end": i.get("end")}
+                       "status": i.get("status", "pending"), "start": i.get("start"), "end": i.get("end"),
+                       **_pet_item(i, brief)}
                       for i in order.get("items") or []],
             "total_rub": int(order.get("total_rub") or 0), "issues": issues,
             "events": [{"at": e["at"], "kind": e["kind"], "text": _event_text(e)} for e in order.get("events") or []]}
@@ -261,6 +272,21 @@ def _road(v):
     return ""
 
 
+def _met_clause(ctx, v):
+    """A condition the user set that the recommended variant meets, confirmed in one clause (kitchen, step-free,
+    cot) — from the variant's facts only."""
+    cons = set((ctx.session.brief.values().get("constraints") or []))
+    f = v.facts or {}
+    parts = []
+    if "kitchen" in cons and f.get("kitchen") is True:
+        parts.append("в номере есть кухня")
+    if "accessible" in cons and f.get("step_free") is True:
+        parts.append("отель без ступенек" + (", есть лифт" if f.get("lift") is True else ""))
+    if "crib" in cons and f.get("infant_cot") in ("free", "paid"):
+        parts.append("детская кроватка — " + ("бесплатно" if f["infant_cot"] == "free" else "за доплату"))
+    return (", " + ", ".join(parts)) if parts else ""
+
+
 def _variants_text(ctx, update=False):
     variants = list(ctx.variants or [])
     if not variants:
@@ -277,13 +303,27 @@ def _variants_text(ctx, update=False):
     was = f" (было {P.fmt_rub(before[best.id])})" if best.id in before else ""
     head = "Пересобрал варианты. " if update else ""
     gap = best.facts.get("transport_gap_ru")
-    if gap:   # no road there (or another mode built): code's line first (steps.recover_transport)
+    question = (ctx.card_input or {}).get("question") or {}
+    road = next((road_answer_ru(f, question.get("text")) for f in question.get("facts") or []
+                 if isinstance(f, dict) and f.get("kind") == "transport_search"), None)
+    if road:   # «а с пересадкой?» in a state without flights: answered from what code searched, first
+        head = road + " " + ("" if gap and "от " in road else (gap.rstrip(".") + ". " if gap else ""))
+    elif gap:   # no road there (or another mode built): code's line first (steps.recover_transport)
         head += gap.rstrip(".") + ". "
-    text = f"{head}Советую «{_title(best)}»: {P.fmt_rub(best.totals.rub)} за всё{was}{_road(best)}."
+    text = (f"{head}Советую «{_title(best)}»: {P.fmt_rub(best.totals.rub)} за всё{was}{_road(best)}"
+            f"{_met_clause(ctx, best)}.")
     others = [f"«{_title(v)}» — {P.fmt_rub(v.totals.rub)}" for v in variants if v.id != best.id][:2]
     if others:
         text += " Ещё " + " и ".join(others) + "."
-    return text + _other_places_text(ctx)
+    text += _other_places_text(ctx)
+    said = list(getattr(getattr(ctx.session, "history", None), "agent", None) or [])
+    if said and said[-1].endswith(text):   # the same answer twice in a row: say it was checked again, short
+        core = (gap or road or "").rstrip(".")
+        labels = [a["label"] for a in ctx.extra_actions or [] if a.get("label")][:2]
+        text = (f"Проверил ещё раз — всё так же{': ' + core[:1].lower() + core[1:] if core else ''}. "
+                f"Ближе всего — «{_title(best)}», {P.fmt_rub(best.totals.rub)}{_road(best)}."
+                + (f" Дальше: {' или '.join('«' + x + '»' for x in labels)} — кнопки ниже." if labels else ""))
+    return text
 
 
 def _place_price(p):
@@ -311,9 +351,22 @@ def _destinations_text(ctx):
     if not items:
         return "Подходящих направлений не нашлось — расскажите чуть больше, что хочется, и я подберу."
     way = lambda i: " поездом" if (i.get("facts") or {}).get("transport") == "train" else ""  # noqa: E731
-    parts = [f"{i['name']}{way(i)} — от {P.fmt_rub(i['price_from_rub'])}" if i.get("price_from_rub") else i["name"]
-             for i in items]
-    return "Куда можно поехать: " + ", ".join(parts) + ". Выберите направление — подберу варианты поездки."
+
+    def place(i):
+        f = i.get("facts") or {}
+        if not i.get("price_from_rub"):
+            return i["name"]
+        road = f" ({f['road_ru'].removeprefix('поездом, ')})" if f.get("long_train") and f.get("road_ru") else ""
+        return f"{i['name']}{way(i)} — от {P.fmt_rub(i['price_from_rub'])}{road}"
+    budget = (ctx.session.brief.values().get("budget_rub") or {}).get("max")
+    if budget:   # code's within_budget: the places that fit are named, «ничего не укладывается» only when none does
+        fits = [i for i in ctx.destination_items or [] if (i.get("facts") or {}).get("within_budget") is True][:3]
+        if fits:
+            return (f"В {P.fmt_rub(budget)} укладываются: " + ", ".join(place(i) for i in fits)
+                    + ". Выберите направление — подберу варианты поездки.")
+        return (f"В {P.fmt_rub(budget)} ничего не укладывается — вот самые доступные варианты: "
+                + ", ".join(place(i) for i in items) + ". Выберите направление — подберу варианты поездки.")
+    return "Куда можно поехать: " + ", ".join(place(i) for i in items) + ". Выберите направление — подберу варианты поездки."
 
 
 def _compare_text(ctx):
@@ -410,6 +463,30 @@ def _variant_info(topic, facts):
     return text[:1].upper() + text[1:] + "."
 
 
+PET_Q_RE = re.compile(r"собак|соба|кошк|\bкот|питом|животн|п[её]с\b|псом|щен", re.I)
+
+
+def _pet_lines_text(facts, question):
+    """A pet question with a cart / order whose ticket lines have the pet fee inside: name those lines."""
+    if not PET_Q_RE.search(question or ""):
+        return None
+    for f in facts:
+        if f.get("kind") == "cart":
+            items, total = f.get("items") or [], f.get("total_rub")
+        elif f.get("kind") == "order":
+            items, total = (f.get("data") or {}).get("items") or [], (f.get("data") or {}).get("total_rub")
+        else:
+            continue
+        lines = [i for i in items if i.get("includes_ru")]
+        if lines:
+            where = "корзины" if f.get("kind") == "cart" else "заказа"
+            return ("Провоз питомца уже в цене билетов: " + "; ".join(
+                f"«{i['title']}» — {i['includes_ru']}" for i in lines[:2]) + "." +
+                (f" Итого {P.fmt_rub(total)} — это сумма строк {where}, отдельной строки за питомца нет."
+                 if total else ""))
+    return None
+
+
 def _info_text(ctx):
     facts = [f for f in ctx.info_facts or [] if isinstance(f, dict)]
     topic = _topic(ctx.info_question or ctx.text or "")
@@ -417,6 +494,19 @@ def _info_text(ctx):
     variants = [f for f in facts if f.get("kind") == "variant"]
     if variants and ctx.session.stage in ("selection", "cart"):
         order = None                       # a question about the variants on screen, not the old order
+    road = next((road_answer_ru(f, f"{ctx.info_question or ''} {ctx.text or ''}") for f in facts
+                 if f.get("kind") == "transport_search"), None)
+    pets = _pet_lines_text(facts, f"{ctx.info_question or ''} {ctx.text or ''}")
+    if pets:   # «а где в корзине собака?»: the lines that hold the fee, the total is their sum
+        return pets
+    if road and order is None:   # «а с пересадкой?» / «а поездом?» about a place without a road
+        said = list(getattr(getattr(ctx.session, "history", None), "agent", None) or [])
+        if said and said[-1].endswith(road):   # asked again: not the same sentence twice in a row
+            labels = [a["label"] for a in ctx.extra_actions or [] if a.get("label")][:2]
+            road = ("Проверил ещё раз — ответ тот же, другой дороги по этому маршруту в данных не появилось. "
+                    + (f"Дальше: {' или '.join('«' + x + '»' for x in labels)} — кнопки ниже." if labels
+                       else "Можно выбрать другое направление или даты."))
+        return road
     if order is not None:
         items = [i for i in (order.get("data") or {}).get("items") or [] if i.get("status") != "cancelled"]
         kinds = {"transfer": ("transfer",), "flight": ("flight", "train"), "refund": ("flight", "train"),
@@ -632,12 +722,12 @@ def build_response(ctx):
     if cart is None and s.stage == "cart" and s.cart_id and not ctx.order:
         cart = tool_safe(ctx, "cart_get", {"session_id": s.id}, cache=False)
         cart = cart if cart and cart.get("status", "open") == "open" else None
-    order = order_out(order_src, order_extra)
+    order = order_out(order_src, order_extra, s.brief)
     response = {
         "session_id": s.id, "turn": s.turn, "stage": s.stage, "message": build_message(ctx),
         "chips": [chip_out(c) for c in ctx.chips] if not ctx.error else [],
         "questions": [question_out(q) for q in ctx.questions][:2] if not ctx.error else [],
-        "cards": cards, "comparison": comparison, "cart": cart_out(cart), "order": order,
+        "cards": cards, "comparison": comparison, "cart": cart_out(cart, s.brief), "order": order,
         "actions": [], "files": dict(ctx.files),
     }
     response["actions"] = build_actions(ctx, cards, order)

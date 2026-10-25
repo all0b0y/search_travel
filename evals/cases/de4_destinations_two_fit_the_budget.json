@@ -1,0 +1,330 @@
+{
+  "id": "de4_destinations_two_fit_the_budget",
+  "category": "A",
+  "card": "present.destinations",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Екатеринбург",
+        "iata": []
+      },
+      "destination": null,
+      "traits": null,
+      "dates": {
+        "start": null,
+        "end": null,
+        "month": 11,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": {
+        "max": 25000
+      },
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "prefs.district",
+        "label": "тихий район"
+      },
+      {
+        "field": "scope",
+        "label": "перелёт + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "kazan",
+        "label": "1",
+        "name": "Казань",
+        "country": "Россия",
+        "price_from_rub": 23790,
+        "nights": 3,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 0.1,
+          "sea_c": null,
+          "rain_days": 10.9
+        },
+        "travel_time_h": 12.8,
+        "match": [],
+        "facts": {
+          "transport": "train",
+          "transport_ru": "поездом",
+          "train_price_rub": 6680,
+          "stay_price_rub": 17110,
+          "check_in": "2026-11-07",
+          "check_out": "2026-11-10",
+          "price_includes": "поезд туда и обратно на двоих по самым дешёвым билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "city",
+          "description": "Столица Татарстана на Волге с Казанским кремлём.",
+          "within_budget": true
+        }
+      },
+      {
+        "id": "samara",
+        "label": "2",
+        "name": "Самара",
+        "country": "Россия",
+        "price_from_rub": 21360,
+        "nights": 3,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 1.7,
+          "sea_c": null,
+          "rain_days": 9.1
+        },
+        "travel_time_h": 13.9,
+        "match": [],
+        "facts": {
+          "transport": "train",
+          "transport_ru": "поездом",
+          "train_price_rub": 6800,
+          "stay_price_rub": 14560,
+          "check_in": "2026-11-07",
+          "check_out": "2026-11-10",
+          "price_includes": "поезд туда и обратно на двоих по самым дешёвым билетам и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "city",
+          "description": "Город на Волге с одной из самых длинных набережных в России.",
+          "within_budget": true
+        }
+      },
+      {
+        "id": "bukhara",
+        "label": "3",
+        "name": "Бухара",
+        "country": "Узбекистан",
+        "price_from_rub": 63170,
+        "nights": 3,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 14.1,
+          "sea_c": null,
+          "rain_days": 3.4
+        },
+        "travel_time_h": 5.9,
+        "match": [],
+        "facts": {
+          "transport": "plane",
+          "transport_ru": "самолётом",
+          "flight_price_rub": 52230,
+          "stay_price_rub": 10940,
+          "check_in": "2026-11-07",
+          "check_out": "2026-11-10",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "city",
+          "description": "Город с историческим центром, внесённым в список ЮНЕСКО, и минаретом Калян.",
+          "within_budget": false
+        }
+      },
+      {
+        "id": "adler",
+        "label": "4",
+        "name": "Адлер (Сириус)",
+        "country": "Россия",
+        "price_from_rub": 66950,
+        "nights": 3,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 15.7,
+          "sea_c": 17.0,
+          "rain_days": 12.2
+        },
+        "travel_time_h": 3.3,
+        "match": [],
+        "facts": {
+          "transport": "plane",
+          "transport_ru": "самолётом",
+          "flight_price_rub": 52330,
+          "stay_price_rub": 14620,
+          "check_in": "2026-11-07",
+          "check_out": "2026-11-10",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "resort",
+          "description": "Курортный район Сочи рядом с аэропортом и федеральной территорией Сириус с Олимпийским парком.",
+          "within_budget": false
+        }
+      },
+      {
+        "id": "sochi",
+        "label": "5",
+        "name": "Сочи",
+        "country": "Россия",
+        "price_from_rub": 68490,
+        "nights": 3,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 15.3,
+          "sea_c": 17.1,
+          "rain_days": 12.4
+        },
+        "travel_time_h": 3.3,
+        "match": [],
+        "facts": {
+          "transport": "plane",
+          "transport_ru": "самолётом",
+          "flight_price_rub": 52330,
+          "stay_price_rub": 16160,
+          "check_in": "2026-11-07",
+          "check_out": "2026-11-10",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "resort",
+          "description": "Город-курорт на Черноморском побережье Краснодарского края.",
+          "within_budget": false
+        }
+      },
+      {
+        "id": "tashkent",
+        "label": "6",
+        "name": "Ташкент",
+        "country": "Узбекистан",
+        "price_from_rub": 69310,
+        "nights": 3,
+        "party_label": "2 взрослых",
+        "weather": {
+          "air_max_c": 12.8,
+          "sea_c": null,
+          "rain_days": 7.3
+        },
+        "travel_time_h": 2.9,
+        "match": [],
+        "facts": {
+          "transport": "plane",
+          "transport_ru": "самолётом",
+          "flight_price_rub": 58870,
+          "stay_price_rub": 10440,
+          "check_in": "2026-11-07",
+          "check_out": "2026-11-10",
+          "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 3 ночи в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+          "kind": "city",
+          "description": "Столица Узбекистана.",
+          "within_budget": false
+        }
+      }
+    ],
+    "questions": [],
+    "image": null,
+    "insight": null
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 0
+    },
+    {
+      "type": "path_equals",
+      "path": "/recommended_id",
+      "value": "kazan"
+    },
+    {
+      "type": "regex_absent",
+      "path": "$text",
+      "pattern": "ничего\\s+(из\\s+\\w+\\s+)?не\\s+(уклад|влеза|вписыва)|почти\\s+ничего|ни\\s+одно\\w*\\s+(\\w+\\s+){0,2}не\\s+уклад"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "Казан"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "Самар"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "поезд"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "no_unbacked_claims",
+      "args": {
+        "card": "present.destinations"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 0
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "A budget-led inspiration from Ekaterinburg (two people, 3 nights in November, 25 000 ₽): Kazan and Samara by train have facts.within_budget true, the plane places do not. The card names both trains with their price and never says «ничего / почти ничего не укладывается» (the code guard blocks it)."
+}

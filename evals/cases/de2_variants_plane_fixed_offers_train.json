@@ -1,0 +1,713 @@
+{
+  "id": "de2_variants_plane_fixed_offers_train",
+  "category": "C",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Екатеринбург",
+        "iata": [
+          "SVX"
+        ]
+      },
+      "destination": {
+        "id": "krasnodar",
+        "name": "Краснодар",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2027-08-01",
+        "end": "2027-08-08",
+        "month": 8,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "plane",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.start",
+      "dates.end",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "dates.start",
+        "label": "1–8 августа"
+      },
+      {
+        "field": "prefs.district",
+        "label": "тихий район"
+      },
+      {
+        "field": "scope",
+        "label": "перелёт + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 31680,
+          "door_to_door_hours": 0.0,
+          "out_hours": null,
+          "back_hours": null
+        },
+        "steps": [
+          {
+            "type": "stay",
+            "from": "Marton Bouti",
+            "to": "Marton Bouti",
+            "start": "2027-08-01T15:00:00+03:00",
+            "end": "2027-08-08T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 31680
+          }
+        ],
+        "hotel": {
+          "name": "Marton Bouti",
+          "stars": 2,
+          "rating": 7.1,
+          "district": {
+            "labels": [
+              "тихий район",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 0,
+              "beach": 0,
+              "cafe": 4,
+              "convenience": 12,
+              "fast_food": 10,
+              "nightclub": 2,
+              "park": 1,
+              "pedestrian": 0,
+              "pharmacy": 2,
+              "playground": 0,
+              "pub": 0,
+              "restaurant": 1,
+              "station": 0,
+              "stop": 28,
+              "supermarket": 2
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 31680,
+          "door_to_door_hours": 0.0,
+          "price_stay_rub": 31680,
+          "nights": 7,
+          "check_in_date": "2027-08-01",
+          "check_out_date": "2027-08-08",
+          "check_in_time": "15:00",
+          "check_out_time": "11:00",
+          "hotel_name": "Marton Bouti",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 2,
+          "hotel_rating": 7.1,
+          "hotel_reviews": 10,
+          "meals": "breakfast",
+          "meals_ru": "завтраки",
+          "free_cancellation": true,
+          "free_cancellation_until": "2027-07-31",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 31680,
+          "distance_center_m": 931,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "district_lively": 0.35,
+          "district_quiet": 0.69,
+          "district_family": 0.13,
+          "district_walkable": 0.72,
+          "poi_bar": 0,
+          "poi_beach": 0,
+          "poi_cafe": 4,
+          "poi_convenience": 12,
+          "poi_fast_food": 10,
+          "poi_nightclub": 2,
+          "poi_park": 1,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 2,
+          "poi_playground": 0,
+          "poi_pub": 0,
+          "poi_restaurant": 1,
+          "poi_station": 0,
+          "poi_stop": 28,
+          "poi_supermarket": 2,
+          "nearest_beach_m": 1948,
+          "nearest_centre_m": 931,
+          "nearest_major_road_m": 629,
+          "nearest_railway_m": 1753,
+          "nearest_station_m": 2592,
+          "nearest_stop_m": 140,
+          "district_fit": 0.669,
+          "center_fit": 1.0,
+          "comfort_score": 0.6926,
+          "no_transport": true,
+          "ref_min_rub": 31680,
+          "delta_rub_vs_cheapest": 0,
+          "transport_gap": "plane_fixed",
+          "transport_gap_ru": "Самолётов по маршруту Екатеринбург — Краснодар в данных нет; поездом поездка — от 53 370 ₽",
+          "dest_airports": false,
+          "transport_gap_from_rub": 53370
+        },
+        "sacrifices": [
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 2★",
+            "data": {
+              "stars": 2
+            }
+          },
+          {
+            "code": "lower_rating",
+            "text": "Рейтинг 7,1 — ниже остальных",
+            "data": {
+              "rating": 7.1
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "no_transport",
+            "text": "Самолётов по маршруту Екатеринбург — Краснодар в данных нет; поездом поездка — от 53 370 ₽",
+            "data": {}
+          }
+        ],
+        "not_for": [],
+        "fit": {
+          "score": 0.851,
+          "breakdown": {
+            "budget": 1.0,
+            "district": 0.67,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "center": 1.0,
+            "rating": 0.71
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      },
+      {
+        "id": "comfort",
+        "label": "2",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 61650,
+          "door_to_door_hours": 0.0,
+          "out_hours": null,
+          "back_hours": null
+        },
+        "steps": [
+          {
+            "type": "stay",
+            "from": "Кавказ",
+            "to": "Кавказ",
+            "start": "2027-08-01T15:00:00+03:00",
+            "end": "2027-08-08T12:00:00+03:00",
+            "carrier": null,
+            "price_rub": 61650
+          }
+        ],
+        "hotel": {
+          "name": "Кавказ",
+          "stars": 3,
+          "rating": 8.1,
+          "district": {
+            "labels": [
+              "семейный район",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 2,
+              "beach": 0,
+              "cafe": 15,
+              "convenience": 7,
+              "fast_food": 23,
+              "nightclub": 0,
+              "park": 7,
+              "pedestrian": 0,
+              "pharmacy": 5,
+              "playground": 7,
+              "pub": 0,
+              "restaurant": 6,
+              "station": 0,
+              "stop": 18,
+              "supermarket": 2
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 61650,
+          "door_to_door_hours": 0.0,
+          "price_stay_rub": 61650,
+          "nights": 7,
+          "check_in_date": "2027-08-01",
+          "check_out_date": "2027-08-08",
+          "check_in_time": "15:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Кавказ",
+          "hotel_kind": "hotel",
+          "hotel_stars": 3,
+          "hotel_rating": 8.1,
+          "hotel_reviews": 14,
+          "meals": "breakfast",
+          "meals_ru": "завтраки",
+          "free_cancellation": true,
+          "free_cancellation_until": "2027-07-18",
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 61650,
+          "distance_center_m": 1007,
+          "room_name": "Стандартный с двумя кроватями",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 3800,
+          "kitchen": false,
+          "step_free": true,
+          "lift": true,
+          "district_lively": 0.5,
+          "district_quiet": 0.55,
+          "district_family": 0.68,
+          "district_walkable": 0.8,
+          "poi_bar": 2,
+          "poi_beach": 0,
+          "poi_cafe": 15,
+          "poi_convenience": 7,
+          "poi_fast_food": 23,
+          "poi_nightclub": 0,
+          "poi_park": 7,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 5,
+          "poi_playground": 7,
+          "poi_pub": 0,
+          "poi_restaurant": 6,
+          "poi_station": 0,
+          "poi_stop": 18,
+          "poi_supermarket": 2,
+          "nearest_beach_m": 3225,
+          "nearest_centre_m": 1007,
+          "nearest_major_road_m": 45,
+          "nearest_railway_m": 420,
+          "nearest_station_m": 1344,
+          "nearest_stop_m": 159,
+          "district_fit": 0.598,
+          "center_fit": 0.998,
+          "comfort_score": 0.7447,
+          "no_transport": true,
+          "ref_min_rub": 31680,
+          "delta_rub_vs_cheapest": 29970,
+          "transport_gap": "plane_fixed",
+          "transport_gap_ru": "Самолётов по маршруту Екатеринбург — Краснодар в данных нет; поездом поездка — от 53 370 ₽",
+          "dest_airports": false,
+          "transport_gap_from_rub": 53370
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+29 970 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 29970
+            }
+          },
+          {
+            "code": "lower_rating",
+            "text": "Рейтинг 8,1 — ниже остальных",
+            "data": {
+              "rating": 8.1
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "no_transport",
+            "text": "Самолётов по маршруту Екатеринбург — Краснодар в данных нет; поездом поездка — от 53 370 ₽",
+            "data": {}
+          }
+        ],
+        "not_for": [],
+        "fit": {
+          "score": 0.701,
+          "breakdown": {
+            "budget": 0.514,
+            "district": 0.596,
+            "cancellation": 1.0,
+            "stars": 0.6,
+            "center": 0.998,
+            "rating": 0.81
+          }
+        },
+        "diff_rub": 29970,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      },
+      {
+        "id": "custom-1",
+        "label": "3",
+        "title": "Удачнее по району",
+        "totals": {
+          "rub": 37480,
+          "door_to_door_hours": 0.0,
+          "out_hours": null,
+          "back_hours": null
+        },
+        "steps": [
+          {
+            "type": "stay",
+            "from": "BB Hotel Centre",
+            "to": "BB Hotel Centre",
+            "start": "2027-08-01T14:00:00+03:00",
+            "end": "2027-08-08T11:00:00+03:00",
+            "carrier": null,
+            "price_rub": 37480
+          }
+        ],
+        "hotel": {
+          "name": "BB Hotel Centre",
+          "stars": 2,
+          "rating": 8.8,
+          "district": {
+            "labels": [
+              "тихий район"
+            ],
+            "counts": {
+              "bar": 0,
+              "beach": 0,
+              "cafe": 0,
+              "convenience": 5,
+              "fast_food": 0,
+              "nightclub": 0,
+              "park": 0,
+              "pedestrian": 0,
+              "pharmacy": 0,
+              "playground": 0,
+              "pub": 0,
+              "restaurant": 0,
+              "station": 0,
+              "stop": 4,
+              "supermarket": 0
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 37480,
+          "door_to_door_hours": 0.0,
+          "price_stay_rub": 37480,
+          "nights": 7,
+          "check_in_date": "2027-08-01",
+          "check_out_date": "2027-08-08",
+          "check_in_time": "14:00",
+          "check_out_time": "11:00",
+          "hotel_name": "BB Hotel Centre",
+          "hotel_kind": "hotel",
+          "hotel_stars": 2,
+          "hotel_rating": 8.8,
+          "hotel_reviews": 175,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2027-07-25",
+          "cancellation_penalty_pct": 30,
+          "cancellation_penalty_rub": 11240,
+          "distance_center_m": 762,
+          "room_name": "Стандартный двухместный",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": true,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": true,
+          "lift": true,
+          "district_lively": 0.0,
+          "district_quiet": 1.0,
+          "district_family": 0.2,
+          "district_walkable": 0.37,
+          "poi_bar": 0,
+          "poi_beach": 0,
+          "poi_cafe": 0,
+          "poi_convenience": 5,
+          "poi_fast_food": 0,
+          "poi_nightclub": 0,
+          "poi_park": 0,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 0,
+          "poi_playground": 0,
+          "poi_pub": 0,
+          "poi_restaurant": 0,
+          "poi_station": 0,
+          "poi_stop": 4,
+          "poi_supermarket": 0,
+          "nearest_beach_m": 2803,
+          "nearest_centre_m": 762,
+          "nearest_major_road_m": 522,
+          "nearest_railway_m": 1169,
+          "nearest_station_m": 1299,
+          "nearest_stop_m": 460,
+          "district_fit": 0.799,
+          "center_fit": 1.0,
+          "comfort_score": 0.709,
+          "no_transport": true,
+          "ref_min_rub": 31680,
+          "delta_rub_vs_cheapest": 5800,
+          "transport_gap": "plane_fixed",
+          "transport_gap_ru": "Самолётов по маршруту Екатеринбург — Краснодар в данных нет; поездом поездка — от 53 370 ₽",
+          "dest_airports": false,
+          "transport_gap_from_rub": 53370
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+5 800 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 5800
+            }
+          },
+          {
+            "code": "meals_less",
+            "text": "Без питания",
+            "data": {
+              "meals": "none"
+            }
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 2★",
+            "data": {
+              "stars": 2
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "no_transport",
+            "text": "Самолётов по маршруту Екатеринбург — Краснодар в данных нет; поездом поездка — от 53 370 ₽",
+            "data": {}
+          }
+        ],
+        "not_for": [
+          {
+            "code": "quiet_no_nightlife",
+            "text": "Тихо и почти нет баров — не для тех, кто хочет вечерней движухи",
+            "data": {
+              "quiet": 1.0
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.836,
+          "breakdown": {
+            "budget": 0.845,
+            "district": 0.799,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "center": 1.0,
+            "rating": 0.88
+          }
+        },
+        "diff_rub": 5800,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      }
+    ],
+    "recommended_hint": "cheapest",
+    "questions": [
+      {
+        "id": "q_budget",
+        "text": "Какой бюджет на всех, примерно?"
+      }
+    ],
+    "upsell_candidates": [],
+    "other_places": [
+      {
+        "id": "kazan",
+        "name": "Казань",
+        "price_from_rub": 77950,
+        "nights": 7,
+        "transport_ru": "самолётом",
+        "within_budget": null,
+        "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+      },
+      {
+        "id": "moscow",
+        "name": "Москва",
+        "price_from_rub": 109710,
+        "nights": 7,
+        "transport_ru": "самолётом",
+        "within_budget": null,
+        "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+      },
+      {
+        "id": "sochi",
+        "name": "Сочи",
+        "price_from_rub": 134870,
+        "nights": 7,
+        "transport_ru": "самолётом",
+        "within_budget": null,
+        "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят"
+      }
+    ],
+    "offers": [
+      {
+        "kind": "train",
+        "label": "Поехать поездом"
+      },
+      {
+        "kind": "place",
+        "label": "Смотреть Казань"
+      },
+      {
+        "kind": "place",
+        "label": "Смотреть Москва"
+      },
+      {
+        "kind": "place",
+        "label": "Смотреть Сочи"
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "самол[её]т|рейс"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "53[\\s\\u00a0\\u202f]?370"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "поезд"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "Казан|Москв|Сочи"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "билет\\w*\\s+не\\s+нашл|не\\s+смотрел\\w*\\s+билет|нет\\s+аэропорт|аэропорт\\w*\\s+нет|собрал\\w*\\s+поездом|одной\\s+кнопк"
+    },
+    {
+      "type": "predicate",
+      "name": "no_unbacked_claims"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 1
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«Летим вдвоём …» fixes the plane (code reads «летим» as prefs.transport plane): no flight Ekaterinburg → Krasnodar exists, the stays are shown (risk no_transport with the gap line). The card says there are no flights, names the train trip «от 53370 ₽» with the «Поехать поездом» button and the similar places (Казань, Москва, Сочи); it never says the trip was built by train."
+}

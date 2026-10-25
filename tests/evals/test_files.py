@@ -29,9 +29,11 @@ def test_counts_and_categories():
     # + 5 held-out-2 cases: no_hostel, trains in a budget, price_includes, other places (cases_holdout2.py)
     # + 10 honesty cases: open dates, unsold services, night trains, transport gaps, kitchen (cases_honesty.py)
     # + 2 long-distance train cases: a variants card and a budget inspiration (cases_long_trains.py)
-    assert len(CASES) == 81
+    # + 5 dead-end / pet-fee / budget cases: a no-flight trip by train, a plane-fixed trip, a cart pet line, two
+    #   places in the budget, «а с пересадкой?» after nothing built (cases_dead_ends.py)
+    assert len(CASES) == 86
     cats = Counter(load(p)["category"] for p in CASES)
-    assert cats == {"A": 10, "A_photo": 5, "B": 11, "C": 6, "D": 4, "E": 16, "F": 10, "segments": 4, "edge": 10,
+    assert cats == {"A": 11, "A_photo": 5, "B": 11, "C": 8, "D": 5, "E": 16, "F": 10, "segments": 4, "edge": 11,
                     "tone": 5}
     assert len(SCENARIOS) == 25
     assert len(HOLDOUT) == 10

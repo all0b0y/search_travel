@@ -229,6 +229,9 @@
     "any_train_cues": ["не сапсан", "без сапсан", "не обязательно сапсан", "необязательно сапсан", "не обязательно на сапсан", "необязательно на сапсан", "не обязательно скоростн", "необязательно скоростн", "не скоростн", "любой поезд", "любым поездом", "любом поезде", "обычный поезд", "обычным поездом", "обычном поезде", "ночной поезд", "ночным поездом", "ночном поезде"],
     "sapsan_cues": ["на сапсан", "сапсаном", "в сапсане"],
     "high_speed_cues": ["скоростном поезде", "скоростным поездом", "скоростной поезд", "на скоростном"],
+    "plane_format": "Code rule on the user's message (steps.plane_cues): a plane_cues word at a word start, not negated (не / без up to two words before, «не» right after) and no plane_block_cues word in the message, sets prefs.transport = plane as the user's value unless the user already set the transport. A place without flights then gets «самолётов нет» with the train as a set_chip button (steps.recover_transport plane_fixed), never a silent train.",
+    "plane_cues": ["летим", "лететь", "полетим", "полетели", "полечу", "улетаем", "прилетим", "самолётом", "самолетом", "на самолёте", "на самолете", "авиабилет", "перелёт", "перелет"],
+    "plane_block_cues": ["поезд", "сапсан", "ржд", "электричк", "ласточк"],
     "long_format": "Long-distance trains (the mock: Russian pairs 1000..2500 km, sleepers only, up to ~two days on board) are offered as a destination (budget-led inspiration, a train wish, other places) only when one way takes at most long_max_hours_per_night x the trip's nights (steps.long_train_fits_trip).",
     "long_max_hours_per_night": 6
   },

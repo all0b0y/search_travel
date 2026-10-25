@@ -1,0 +1,949 @@
+{
+  "id": "de1_variants_no_flights_rebuilt_by_train",
+  "category": "C",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Самара",
+        "iata": [
+          "KUF"
+        ]
+      },
+      "destination": {
+        "id": "gelendzhik",
+        "name": "Геленджик",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2027-07-05",
+        "end": "2027-07-12",
+        "month": 7,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "friends",
+        "adults": 3,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "trains",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "lively",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "train",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.nights",
+      "scope",
+      "prefs.district",
+      "prefs.transport"
+    ],
+    "assumptions": [
+      {
+        "field": "prefs.district",
+        "label": "движ"
+      },
+      {
+        "field": "scope",
+        "label": "поезд + отель + трансфер"
+      }
+    ],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 66050,
+          "door_to_door_hours": 55.9,
+          "out_hours": 29.3,
+          "back_hours": 26.6
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Самара",
+            "to": "Новороссийск",
+            "start": "2027-07-04T10:30:00+04:00",
+            "end": "2027-07-05T12:35:00+03:00",
+            "carrier": "ФПК",
+            "price_rub": 12440
+          },
+          {
+            "type": "transfer",
+            "from": "Новороссийск",
+            "to": "На Шмидта",
+            "start": "2027-07-05T12:45:00+03:00",
+            "end": "2027-07-05T15:00:00+03:00",
+            "carrier": null,
+            "price_rub": 180
+          },
+          {
+            "type": "stay",
+            "from": "На Шмидта",
+            "to": "На Шмидта",
+            "start": "2027-07-05T15:00:00+03:00",
+            "end": "2027-07-12T12:00:00+03:00",
+            "carrier": null,
+            "price_rub": 41130
+          },
+          {
+            "type": "transfer",
+            "from": "На Шмидта",
+            "to": "Новороссийск",
+            "start": "2027-07-12T13:00:00+03:00",
+            "end": "2027-07-12T15:15:00+03:00",
+            "carrier": null,
+            "price_rub": 180
+          },
+          {
+            "type": "train",
+            "from": "Новороссийск",
+            "to": "Самара",
+            "start": "2027-07-12T15:45:00+03:00",
+            "end": "2027-07-13T17:05:00+04:00",
+            "carrier": "ФПК",
+            "price_rub": 12120
+          }
+        ],
+        "hotel": {
+          "name": "На Шмидта",
+          "stars": 2,
+          "rating": 8.7,
+          "district": {
+            "labels": [
+              "семейный район",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 3,
+              "beach": 4,
+              "cafe": 7,
+              "convenience": 7,
+              "fast_food": 0,
+              "nightclub": 1,
+              "park": 3,
+              "pedestrian": 18,
+              "pharmacy": 3,
+              "playground": 5,
+              "pub": 2,
+              "restaurant": 5,
+              "station": 0,
+              "stop": 16,
+              "supermarket": 3
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 66050,
+          "door_to_door_hours": 55.9,
+          "price_stay_rub": 41130,
+          "nights": 7,
+          "check_in_date": "2027-07-05",
+          "check_out_date": "2027-07-12",
+          "check_in_time": "15:00",
+          "check_out_time": "12:00",
+          "hotel_name": "На Шмидта",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 2,
+          "hotel_rating": 8.7,
+          "hotel_reviews": 7,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2027-07-04",
+          "cancellation_penalty_pct": 50,
+          "cancellation_penalty_rub": 20560,
+          "distance_beach_m": 324,
+          "distance_center_m": 1253,
+          "room_name": "Трёхместный номер",
+          "room_capacity_adults": 3,
+          "room_capacity_children": 1,
+          "pets_allowed": true,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "out_night": true,
+          "out_kind": "train",
+          "out_price_rub": 12440,
+          "out_from": "Самара",
+          "out_to": "Новороссийск",
+          "out_date": "2027-07-04",
+          "out_dep_time": "10:30",
+          "out_arr_time": "12:35",
+          "out_arr_date": "2027-07-05",
+          "out_duration_min": 1625,
+          "out_duration_hours": 27.1,
+          "out_stops": 0,
+          "out_carrier": "ФПК",
+          "out_number": "122Е",
+          "out_baggage": true,
+          "out_car_class": "platzkart",
+          "out_door_hours": 29.3,
+          "back_night": true,
+          "back_kind": "train",
+          "back_price_rub": 12120,
+          "back_from": "Новороссийск",
+          "back_to": "Самара",
+          "back_date": "2027-07-12",
+          "back_dep_time": "15:45",
+          "back_arr_time": "17:05",
+          "back_arr_date": "2027-07-13",
+          "back_duration_min": 1460,
+          "back_duration_hours": 24.3,
+          "back_stops": 0,
+          "back_carrier": "ФПК",
+          "back_number": "080Г",
+          "back_baggage": true,
+          "back_car_class": "platzkart",
+          "back_door_hours": 26.6,
+          "out_days_before_checkin": 1,
+          "out_long_train": true,
+          "out_on_road_ru": "1 сутки 3 ч",
+          "out_road_ru": "туда поездом: отправление 4 июля в 10:30, прибытие 5 июля в 12:35, в пути 1 сутки 3 ч — выезжаете за день до заезда в отель",
+          "back_days_after_checkout": 1,
+          "back_long_train": true,
+          "back_on_road_ru": "1 сутки",
+          "back_road_ru": "обратно поездом: отправление 12 июля в 15:45, прибытие 13 июля в 17:05, в пути 1 сутки — дома на следующий день после выезда из отеля",
+          "transfer_out_min": 112,
+          "transfer_out_price_rub": 180,
+          "transfer_out_kind": "public",
+          "transfer_back_min": 112,
+          "transfer_back_price_rub": 180,
+          "transfer_back_kind": "public",
+          "price_transfers_rub": 360,
+          "price_transport_rub": 24560,
+          "arrival_at_hotel_time": "15:00",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "13:00",
+          "wait_after_checkout_min": 60,
+          "district_lively": 0.47,
+          "district_quiet": 0.29,
+          "district_family": 0.73,
+          "district_walkable": 0.86,
+          "poi_bar": 3,
+          "poi_beach": 4,
+          "poi_cafe": 7,
+          "poi_convenience": 7,
+          "poi_fast_food": 0,
+          "poi_nightclub": 1,
+          "poi_park": 3,
+          "poi_pedestrian": 18,
+          "poi_pharmacy": 3,
+          "poi_playground": 5,
+          "poi_pub": 2,
+          "poi_restaurant": 5,
+          "poi_station": 0,
+          "poi_stop": 16,
+          "poi_supermarket": 3,
+          "nearest_beach_m": 324,
+          "nearest_centre_m": 1253,
+          "nearest_major_road_m": 36,
+          "nearest_stop_m": 164,
+          "district_fit": 0.557,
+          "comfort_score": 0.5484,
+          "ref_min_rub": 66050,
+          "delta_rub_vs_cheapest": 0,
+          "ref_min_hours": 53.6,
+          "delta_hours_vs_fastest": 2.3,
+          "transport_gap": "train_instead",
+          "transport_gap_ru": "Самолётов по маршруту Самара — Геленджик в данных нет — собрал поездом",
+          "dest_airports": false
+        },
+        "sacrifices": [
+          {
+            "code": "slower",
+            "text": "+2,3 ч в пути",
+            "data": {
+              "delta_hours": 2.3
+            }
+          },
+          {
+            "code": "meals_less",
+            "text": "Без питания",
+            "data": {
+              "meals": "none"
+            }
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 2★",
+            "data": {
+              "stars": 2
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "transport_switched",
+            "text": "Самолётов по маршруту Самара — Геленджик в данных нет — собрал поездом",
+            "data": {
+              "mode": "train"
+            }
+          },
+          {
+            "code": "long_transfer",
+            "text": "Дорога до отеля 112 мин",
+            "data": {
+              "minutes": 112,
+              "direction": "out"
+            }
+          },
+          {
+            "code": "long_transfer",
+            "text": "Дорога в аэропорт 112 мин",
+            "data": {
+              "minutes": 112,
+              "direction": "back"
+            }
+          }
+        ],
+        "not_for": [],
+        "fit": {
+          "score": 0.831,
+          "breakdown": {
+            "budget": 1.0,
+            "time": 0.959,
+            "district": 0.558,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "rating": 0.87
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "Быстрее",
+        "totals": {
+          "rub": 70690,
+          "door_to_door_hours": 53.6,
+          "out_hours": 28.2,
+          "back_hours": 25.4
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Самара",
+            "to": "Новороссийск",
+            "start": "2027-07-04T10:30:00+04:00",
+            "end": "2027-07-05T12:35:00+03:00",
+            "carrier": "ФПК",
+            "price_rub": 12440
+          },
+          {
+            "type": "transfer",
+            "from": "Новороссийск",
+            "to": "На Шмидта",
+            "start": "2027-07-05T12:45:00+03:00",
+            "end": "2027-07-05T13:50:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "stay",
+            "from": "На Шмидта",
+            "to": "На Шмидта",
+            "start": "2027-07-05T15:00:00+03:00",
+            "end": "2027-07-12T12:00:00+03:00",
+            "carrier": null,
+            "price_rub": 41130
+          },
+          {
+            "type": "transfer",
+            "from": "На Шмидта",
+            "to": "Новороссийск",
+            "start": "2027-07-12T14:10:00+03:00",
+            "end": "2027-07-12T15:15:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "train",
+            "from": "Новороссийск",
+            "to": "Самара",
+            "start": "2027-07-12T15:45:00+03:00",
+            "end": "2027-07-13T17:05:00+04:00",
+            "carrier": "ФПК",
+            "price_rub": 12120
+          }
+        ],
+        "hotel": {
+          "name": "На Шмидта",
+          "stars": 2,
+          "rating": 8.7,
+          "district": {
+            "labels": [
+              "семейный район",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 3,
+              "beach": 4,
+              "cafe": 7,
+              "convenience": 7,
+              "fast_food": 0,
+              "nightclub": 1,
+              "park": 3,
+              "pedestrian": 18,
+              "pharmacy": 3,
+              "playground": 5,
+              "pub": 2,
+              "restaurant": 5,
+              "station": 0,
+              "stop": 16,
+              "supermarket": 3
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 70690,
+          "door_to_door_hours": 53.6,
+          "price_stay_rub": 41130,
+          "nights": 7,
+          "check_in_date": "2027-07-05",
+          "check_out_date": "2027-07-12",
+          "check_in_time": "15:00",
+          "check_out_time": "12:00",
+          "hotel_name": "На Шмидта",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 2,
+          "hotel_rating": 8.7,
+          "hotel_reviews": 7,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2027-07-04",
+          "cancellation_penalty_pct": 50,
+          "cancellation_penalty_rub": 20560,
+          "distance_beach_m": 324,
+          "distance_center_m": 1253,
+          "room_name": "Трёхместный номер",
+          "room_capacity_adults": 3,
+          "room_capacity_children": 1,
+          "pets_allowed": true,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "out_night": true,
+          "out_kind": "train",
+          "out_price_rub": 12440,
+          "out_from": "Самара",
+          "out_to": "Новороссийск",
+          "out_date": "2027-07-04",
+          "out_dep_time": "10:30",
+          "out_arr_time": "12:35",
+          "out_arr_date": "2027-07-05",
+          "out_duration_min": 1625,
+          "out_duration_hours": 27.1,
+          "out_stops": 0,
+          "out_carrier": "ФПК",
+          "out_number": "122Е",
+          "out_baggage": true,
+          "out_car_class": "platzkart",
+          "out_door_hours": 28.2,
+          "back_night": true,
+          "back_kind": "train",
+          "back_price_rub": 12120,
+          "back_from": "Новороссийск",
+          "back_to": "Самара",
+          "back_date": "2027-07-12",
+          "back_dep_time": "15:45",
+          "back_arr_time": "17:05",
+          "back_arr_date": "2027-07-13",
+          "back_duration_min": 1460,
+          "back_duration_hours": 24.3,
+          "back_stops": 0,
+          "back_carrier": "ФПК",
+          "back_number": "080Г",
+          "back_baggage": true,
+          "back_car_class": "platzkart",
+          "back_door_hours": 25.4,
+          "out_days_before_checkin": 1,
+          "out_long_train": true,
+          "out_on_road_ru": "1 сутки 3 ч",
+          "out_road_ru": "туда поездом: отправление 4 июля в 10:30, прибытие 5 июля в 12:35, в пути 1 сутки 3 ч — выезжаете за день до заезда в отель",
+          "back_days_after_checkout": 1,
+          "back_long_train": true,
+          "back_on_road_ru": "1 сутки",
+          "back_road_ru": "обратно поездом: отправление 12 июля в 15:45, прибытие 13 июля в 17:05, в пути 1 сутки — дома на следующий день после выезда из отеля",
+          "transfer_out_min": 51,
+          "transfer_out_price_rub": 2500,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 51,
+          "transfer_back_price_rub": 2500,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 5000,
+          "price_transport_rub": 24560,
+          "arrival_at_hotel_time": "13:50",
+          "wait_before_checkin_min": 70,
+          "leave_hotel_time": "14:10",
+          "wait_after_checkout_min": 130,
+          "district_lively": 0.47,
+          "district_quiet": 0.29,
+          "district_family": 0.73,
+          "district_walkable": 0.86,
+          "poi_bar": 3,
+          "poi_beach": 4,
+          "poi_cafe": 7,
+          "poi_convenience": 7,
+          "poi_fast_food": 0,
+          "poi_nightclub": 1,
+          "poi_park": 3,
+          "poi_pedestrian": 18,
+          "poi_pharmacy": 3,
+          "poi_playground": 5,
+          "poi_pub": 2,
+          "poi_restaurant": 5,
+          "poi_station": 0,
+          "poi_stop": 16,
+          "poi_supermarket": 3,
+          "nearest_beach_m": 324,
+          "nearest_centre_m": 1253,
+          "nearest_major_road_m": 36,
+          "nearest_stop_m": 164,
+          "district_fit": 0.557,
+          "comfort_score": 0.5893,
+          "ref_min_rub": 66050,
+          "delta_rub_vs_cheapest": 4640,
+          "ref_min_hours": 53.6,
+          "delta_hours_vs_fastest": 0.0,
+          "transport_gap": "train_instead",
+          "transport_gap_ru": "Самолётов по маршруту Самара — Геленджик в данных нет — собрал поездом",
+          "dest_airports": false
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+4 640 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 4640
+            }
+          },
+          {
+            "code": "meals_less",
+            "text": "Без питания",
+            "data": {
+              "meals": "none"
+            }
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 2★",
+            "data": {
+              "stars": 2
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "transport_switched",
+            "text": "Самолётов по маршруту Самара — Геленджик в данных нет — собрал поездом",
+            "data": {
+              "mode": "train"
+            }
+          }
+        ],
+        "not_for": [],
+        "fit": {
+          "score": 0.817,
+          "breakdown": {
+            "budget": 0.934,
+            "time": 1.0,
+            "district": 0.558,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "rating": 0.87
+          }
+        },
+        "diff_rub": 4640,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      },
+      {
+        "id": "comfort",
+        "label": "3",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 119090,
+          "door_to_door_hours": 55.2,
+          "out_hours": 28.2,
+          "back_hours": 27.0
+        },
+        "steps": [
+          {
+            "type": "train",
+            "from": "Самара",
+            "to": "Новороссийск",
+            "start": "2027-07-04T10:30:00+04:00",
+            "end": "2027-07-05T12:35:00+03:00",
+            "carrier": "ФПК",
+            "price_rub": 22830
+          },
+          {
+            "type": "transfer",
+            "from": "Новороссийск",
+            "to": "Парадейсон",
+            "start": "2027-07-05T12:45:00+03:00",
+            "end": "2027-07-05T13:50:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "stay",
+            "from": "Парадейсон",
+            "to": "Парадейсон",
+            "start": "2027-07-05T13:50:00+03:00",
+            "end": "2027-07-12T06:20:00+03:00",
+            "carrier": null,
+            "price_rub": 69520
+          },
+          {
+            "type": "transfer",
+            "from": "Парадейсон",
+            "to": "Новороссийск",
+            "start": "2027-07-12T06:20:00+03:00",
+            "end": "2027-07-12T07:25:00+03:00",
+            "carrier": null,
+            "price_rub": 2500
+          },
+          {
+            "type": "train",
+            "from": "Новороссийск",
+            "to": "Самара",
+            "start": "2027-07-12T07:55:00+03:00",
+            "end": "2027-07-13T10:51:00+04:00",
+            "carrier": "ФПК",
+            "price_rub": 21740
+          }
+        ],
+        "hotel": {
+          "name": "Парадейсон",
+          "stars": 3,
+          "rating": 8.9,
+          "district": {
+            "labels": [
+              "тихий район",
+              "семейный район",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 1,
+              "beach": 0,
+              "cafe": 18,
+              "convenience": 13,
+              "fast_food": 4,
+              "nightclub": 0,
+              "park": 5,
+              "pedestrian": 4,
+              "pharmacy": 13,
+              "playground": 4,
+              "pub": 0,
+              "restaurant": 4,
+              "station": 0,
+              "stop": 26,
+              "supermarket": 2
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 119090,
+          "door_to_door_hours": 55.2,
+          "price_stay_rub": 69520,
+          "nights": 7,
+          "check_in_date": "2027-07-05",
+          "check_out_date": "2027-07-12",
+          "check_in_time": "13:00",
+          "check_out_time": "10:00",
+          "hotel_name": "Парадейсон",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 3,
+          "hotel_rating": 8.9,
+          "hotel_reviews": 8,
+          "meals": "breakfast",
+          "meals_ru": "завтраки",
+          "free_cancellation": true,
+          "free_cancellation_until": "2027-07-04",
+          "cancellation_penalty_pct": 50,
+          "cancellation_penalty_rub": 34760,
+          "distance_beach_m": 654,
+          "distance_center_m": 653,
+          "room_name": "Трёхместный номер",
+          "room_capacity_adults": 3,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "paid",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "out_night": true,
+          "out_kind": "train",
+          "out_price_rub": 22830,
+          "out_from": "Самара",
+          "out_to": "Новороссийск",
+          "out_date": "2027-07-04",
+          "out_dep_time": "10:30",
+          "out_arr_time": "12:35",
+          "out_arr_date": "2027-07-05",
+          "out_duration_min": 1625,
+          "out_duration_hours": 27.1,
+          "out_stops": 0,
+          "out_carrier": "ФПК",
+          "out_number": "122Е",
+          "out_baggage": true,
+          "out_car_class": "coupe",
+          "out_door_hours": 28.2,
+          "back_night": true,
+          "back_kind": "train",
+          "back_price_rub": 21740,
+          "back_from": "Новороссийск",
+          "back_to": "Самара",
+          "back_date": "2027-07-12",
+          "back_dep_time": "07:55",
+          "back_arr_time": "10:51",
+          "back_arr_date": "2027-07-13",
+          "back_duration_min": 1556,
+          "back_duration_hours": 25.9,
+          "back_stops": 0,
+          "back_carrier": "ФПК",
+          "back_number": "186Я",
+          "back_baggage": true,
+          "back_car_class": "coupe",
+          "back_door_hours": 27.0,
+          "out_days_before_checkin": 1,
+          "out_long_train": true,
+          "out_on_road_ru": "1 сутки 3 ч",
+          "out_road_ru": "туда поездом: отправление 4 июля в 10:30, прибытие 5 июля в 12:35, в пути 1 сутки 3 ч — выезжаете за день до заезда в отель",
+          "back_days_after_checkout": 1,
+          "back_long_train": true,
+          "back_on_road_ru": "1 сутки 2 ч",
+          "back_road_ru": "обратно поездом: отправление 12 июля в 07:55, прибытие 13 июля в 10:51, в пути 1 сутки 2 ч — дома на следующий день после выезда из отеля",
+          "transfer_out_min": 53,
+          "transfer_out_price_rub": 2500,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 53,
+          "transfer_back_price_rub": 2500,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 5000,
+          "price_transport_rub": 44570,
+          "arrival_at_hotel_time": "13:50",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "06:20",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.31,
+          "district_quiet": 0.87,
+          "district_family": 0.86,
+          "district_walkable": 1.0,
+          "poi_bar": 1,
+          "poi_beach": 0,
+          "poi_cafe": 18,
+          "poi_convenience": 13,
+          "poi_fast_food": 4,
+          "poi_nightclub": 0,
+          "poi_park": 5,
+          "poi_pedestrian": 4,
+          "poi_pharmacy": 13,
+          "poi_playground": 4,
+          "poi_pub": 0,
+          "poi_restaurant": 4,
+          "poi_station": 0,
+          "poi_stop": 26,
+          "poi_supermarket": 2,
+          "nearest_beach_m": 654,
+          "nearest_centre_m": 653,
+          "nearest_major_road_m": 437,
+          "nearest_stop_m": 127,
+          "district_fit": 0.465,
+          "comfort_score": 0.6923,
+          "ref_min_rub": 66050,
+          "delta_rub_vs_cheapest": 53040,
+          "ref_min_hours": 53.6,
+          "delta_hours_vs_fastest": 1.6,
+          "transport_gap": "train_instead",
+          "transport_gap_ru": "Самолётов по маршруту Самара — Геленджик в данных нет — собрал поездом",
+          "dest_airports": false
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+53 040 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 53040
+            }
+          },
+          {
+            "code": "slower",
+            "text": "+1,6 ч в пути",
+            "data": {
+              "delta_hours": 1.6
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "transport_switched",
+            "text": "Самолётов по маршруту Самара — Геленджик в данных нет — собрал поездом",
+            "data": {
+              "mode": "train"
+            }
+          }
+        ],
+        "not_for": [],
+        "fit": {
+          "score": 0.689,
+          "breakdown": {
+            "budget": 0.555,
+            "time": 0.971,
+            "district": 0.465,
+            "cancellation": 1.0,
+            "stars": 0.6,
+            "rating": 0.89
+          }
+        },
+        "diff_rub": 53040,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      }
+    ],
+    "recommended_hint": "cheapest",
+    "questions": [
+      {
+        "id": "q_budget",
+        "text": "Какой бюджет на всех, примерно?"
+      },
+      {
+        "id": "q_nights",
+        "text": "На сколько ночей?"
+      }
+    ],
+    "upsell_candidates": []
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "predicate",
+      "name": "no_upsell_without_candidate"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 2
+    },
+    {
+      "type": "predicate",
+      "name": "recommended_in_items"
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "поезд"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "(?<![\\d,])(1\\s+сутки\\s+3\\s+ч)"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "(?<!\\d)4\\s+июля",
+          "за\\s+день\\s+до\\s+заезда"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "(?<![\\d,])(1[89]|[2-9]\\d),\\d\\s*ч"
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "билет\\w*\\s+не\\s+нашл|не\\s+смотрел\\w*\\s+билет|нет\\s+аэропорт|аэропорт\\w*\\s+нет|ни\\s+поездов|перел[её]т\\s+(туда|обратно)"
+    },
+    {
+      "type": "predicate",
+      "name": "no_unbacked_claims"
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 2
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Samara → Gelendzhik, 5–12 July, three friends asked for «билеты туда-обратно, отель и трансфер» (scope flights by the user's words, no plane named): no flight exists in the data, so code rebuilt the trip by train (risk transport_switched). The recommended «Дешевле» leaves 2027-07-04, the day before check-in: the card says the trip goes by train, «в пути 1 сутки 3 ч» and the leave day — never decimal hours, never a flight, never «нет ни рейсов, ни поездов»."
+}

@@ -1,0 +1,208 @@
+{
+  "id": "de5_info_connecting_after_no_build",
+  "category": "edge",
+  "card": "present.info",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Екатеринбург",
+        "iata": [
+          "SVX"
+        ]
+      },
+      "destination": {
+        "id": "krasnodar",
+        "name": "Краснодар",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2027-08-01",
+        "end": "2027-08-08",
+        "month": 8,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "plane",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "dates.start",
+      "dates.end",
+      "prefs.district"
+    ],
+    "assumptions": [],
+    "question": "а с пересадкой?",
+    "facts": [
+      {
+        "kind": "climate",
+        "id": "krasnodar",
+        "month": 8,
+        "data": {
+          "destination_id": "krasnodar",
+          "month": 8,
+          "air_max_c": 31.9,
+          "air_min_c": 20.9,
+          "sea_c": null,
+          "rain_days": 5.4,
+          "sunny_days": 30.5
+        }
+      },
+      {
+        "kind": "destinations",
+        "budget_rub": null,
+        "items": [
+          {
+            "id": "kazan",
+            "name": "Казань",
+            "price_from_rub": 77950,
+            "nights": 7,
+            "transport_ru": "самолётом",
+            "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+            "within_budget": null
+          },
+          {
+            "id": "moscow",
+            "name": "Москва",
+            "price_from_rub": 109710,
+            "nights": 7,
+            "transport_ru": "самолётом",
+            "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+            "within_budget": null
+          },
+          {
+            "id": "sochi",
+            "name": "Сочи",
+            "price_from_rub": 134870,
+            "nights": 7,
+            "transport_ru": "самолётом",
+            "price_includes": "перелёт туда и обратно на двоих по самому дешёвому тарифу (только ручная кладь) и 7 ночей в самом недорогом отеле на 3–4 звезды; трансферы в цену не входят",
+            "within_budget": null
+          }
+        ]
+      },
+      {
+        "kind": "transport_search",
+        "searched": true,
+        "route": "Екатеринбург — Краснодар",
+        "code": "plane_fixed",
+        "line": "Самолётов по маршруту Екатеринбург — Краснодар в данных нет; поездом поездка — от 21 310 ₽",
+        "from_rub": 21310,
+        "dest_airports": false,
+        "trains_in_data": true,
+        "connecting_ru": "Рейсов по маршруту Екатеринбург — Краснодар в данных нет — ни прямых, ни с пересадкой",
+        "other_mode": "train"
+      }
+    ]
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "predicate",
+      "name": "tone_no_bureaucratese"
+    },
+    {
+      "type": "predicate",
+      "name": "at_most_one_joke"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    },
+    {
+      "type": "max_items",
+      "path": "/upsell",
+      "max": 0
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "пересадк"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "\\bнет\\b|\\bни\\b"
+        ]
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "mentions_any",
+      "args": {
+        "words": [
+          "21[\\s\\u00a0\\u202f]?310"
+        ]
+      }
+    },
+    {
+      "type": "regex_absent",
+      "path": "/message",
+      "pattern": "билет\\w*\\s+не\\s+нашл|не\\s+смотрел\\w*\\s+билет|нет\\s+аэропорт|аэропорт\\w*\\s+нет|есть\\s+(рейс\\w*\\s+)?с\\s+пересадк|с\\s+пересадкой\\s+(можно|есть|найд)"
+    },
+    {
+      "type": "predicate",
+      "name": "no_unbacked_claims",
+      "args": {
+        "card": "present.info"
+      }
+    },
+    {
+      "type": "predicate",
+      "name": "asks_at_most",
+      "args": {
+        "n": 0
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "Tickets only, Ekaterinburg → Krasnodar, the plane fixed («летим»): nothing could be built; «а с пересадкой?» is answered from the transport_search fact — no flight, nor with a connection (connecting_ru), the train trip «от 21310 ₽» one button away — never «билетов я не смотрел» and never a connecting flight that does not exist."
+}
