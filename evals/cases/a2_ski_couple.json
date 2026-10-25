@@ -57,9 +57,22 @@
       "allow_absent": true
     },
     {
-      "type": "path_equals",
-      "path": "/patch/set/party.adults",
-      "value": 2
+      "type": "predicate",
+      "name": "any_of",
+      "args": {
+        "assertions": [
+          {
+            "type": "path_equals",
+            "path": "/patch/set/party.adults",
+            "value": 2
+          },
+          {
+            "type": "path_equals",
+            "path": "/patch/set/party.segment",
+            "value": "couple"
+          }
+        ]
+      }
     },
     {
       "type": "path_absent",
