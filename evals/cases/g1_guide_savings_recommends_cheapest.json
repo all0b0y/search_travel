@@ -111,7 +111,10 @@
             "district": [
               "тихий район",
               "семейный район"
-            ]
+            ],
+            "room": "Стандартный двухместный",
+            "room_adults": 2,
+            "room_children": 1
           },
           "facts": {
             "back_night": true,
@@ -163,7 +166,10 @@
             "center_m": 3821,
             "district": [
               "тихий район"
-            ]
+            ],
+            "room": "Двухместный номер",
+            "room_adults": 2,
+            "room_children": 1
           },
           "facts": {
             "back_night": true,
@@ -215,7 +221,10 @@
             "district": [
               "тихий район",
               "семейный район"
-            ]
+            ],
+            "room": "Стандартный двухместный",
+            "room_adults": 2,
+            "room_children": 1
           },
           "facts": {
             "lift": true,
@@ -287,7 +296,10 @@
             "district": [
               "тихий район",
               "семейный район"
-            ]
+            ],
+            "room": "Двухместный номер",
+            "room_adults": 2,
+            "room_children": 1
           },
           "facts": {
             "budget_fit": "dates",
@@ -342,7 +354,10 @@
             "center_m": 3821,
             "district": [
               "тихий район"
-            ]
+            ],
+            "room": "Двухместный номер",
+            "room_adults": 2,
+            "room_children": 1
           },
           "facts": {
             "budget_fit": "dates",
@@ -399,7 +414,10 @@
             "district": [
               "тихий район",
               "семейный район"
-            ]
+            ],
+            "room": "Стандартный двухместный",
+            "room_adults": 2,
+            "room_children": 1
           },
           "facts": {
             "budget_fit": "dates",
@@ -548,7 +566,10 @@
                   "district": [
                     "тихий район",
                     "семейный район"
-                  ]
+                  ],
+                  "room": "Двухместный номер",
+                  "room_adults": 2,
+                  "room_children": 1
                 },
                 "facts": {
                   "out_road_ru": "туда поездом: отправление 16 декабря в 07:55, прибытие 17 декабря в 11:48, в пути 1 сутки 4 ч — выезжаете за день до заезда в отель",
@@ -618,7 +639,10 @@
                   "center_m": 3815,
                   "district": [
                     "тихий район"
-                  ]
+                  ],
+                  "room": "Двухместный номер",
+                  "room_adults": 2,
+                  "room_children": 1
                 },
                 "facts": {
                   "nights_changed_from": 5,
@@ -682,7 +706,10 @@
                   "district": [
                     "тихий район",
                     "семейный район"
-                  ]
+                  ],
+                  "room": "Двухместный номер",
+                  "room_adults": 2,
+                  "room_children": 1
                 },
                 "facts": {
                   "nights_changed_from": 5,
@@ -745,7 +772,10 @@
                   "center_m": 3815,
                   "district": [
                     "тихий район"
-                  ]
+                  ],
+                  "room": "Двухместный номер",
+                  "room_adults": 2,
+                  "room_children": 1
                 },
                 "facts": {
                   "infant_cot": "free",
@@ -808,7 +838,10 @@
                   "district": [
                     "тихий район",
                     "семейный район"
-                  ]
+                  ],
+                  "room": "Двухместный номер",
+                  "room_adults": 2,
+                  "room_children": 1
                 },
                 "facts": {
                   "nights_changed_from": 5,

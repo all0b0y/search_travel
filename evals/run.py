@@ -208,8 +208,16 @@ def run_case_once(case, run_index, backend, skill, policy=None):
                 fix_star_glyphs(res.data)
     if case["card"] == "guide" and isinstance(res.data, dict):
         # like the engine: a reply the guards block gets one fix-up round with the reasons (agent/guide.py)
-        from agent.guide import offline_issues
+        from agent.guide import REPAIRABLE, offline_issues, repair_questions, settings
         issues = blocking(offline_issues(case["input"], res.data, skill.rules))
+        rep = res.data.get("reply")
+        if issues and isinstance(rep, dict) and {i["code"] for i in issues} <= REPAIRABLE:
+            # like the engine: formal issues code repairs without a model call (two questions -> the last one kept)
+            fixed = repair_questions(rep, int(settings(skill.rules)["max_questions"]))
+            if fixed is not None and not blocking(offline_issues(case["input"], dict(res.data, reply=fixed), skill.rules)):
+                res.data = dict(res.data, reply=fixed)
+                rec["repaired"] = sorted({i["code"] for i in issues})
+                issues = []
         if issues:
             rerun = {"issues": [f"{i['code']}: {i['message']}" for i in issues], "first_output": res.data}
             req2 = LLMRequest(card=case["card"], system=rerun_system(req.system, issues), user=req.user,

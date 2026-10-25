@@ -109,7 +109,10 @@
             "center_m": 3439,
             "district": [
               "тихий район"
-            ]
+            ],
+            "room": "3 номера: Место в общем номере",
+            "room_adults": 3,
+            "room_children": 0
           },
           "facts": {
             "dorm_bed": true,
@@ -163,7 +166,10 @@
             "district": [
               "движ",
               "пешком до всего"
-            ]
+            ],
+            "room": "Трёхместный номер",
+            "room_adults": 3,
+            "room_children": 1
           },
           "facts": {
             "back_night": true,
@@ -216,7 +222,10 @@
             "district": [
               "движ",
               "пешком до всего"
-            ]
+            ],
+            "room": "Апартаменты с двумя спальнями",
+            "room_adults": 4,
+            "room_children": 2
           },
           "facts": {
             "back_night": true,

@@ -36,8 +36,8 @@ from . import steps as S
 from .hooks import as_issue, blocking, issue
 from .llm import LLMError, LLMRequest
 from .mcp_client import ToolError
-from .state import (ALLOWED_PATCH_PATHS, ALLOWED_UNSET_PATHS, OBJECT_FIELDS, Choice, PatchError, Question, apply_patch,
-                    assume)
+from .state import (ALLOWED_PATCH_PATHS, ALLOWED_UNSET_PATHS, OBJECT_FIELDS, CachedResult, Choice, PatchError, Question,
+                    apply_patch, assume)
 
 CARD = "guide"
 TOOLS = ("rebuild", "find_savings", "check_road", "find_destinations", "place_info", "compare")
@@ -143,7 +143,9 @@ def compact_variant(v, base_rub=None):
         out["hotel"] = {k: val for k, val in {
             "name": v.hotel.name, "stars": v.hotel.stars, "rating": v.hotel.rating, "meals": f.get("meals_ru"),
             "free_cancellation": f.get("free_cancellation"), "center_m": f.get("distance_center_m"),
-            "district": [P.DISTRICT_RU.get(x, x) for x in v.hotel.district.labels][:2] or None}.items()
+            "district": [P.DISTRICT_RU.get(x, x) for x in v.hotel.district.labels][:2] or None,
+            "room": f.get("room_name"), "room_adults": f.get("room_capacity_adults"),
+            "room_children": f.get("room_capacity_children")}.items()
             if val is not None}
     extra = {k: f[k] for k in VARIANT_FACT_KEYS if f.get(k) not in (None, False, [], "", 0)}
     extra.update({k: f[k] for k in KEEP_FALSE if k in f and k not in out.get("hotel", {})})
@@ -344,6 +346,10 @@ def _sub_ctx(ctx, brief=None):
     return c
 
 
+KNOWN_CONSTRAINTS = ("accessible", "crib", "kitchen", "hostel", "no_dorm", "no_hostel", "train:sapsan",
+                     "train:high_speed")   # + pet:<animal>; the engine filters by nothing else
+
+
 def _patch_of(args, allowed_set=ALLOWED_PATCH_PATHS):
     if not isinstance(args, dict):
         raise ArgError("args must be an object")
@@ -354,6 +360,14 @@ def _patch_of(args, allowed_set=ALLOWED_PATCH_PATHS):
     bad = [k for k in sets if k not in allowed_set] + [k for k in unsets if k not in ALLOWED_UNSET_PATHS]
     if bad:
         raise ArgError(f"unknown paths {bad}; allowed: brief patch paths")
+    for key in ("constraints.add", "constraints.remove"):
+        vals = sets.get(key)
+        vals = vals if isinstance(vals, list) else ([] if vals is None else [vals])
+        unknown = [c for c in vals if not (str(c) in KNOWN_CONSTRAINTS or str(c).startswith("pet:"))]
+        if unknown:
+            raise ArgError(f"code cannot filter by {unknown}: the constraints it knows are {list(KNOWN_CONSTRAINTS)} "
+                           f"and pet:<animal>. A wish outside them is not searched: say so plainly and point to a "
+                           f"shown option that fits it (hotel.room, room_adults, room_children), if any")
     return {"set": dict(sets), "unset": list(unsets)}
 
 
@@ -1175,6 +1189,50 @@ class Plan:
     items: list = field(default_factory=list)
 
 
+def _numbers_named(msg):
+    """Totals written in the message («39 380 ₽», «39380») -> {int}."""
+    return {int(re.sub(r"\D", "", m)) for m in re.findall(r"\d{1,3}(?:[ \u00a0\u202f]\d{3})+|\d{4,}", msg or "")}
+
+
+def _named_variants(msg, state, exclude):
+    """Variants of this turn (tool sets, the default plan) whose total the message names, not in `exclude`; one per
+    total. Screen-only trips are never brought back."""
+    nums, out = _numbers_named(msg), []
+    for pool in [t.variants for t in state.sets if t.variants] + [state.default_variants or []]:
+        for v in pool:
+            total = int(v.totals.rub)
+            if v.id not in exclude and total in nums and all(int(x.totals.rub) != total for x in out):
+                out.append(v)
+    return out
+
+
+def _brief_of(state, vid):
+    v, t = state.variant(vid)
+    if v is None:
+        return None
+    return state.default_brief if t is None else (t.briefs.get(vid) or t.brief)
+
+
+GUIDE_BRIEFS_KEY = "guide:variant_briefs"
+
+
+def brief_for_choice(session, vid):
+    """choose_variant on a shown trip built on other conditions (a savings lever, a rebuild next to the
+    recommended one): the session's brief becomes that trip's, so later rebuilds start from what was taken."""
+    r = session.results.get(GUIDE_BRIEFS_KEY)
+    data = r.data if r is not None and isinstance(r.data, dict) else {}
+    rec, v = data.get(vid), session.variant(vid)
+    if not isinstance(rec, dict) or v is None or rec.get("sig") != _trip_sig(v):
+        return False   # not that trip any more (a later turn re-used the id): keep the brief
+    from .state import Brief
+    session.brief = Brief.model_validate(rec["brief"])
+    return True
+
+
+def _trip_sig(v):
+    return [int(v.totals.rub), [st.offer_id for st in v.steps]]
+
+
 def resolve_show(ctx, reply, state, default_card):
     """-> (Plan, issues). The set the reply shows: the one holding recommended_id (default first)."""
     show, rec = reply.get("show"), reply.get("recommended_id")
@@ -1196,6 +1254,10 @@ def resolve_show(ctx, reply, state, default_card):
         if not variants:
             return Plan(show, card), [issue("nothing_to_show", "show variants, but no variants were built")]
         rec = rec or _hint(tset.brief if tset else s.brief, variants)
+        named = _named_variants(reply.get("message") or "", state, {v.id for v in variants})
+        if named:   # every trip the message prices is one tap away: the recommended first, then the named ones
+            first = [v for v in variants if v.id == rec] or list(variants[:1])
+            variants = (first + named + [v for v in variants if v not in first])[:3]
         return Plan(show, card, rec=rec, variants=list(variants), tset=tset), issues
     if show == "destinations":
         tset = next((t for t in reversed(state.sets) if t.destinations), None)
@@ -1273,7 +1335,34 @@ def check_reply(engine, ctx, reply, plan, pool, tool_results):
                                              + ", ".join(str(x.get("total_rub") or x.get("price_from_rub"))
                                                          for x in cheaper[:3])))
     issues += unannounced_change(ctx, plan, msg)
+    issues += nothing_changed_claim(ctx, plan, msg)
     return issues
+
+
+REBUILD_CLAIM_RE = re.compile(r"(?<!не )\bпересобрал\w*|(?<!не )\b(?:собрал|подобрал)\w*\s+заново|"
+                              r"\bтеперь\s+в\s+вариантах|(?<!не )\bуч[её]л\w*", re.I)
+
+
+def _content_sig(rows):
+    """[(total, offers)] of a variant set, ids ignored (a tool set re-labels the same trips custom-11…)."""
+    return sorted((int(t), tuple(o)) for t, o in rows)
+
+
+def nothing_changed_claim(ctx, plan, msg):
+    """«Пересобрал с условием …» / «теперь в вариантах …» while the shown trips are the very ones the person saw
+    before this turn (same totals and offers) -> [nothing_changed_claim]."""
+    if plan.show != "variants" or not plan.variants:
+        return []
+    before = ctx.__dict__.get("sig_before")
+    m = REBUILD_CLAIM_RE.search(msg)
+    if not before or not m:
+        return []
+    now = _content_sig((v.totals.rub, [st.offer_id for st in v.steps]) for v in plan.variants)
+    if now != _content_sig((t, o) for _, t, o in before):
+        return []
+    return [issue("nothing_changed_claim", f"«{m.group(0)}» — на экране те же поездки, что и до этого хода: код ничего "
+                                           f"не менял. Скажите прямо, что этого код не ищет, и назовите ближайший "
+                                           f"подходящий вариант из показанных")]
 
 
 MONTHS_GEN = ("января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября",
@@ -1442,6 +1531,13 @@ def commit(engine, ctx, reply, plan, state, tool_results):
         ctx.present = "present.info"
     if plan.show == "variants":
         P.record_shown(s, "variant", [(v.id, _title(v)) for v in plan.variants])
+        briefs = {}
+        for v in plan.variants:
+            b = _brief_of(state, v.id)
+            if b is not None and b != s.brief:
+                briefs[v.id] = {"brief": b.model_dump(mode="json"), "sig": _trip_sig(v)}
+        S.store_result(s, CachedResult(key=GUIDE_BRIEFS_KEY, kind="guide_briefs", params={}, fetched_at=s.clock(),
+                                       data=briefs))
     message = reply["message"].strip()
     q = _question(ctx, reply.get("question"))
     if reply.get("question") and q is None and reply["question"]["text"].strip() not in message:

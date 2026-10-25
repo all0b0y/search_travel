@@ -452,6 +452,10 @@ class Engine:
         elif kind in ("choose_variant", "add_to_cart"):
             ctx.variant_ids = [p["variant_id"]]
             ctx.extras = list(p.get("extras") or [])
+            if getattr(self.flags, "guide", False):   # a guide-shown trip built on other conditions than the brief
+                from .guide import brief_for_choice
+                if brief_for_choice(s, p["variant_id"]):
+                    ctx.trace["notes"].append(f"brief: the conditions of {p['variant_id']}")
         elif kind == "swap_hotel":
             ctx.swap = dict(p)
             ctx.variant_ids = [p["variant_id"]]

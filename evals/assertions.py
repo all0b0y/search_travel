@@ -550,8 +550,9 @@ def guide_on_reply(output, inp, check, args=None):
 
 
 def guide_cheapest_option(output, inp, strict=False):
-    """After find_savings (in tool_results): the reply recommends a lever and names the cheapest lever's total
-    (strict: recommends exactly the cheapest lever). No lever found → passes (judged elsewhere)."""
+    """After find_savings (in tool_results): the reply recommends a lever (or the default plan's trip when that one is
+    already cheaper than the screen's) and names the cheapest lever's total (strict: recommends exactly the cheapest
+    lever). No lever found → passes (judged elsewhere)."""
     rep = _guide_reply(output)
     levers = [lv for t in inp.get("tool_results") or [] if t.get("tool") == "find_savings"
               for lv in (t.get("result") or {}).get("levers") or []]
@@ -562,7 +563,12 @@ def guide_cheapest_option(output, inp, strict=False):
     if strict and rec != cheapest["variant_id"]:
         return _res(False, f"recommended {rec}, the cheapest lever is {cheapest['variant_id']}")
     if rec not in {lv["variant_id"] for lv in levers}:
-        return _res(False, f"recommended {rec} is no savings lever")
+        # the default plan already made the trip cheaper (the budget fit moved the dates): recommending that trip and
+        # offering the cheapest lever next to it is fine too
+        screen = [v.get("total_rub") for v in (inp.get("screen") or {}).get("variants") or [] if v.get("total_rub")]
+        default = {v.get("id"): v.get("total_rub") for v in (inp.get("default_plan") or {}).get("variants") or []}
+        if not (rec in default and screen and default[rec] is not None and default[rec] < min(screen)):
+            return _res(False, f"recommended {rec} is no savings lever nor a trip cheaper than the one on the screen")
     named = any(same_number(n, cheapest["total_rub"]) for n in numbers_in_text(rep.get("message") or ""))
     return _res(named, f"the cheapest option {cheapest['total_rub']} is not named")
 

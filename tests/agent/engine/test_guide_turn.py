@@ -14,7 +14,7 @@ from agent.llm import LLMError
 from agent.state import Brief, apply_patch
 
 from .fakes import echo_present, u
-from .test_guide import GUIDE, ISTANBUL, SOCHI, Script, calls, first_turn, guide_trace, reply
+from .test_guide import GUIDE, ISTANBUL, SOCHI, Script, _savings_turn, calls, first_turn, guide_trace, reply
 from .test_scopes import live  # noqa: F401 - the fixture
 
 KALININGRAD = {"origin.city": "Новосибирск", "destination.name": "Калининград", "dates.month": 6, "dates.nights": 5,
@@ -444,3 +444,101 @@ def test_unannounced_change_unit():
     assert G.unannounced_change(*_plan_ctx([], "2026-12-08", "2026-12-12"), "Ок.") == []
     assert G.names_dates("с 18 по 22 декабря", "2026-12-08", "2026-12-12") is False
     assert G.span_ru("2026-12-30", "2027-01-03") == "30 декабря – 3 января"
+
+
+# ---------------------------------------------------------------- room wishes code does not search
+
+@pytest.mark.parametrize("live", [GUIDE], indirect=True)
+def test_the_guide_sees_the_room_of_each_trip(live):
+    h = live
+    r, s = first_turn(h)
+    hotel = s.ctx()["default_plan"]["variants"][0]["hotel"]
+    assert hotel.get("room") and hotel.get("room_adults"), hotel
+
+
+def test_a_constraint_code_does_not_know_is_a_bad_arg():
+    with pytest.raises(G.ArgError, match="cannot filter by"):
+        G._patch_of({"set": {"constraints.add": ["quad_room_or_adjacent"]}})
+    assert G._patch_of({"set": {"constraints.add": ["kitchen", "pet:dog"]}})["set"]["constraints.add"] == ["kitchen",
+                                                                                                         "pet:dog"]
+
+
+@pytest.mark.parametrize("live", [GUIDE], indirect=True)
+def test_an_unknown_constraint_goes_back_and_a_noop_rebuild_claim_is_blocked(live):
+    h = live
+    first_turn(h)
+    seen = {}
+
+    def second(c, req):
+        res = c["tool_results"][0]["result"]
+        seen["error"] = res.get("error")
+        assert res["ok"] is False and "cannot filter by" in res["error"]
+        return reply("Пересобрал с условием «номер на четверых» — теперь в вариантах именно такое размещение.",
+                     rec=c["default_plan"]["recommended_id"])
+
+    def fixed(c, req):
+        assert "nothing_changed_claim" in req.system
+        return reply("Номер на четверых код не подбирает: в «Быстрее» трёхместный номер — уточню это честно.",
+                     rec=c["default_plan"]["recommended_id"])
+
+    s = Script(h, calls(("rebuild", {"set": {"constraints.add": ["quad_room_or_adjacent"]}})), second, fixed)
+    h.understand(u(intent="refine"))
+    r = h.turn("нам нужен номер на четверых или два смежных")
+    g = guide_trace(r)
+    assert g["used"] is True and len(s.requests) == 3, g
+    assert g["rejected"][0]["issues"][0]["code"] == "nothing_changed_claim"
+    assert r["message"].startswith("Номер на четверых код не подбирает")
+
+
+def test_nothing_changed_claim_unit():
+    from types import SimpleNamespace
+    st = [SimpleNamespace(offer_id="f1"), SimpleNamespace(offer_id="h1")]
+    v = SimpleNamespace(id="custom-11", totals=SimpleNamespace(rub=128520), steps=st)
+    plan = SimpleNamespace(show="variants", variants=[v], rec="custom-11")
+    ctx = SimpleNamespace()
+    ctx.__dict__["sig_before"] = [["fastest", 128520, ["f1", "h1"]]]
+    assert G.nothing_changed_claim(ctx, plan, "Пересобрал с условием — теперь в вариантах такое.")[0]["code"] == \
+        "nothing_changed_claim"
+    assert G.nothing_changed_claim(ctx, plan, "Не пересобрал: такого условия код не ищет.") == []
+    assert G.nothing_changed_claim(ctx, plan, "Советую «Быстрее» за 128 520 ₽.") == []
+    ctx.__dict__["sig_before"] = [["fastest", 124780, ["f2", "h1"]]]
+    assert G.nothing_changed_claim(ctx, plan, "Пересобрал с прямыми рейсами.") == []      # the trips did change
+
+
+# ---------------------------------------------------------------- every priced trip is one tap away
+
+@pytest.mark.parametrize("live", [GUIDE], indirect=True)
+def test_a_lever_the_message_prices_is_shown_next_to_the_recommended_trip(live):
+    h = live
+    seen = {}
+
+    def pick(c, req):
+        res = c["tool_results"][0]["result"]
+        lv = next(x for x in res["levers"] if x["lever"] == "nights_1")
+        rec = c["default_plan"]["recommended_id"]
+        seen.update(lever=lv, rec=rec)
+        return reply(f"Оставил бы как есть. Если готовы на ночь меньше — {lv['total_rub']} ₽.", rec=rec)
+
+    r, s, before, _ = _savings_turn(h, pick)
+    g = guide_trace(r)
+    ids = [v["id"] for v in r["cards"]["variants"]]
+    lv = seen["lever"]
+    assert g["used"] is True and ids[0] == seen["rec"] and lv["variant_id"] in ids and len(ids) <= 3, ids
+    assert any(a.get("payload", {}).get("variant_id") == lv["variant_id"] for a in r["actions"])
+    nights_before = h.session().brief.values()["dates"]["nights"]
+    # taking the named lever: the brief becomes that trip's (3 nights), so a later rebuild starts from it
+    r2 = h.turn(action={"type": "choose_variant", "payload": {"variant_id": lv["variant_id"]}})
+    assert r2.get("error") is None and r2["cart"]["total_rub"] == lv["total_rub"]
+    assert h.session().brief.values()["dates"]["nights"] == nights_before - 1
+    assert any("brief: the conditions of" in n for n in r2["debug"]["notes"])
+
+
+def test_named_variants_and_stale_ids_unit():
+    from types import SimpleNamespace as NS
+    a = NS(id="cheapest", totals=NS(rub=59900), steps=[NS(offer_id="f1")])
+    b = NS(id="custom-11", totals=NS(rub=39380), steps=[NS(offer_id="t1")])
+    state = G.GuideState(default_variants=[a], default_brief=None, sets=[G.ToolSet(call=1, tool="find_savings",
+                                                                                  variants=[b])])
+    assert [v.id for v in G._named_variants("поездом 39 380 ₽, сейчас 59 900 ₽", state, {"cheapest"})] == ["custom-11"]
+    assert G._named_variants("ничего", state, set()) == []
+    assert G._numbers_named("39\u00a0380 ₽ и 125490") == {39380, 125490}
