@@ -42,6 +42,15 @@
       "args": {
         "assertions": [
           {
+            "type": "path_absent",
+            "path": "/patch/set/dates.month"
+          },
+          {
+            "type": "path_equals",
+            "path": "/patch/set/dates.month",
+            "value": 9
+          },
+          {
             "type": "path_equals",
             "path": "/patch/set/dates.month",
             "value": 10
@@ -70,5 +79,5 @@
     }
   ],
   "runs": 5,
-  "notes": "«осенью» with today 2026-10-25: October or November from the model are both fine — the engine sets the exact season month in code (season_month: November) and shows it as a chip."
+  "notes": "«осенью»: any autumn month (or none) from the model is fine — the engine sets the exact season month in code (season_month: November for today 2026-10-25) and shows it as a chip; the case checks that no exact start date is invented."
 }

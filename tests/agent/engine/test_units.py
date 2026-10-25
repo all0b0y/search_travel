@@ -210,3 +210,17 @@ def test_month_without_a_day_is_a_month_not_the_first():
                  "в феврале"):
         sets = {"dates.start": "2027-01-01"}
         assert month_only_start(sets, text) is False and sets == {"dates.start": "2027-01-01"}
+
+
+def test_normalize_understand_fixes_ref_kind_and_month():
+    from agent.engine import normalize_understand
+    payload = {"message": "давай второй вариант", "shown": [
+        {"label": "1", "kind": "destination", "id": "antalya", "title": "Анталья"},
+        {"label": "2", "kind": "destination", "id": "hurghada", "title": "Хургада"}]}
+    out = {"intent": "choose", "patch": {"set": {}, "unset": []}, "refs": [{"kind": "variant", "ref": "2"}]}
+    notes = normalize_understand(out, payload)
+    assert out["refs"] == [{"kind": "destination", "ref": "2"}] and notes
+    out = {"intent": "new_trip", "patch": {"set": {"dates.start": "2027-01-01", "dates.nights": 10}, "unset": []},
+           "refs": []}
+    normalize_understand(out, {"message": "в январе на 10 ночей к морю", "shown": []})
+    assert out["patch"]["set"] == {"dates.month": 1, "dates.nights": 10}

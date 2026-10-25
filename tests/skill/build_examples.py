@@ -162,7 +162,7 @@ und(und_input(EMPTY, "inspiration", "в горы зимой, покататьс�
 # «в середине января» -> a start with flexible days; a range of nights -> its lower number
 und(und_input(SOCHI, "selection", "а в середине января можно, на 3–4 ночи?", shown=SHOWN_SOCHI,
               assumed=SOCHI_ASSUMED, assumptions=SOCHI_CHIPS),
-    U("refine", {"dates.start": "2027-01-15", "dates.flexible_days": 3, "dates.nights": 3}))
+    U("refine", {"dates.start": "2027-01-15", "dates.nights": 3}))
 und(und_input(EMPTY, "inspiration", "Казань на 12–15 января, прилёт до 12:00, без ночных рейсов"),
     U("new_trip", {"destination.name": "Казань", "dates.start": "2027-01-12", "dates.end": "2027-01-15",
                    "prefs.arrive_before": "12:00", "prefs.no_night_flights": True}))

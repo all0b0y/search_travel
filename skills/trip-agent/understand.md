@@ -58,14 +58,14 @@ A greeting plus a request is the request. An answer plus extra details → inten
 | «12–19 ноября» | dates.start "…-11-12", dates.end "…-11-19" |
 | «с 3 декабря на 5 ночей» | dates.start "…-12-03", dates.nights 5 |
 | «на неделю» / «на 3 ночи» / «на 4 дня» / «4–5 ночей» | dates.nights 7 / 3 / 3 (days minus one) / 4 (a range → its lower number) |
-| «в начале / в середине / в конце декабря» | dates.start "…-12-01" / "…-12-15" / "…-12-24", dates.flexible_days 3 |
+| «в начале / в середине / в конце декабря» | dates.start "…-12-01" / "…-12-15" / "…-12-24" |
 | «через две недели» | dates.start = today + 14 days |
 | «на выходные» | dates.start = the next Saturday after today, dates.end = the Sunday after it |
 | «на майские» | dates.start "YYYY-05-01", dates.end "YYYY-05-04" (the next May) |
 | «на новогодние» | dates.start "YYYY-12-31", dates.end next year "-01-08" |
 | «на 2 дня позже», «сдвинь на 2 дня» / «на день раньше» | dates.shift_days 2 / -1 |
 | «±3 дня», «даты гибкие на пару дней» | dates.flexible_days 3 / 2 |
-| «летом» / «весной» / «зимой» / «осенью» | dates.month 7 / 4 / 12 (1 when today is in December–February) / the first of 9, 10, 11 after today's month (none left → 9) |
+| «летом» / «весной» / «зимой» / «осенью» | dates.month 7 / 4 / 12 / 10 (code sets the exact month) |
 
 ## Prefs and hard constraints
 | «всё включено» / «с завтраком» / «полупансион» / «без питания» | prefs.meals "all_inclusive" / "breakfast" / "half_board" / "none" |
@@ -145,6 +145,6 @@ stage ordered, msg «можно заселиться пораньше, часо�
 today 2026-10-25, msg «хочется на море летом, вдвоём» →
 {"intent":"new_trip","patch":{"set":{"traits.add":["sea"],"dates.month":7,"party.segment":"couple"},"unset":[]},"refs":[],"image":null,"info_question":null,"post_purchase":null}
 stage selection, today 2026-10-25, msg «а в середине января можно, на 3–4 ночи?» →
-{"intent":"refine","patch":{"set":{"dates.start":"2027-01-15","dates.flexible_days":3,"dates.nights":3},"unset":[]},"refs":[],"image":null,"info_question":null,"post_purchase":null}
+{"intent":"refine","patch":{"set":{"dates.start":"2027-01-15","dates.nights":3},"unset":[]},"refs":[],"image":null,"info_question":null,"post_purchase":null}
 stage aftercare, today 2026-10-25, msg «тогда подбери на 3–6 декабря» →
 {"intent":"post_purchase","patch":{"set":{},"unset":[]},"refs":[],"image":null,"info_question":null,"post_purchase":{"kind":"change_dates","params":{"new_dates":{"check_in":"2026-12-03","check_out":"2026-12-06"}}}}

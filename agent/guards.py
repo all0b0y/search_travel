@@ -292,6 +292,8 @@ def latin_issues(output, card_input, g=None) -> list:
     («families», «brief»), and a word that mixes scripts («dobерётесь») always is. Both block: one rerun."""
     allowed = {w.casefold() for w in LATIN_OK | set((g or {}).get("latin_allowed") or [])}
     in_text = " ".join(_strings(card_input)).casefold()
+    # single lowercase Latin values of the input are enum codes («walkable», «breakfast», «coupe»), not names
+    codes = {s.casefold() for s in _strings(card_input) if re.fullmatch(r"[a-z][a-z_\-]*", s)} - allowed
     found, seen = [], set()
     for text in _strings(output):
         for w in LATIN_WORD.findall(text):
@@ -301,7 +303,7 @@ def latin_issues(output, card_input, g=None) -> list:
             mixed = bool(re.search(r"[А-Яа-яЁё]", w))
             if mixed:
                 found.append(_issue("mixed_script", "block", f"Слово «{w}» смешивает латиницу и кириллицу", word=w))
-            elif w.casefold() not in allowed and w.casefold() not in in_text:
+            elif w.casefold() not in allowed and (w.casefold() not in in_text or w.casefold() in codes):
                 found.append(_issue("latin_word", "block", f"Слово «{w}» на латинице — пишите по-русски", word=w))
     return found
 

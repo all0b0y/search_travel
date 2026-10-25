@@ -1,0 +1,2279 @@
+{
+  "run_id": "20261025-104648-L3-main",
+  "level": 3,
+  "set": "main",
+  "model": "flash",
+  "flags": "stage1",
+  "flags_enabled": [],
+  "dry_run": false,
+  "persona": "claude",
+  "started_at": "2026-10-25T10:46:48+03:00",
+  "run_dir": "/Users/all0b0y/VSCodeProjects/search_travel/evals/runs/20261025-104648-L3-main",
+  "argv": [
+    "--level",
+    "3",
+    "--set",
+    "main",
+    "--flags",
+    "stage1",
+    "--model",
+    "flash",
+    "--parallel",
+    "3"
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "s01_family_warm_sea",
+      "packet": "s01_family_warm_sea",
+      "category": "A",
+      "set": "main",
+      "run_index": 0,
+      "turns": 4,
+      "end_reason": "persona_stop_failed",
+      "paid": false,
+      "first_rec": true,
+      "touches_to_cart": null,
+      "touches_total": 4,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: no order"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2,
+            "children_ages": [
+              4
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 250000
+          },
+          "ok": false,
+          "detail": "no data: no order, cart or chosen variant total"
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "breakfast"
+          },
+          "ok": false,
+          "detail": "no data: meals of the chosen hotel"
+        }
+      ],
+      "must_ok": 1,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        1,
+        2,
+        2
+      ],
+      "latencies_ms": [
+        7555,
+        4504,
+        9782,
+        9178
+      ],
+      "cost_usd": 0.007050750000000001,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 7
+      },
+      "served_providers": {
+        "DeepSeek": 7
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 4
+      },
+      "persona_ms_p50": 5376.5,
+      "persona_cost_usd": 0.18296,
+      "profile_injected": true,
+      "final": {
+        "total_rub": null,
+        "chosen_variant": null,
+        "stage": "selection"
+      }
+    },
+    {
+      "scenario_id": "s02_solo_mountains",
+      "packet": "s02_solo_mountains",
+      "category": "A",
+      "set": "main",
+      "run_index": 0,
+      "turns": 7,
+      "end_reason": "persona_stop_failed",
+      "paid": false,
+      "first_rec": true,
+      "touches_to_cart": 5,
+      "touches_total": 7,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: no order"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 1
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 120000
+          },
+          "ok": true,
+          "detail": "total 45590"
+        },
+        {
+          "name": "brief_traits_any",
+          "args": {
+            "traits": [
+              "mountains",
+              "ski",
+              "snow"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        3,
+        1,
+        2,
+        2,
+        0,
+        2,
+        1
+      ],
+      "latencies_ms": [
+        12582,
+        4322,
+        6053,
+        3075,
+        28,
+        3193,
+        1652
+      ],
+      "cost_usd": 0.00706581,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 1,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 11
+      },
+      "served_providers": {
+        "DeepSeek": 11
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 7
+      },
+      "persona_ms_p50": 3055,
+      "persona_cost_usd": 0.307869,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 45590,
+        "chosen_variant": "cheapest",
+        "stage": "cart"
+      }
+    },
+    {
+      "scenario_id": "s03_couple_food_weekend",
+      "packet": "s03_couple_food_weekend",
+      "category": "A",
+      "set": "main",
+      "run_index": 0,
+      "turns": 8,
+      "end_reason": "persona_stop_failed",
+      "paid": false,
+      "first_rec": true,
+      "touches_to_cart": 5,
+      "touches_total": 8,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: pending_payment"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 60000
+          },
+          "ok": true,
+          "detail": "total 25670"
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 1,
+            "max": 3
+          },
+          "ok": true,
+          "detail": "2 nights"
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 4,
+      "connection_errors": 4,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        1,
+        2,
+        0,
+        0,
+        2,
+        2
+      ],
+      "latencies_ms": [
+        8228,
+        5830,
+        10510,
+        4708,
+        16,
+        12,
+        3743,
+        4207
+      ],
+      "cost_usd": 0.005661372,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 1,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 11
+      },
+      "served_providers": {
+        "DeepSeek": 11
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 8
+      },
+      "persona_ms_p50": 3267.5,
+      "persona_cost_usd": 0.356482,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 25670,
+        "chosen_variant": "fastest",
+        "stage": "checkout"
+      }
+    },
+    {
+      "scenario_id": "s04_photo_landmark",
+      "packet": "s04_photo_landmark",
+      "category": "A_photo",
+      "set": "main",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "persona_stop_failed",
+      "paid": false,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: no order"
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "istanbul",
+              "Стамбул"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 4,
+            "max": 5
+          },
+          "ok": true,
+          "detail": "4 nights"
+        }
+      ],
+      "must_ok": 2,
+      "must_total": 3,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        0,
+        2,
+        1,
+        1
+      ],
+      "latencies_ms": [
+        5889,
+        5153,
+        8,
+        3501,
+        1527,
+        1651
+      ],
+      "cost_usd": 0.003834216000000001,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 8
+      },
+      "served_providers": {
+        "DeepSeek": 8
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 6
+      },
+      "persona_ms_p50": 3963.5,
+      "persona_cost_usd": 0.249167,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 129360,
+        "chosen_variant": "comfort",
+        "stage": "cart"
+      }
+    },
+    {
+      "scenario_id": "s05_photo_coast",
+      "packet": "s05_photo_coast",
+      "category": "A_photo",
+      "set": "main",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 4,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "brief_traits_any",
+          "args": {
+            "traits": [
+              "sea",
+              "beach"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 200000
+          },
+          "ok": true,
+          "detail": "total 147270"
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        1,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        9102,
+        8798,
+        9431,
+        17,
+        11,
+        10
+      ],
+      "cost_usd": 0.005061936,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 5
+      },
+      "served_providers": {
+        "DeepSeek": 5
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 4193,
+      "persona_cost_usd": 0.221193,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 147270,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s06_istanbul_may",
+      "packet": "s06_istanbul_may",
+      "category": "B",
+      "set": "main",
+      "run_index": 0,
+      "turns": 4,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 4,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "istanbul",
+              "Стамбул"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "direct_flights_only",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 150000
+          },
+          "ok": true,
+          "detail": "total 94400"
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        5630,
+        19,
+        12,
+        16
+      ],
+      "cost_usd": 0.001395318,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 2
+      },
+      "served_providers": {
+        "DeepSeek": 2
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 3
+      },
+      "persona_ms_p50": 2693,
+      "persona_cost_usd": 0.083306,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 94400,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s07_kaliningrad_summer",
+      "packet": "s07_kaliningrad_summer",
+      "category": "B",
+      "set": "main",
+      "run_index": 0,
+      "turns": 8,
+      "end_reason": "persona_error",
+      "paid": false,
+      "first_rec": true,
+      "touches_to_cart": 6,
+      "touches_total": 8,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: pending_payment"
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "kaliningrad",
+              "Калининград"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "free_cancellation",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 6,
+            "max": 8
+          },
+          "ok": true,
+          "detail": "7 nights"
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        3,
+        2,
+        2,
+        2,
+        0,
+        0,
+        3
+      ],
+      "latencies_ms": [
+        10211,
+        5928,
+        3027,
+        4651,
+        3266,
+        19,
+        16,
+        5280
+      ],
+      "cost_usd": 0.006856386000000001,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 14
+      },
+      "served_providers": {
+        "DeepSeek": 14
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 7
+      },
+      "persona_ms_p50": 3962,
+      "persona_cost_usd": 0.259406,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 77730,
+        "chosen_variant": "cheapest",
+        "stage": "checkout"
+      }
+    },
+    {
+      "scenario_id": "s08_sochi_exact",
+      "packet": "s08_sochi_exact",
+      "category": "C",
+      "set": "main",
+      "run_index": 0,
+      "turns": 4,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 4,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "stay_starts_on",
+          "args": {
+            "day": "2026-11-12"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 7,
+            "max": 7
+          },
+          "ok": true,
+          "detail": "7 nights"
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "breakfast"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        5530,
+        18,
+        26,
+        7
+      ],
+      "cost_usd": 0.001514868,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 2
+      },
+      "served_providers": {
+        "DeepSeek": 2
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 3
+      },
+      "persona_ms_p50": 2094,
+      "persona_cost_usd": 0.076819,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 73480,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s09_kazan_train",
+      "packet": "s09_kazan_train",
+      "category": "C",
+      "set": "main",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "persona_stop_failed",
+      "paid": false,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: pending_payment"
+        },
+        {
+          "name": "transport_is",
+          "args": {
+            "kind": "train"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "destination_in",
+          "args": {
+            "names": [
+              "kazan",
+              "Казань"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "stay_starts_on",
+          "args": {
+            "day": "2026-12-04"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 5,
+      "connection_errors": 4,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        0,
+        2,
+        2,
+        3
+      ],
+      "latencies_ms": [
+        11993,
+        84,
+        13,
+        3917,
+        3145,
+        5013
+      ],
+      "cost_usd": 0.003915606,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 1,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 9
+      },
+      "served_providers": {
+        "DeepSeek": 9
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 6
+      },
+      "persona_ms_p50": 2923.5,
+      "persona_cost_usd": 0.191814,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 30680,
+        "chosen_variant": "comfort",
+        "stage": "checkout"
+      }
+    },
+    {
+      "scenario_id": "s10_hotel_only_kazan",
+      "packet": "s10_hotel_only_kazan",
+      "category": "D",
+      "set": "main",
+      "run_index": 0,
+      "turns": 8,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 8,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "cart_has_kinds",
+          "args": {
+            "kinds": [
+              "hotel"
+            ],
+            "exactly": true
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 3,
+            "max": 3
+          },
+          "ok": true,
+          "detail": "3 nights"
+        },
+        {
+          "name": "stay_starts_on",
+          "args": {
+            "day": "2026-11-20"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        0,
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        5021,
+        7,
+        6,
+        4725,
+        4108,
+        11,
+        10,
+        5
+      ],
+      "cost_usd": 0.0026453819999999995,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 6
+      },
+      "served_providers": {
+        "DeepSeek": 6
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 7
+      },
+      "persona_ms_p50": 2164,
+      "persona_cost_usd": 0.203215,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 18370,
+        "chosen_variant": "comfort",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s11_flights_only_ekb",
+      "packet": "s11_flights_only_ekb",
+      "category": "D",
+      "set": "main",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 4,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "cart_has_kinds",
+          "args": {
+            "kinds": [
+              "flight"
+            ],
+            "exactly": true
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "arrival_before",
+          "args": {
+            "hour": 14
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 3,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        4518,
+        4153,
+        6529,
+        4,
+        5,
+        8
+      ],
+      "cost_usd": 0.002512074,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 7
+      },
+      "served_providers": {
+        "DeepSeek": 7
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 2473,
+      "persona_cost_usd": 0.12061,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 18850,
+        "chosen_variant": "cheapest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s12_replan_shift",
+      "packet": "s12_replan_shift",
+      "category": "E",
+      "set": "main",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 4,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "stay_starts_on",
+          "args": {
+            "day": "2026-11-14"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 7,
+            "max": 7
+          },
+          "ok": true,
+          "detail": "7 nights"
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 3,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        3,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        5661,
+        8590,
+        5342,
+        18,
+        14,
+        11
+      ],
+      "cost_usd": 0.006004224,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 7
+      },
+      "served_providers": {
+        "DeepSeek": 7
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 2753,
+      "persona_cost_usd": 0.226166,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 74870,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s13_replan_dog",
+      "packet": "s13_replan_dog",
+      "category": "E",
+      "set": "main",
+      "run_index": 0,
+      "turns": 5,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 5,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "hotel_allows_pets",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "brief_has_constraint",
+          "args": {
+            "token": "pet:dog"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 3,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        5236,
+        5149,
+        18,
+        16,
+        11
+      ],
+      "cost_usd": 0.003051498,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 4
+      },
+      "served_providers": {
+        "DeepSeek": 4
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 4
+      },
+      "persona_ms_p50": 2923.5,
+      "persona_cost_usd": 0.14596,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 72990,
+        "chosen_variant": "comfort",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s14_replan_budget",
+      "packet": "s14_replan_budget",
+      "category": "E",
+      "set": "main",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": false,
+      "touches_to_cart": 4,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 90000
+          },
+          "ok": true,
+          "detail": "total 82100"
+        },
+        {
+          "name": "budget_le",
+          "args": {
+            "rub": 90000
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 3,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        1,
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        2060,
+        6650,
+        8467,
+        13,
+        32,
+        24
+      ],
+      "cost_usd": 0.004548726,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 1,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 6
+      },
+      "served_providers": {
+        "DeepSeek": 6
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 1841,
+      "persona_cost_usd": 0.151017,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 82100,
+        "chosen_variant": "comfort",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s15_after_early_checkin",
+      "packet": "s15_after_early_checkin",
+      "category": "F",
+      "set": "main",
+      "run_index": 0,
+      "turns": 5,
+      "end_reason": "persona_stop_done",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 5,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "order_action_done",
+          "args": {
+            "kind": "early_checkin"
+          },
+          "ok": false,
+          "detail": "no order event early_checkin*"
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "all_inclusive"
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 2,
+      "must_total": 3,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        0,
+        0,
+        1
+      ],
+      "latencies_ms": [
+        5545,
+        15,
+        14,
+        15,
+        1482
+      ],
+      "cost_usd": 0.0015623520000000001,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 3
+      },
+      "served_providers": {
+        "DeepSeek": 3
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 2092,
+      "persona_cost_usd": 0.139732,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 197200,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s16_after_change_dates",
+      "packet": "s16_after_change_dates",
+      "category": "F",
+      "set": "main",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "persona_stop_failed",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "order_action_done",
+          "args": {
+            "kind": "change_dates"
+          },
+          "ok": false,
+          "detail": "no order event change_dates*"
+        }
+      ],
+      "must_ok": 1,
+      "must_total": 2,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        0,
+        0,
+        2,
+        2
+      ],
+      "latencies_ms": [
+        5037,
+        9,
+        6,
+        6,
+        5483,
+        5461
+      ],
+      "cost_usd": 0.004577916,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 6
+      },
+      "served_providers": {
+        "DeepSeek": 6
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 6
+      },
+      "persona_ms_p50": 3152.0,
+      "persona_cost_usd": 0.226535,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 25430,
+        "chosen_variant": "fastest",
+        "stage": "selection"
+      }
+    },
+    {
+      "scenario_id": "s17_family_toddler_ai",
+      "packet": "s17_family_toddler_ai",
+      "category": "family",
+      "set": "main",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "persona_stop_failed",
+      "paid": false,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: no order"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2,
+            "children_ages": [
+              1
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "all_inclusive"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "no_night_arrival",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        0,
+        2,
+        2,
+        2
+      ],
+      "latencies_ms": [
+        4706,
+        4587,
+        95,
+        3946,
+        4260,
+        8050
+      ],
+      "cost_usd": 0.00559395,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 10
+      },
+      "served_providers": {
+        "DeepSeek": 10
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 6
+      },
+      "persona_ms_p50": 5249.0,
+      "persona_cost_usd": 0.280333,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 173330,
+        "chosen_variant": "fastest",
+        "stage": "selection"
+      }
+    },
+    {
+      "scenario_id": "s18_friends_nightlife",
+      "packet": "s18_friends_nightlife",
+      "category": "friends",
+      "set": "main",
+      "run_index": 0,
+      "turns": 4,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 4,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 4
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "district_label_in",
+          "args": {
+            "labels": [
+              "lively"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 80000
+          },
+          "ok": true,
+          "detail": "total 64870"
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        6542,
+        17,
+        8,
+        10
+      ],
+      "cost_usd": 0.001452384,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 2
+      },
+      "served_providers": {
+        "DeepSeek": 2
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 3
+      },
+      "persona_ms_p50": 3456,
+      "persona_cost_usd": 0.085612,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 64870,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s19_solo_business",
+      "packet": "s19_solo_business",
+      "category": "solo",
+      "set": "main",
+      "run_index": 0,
+      "turns": 7,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 2,
+      "touches_total": 7,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "district_label_in",
+          "args": {
+            "labels": [
+              "walkable"
+            ]
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "breakfast"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 1
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        7401,
+        12,
+        110,
+        8271,
+        17,
+        15,
+        8
+      ],
+      "cost_usd": 0.003070998,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 4
+      },
+      "served_providers": {
+        "DeepSeek": 4
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 6
+      },
+      "persona_ms_p50": 2132.0,
+      "persona_cost_usd": 0.186561,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 21240,
+        "chosen_variant": "comfort",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s20_couple_anniversary",
+      "packet": "s20_couple_anniversary",
+      "category": "couple",
+      "set": "main",
+      "run_index": 0,
+      "turns": 5,
+      "end_reason": "persona_stop_failed",
+      "paid": false,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 5,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: no order"
+        },
+        {
+          "name": "stars_at_least",
+          "args": {
+            "n": 4
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 300000
+          },
+          "ok": true,
+          "detail": "total 258820"
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 4,
+            "max": 4
+          },
+          "ok": true,
+          "detail": "4 nights"
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        1,
+        0,
+        2,
+        2
+      ],
+      "latencies_ms": [
+        6479,
+        9396,
+        19,
+        3735,
+        3310
+      ],
+      "cost_usd": 0.0037096620000000007,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 7
+      },
+      "served_providers": {
+        "DeepSeek": 7
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 3662,
+      "persona_cost_usd": 0.181827,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 258820,
+        "chosen_variant": "comfort",
+        "stage": "cart"
+      }
+    },
+    {
+      "scenario_id": "s21_pets_cat_nature",
+      "packet": "s21_pets_cat_nature",
+      "category": "pets",
+      "set": "main",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": null,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "hotel_allows_pets",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 2,
+            "max": 4
+          },
+          "ok": true,
+          "detail": "3 nights"
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 3,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        3,
+        1,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        10959,
+        3780,
+        4603,
+        4,
+        6,
+        7
+      ],
+      "cost_usd": 0.002458824,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 6
+      },
+      "served_providers": {
+        "DeepSeek": 6
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 2606,
+      "persona_cost_usd": 0.125939,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 7270,
+        "chosen_variant": "cheapest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s22_tight_budget_students",
+      "packet": "s22_tight_budget_students",
+      "category": "budget",
+      "set": "main",
+      "run_index": 0,
+      "turns": 6,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": null,
+      "touches_total": 6,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 35000
+          },
+          "ok": true,
+          "detail": "total 7680"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 3,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        1,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        6263,
+        5221,
+        9718,
+        5,
+        5,
+        6
+      ],
+      "cost_usd": 0.00203208,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 5
+      },
+      "served_providers": {
+        "DeepSeek": 5
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 5
+      },
+      "persona_ms_p50": 4106,
+      "persona_cost_usd": 0.157331,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 7680,
+        "chosen_variant": "cheapest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s23_out_of_catalog_tromso",
+      "packet": "s23_out_of_catalog_tromso",
+      "category": "out_of_catalog",
+      "set": "main",
+      "run_index": 0,
+      "turns": 5,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 5,
+      "must": [
+        {
+          "name": "agent_said",
+          "args": {
+            "pattern": "Тромс"
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "total_le",
+          "args": {
+            "rub": 160000
+          },
+          "ok": true,
+          "detail": "total 71960"
+        }
+      ],
+      "must_ok": 3,
+      "must_total": 3,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        5888,
+        5520,
+        17,
+        6,
+        12
+      ],
+      "cost_usd": 0.002910048,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 4
+      },
+      "served_providers": {
+        "DeepSeek": 4
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 4
+      },
+      "persona_ms_p50": 2904.5,
+      "persona_cost_usd": 0.149384,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 71960,
+        "chosen_variant": "cheapest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s24_arrival_before_lunch",
+      "packet": "s24_arrival_before_lunch",
+      "category": "C",
+      "set": "main",
+      "run_index": 0,
+      "turns": 5,
+      "end_reason": "paid",
+      "paid": true,
+      "first_rec": true,
+      "touches_to_cart": 3,
+      "touches_total": 5,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "arrival_before",
+          "args": {
+            "hour": 14
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "no_night_arrival",
+          "args": {},
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 2
+          },
+          "ok": true,
+          "detail": ""
+        }
+      ],
+      "must_ok": 4,
+      "must_total": 4,
+      "connection_errors": 0,
+      "connection_errors_source": "checks",
+      "calls_per_turn": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "latencies_ms": [
+        9799,
+        4691,
+        19,
+        13,
+        18
+      ],
+      "cost_usd": 0.0034696680000000004,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 0,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 4
+      },
+      "served_providers": {
+        "DeepSeek": 4
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 4
+      },
+      "persona_ms_p50": 3092.5,
+      "persona_cost_usd": 0.147114,
+      "profile_injected": true,
+      "final": {
+        "total_rub": 55460,
+        "chosen_variant": "fastest",
+        "stage": "ordered"
+      }
+    },
+    {
+      "scenario_id": "s25_changes_mind_nights",
+      "packet": "s25_changes_mind_nights",
+      "category": "B",
+      "set": "main",
+      "run_index": 0,
+      "turns": 3,
+      "end_reason": "persona_stop_failed",
+      "paid": false,
+      "first_rec": false,
+      "touches_to_cart": null,
+      "touches_total": 3,
+      "must": [
+        {
+          "name": "order_paid",
+          "args": {},
+          "ok": false,
+          "detail": "order status: no order"
+        },
+        {
+          "name": "party_matches",
+          "args": {
+            "adults": 3
+          },
+          "ok": true,
+          "detail": ""
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 2,
+            "max": 2
+          },
+          "ok": true,
+          "detail": "2 nights"
+        },
+        {
+          "name": "meals_at_least",
+          "args": {
+            "level": "breakfast"
+          },
+          "ok": false,
+          "detail": "no data: meals of the chosen hotel"
+        },
+        {
+          "name": "district_label_in",
+          "args": {
+            "labels": [
+              "walkable",
+              "lively"
+            ]
+          },
+          "ok": false,
+          "detail": "no data: no hotel in the chosen variant"
+        }
+      ],
+      "must_ok": 2,
+      "must_total": 5,
+      "connection_errors": 0,
+      "connection_errors_source": "debug",
+      "calls_per_turn": [
+        1,
+        1,
+        1
+      ],
+      "latencies_ms": [
+        2578,
+        1353,
+        1525
+      ],
+      "cost_usd": 0.000429804,
+      "jev_calls": 0,
+      "jev_fallbacks": 0,
+      "fallback_turns": 0,
+      "schema_error_turns": 0,
+      "degraded_turns": 0,
+      "error_turns": 3,
+      "served_models": {
+        "deepseek/deepseek-v4.1-flash-1017": 3
+      },
+      "served_providers": {
+        "DeepSeek": 3
+      },
+      "persona_models": {
+        "claude-sonnet-5-5": 3
+      },
+      "persona_ms_p50": 2597,
+      "persona_cost_usd": 0.029179,
+      "profile_injected": true,
+      "final": {
+        "total_rub": null,
+        "chosen_variant": null,
+        "stage": "inspiration"
+      }
+    }
+  ],
+  "metrics": {
+    "scenarios": 25,
+    "completion_rate": 0.64,
+    "first_rec_rate": 0.92,
+    "reached_cart_rate": 0.84,
+    "touches_to_cart_mean": 3.142857142857143,
+    "touches_to_cart_p50": 3,
+    "touches_to_cart_max": 6,
+    "hidden_must_rate": 0.8351648351648352,
+    "scenarios_all_must_rate": 0.56,
+    "connection_errors_total": 8,
+    "calls_per_turn_mean": 1.0774647887323943,
+    "calls_per_turn_max": 3,
+    "latency_p50_ms": 3051.0,
+    "latency_p95_ms": 9703.649999999996,
+    "cost_usd_total": 0.09238585200000003,
+    "persona_cost_usd_total": 4.485531,
+    "jev_calls": 0,
+    "jev_fallback_rate": null,
+    "fallback_card_rate": 0.0,
+    "response_schema_error_turns": 0,
+    "degraded_turns": 3,
+    "error_response_turns": 4,
+    "end_reasons": {
+      "persona_stop_failed": 9,
+      "paid": 14,
+      "persona_error": 1,
+      "persona_stop_done": 1
+    },
+    "profiles_injected": 25,
+    "served_models": {
+      "deepseek/deepseek-v4.1-flash-1017": 153
+    },
+    "served_providers": {
+      "DeepSeek": 153
+    },
+    "persona_models": {
+      "claude-sonnet-5-5": 127
+    }
+  },
+  "finished_at": "2026-10-25T10:53:09+03:00",
+  "notes": [],
+  "thresholds": [
+    {
+      "metric": "first_rec_rate",
+      "label": "первая рекомендация в первом ответе ≥ 80 %",
+      "value": 0.92,
+      "op": ">=",
+      "threshold": 0.8,
+      "pass": true
+    },
+    {
+      "metric": "touches_to_cart_mean",
+      "label": "касаний до готовой корзины ≤ 4 (среднее)",
+      "value": 3.142857142857143,
+      "op": "<=",
+      "threshold": 4.0,
+      "pass": true
+    },
+    {
+      "metric": "hidden_must_rate",
+      "label": "скрытые требования персон ≥ 90 %",
+      "value": 0.8351648351648352,
+      "op": ">=",
+      "threshold": 0.9,
+      "pass": false
+    },
+    {
+      "metric": "connection_errors_total",
+      "label": "ошибки стыковок = 0",
+      "value": 8,
+      "op": "<=",
+      "threshold": 0,
+      "pass": false
+    }
+  ],
+  "green": false,
+  "report_paths": {
+    "json": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-104648-L3-main.json",
+    "md": "/Users/all0b0y/VSCodeProjects/search_travel/evals/reports/20261025-104648-L3-main.md"
+  }
+}

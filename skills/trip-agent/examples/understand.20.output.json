@@ -3,7 +3,6 @@
   "patch": {
     "set": {
       "dates.start": "2027-01-15",
-      "dates.flexible_days": 3,
       "dates.nights": 3
     },
     "unset": []

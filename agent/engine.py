@@ -235,8 +235,6 @@ class Engine:
             else:
                 self._understand(ctx)
                 route_kw = {"intent": ctx.intent}
-                if ctx.intent in ("new_trip", "refine", "answer") and month_only_start(ctx.patch["set"], ctx.text):
-                    ctx.trace["notes"].append("dates: a month without a day -> dates.month, not the 1st")
                 self._apply_season(ctx)
         self._validate_patch(ctx)
         self._resolve_shift(ctx)
@@ -325,6 +323,7 @@ class Engine:
         s = ctx.session
         payload = P.understand_input(s, ctx.text or "", bool(ctx.image))
         out = self._call_card(ctx, "understand", payload, images=[ctx.image] if ctx.image else [])
+        ctx.trace["notes"].extend(normalize_understand(out, payload))
         ctx.understand = out
         ctx.intent = out.get("intent")
         patch = out.get("patch") or {}
@@ -639,6 +638,34 @@ _MONTH_STEMS = ("январ", "феврал", "март", "апрел", "ма[й
 _DAY_HINT_RE = re.compile(r"\d{1,2}(?:\s*[-–—]\s*\d{1,2})?\s*(?:январ|феврал|март|апрел|ма[йяе]|июн|июл|август|сентябр|"
                           r"октябр|ноябр|декабр)|\d{1,2}[./]\d{1,2}|\d{1,2}\s*-?\s*(?:го|е)(?![а-яё])|числ|"
                           r"начал|середин|конц|кон[её]ц|выходн|праздник|новогод", re.I)
+
+
+def normalize_understand(out, payload):
+    """Deterministic code-side fixes of an understand reply, shared by the engine and the level-2 evals
+    (changes `out` in place; returns trace notes):
+    - a month named without a day is dates.month, not the 1st (month_only_start);
+    - a ref whose kind is not on screen under that label takes the only kind shown with that label
+      («второй вариант» while destinations are shown is destination 2)."""
+    notes = []
+    if not isinstance(out, dict):
+        return notes
+    patch = out.get("patch") if isinstance(out.get("patch"), dict) else {}
+    sets = patch.get("set")
+    if isinstance(sets, dict) and out.get("intent") in ("new_trip", "refine", "answer") \
+            and month_only_start(sets, payload.get("message") or ""):
+        notes.append("dates: a month without a day -> dates.month, not the 1st")
+    kinds_by_label = {}
+    for item in payload.get("shown") or []:
+        kinds_by_label.setdefault(str(item.get("label")), set()).add(item.get("kind"))
+    for ref in out.get("refs") or []:
+        if not isinstance(ref, dict):
+            continue
+        kinds = kinds_by_label.get(str(ref.get("ref")))
+        if kinds and ref.get("kind") not in kinds and len(kinds) == 1:
+            new_kind = next(iter(kinds))
+            notes.append(f"refs: {ref.get('kind')}:{ref.get('ref')} -> {new_kind} (the kind on screen)")
+            ref["kind"] = new_kind
+    return notes
 
 
 def month_only_start(sets, text):
