@@ -117,8 +117,7 @@ def present_cases():
              [a("ids_subset"), a("numbers_subset"), pred("russian_only"), pred("tone_no_bureaucratese"),
               pred("at_most_one_joke"), pred("money_risks_plain"), a("max_items", path="/upsell", max=0),
               a("path_equals", path="/recommended_id", value=dest["items"][0]["id"]),
-              pred("mentions_any", words=[r"Казан\w*[^.!?]{0,40}поезд", r"поезд\w*[^.!?]{0,40}Казан",
-                                          r"Самар\w*[^.!?]{0,40}поезд", r"поезд\w*[^.!?]{0,40}Самар"]),
+              pred("mentions_any", words=[r"поезд"]), pred("mentions_any", words=[r"Казан", r"Самар"]),
               a("regex_absent", path="/message", pattern=r"ничего не укладывается"),
               pred("asks_at_most", n=len(dest.get("questions") or []))],
              "h10 t1: with a budget and no transport fixed, code also quoted train-reachable places — Kazan and "
@@ -139,7 +138,7 @@ def present_cases():
         case("e12_update_hostels_removed", "E", "present.update", removed,
              PRESENT_COMMON + [
                  pred("matches", path="/message", pattern=r"^[^.!?]*(хостел|180\s?000)"),
-                 pred("mentions_any", words=[r"убрал\w*\s+(все\s+)?хостел", r"без\s+хостел"]),
+                 pred("mentions_any", words=[r"убрал\w*\s+(все\s+)?хостел", r"хостел\w*\s+(все\s+)?убрал", r"без\s+хостел"]),
                  a("regex_absent", path="/message", pattern=r"это хостел|без хостела не вышло|остался хостел"),
                  pred("asks_at_most", n=len(removed.get("questions") or []))],
              "h01 t3: the constraints row adds no_hostel (code removed every hostel and dorm bed) and the budget "

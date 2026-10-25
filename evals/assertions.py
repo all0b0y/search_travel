@@ -118,6 +118,8 @@ def a_numbers_subset(a, output, inp, schema):
     """
     pool = number_pool(inp)
     pool |= set(a.get("allow", []))
+    # a decimal said whole («днём около 14°» for 14.1) is what the engine's number guard accepts too
+    pool |= {float(round(p)) for p in pool if isinstance(p, float) and p != int(p)}
     small_ok = a.get("small_ok", 3)
     path = a.get("path")
     texts = output_texts(output) if not path else [s for _, v in resolve(output, path) for s in iter_strings(v)]
