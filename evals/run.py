@@ -145,9 +145,26 @@ def run_case_once(case, run_index, backend, skill):
         rec.update(error=f"LLMError: {exc}", latency_ms=exc.latency_ms or int((time.monotonic() - started) * 1000),
                    usage=exc.usage, retries=exc.retries)
         return rec
+    from agent.engine import card_guard_issues, rerun_system
+    from agent.hooks import blocking
     from agent.respond import polish_output   # the user sees the card output after the code-side polish
+    rerun = None
+    if case["card"].startswith("present."):
+        # like the engine: the guards check the card; a blocked reply gets exactly one rerun with the reasons
+        issues = blocking(card_guard_issues(case["card"], case["input"], res.data, skill.rules))
+        if issues:
+            rerun = {"issues": [f"{i['code']}: {i['message']}" for i in issues], "first_output": res.data}
+            req2 = LLMRequest(card=case["card"], system=rerun_system(req.system, issues), user=req.user,
+                              schema=card.schema, images=images, thinking=card.thinking, max_tokens=card.max_tokens)
+            try:
+                res = backend.complete(req2)
+            except LLMError as exc:
+                rec.update(error=f"LLMError on rerun: {exc}", rerun=rerun,
+                           latency_ms=int((time.monotonic() - started) * 1000))
+                return rec
     data = polish_output(res.data)
     ok, results = evaluate_all(case["expect"], data, case["input"], card.schema)
+    rec["rerun"] = rerun
     rec.update(ok=ok, results=results, output=data, latency_ms=res.latency_ms, usage=res.usage, model=res.model,
                provider=res.provider, retries=res.retries, validation_errors=res.validation_errors)
     return rec
@@ -190,6 +207,8 @@ def summarize_level2(cases, records, runs_for):
         "llm_errors": sum(1 for r in records if (r["error"] or "").startswith("LLMError")),
         "input_errors": sum(1 for r in records if (r["error"] or "").startswith("invalid case input")),
         "retries_total": sum(r.get("retries") or 0 for r in records),
+        "guard_reruns": sum(1 for r in records if r.get("rerun")),   # first reply blocked by the engine's guards
+        "guard_rerun_reasons": sorted({x.split(":")[0] for r in records if r.get("rerun") for x in r["rerun"]["issues"]}),
         "latency_p50_ms": percentile(lat, 50),
         "latency_p95_ms": percentile(lat, 95),
         "input_tokens": sum((r.get("usage") or {}).get("input_tokens") or 0 for r in records),

@@ -50,6 +50,8 @@ RATIO = re.compile(r"\b(?:вдвое|втрое|вчетверо|впятеро|
                    r"в\s+(?:два|три|четыре|пять|десять)\s+раз[а]?|на\s+треть|на\s+четверть|наполовину|"
                    r"на\s+\d+(?:[.,]\d+)?\s*%\s+(?:дешевле|дороже|быстрее|медленнее))(?!\w)", re.I)   # not «вдвоём»
 ITEM_TEXT_KEYS = ("why", "sacrifices", "risks", "not_for", "watch_out")
+LATIN_WORD = re.compile(r"[A-Za-zА-Яа-яЁё][A-Za-zА-Яа-яЁё'’\-]*")
+LATIN_OK = {"wi-fi", "wifi", "spa", "ok", "all", "inclusive", "ultra", "check-in", "check-out", "sup", "vip"}
 ID_KEYS = {"id", "candidate_id", "recommended_id", "offer_id", "hotel_id", "destination_id", "rule_id"}
 MONEY_WORDS = re.compile(r"₽|руб|\bцен|стоим|отмен|штраф|невозврат|риск|стыковк|опозда|доплат", re.I)
 JOKE_WORDS = re.compile(r"шучу|хаха|ахах|хех|\bлол\b|😄|😂|🤣|😅|😜|😉|🙃|😏|😎|🤪", re.I)
@@ -285,6 +287,25 @@ def _candidate_ids(card_input):
 
 # ---------------------------------------------------------------- entry point
 
+def latin_issues(output, card_input, g=None) -> list:
+    """Russian text only: a Latin word that is not a name from the input (hotel, carrier, IATA) is a model slip
+    («families», «brief»), and a word that mixes scripts («dobерётесь») always is. Both block: one rerun."""
+    allowed = {w.casefold() for w in LATIN_OK | set((g or {}).get("latin_allowed") or [])}
+    in_text = " ".join(_strings(card_input)).casefold()
+    found, seen = [], set()
+    for text in _strings(output):
+        for w in LATIN_WORD.findall(text):
+            if not re.search(r"[A-Za-z]", w) or w in seen or len(w) < 2:   # «x», «A» are not words
+                continue
+            seen.add(w)
+            mixed = bool(re.search(r"[А-Яа-яЁё]", w))
+            if mixed:
+                found.append(_issue("mixed_script", "block", f"Слово «{w}» смешивает латиницу и кириллицу", word=w))
+            elif w.casefold() not in allowed and w.casefold() not in in_text:
+                found.append(_issue("latin_word", "block", f"Слово «{w}» на латинице — пишите по-русски", word=w))
+    return found
+
+
 def check_card_output(card, card_input: dict, output: dict, rules: dict):
     g = _guards(rules)
     small = g["small_int_max"]
@@ -396,6 +417,7 @@ def check_card_output(card, card_input: dict, output: dict, rules: dict):
     for phrase in g.get("banned_phrases") or []:
         if phrase.casefold() in low:
             found.append(_issue("banned_phrase", "block", f"Запрещённая фраза «{phrase}»", phrase=phrase))
+    found += latin_issues(output, card_input, g)
     emo = emoji_count(all_text)
     if emo > g["max_emoji"]:
         found.append(_issue("too_many_emoji", "warn", "Слишком много эмодзи", count=emo, limit=g["max_emoji"]))

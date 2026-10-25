@@ -200,3 +200,14 @@ def test_question_mark_rule_only_for_listed_cards():
     no_q = dict(INPUT, questions=[])
     assert [i["code"] for i in check_card_output("present.variants", no_q, out("Берём?"), r)] == ["extra_question"]
     assert check_card_output("present.info", no_q, out("Берём?"), r) == []
+
+
+def test_latin_words_block_unless_from_input():
+    from agent.guards import latin_issues
+    inp = {"items": [{"id": "fastest", "hotel": {"name": "Rixos Downtown"}, "steps": [{"carrier": "Pobeda"}]}]}
+    ok = {"message": "Советую Rixos Downtown, летите Pobeda, есть Wi-Fi и SPA.", "items": []}
+    assert latin_issues(ok, inp) == []
+    bad = {"message": "Подойдёт для families, до отеля dobерётесь сами.", "items": []}
+    codes = sorted(i["code"] for i in latin_issues(bad, inp))
+    assert codes == ["latin_word", "mixed_script"]
+    assert all(i["severity"] == "block" for i in latin_issues(bad, inp))

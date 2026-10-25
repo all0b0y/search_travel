@@ -381,11 +381,7 @@ class Engine:
                 raise BudgetExceeded(f"model call budget exceeded ({limit}) at {card}")
             ctx.flash_calls += 1
         budget.update(flash_calls=ctx.flash_calls, limit=limit)
-        system = self.skill.system_prompt(card)
-        if rerun_issues:
-            system += ("\n\nYour previous reply was rejected by the checks: "
-                       + "; ".join(f"{i['code']}: {i['message']}" for i in rerun_issues)
-                       + ". Write it again from the same input and fix exactly these problems.")
+        system = rerun_system(self.skill.system_prompt(card), rerun_issues)
         req = LLMRequest(card=card, system=system, user=json.dumps(payload, ensure_ascii=False, default=str),
                          schema=spec.schema, images=list(images), thinking=spec.thinking, max_tokens=spec.max_tokens)
         record = {"card": card, "rerun": rerun_issues is not None}
@@ -559,6 +555,21 @@ def validate_patch_hook(ctx):
         except ValueError:
             pass
     return out
+
+
+def rerun_system(system, rerun_issues):
+    """The card prompt for a rerun: the rejection reasons appended (the card input stays exactly the same)."""
+    if not rerun_issues:
+        return system
+    return (system + "\n\nYour previous reply was rejected by the checks: "
+            + "; ".join(f"{i['code']}: {i['message']}" for i in rerun_issues)
+            + ". Write it again from the same input and fix exactly these problems.")
+
+
+def card_guard_issues(card, payload, out, rules):
+    """What the engine checks on a present card before the user sees it (without the optional Jev guard)."""
+    from .guards import check_card_output
+    return basic_card_guard(card, payload, out) + [as_issue(i) for i in check_card_output(card, payload, out, rules) or []]
 
 
 def basic_card_guard(card, payload, out):
