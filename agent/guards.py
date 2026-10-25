@@ -84,9 +84,17 @@ def hostel_claim_issues(card, card_input, message):
 # turn's evidence holds: the `changes` rows (present.update) and the shown items' facts. Each row: (kind, regex,
 # scope) — scope "state": a property of the items (some / all when the sentence says «все», «везде», «оба»);
 # "removed": code dropped it this turn; "change": a changes row of that field; "negative": a «нет …» claim.
-# A sentence with a negation («нет», «не », «ничего») is no positive claim («с кухней ничего нет» is honest).
-CLAIM_NEG_RE = re.compile(r"\bнет\b|\bне\s|\bни\b|ничего|нельзя|без\s+не[её]\b|без\s+него\b", re.I)
-CLAIM_NEG_STRICT_RE = re.compile(r"\bне\s+(?:смог|получил|вышло|удалось|убрал|нашл)|ничего", re.I)
+# A sentence with a negation («нет», «не », «ничего», «невозможно», «никак») is no positive claim («с кухней ничего
+# нет», «прямыми рейсами туда не долететь», «прямыми туда никак» are honest); a kind may have its own negations
+# (CLAIM_KIND_NEG_RE: «без прямых», «только с пересадкой» deny a direct flight).
+CLAIM_NEG_RE = re.compile(r"\bнет\b|\bнету\b|\bне\s|\bни\b|ничего|нельзя|невозможн|\bникак|\bникто\b|\bнигде\b|"
+                          r"отсутству|без\s+не[её]\b|без\s+него\b", re.I)
+CLAIM_NEG_STRICT_RE = re.compile(r"\bне\s+(?:смог|получил|вышло|удалось|убрал|нашл|получится|выйдет)|ничего|нельзя|"
+                                 r"невозможн|\bникак", re.I)
+CLAIM_KIND_NEG_RE = {
+    "direct": re.compile(r"без\s+прям|только\s+(?:рейс\w*\s+)?(?:с\s+)?(?:пересадк|стыковк)|"
+                         r"(?:все|одни|лишь)\s+(?:рейсы\s+)?с\s+пересадк|с\s+пересадк\w*\s+(?:—\s*|-\s*)?только", re.I),
+}
 CLAIM_ALL_RE = re.compile(r"\b(?:все|всех|везде|каждом|каждый|оба|обоих|обе)\b", re.I)
 TRANSPORT_WORDS_RE = re.compile(r"поезд|рейс|перел[её]т|дорог|отправлен|прибыти|вылет|едете|летите|в\s+пути", re.I)
 CLAIMS = (
@@ -226,7 +234,8 @@ def change_claim_issues(card, card_input, output):
                 m = rx.search(sentence)
                 if not m:
                     continue
-                if scope == "state" and CLAIM_NEG_RE.search(sentence):
+                if scope == "state" and (CLAIM_NEG_RE.search(sentence) or (
+                        kind in CLAIM_KIND_NEG_RE and CLAIM_KIND_NEG_RE[kind].search(sentence))):
                     continue
                 if scope in ("removed", "change") and CLAIM_NEG_STRICT_RE.search(sentence):
                     continue
