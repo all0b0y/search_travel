@@ -1,0 +1,112 @@
+{
+  "id": "bu_23_children_stay_home",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Самара",
+        "iata": [
+          "KUF"
+        ]
+      },
+      "destination": {
+        "id": "svetlogorsk",
+        "name": "Светлогорск",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2027-05-10",
+        "end": "2027-05-15",
+        "month": 5,
+        "window": null,
+        "nights": 5,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "family",
+        "adults": 2,
+        "children": 2,
+        "children_ages": [
+          6,
+          12
+        ],
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [
+      {
+        "label": "1",
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле"
+      },
+      {
+        "label": "2",
+        "kind": "variant",
+        "id": "fastest",
+        "title": "Быстрее"
+      },
+      {
+        "label": "3",
+        "kind": "variant",
+        "id": "comfort",
+        "title": "Комфортнее"
+      }
+    ],
+    "pending_questions": [],
+    "history": [],
+    "message": "Детей бабушка забирает. Теперь едем только двое взрослых, детей в поездке нет совсем.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "refine"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.adults",
+      "value": 2,
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.children",
+      "value": 0,
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.children_ages",
+      "value": [],
+      "casefold": true
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}

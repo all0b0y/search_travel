@@ -1,0 +1,62 @@
+{
+  "id": "bu_03_infant_counts",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "В Сиде с 9 по 16 июня 2027: мама, папа, сыну восемь и дочка шести месяцев. Нас четверо, не трое.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.adults",
+      "value": 2,
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.children",
+      "value": 2,
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.children_ages",
+      "value": [
+        8,
+        0
+      ],
+      "casefold": true
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}

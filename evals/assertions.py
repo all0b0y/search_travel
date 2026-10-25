@@ -13,7 +13,7 @@ import jsonschema
 
 from .common import MISSING, get_path, iter_strings, number_pool, numbers_in_text, resolve, same_number
 
-ASSERTION_TYPES = ("schema", "path_equals", "path_in", "path_absent", "max_items", "regex_absent",
+ASSERTION_TYPES = ("schema", "path_equals", "path_in", "path_absent", "path_present", "max_items", "regex_absent",
                    "numbers_subset", "ids_subset", "predicate")
 
 # output keys whose strings are not shown to the user (ids)
@@ -88,6 +88,12 @@ def a_path_absent(a, output, inp, schema):
     """Absent or null (an explicit null counts as absent)."""
     present = [(p, v) for p, v in resolve(output, a["path"]) if v is not None and v != [] and v != {}]
     return _res(not present, f"{present[0][0]} = {present[0][1]!r}" if present else "")
+
+
+def a_path_present(a, output, inp, schema):
+    """Set to something (null, [] and {} count as absent)."""
+    present = [v for _, v in resolve(output, a["path"]) if v is not None and v != [] and v != {}]
+    return _res(bool(present), "" if present else f"{a['path']} is absent")
 
 
 def a_max_items(a, output, inp, schema):
@@ -168,6 +174,7 @@ def a_predicate(a, output, inp, schema):
 
 TYPE_FUNCS = {
     "schema": a_schema, "path_equals": a_path_equals, "path_in": a_path_in, "path_absent": a_path_absent,
+    "path_present": a_path_present,
     "max_items": a_max_items, "regex_absent": a_regex_absent, "numbers_subset": a_numbers_subset,
     "ids_subset": a_ids_subset, "predicate": a_predicate,
 }

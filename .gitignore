@@ -21,3 +21,6 @@ evals/runs/
 # Raw downloads of the offline data builders
 data_build/cache/
 .pytest_cache/
+
+# Raw transcripts of the sealed benchmark runs (reports are committed)
+evals/bench/*/runs/

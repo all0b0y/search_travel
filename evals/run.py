@@ -58,8 +58,8 @@ def load_cases(only=None, cases_dir=CASES_DIR):
     return cases
 
 
-def load_scenarios(which="main", only=None):
-    folder = {"main": SCENARIOS_DIR, "holdout": HOLDOUT_DIR}[which]
+def load_scenarios(which="main", only=None, folder=None):
+    folder = Path(folder) if folder else {"main": SCENARIOS_DIR, "holdout": HOLDOUT_DIR}[which]
     scenarios = [read_json(p) for p in sorted(folder.glob("*.json"))]
     want = _only(only)
     if want:
@@ -648,7 +648,9 @@ def run_level3(scenarios, engine_factory, persona_factory, run_dir, set_name, ru
 def parse_args(argv=None):
     ap = argparse.ArgumentParser(prog="python -m evals.run")
     ap.add_argument("--level", type=int, choices=(2, 3), required=True)
-    ap.add_argument("--set", dest="set_name", choices=("main", "holdout"), default="main")
+    ap.add_argument("--set", dest="set_name", choices=("main", "holdout", "bench"), default="main")
+    ap.add_argument("--bench", default=None,
+                    help="sealed benchmark version dir (scenarios/, cases/); runs and reports stay inside it")
     ap.add_argument("--runs", type=int, default=None, help="level 2: runs per case (default: case.runs); level 3: runs per scenario (default 1)")
     ap.add_argument("--flags", default="stage1", help="flag spec for the engine (agent.flags.parse_flags)")
     ap.add_argument("--model", choices=MODELS, default="flash")
@@ -672,15 +674,20 @@ def main(argv=None, log=print):
     from agent.flags import parse_flags
     flags = parse_flags(args.flags)
     ts = timestamp()
-    set_label = args.set_name if args.level == 3 else "cases"
+    bench = Path(args.bench) if args.set_name == "bench" and args.bench else None
+    if args.set_name == "bench" and bench is None:
+        raise SystemExit("--set bench needs --bench DIR")
+    set_label = args.set_name if args.level == 3 or bench else "cases"
     tag = f"-{args.tag}" if args.tag else ""
-    run_dir = Path(args.out) if args.out else RUNS_DIR / f"{ts}-L{args.level}-{set_label}{tag}{'-dryrun' if args.dry_run else ''}"
+    runs_root = bench / "runs" if bench else RUNS_DIR
+    run_dir = Path(args.out) if args.out else runs_root / f"{ts}-L{args.level}-{set_label}{tag}{'-dryrun' if args.dry_run else ''}"
     run_dir.mkdir(parents=True, exist_ok=True)
-    reports_dir = Path(args.reports_dir) if args.reports_dir else (run_dir / "reports" if args.dry_run else REPORTS_DIR)
+    reports_dir = Path(args.reports_dir) if args.reports_dir else (
+        run_dir / "reports" if args.dry_run else (bench / "reports" if bench else REPORTS_DIR))
     started = datetime.now().astimezone().isoformat(timespec="seconds")
     notes = []
     model_label = "fake" if args.dry_run else args.model
-    report = {"run_id": run_dir.name, "level": args.level, "set": args.set_name if args.level == 3 else "cases",
+    report = {"run_id": run_dir.name, "level": args.level, "set": set_label,
               "model": model_label, "flags": args.flags, "flags_enabled": list(flags.enabled()),
               "dry_run": args.dry_run, "persona": ("buttons" if args.dry_run else args.persona) if args.level == 3 else None,
               "started_at": started, "run_dir": str(run_dir), "argv": sys.argv[1:] if argv is None else list(argv),
@@ -689,7 +696,7 @@ def main(argv=None, log=print):
     if args.model == "qwen" and not args.dry_run:
         notes.append("qwen: no provider pin (plan does not fix one); served provider recorded per call")
     if args.level == 2:
-        cases = load_cases(args.only)
+        cases = load_cases(args.only, cases_dir=bench / "cases" if bench else CASES_DIR)
         skill, note = load_skill_for_run(args.dry_run)
         if note:
             notes.append(note)
@@ -703,7 +710,7 @@ def main(argv=None, log=print):
                                    policy=parse_policy(args))
         report.update(cases=rows, metrics=metrics)
     else:
-        scenarios = load_scenarios(args.set_name, args.only)
+        scenarios = load_scenarios(args.set_name, args.only, folder=bench / "scenarios" if bench else None)
         rules = None
         try:
             from agent.skill_loader import load_skill

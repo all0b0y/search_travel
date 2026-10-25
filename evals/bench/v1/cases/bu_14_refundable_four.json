@@ -1,0 +1,57 @@
+{
+  "id": "bu_14_refundable_four",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Собери Будапешт. Четвёрка минимум, и отменить гостиницу чтобы можно было без штрафа.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/prefs.stars_min",
+      "value": 4,
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/prefs.free_cancellation",
+      "value": true,
+      "casefold": true
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/budget_rub.max"
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}
