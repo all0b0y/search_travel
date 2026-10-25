@@ -182,10 +182,11 @@ def run_case_once(case, run_index, backend, skill, policy=None):
         rec.update(error=f"LLMError: {exc}", latency_ms=exc.latency_ms or int((time.monotonic() - started) * 1000),
                    usage=exc.usage, retries=exc.retries)
         return rec
-    from agent.engine import card_guard_issues, repair_output_ids, rerun_system
+    from agent.engine import card_guard_issues, fix_star_glyphs, repair_output_ids, rerun_system
     from agent.hooks import blocking
     if case["card"].startswith("present.") and isinstance(res.data, dict):
         repair_output_ids(res.data, case["input"])   # like the engine: id typos are repaired before the guard
+        fix_star_glyphs(res.data)
     from agent.respond import polish_output   # the user sees the card output after the code-side polish
     rerun = None
     if case["card"].startswith("present."):
@@ -204,6 +205,7 @@ def run_case_once(case, run_index, backend, skill, policy=None):
                 return rec
             if isinstance(res.data, dict):
                 repair_output_ids(res.data, case["input"])
+                fix_star_glyphs(res.data)
     data = polish_output(res.data)
     if case["card"] == "understand" and isinstance(data, dict):
         # like the engine: deterministic code-side normalisation of the reply before it reaches the brief

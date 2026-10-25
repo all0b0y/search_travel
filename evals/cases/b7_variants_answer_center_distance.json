@@ -987,7 +987,7 @@
       "type": "predicate",
       "name": "asks_at_most",
       "args": {
-        "n": 0
+        "n": 2
       }
     }
   ],

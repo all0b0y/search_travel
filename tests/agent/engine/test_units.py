@@ -234,3 +234,14 @@ def test_repair_output_ids_fixes_a_single_near_miss_only():
     assert out["items"][0]["id"] == "ras-al-khaimah" and out["recommended_id"] == "ras-al-khaimah"
     assert out["items"][1]["id"] == "custom-3"      # close to two ids: left for the guard
     assert len(notes) == 2
+
+
+def test_fix_star_glyphs_writes_stars_in_words():
+    from agent.engine import fix_star_glyphs
+    out = {"message": "Отель 4★ у моря, рядом ★★★★★ курорт", "items": [{"id": "x", "why": "Тихий 3 ★", "sacrifices": ["1★"],
+                                                                         "risks": [], "not_for": []}],
+           "upsell": [{"candidate_id": "u", "line": "Апгрейд до 5★"}]}
+    fix_star_glyphs(out)
+    assert out["message"] == "Отель 4 звезды у моря, рядом 5 звёзд курорт"
+    assert out["items"][0]["why"] == "Тихий 3 звезды" and out["items"][0]["sacrifices"] == ["1 звезда"]
+    assert out["upsell"][0]["line"] == "Апгрейд до 5 звёзд"

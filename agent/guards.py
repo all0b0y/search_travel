@@ -12,7 +12,8 @@ Checks (Issue = {code, severity, message, data}):
   asked -> warn `extra_question`.
 - tone: jokes ≤ guard.max_jokes, emoji ≤ guard.max_emoji (★ counts), "!" ≤ guard.max_exclamations,
   no joke in a sentence about money, risks or cancellation (warn: heuristics); ratios such as
-  "вдвое", "в 2 раза", "на треть", "на 20% дешевле" are computed claims (warn `computed_claim`);
+  "вдвое", "в 2 раза", "на треть", "на 20% дешевле" are computed claims (block `computed_claim`: the model
+  computed a comparison the input does not have, d2 «втрое дешевле»);
   guard.banned_phrases (case-insensitive substrings) block.
 - length: per card guard.message_chars[card] = [min, max]: empty or over max + length_slack_pct (20 %)
   blocks, over max warns, under min warns; without a per-card entry: hard max message_max_chars (1500)
@@ -418,7 +419,7 @@ def check_card_output(card, card_input: dict, output: dict, rules: dict):
             found.append(_issue("too_many_exclamations", "warn", "Слишком много восклицаний", count=ex,
                                 limit=g["max_exclamations"]))
     for m in RATIO.finditer(all_text):
-        found.append(_issue("computed_claim", "warn", f"Вычисленное сравнение «{m.group(0)}» — его нет во входе",
+        found.append(_issue("computed_claim", "block", f"Вычисленное сравнение «{m.group(0)}» — его нет во входе",
                             phrase=m.group(0)))
     low = all_text.casefold()
     for phrase in g.get("banned_phrases") or []:

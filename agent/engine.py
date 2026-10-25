@@ -606,6 +606,7 @@ class Engine:
         ctx.trace["calls"].append(record)
         if card.startswith("present."):
             ctx.trace["notes"].extend(repair_output_ids(res.data, payload))
+            fix_star_glyphs(res.data)
         return res.data
 
     # ------------------------------------------------------------ 7. present
@@ -900,6 +901,34 @@ _MONTH_STEMS = ("январ", "феврал", "март", "апрел", "ма[й
 _DAY_HINT_RE = re.compile(r"\d{1,2}(?:\s*[-–—]\s*\d{1,2})?\s*(?:январ|феврал|март|апрел|ма[йяе]|июн|июл|август|сентябр|"
                           r"октябр|ноябр|декабр)|\d{1,2}[./]\d{1,2}|\d{1,2}\s*-?\s*(?:го|е)(?![а-яё])|числ|"
                           r"начал|середин|конц|кон[её]ц|выходн|праздник|новогод", re.I)
+
+
+def _stars_ru(n):
+    return f"{n} " + ("звезда" if n == 1 else "звезды" if 2 <= n <= 4 else "звёзд")
+
+
+def fix_star_glyphs(out):
+    """«4★» / «★★★★» in a present reply become «4 звезды» (the voice writes stars in words; a cheap model
+    still copies the glyph now and then, b7). Changes `out` in place."""
+    def fix(s):
+        if not isinstance(s, str) or "★" not in s:
+            return s
+        s = re.sub(r"(\d)\s*★+", lambda m: _stars_ru(int(m.group(1))), s)
+        return re.sub(r"★{1,5}", lambda m: _stars_ru(len(m.group(0))), s)
+
+    if not isinstance(out, dict):
+        return out
+    out["message"] = fix(out.get("message"))
+    for item in out.get("items") or []:
+        if isinstance(item, dict):
+            item["why"] = fix(item.get("why"))
+            for key in ("sacrifices", "risks", "not_for"):
+                if isinstance(item.get(key), list):
+                    item[key] = [fix(x) for x in item[key]]
+    for u in out.get("upsell") or []:
+        if isinstance(u, dict) and "line" in u:
+            u["line"] = fix(u["line"])
+    return out
 
 
 def repair_output_ids(out, payload):

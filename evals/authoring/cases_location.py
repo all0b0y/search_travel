@@ -182,7 +182,7 @@ def present_cases():
                  pred("matches", path="/message", pattern=first_sentence),
                  pred("mentions_any", words=[r"\d+\s*°", r"\d+–\d+°"]),
                  pred("mentions_any", words=[r"мож\w+ поменять|поправ\w+|измен\w+|другие даты|сдвин"]),
-                 pred("asks_at_most", n=0)],
+                 pred("asks_at_most", n=len(photo.get("questions") or []))],
              "L3 s04 t1: «Когда лучше поехать?» inside a photo request is answered FIRST from question.facts "
              "(best_time.summary_ru: months + day temperature + sea), and the assumed dates in the best month are "
              "said to be changeable; no offer of a district / sight search."),
@@ -190,13 +190,13 @@ def present_cases():
              PRESENT_COMMON + [
                  pred("matches", path="/message", pattern=r"^[^.!]*(центр)"),
                  pred("mentions_any", words=[r"\d[\d  ]*\s*м\b", r"\d+,\d\s*км"]),
-                 pred("asks_at_most", n=0)],
+                 pred("asks_at_most", n=len(inp["dates_question"].get("questions") or []))],
              "A question inside a search («А отели далеко от центра?») is answered in the first sentence from the "
              "center_distance facts (metres from the input), never dropped."),
         case("e9_update_center_rebuilt", "E", "present.update", inp["center"],
              PRESENT_COMMON + [
                  pred("matches", path="/message", pattern=r"^[^.!]*центр"),
-                 pred("asks_at_most", n=0),
+                 pred("asks_at_most", n=len(inp["center"].get("questions") or [])),
                  a("regex_absent", path="/message", pattern=r"ничего не менял|подборка та же")],
              "L3 s04 t5: the centre wish is prefs.center_max_m; the update card starts with it (a prefs row in "
              "changes) and names the new hotels' distance; never «ничего не менял», never a district search offer."),

@@ -176,7 +176,8 @@ def build():
     q = "А в «Ласточку» с котом можно?"
     cases.append(case("p5_info_general_pet_rules", info_input(b, "selection", q, [{"kind": "pet_rules", "lines": PET_RULES}]),
                       [pred("mentions_any", words=["переноск"]),
-                       pred("mentions_any", path="$text", words=["местах для пассажиров с животными", "места для пассажиров с животными"])],
+                       pred("mentions_any", path="$text", words=["местах для пассажиров с животными", "места для пассажиров с животными",
+                                                                 "месте для пассажиров с животными", "мест для пассажиров с животными"])],
                       "No leg is a «Ласточка», the pet_rules lines answer it (high-speed trains: carrier, designated seats)."))
     return cases
 
