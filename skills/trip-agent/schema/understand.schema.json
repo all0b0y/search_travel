@@ -176,6 +176,25 @@
                 "train"
               ]
             },
+            "prefs.arrive_before": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+            },
+            "prefs.no_night_flights": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "prefs.domestic": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
             "constraints.add": {
               "type": "array",
               "items": {
@@ -280,6 +299,9 @@
               "prefs.district",
               "prefs.beach_max_m",
               "prefs.transport",
+              "prefs.arrive_before",
+              "prefs.no_night_flights",
+              "prefs.domestic",
               "constraints.add",
               "traits.add",
               "mood.add",
@@ -354,7 +376,34 @@
               ]
             },
             "params": {
-              "type": "object"
+              "type": "object",
+              "properties": {
+                "time": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "new_dates": {
+                  "type": "object",
+                  "properties": {
+                    "check_in": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
+                    "check_out": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    }
+                  }
+                },
+                "shift_days": {
+                  "type": "integer",
+                  "minimum": -60,
+                  "maximum": 60
+                },
+                "confirm": {
+                  "type": "boolean"
+                }
+              }
             }
           }
         }

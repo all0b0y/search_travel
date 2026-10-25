@@ -193,12 +193,23 @@ def _at_origin(place, points, city) -> bool:
     return p in points or bool(city and p.startswith(city + " "))  # "москва ленинградская" (a station)
 
 
+def return_index(steps):
+    """Index of the first return step of a tickets-only variant (no stay step): the step after the
+    longest wait between two consecutive steps — the days spent at the destination. None when the
+    variant has a stay or fewer than two transport steps."""
+    if _stay_index(steps) is not None or sum(1 for s in steps if s["type"] in TRANSPORT) < 2:
+        return None
+    gaps = [(minutes(a["end"], b["start"]), k + 1) for k, (a, b) in enumerate(zip(steps, steps[1:]))]
+    return max(gaps)[1] if gaps else None
+
+
 def check_chain(steps, brief, vid=None) -> list[dict]:
     """Every step starts where the previous one ended; door-to-door variants start and end at the origin.
 
     The origin check runs only when the brief knows the origin's IATA codes or some step names the
     origin city (otherwise the airports are unknown here and the check would be a guess). A gap between a
     flight/train arrival and the stay (no transfer found) only warns: the traveller gets there alone.
+    Tickets only (no stay): the return may leave from another airport/station of the destination.
     """
     found = []
     if not steps:
@@ -217,8 +228,9 @@ def check_chain(steps, brief, vid=None) -> list[dict]:
                 found.append(issue("chain_origin", "block",
                                    f"Маршрут заканчивается в {steps[-1]['to']}, а не в {origin.city}",
                                    variant=vid, step=steps[-1]["id"], place=steps[-1]["to"]))
-    for a, b in zip(steps, steps[1:]):
-        if norm(a["to"]) == norm(b["from"]):
+    back_at = return_index(steps)
+    for k, (a, b) in enumerate(zip(steps, steps[1:])):
+        if norm(a["to"]) == norm(b["from"]) or k + 1 == back_at:
             continue
         gap_ok = (a["type"] in TRANSPORT and b["type"] == "stay") or (a["type"] == "stay" and b["type"] in TRANSPORT)
         if gap_ok:
@@ -369,8 +381,9 @@ def check_dates(steps, brief, vid=None, rules=None) -> list[dict]:
     if dates is None or not steps:
         return found
     i = _stay_index(steps)
-    out_steps = steps[:i] if i is not None else steps
-    back_steps = steps[i + 1:] if i is not None else []
+    back_at = return_index(steps)
+    out_steps = steps[:i] if i is not None else steps[:back_at]
+    back_steps = steps[i + 1:] if i is not None else (steps[back_at:] if back_at is not None else [])
     first_out = next((s for s in out_steps if s["type"] in TRANSPORT), None) or (steps[i] if i is not None else None)
     first_back = next((s for s in back_steps if s["type"] in TRANSPORT), None)
     for key, path, step in (("start", "dates.start", first_out), ("end", "dates.end", first_back)):
@@ -513,4 +526,4 @@ def as_dates(value) -> date | None:
 __all__ = ["check_variant", "check_variant_set", "check_chain", "check_timing", "check_stay", "check_dates",
            "check_budget", "check_party", "check_totals", "connection_risks", "required_gap", "parse_cbr_xml",
            "to_rub", "fill_rub", "issue", "blocking", "fmt_rub", "fmt_hours", "fmt_int", "plural",
-           "nights_text", "in_clock_window", "arrival_at_stay"]
+           "nights_text", "in_clock_window", "arrival_at_stay", "return_index"]

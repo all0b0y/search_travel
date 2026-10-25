@@ -1,0 +1,17 @@
+{
+  "intent": "new_trip",
+  "patch": {
+    "set": {
+      "traits.add": [
+        "sea"
+      ],
+      "dates.month": 7,
+      "party.segment": "couple"
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

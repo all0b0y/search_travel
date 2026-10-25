@@ -41,7 +41,10 @@
       "max_travel_hours": null,
       "district": "quiet",
       "beach_max_m": null,
-      "transport": "any"
+      "transport": "any",
+      "arrive_before": null,
+      "no_night_flights": null,
+      "domestic": null
     },
     "constraints": null,
     "mood": null
@@ -68,12 +71,19 @@
   "question": "Можно ли с собакой в «Морском бризе»?",
   "facts": [
     {
-      "kind": "hotel_policy",
-      "hotel_id": "h_ex_briz",
-      "hotel": "Отель «Морской бриз» (пример)",
-      "pets_allowed": false,
-      "check_in": "15:00",
-      "check_out": "12:00"
+      "kind": "hotel",
+      "id": "h_ex_briz",
+      "data": {
+        "hotel_id": "h_ex_briz",
+        "name": "Отель «Морской бриз» (пример)",
+        "stars": 4,
+        "distance_beach_m": 250,
+        "policies": {
+          "pets_allowed": false,
+          "check_in_from": "15:00",
+          "check_out_until": "12:00"
+        }
+      }
     }
   ]
 }

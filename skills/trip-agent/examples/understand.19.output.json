@@ -1,0 +1,20 @@
+{
+  "intent": "new_trip",
+  "patch": {
+    "set": {
+      "traits.add": [
+        "mountains",
+        "ski",
+        "snow"
+      ],
+      "dates.month": 12,
+      "party.segment": "friends",
+      "party.adults": 4
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

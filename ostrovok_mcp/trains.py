@@ -4,6 +4,8 @@ with stations. Rail distance = great circle x 1.25.
 Per pair and date 2-5 trains (seeded). A train is either
 - `fast` (day train, <= 750 km rail, 120 km/h, class `seat`) or
 - `regular` (70 km/h incl. stops; classes platzkart / coupe / sv).
+High-speed corridors (HIGH_SPEED, e.g. Москва — Санкт-Петербург «Сапсан»): 4-7 trains a day, every
+even-numbered one a high-speed day train (class `seat`), the others regular overnight trains.
 Fare per passenger (RUB): seat 500 + 3.2/km, platzkart 400 + 1.6/km, coupe 700 + 2.8/km,
 sv 1500 + 5.5/km, x season x lead time (flight table, softened by half) x noise 0.92-1.12.
 """
@@ -16,6 +18,9 @@ from .offer_ids import encode
 
 MAX_KM = 1000
 RAIL_FACTOR = 1.25
+# pair -> (train name, km/h): the real rail line is shorter than great circle x 1.25, so these trains
+# would otherwise never count as `fast` (Москва — Санкт-Петербург: 793 km by the formula)
+HIGH_SPEED = {frozenset({"Москва", "Санкт-Петербург"}): ("Сапсан", 200)}
 CLASS_TARIFF = {"seat": (500, 3.2), "platzkart": (400, 1.6), "coupe": (700, 2.8), "sv": (1500, 5.5)}
 
 
@@ -38,21 +43,31 @@ def pair_note(a: geo.City | None, b: geo.City | None) -> str | None:
 def _train(a: geo.City, b: geo.City, day: date, i: int) -> dict:
     km = geo.haversine_km(a.lat, a.lon, b.lat, b.lon) * RAIL_FACTOR
     pair = f"{a.name_ru}>{b.name_ru}"
-    fast = km <= 750 and rng.unit("train", pair, "fast", i) < 0.5
-    speed = 120 if fast else 70
+    hsr = HIGH_SPEED.get(frozenset({a.name_ru, b.name_ru}))
+    if hsr:
+        fast = i % 2 == 0
+        speed = hsr[1] if fast else 70
+    else:
+        fast = km <= 750 and rng.unit("train", pair, "fast", i) < 0.5
+        speed = 120 if fast else 70
     if fast:
         dep_min = rng.rint(66, 216, "train", pair, "dep", i) * 5        # 05:30 .. 18:00
     else:
         dep_min = rng.rint(216, 282, "train", pair, "dep", i) * 5       # 18:00 .. 23:30 (overnight)
     number = rng.rint(1, 799, "train", pair, "number", i)
     letter = rng.pick("АВГЕЖИМНСУЧЯ", "train", pair, "letter", i)
+    carrier = "РЖД" if fast else "ФПК"
+    if hsr and fast:
+        # odd numbers one way, even the other (as on the real line)
+        number, letter, carrier = 751 + 2 * i + (a.name_ru > b.name_ru), "А", f"РЖД «{hsr[0]}»"
     return {"fast": fast, "km": km, "duration": int(round(km / speed * 60)), "dep_min": dep_min,
-            "train_no": f"{number:03d}{letter}", "carrier": "РЖД" if fast else "ФПК"}
+            "train_no": f"{number:03d}{letter}", "carrier": carrier}
 
 
 def active(a: geo.City, b: geo.City, day: date) -> list[int]:
     pair = f"{a.name_ru}>{b.name_ru}"
-    n = rng.rint(2, 5, "train", pair, "count", day.isoformat())
+    lo, hi = (4, 7) if frozenset({a.name_ru, b.name_ru}) in HIGH_SPEED else (2, 5)
+    n = rng.rint(lo, hi, "train", pair, "count", day.isoformat())
     return list(range(n))
 
 

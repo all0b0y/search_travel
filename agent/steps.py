@@ -28,6 +28,7 @@ from typing import Any, Optional
 from . import payloads as P
 from .hooks import as_issue, blocking, issue
 from .mcp_client import ToolError
+from .opendata import train_reachable, wish_traits
 from .profiles import apply_profile, profile_value
 from .state import (Brief, CachedResult, PatchError, Question, UpsellCandidate, Variant, apply_patch, assume,
                     changed_paths)
@@ -320,7 +321,10 @@ def destination_record(ctx, dest_id=None, name=None):
 
 
 def resolve_destination(ctx, name, allow_lazy=True):
-    """Catalog first; one lazy city build per unknown name per session (data_build.lazy)."""
+    """Catalog first; one lazy city build per unknown name per session (data_build.lazy).
+    Wishes and common nouns («горы», «море», «юг») never resolve and never trigger a lazy build."""
+    if wish_traits(name) is not None:
+        return None
     rec = destination_record(ctx, name=name)
     if rec is not None or not allow_lazy:
         return rec
@@ -480,6 +484,14 @@ def prepare_brief(ctx, brief, patch, allow_lazy=True):
         rec = destination_record(ctx, dest_id=ctx.destination_hint)
         if rec is not None:
             new = set_destination(new, rec)
+    elif dest and not dest.get("id") and wish_traits(dest["name"]) is not None:
+        # «хочу в горы»: a wish, never a place (no geocode, no lazy build) -> its traits, destinations route
+        wish = wish_traits(dest["name"])
+        new, _ = apply_patch(new, {"unset": ["destination.name"]})
+        new.destination.source = brief.destination.source
+        if wish:
+            new, _ = apply_patch(new, {"set": {"traits.add": wish}})
+        ctx.trace["notes"].append(f"destination «{dest['name']}» is a wish -> traits {wish}")
     elif dest and not dest.get("id"):
         rec = resolve_destination(ctx, dest["name"], allow_lazy=allow_lazy)
         if rec is not None:
@@ -629,22 +641,75 @@ def _month(brief):
     return d.get("month")
 
 
+# Destination suggestions honour the brief (entry A):
+# - prefs.transport == "train": only places the mock sells trains to from the origin (opendata.train_reachable:
+#   Russia, stations on both ends, 30..1000 km), then confirmed by search_trains there and back on the quoted
+#   dates; price = cheapest train there + back + the quoted stay, travel_time_h = the fastest train there.
+# - prefs.domestic: only places in the origin's country (Russia when the origin is unknown).
+# - budget_rub.max: after quoting, items within budget come first (in rank order, facts.within_budget true);
+#   with >= DEST_BUDGET_ENOUGH fitting items, items above DEST_BUDGET_FAR x budget and unpriced ones are
+#   dropped; with none fitting, the cheapest come first and every item has facts.within_budget false
+#   (present/destinations.md then says so plainly).
+DEST_POOL = 40            # quote_destinations takes at most 40 ids
+DEST_ALL = 10_000         # rank the whole catalog before filtering (find_destinations scores every place anyway)
+DEST_BUDGET_POOL_X = 3    # with a budget, quote limit x 3 candidates to find ones that fit
+DEST_TRAIN_POOL_X = 2     # with trains, quote limit x 2 candidates (some have no trains on the dates)
+DEST_BUDGET_FAR = 1.3
+DEST_BUDGET_ENOUGH = 3
+
+
+def _dest_prefs(brief):
+    prefs = brief.values().get("prefs") or {}
+    return prefs.get("transport") == "train", bool(prefs.get("domestic"))
+
+
+def _origin_place(ctx, brief):
+    city = (brief.values().get("origin") or {}).get("city")
+    return destination_record(ctx, name=city) if city else None
+
+
+def _passes_dest_prefs(rec, origin, train, domestic):
+    if domestic and (rec.get("country_code") or "") != ((origin or {}).get("country_code") or "RU"):
+        return False
+    if train:
+        if origin and origin.get("country_code") and origin.get("lat") is not None and origin.get("stations"):
+            return train_reachable(origin, rec)
+        return rec.get("country_code") == "RU" and bool(rec.get("stations"))   # the mock decides on pricing
+    return True
+
+
 def step_find_destinations(ctx):
     b = ctx.brief.values()
     limit = int(ctx.rules.get("max_destinations", 6))
     month = _month(ctx.brief)
+    train, domestic = _dest_prefs(ctx.brief)
+    budget = (b.get("budget_rub") or {}).get("max")
+    narrowed = train or domestic
     recs = od(ctx, "find_destinations", traits=b.get("traits") or [], month=month,
-              origin_city=(b.get("origin") or {}).get("city"), budget=(b.get("budget_rub") or {}).get("max"),
+              origin_city=(b.get("origin") or {}).get("city"), budget=budget,
               max_travel_hours=(b.get("prefs") or {}).get("max_travel_hours"),
-              segment=(b.get("party") or {}).get("segment"), limit=limit)
+              segment=(b.get("party") or {}).get("segment"), limit=DEST_ALL if (narrowed or budget) else limit)
     recs = [norm_destination(r) for r in (recs or [])]
     recs = [r for r in recs if r and r.get("id")]
     if ctx.image_place:
         recs = [ctx.image_place] + [r for r in recs if r["id"] != ctx.image_place["id"]]
+    if narrowed:
+        origin = _origin_place(ctx, ctx.brief)
+        recs = [r for r in recs if _passes_dest_prefs(r, origin, train, domestic)]
+        ctx.trace["notes"].append(f"destinations: train={train} domestic={domestic} -> {len(recs)} candidates")
     if not recs:
+        city = (b.get("origin") or {}).get("city") or ""
+        if train:
+            ctx.fail("no_data", f"Поездом из «{city}» под такой запрос в демо-каталоге направлений не нашлось: "
+                                "поезда здесь ходят только по России и примерно до 1000 км. Можно ослабить "
+                                "пожелания или рассмотреть самолёт.")
+        if domestic:
+            ctx.fail("no_data", "По России под такой запрос в демо-каталоге направлений не нашлось. Попробуйте "
+                                "ослабить условия — например, другой месяц.")
         ctx.fail("no_data", "Под такой запрос в демо-каталоге направлений не нашлось. Попробуйте ослабить "
                             "условия — например, другой месяц или бюджет.")
-    ctx.destination_recs = recs[:limit]
+    pool = limit * DEST_BUDGET_POOL_X if budget else limit * DEST_TRAIN_POOL_X if train else limit
+    ctx.destination_recs = recs[:min(pool, DEST_POOL)]
     if ctx.flags.insights and month:
         out = tool_safe(ctx, "insights_popular_destinations",
                         {"origin_city": (b.get("origin") or {}).get("city") or "", "month": month,
@@ -693,39 +758,116 @@ def quote_payload(ctx, brief, ids):
     return payload
 
 
+def _train_round_trip(ctx, brief, rec, check_in, check_out):
+    """Cheapest train there + back for the party on the quoted dates -> (price_rub, hours there) or (None, None)."""
+    b = brief.values()
+    party = _party_payload(brief)
+    origin = (b.get("origin") or {}).get("city") or ""
+    base = {"passengers": min(9, party["adults"] + len(party["children_ages"])), "today": ctx.session.today().isoformat()}
+    there = tool_safe(ctx, "search_trains", {**base, "origin_city": origin, "dest_city": rec["name"],
+                                             "date": str(check_in)[:10]}, cache=False)
+    back = tool_safe(ctx, "search_trains", {**base, "origin_city": rec["name"], "dest_city": origin,
+                                            "date": str(check_out)[:10]}, cache=False)
+    out_offers, back_offers = (there or {}).get("offers") or [], (back or {}).get("offers") or []
+    if not out_offers or not back_offers:
+        return None, None
+    price = min(o["price_rub"] for o in out_offers) + min(o["price_rub"] for o in back_offers)
+    return int(price), round(min(o["duration_min"] for o in out_offers) / 60, 1)
+
+
+def destination_prices(ctx, brief, recs):
+    """Per destination id: {"price", "facts", "nights", "travel_h", "reachable"} for the brief's transport
+    (flight + stay from quote_destinations; with prefs.transport == "train", train + stay)."""
+    b = brief.values()
+    dates = b.get("dates") or {}
+    train, _ = _dest_prefs(brief)
+    out = tool(ctx, "quote_destinations", quote_payload(ctx, brief, [r["id"] for r in recs]))
+    quotes = {q["destination_id"]: q for q in out.get("quotes") or []}
+    prices = {}
+    for rec in recs:
+        q = quotes.get(rec["id"]) or {}
+        entry = {"price": None, "facts": {}, "nights": int(q.get("nights") or dates.get("nights") or 7),
+                 "travel_h": None, "reachable": True}
+        if train:
+            stay = q.get("stay_price_rub")
+            fare, hours = (_train_round_trip(ctx, brief, rec, q["check_in"], q["check_out"])
+                           if q.get("check_in") and q.get("check_out") else (None, None))
+            entry["reachable"], entry["travel_h"] = fare is not None, hours
+            if fare is not None and stay is not None:
+                entry["price"] = fare + int(stay)
+            entry["facts"] = {"transport": "train"}
+            entry["facts"].update({k: v for k, v in (("train_price_rub", fare), ("stay_price_rub", stay),
+                                                     ("check_in", q.get("check_in")), ("check_out", q.get("check_out")))
+                                   if v is not None and fare is not None})
+        else:
+            ok = q.get("available")
+            entry["price"] = q.get("total_rub") if ok else None
+            entry["facts"] = {k: q.get(k) for k in ("flight_price_rub", "stay_price_rub", "check_in", "check_out")
+                              if ok and q.get(k) is not None}
+        if q.get("currency_notes"):
+            entry["facts"]["currency_notes"] = q["currency_notes"]
+        prices[rec["id"]] = entry
+    return prices
+
+
+def order_by_budget(items, budget, limit):
+    """Budget rule for destination items (see the comment above DEST_POOL); sets facts.within_budget."""
+    if not budget:
+        return items[:limit]
+    for i in items:
+        if i["price_from_rub"] is not None:
+            i["facts"]["within_budget"] = i["price_from_rub"] <= budget
+    fits = [i for i in items if i["price_from_rub"] is not None and i["price_from_rub"] <= budget]
+    over = sorted((i for i in items if i["price_from_rub"] is not None and i["price_from_rub"] > budget),
+                  key=lambda i: i["price_from_rub"])
+    unknown = [i for i in items if i["price_from_rub"] is None]
+    if len(fits) >= DEST_BUDGET_ENOUGH:
+        out = fits + [i for i in over if i["price_from_rub"] <= budget * DEST_BUDGET_FAR]
+    else:
+        out = fits + over + unknown
+    return out[:limit]
+
+
 def step_quote_destinations(ctx):
     brief = ctx.brief
     b = brief.values()
-    dates = b.get("dates") or {}
     origin = (b.get("origin") or {}).get("city") or ""
-    payload = quote_payload(ctx, brief, [r["id"] for r in ctx.destination_recs])
-    out = tool(ctx, "quote_destinations", payload)
-    quotes = {q["destination_id"]: q for q in out.get("quotes") or []}
-    month = payload.get("month") or _month(brief)
+    limit = int(ctx.rules.get("max_destinations", 6))
+    train, _ = _dest_prefs(brief)
+    prices = destination_prices(ctx, brief, ctx.destination_recs)
+    month = _month(brief) or (ctx.session.today() + timedelta(days=30)).month
     plabel = P.party_label(b.get("party"))
     traits = set(b.get("traits") or [])
     items = []
     for rec in ctx.destination_recs:
-        q = quotes.get(rec["id"]) or {}
-        ok = q.get("available")
-        nights = q.get("nights") or dates.get("nights") or 7
-        facts = {k: q.get(k) for k in ("flight_price_rub", "stay_price_rub", "check_in", "check_out")
-                 if ok and q.get(k) is not None}
-        if q.get("currency_notes"):
-            facts["currency_notes"] = q["currency_notes"]
+        e = prices[rec["id"]]
+        if train and not e["reachable"]:
+            continue   # no train there or back on these dates: not a train destination
+        facts = dict(e["facts"])
         if rec.get("kind"):
             facts["kind"] = rec["kind"]
         if rec.get("description"):
             facts["description"] = rec["description"]
         match = rec.get("match") or [t for t in rec.get("tags") or [] if t in traits]
+        if train:
+            travel = e["travel_h"]
+        elif rec.get("travel_time_h") is not None:
+            travel = _travel_hours(rec.get("travel_time_h"))
+        else:
+            travel = _travel_hours(od(ctx, "travel_time", origin, rec["id"]))
         items.append({
             "id": rec["id"], "label": "", "name": rec["name"], "country": rec.get("country") or "",
-            "price_from_rub": q.get("total_rub") if ok else None, "nights": int(nights), "party_label": plabel,
+            "price_from_rub": e["price"], "nights": e["nights"], "party_label": plabel,
             "weather": _weather(rec.get("weather")) if rec.get("weather") else (
                 _weather(od(ctx, "climate", rec["id"], month)) if month else None),
-            "travel_time_h": _travel_hours(rec.get("travel_time_h")) if rec.get("travel_time_h") is not None
-            else _travel_hours(od(ctx, "travel_time", origin, rec["id"])),
-            "match": list(match), "facts": facts, "image_url": rec.get("image_url")})
+            "travel_time_h": travel, "match": list(match), "facts": facts, "image_url": rec.get("image_url")})
+    if not items:
+        ctx.fail("no_data", f"Поездом из «{origin}» на эти даты билетов не нашлось ни в одно из подходящих "
+                            "направлений. Попробуйте другие даты.")
+    items = order_by_budget(items, (b.get("budget_rub") or {}).get("max"), limit)
+    if ctx.insight and ctx.insight.get("popular_ids") is not None:
+        shown = {i["id"] for i in items}
+        ctx.insight = {**ctx.insight, "popular_ids": [i for i in ctx.insight["popular_ids"] if i in shown]}
     labels = P.record_shown(ctx.session, "destination", [(i["id"], i["name"]) for i in items])
     for i in items:
         i["label"] = labels[i["id"]]
@@ -821,6 +963,19 @@ def _transfer_hotels(hotels):
     return picks[:TRANSFER_HOTELS]
 
 
+OVERNIGHT_FROM_HOUR = 18   # same rule as checks.check_dates: an evening departure the day before is fine
+
+
+def _overnight_before(value, check_in):
+    """Trains of the day before check-in that leave in the evening and arrive on the check-in day."""
+    out = []
+    for o in (value or {}).get("offers", []):
+        dep, arr = _dt(o.get("dep")), _dt(o.get("arr"))
+        if dep and arr and dep.hour >= OVERNIGHT_FROM_HOUR and arr.date() == check_in:
+            out.append(o)
+    return out
+
+
 def run_search(ctx, brief, dest, check_in, check_out, track=True):
     """Every search the scope needs, in parallel, cached by params. -> (results, districts, called_tools)."""
     v = brief.values()
@@ -849,6 +1004,12 @@ def run_search(ctx, brief, dest, check_in, check_out, track=True):
                                                 "dest_city": dest["name"], "date": check_in.isoformat()})
         jobs["trains.back"] = ("search_trains", {**base, "origin_city": dest["name"],
                                                  "dest_city": origin.get("city") or "", "date": check_out.isoformat()})
+        if "stay" in scope:
+            # an overnight train the evening before check-in arrives in the morning of the first day
+            # (a same-day night train loses the first night): ranking may pick either
+            jobs["trains.out.prev"] = ("search_trains", {**base, "origin_city": origin.get("city") or "",
+                                                         "dest_city": dest["name"],
+                                                         "date": (check_in - timedelta(days=1)).isoformat()})
     if "stay" in scope:
         jobs["hotels"] = ("search_hotels", {"destination_id": dest["id"], "check_in": check_in.isoformat(),
                                             "check_out": check_out.isoformat(), "adults": party["adults"],
@@ -859,7 +1020,8 @@ def run_search(ctx, brief, dest, check_in, check_out, track=True):
                "check_out": check_out.isoformat(), "party": party, "scope": list(scope),
                "flights_out": (out.get("flights.out") or {}).get("offers", []),
                "flights_back": (out.get("flights.back") or {}).get("offers", []),
-               "trains_out": (out.get("trains.out") or {}).get("offers", []),
+               "trains_out": _overnight_before(out.get("trains.out.prev"), check_in)
+                             + (out.get("trains.out") or {}).get("offers", []),
                "trains_back": (out.get("trains.back") or {}).get("offers", []),
                "hotels": (out.get("hotels") or {}).get("offers", []), "transfers_out": {}, "transfers_back": {}}
     if "transfers" in scope and results["hotels"]:
@@ -1147,13 +1309,13 @@ def rerun_for(ctx):
 
 
 def requote_for(ctx):
-    """`rerun` for destination items: the same destinations re-quoted for an alternative brief."""
+    """`rerun` for destination items: the shown destinations re-priced for an alternative brief."""
     def rerun(brief2):
         brief2 = normalize_brief(ctx, brief2)
-        out = tool(ctx, "quote_destinations", quote_payload(ctx, brief2, [r["id"] for r in ctx.destination_recs]))
-        quotes = {q["destination_id"]: q for q in out.get("quotes") or []}
-        return [{"id": r["id"], "price_from_rub": (quotes.get(r["id"]) or {}).get("total_rub")
-                 if (quotes.get(r["id"]) or {}).get("available") else None} for r in ctx.destination_recs]
+        shown = {i["id"] for i in ctx.destination_items}
+        recs = [r for r in ctx.destination_recs if not shown or r["id"] in shown]
+        prices = destination_prices(ctx, brief2, recs)
+        return [{"id": r["id"], "price_from_rub": prices[r["id"]]["price"]} for r in recs]
     return rerun
 
 
@@ -1352,10 +1514,92 @@ def _info_variant(ctx):
     return None
 
 
+def _info_variants(ctx):
+    """The variants an info question is about: the referenced ones, else the chosen one, else the shown ones."""
+    s = ctx.session
+    ids = list(ctx.variant_ids) or ([s.chosen_variant_id] if s.chosen_variant_id else []) or \
+        [i.id for i in s.shown.variants] or [v.id for v in s.variants]
+    return [v for v in (s.variant(i) for i in dict.fromkeys(ids)) if v is not None][:3]
+
+
+def _hhmm(iso):
+    dt = _dt(iso) if iso else None
+    return f"{dt:%H:%M}" if dt else None
+
+
+def _fare_fact(offer):
+    """Fare, baggage and stops of a flight offer, with the plain flags the info card reads."""
+    fare, bag = offer.get("fare") or {}, offer.get("baggage") or {}
+    stops = offer.get("stops")
+    segs = offer.get("segments") or []
+    return {"direct": None if stops is None else stops == 0, "stops": stops,
+            "via": [seg.get("dest_iata") for seg in segs[:-1]] or None,
+            "baggage_checked_kg": bag.get("checked_kg"), "baggage_cabin_kg": bag.get("cabin_kg"),
+            "refundable": fare.get("refundable"), "fare": fare.get("name"),
+            "exchange_allowed": (fare.get("change_fee_rub") is not None) if fare else None,
+            "exchange_fee_rub": fare.get("change_fee_rub")}
+
+
+def _leg_fact(step, offer):
+    """One transport step as the info card sees it: local times, carrier, number, direct, baggage, fare."""
+    o = offer or {}
+    dep, arr = o.get("dep") or step.start, o.get("arr") or step.end
+    out = {"type": step.type, "from": step.from_, "to": step.to, "carrier": o.get("carrier") or step.carrier,
+           "dep_date": dep[:10], "dep_time": _hhmm(dep), "arr_date": arr[:10], "arr_time": _hhmm(arr),
+           "price_rub": int(step.price.amount)}
+    if step.type == "flight":
+        out.update(flight_no=o.get("flight_no"), duration_min=o.get("duration_min"),
+                   **(_fare_fact(o) if o else {}))
+    elif step.type == "train":
+        out.update(train_no=o.get("train_no"), car_class=o.get("car_class"), duration_min=o.get("duration_min"))
+    elif step.type == "transfer":
+        out.update(kind=o.get("kind"), duration_min=o.get("duration_min"), meeting_point=o.get("meeting_point"))
+    return {k: v for k, v in out.items() if v is not None}
+
+
+def _stay_fact(variant, offer):
+    h, o = variant.hotel, offer or {}
+    c = o.get("cancellation") or {}
+    out = {"name": h.name, "stars": h.stars, "rating": h.rating, "meals": o.get("meals"),
+           "room": (o.get("room") or {}).get("name"), "check_in": o.get("check_in"), "check_out": o.get("check_out"),
+           "cancellation": {"free_until": c.get("free_until"), "penalty_pct": c.get("penalty_pct"),
+                            "free": bool(c.get("free_until"))} if c else None,
+           "pets_allowed": o.get("pets_allowed"), "early_checkin": o.get("early_checkin"),
+           "distance_beach_m": o.get("distance_beach_m"), "distance_center_m": o.get("distance_center_m")}
+    return {k: v for k, v in out.items() if v is not None}
+
+
+def variant_fact(ctx, variant):
+    """Facts about a shown/chosen variant for present.info: transport legs and the stay terms."""
+    legs = [_leg_fact(st, find_offer(ctx, st.offer_id)) for st in variant.steps if st.type in ("flight", "train",
+                                                                                                "transfer")]
+    stay = _stay_fact(variant, find_offer(ctx, variant.hotel.offer_id)) if variant.hotel else None
+    return {"kind": "variant", "id": variant.id, "title": variant.title or P.VARIANT_TITLES.get(variant.id, variant.id),
+            "total_rub": variant.totals.rub, "legs": legs, "stay": stay}
+
+
+def order_terms_fact(order):
+    """Fare / cancellation terms of the booked items (the order summary has titles and dates only)."""
+    terms = []
+    for i in order.get("items") or []:
+        offer = (i.get("details") or {}).get("offer") or {}
+        if i.get("kind") == "flight" and offer:
+            terms.append({"item_id": i["item_id"], "title": i.get("title"), **_fare_fact(offer)})
+        elif i.get("kind") == "hotel" and offer.get("cancellation"):
+            c = offer["cancellation"]
+            terms.append({"item_id": i["item_id"], "title": i.get("title"),
+                          "cancellation": {"free_until": c.get("free_until"), "penalty_pct": c.get("penalty_pct")}})
+    return terms
+
+
+# provenance and bulk the info card must not talk about or pay tokens for (voice: never name sources)
+INFO_DROP = {"source", "fetched_at", "synthetic", "synthetic_fields", "photos", "lat", "lon", "osm_id"}
+
+
 def step_info_lookup(ctx):
-    """Facts only from get_hotel / climate / district data (and the order); empty when nothing is known."""
+    """Facts only from the shown variants, get_hotel / climate / district data and the order; empty when nothing."""
     ctx.info_question = ((ctx.understand or {}).get("info_question") or ctx.text or "").strip()
-    facts = []
+    facts = [variant_fact(ctx, v) for v in _info_variants(ctx)]
     v = _info_variant(ctx)
     hotel_ids = list(ctx.hotel_refs)
     if v is not None and v.hotel is not None and v.hotel.hotel_id not in hotel_ids:
@@ -1363,7 +1607,7 @@ def step_info_lookup(ctx):
     for hid in hotel_ids[:2]:
         details = tool_safe(ctx, "get_hotel", {"hotel_id": hid})
         if details:
-            facts.append({"kind": "hotel", "id": hid, "data": details})
+            facts.append({"kind": "hotel", "id": hid, "data": {k: v for k, v in details.items() if k not in INFO_DROP}})
             prof = od(ctx, "district_profile", details.get("osm_id")) if details.get("osm_id") else None
             if prof is not None:
                 facts.append({"kind": "district", "id": details["osm_id"], "data": as_dict(prof)})
@@ -1372,11 +1616,16 @@ def step_info_lookup(ctx):
     if dest.get("id") and month:
         clim = od(ctx, "climate", dest["id"], month)
         if clim is not None:
-            facts.append({"kind": "climate", "id": dest["id"], "month": month, "data": as_dict(clim)})
+            facts.append({"kind": "climate", "id": dest["id"], "month": month,
+                          "data": {k: v for k, v in as_dict(clim).items() if k not in INFO_DROP}})
     if ctx.session.order_id:
         order = tool_safe(ctx, "order_get", {"order_id": ctx.session.order_id}, cache=False)
         if order:
-            facts.append({"kind": "order", "id": order["order_id"], "data": order_summary(order)})
+            fact = {"kind": "order", "id": order["order_id"], "data": order_summary(order)}
+            terms = order_terms_fact(order)
+            if terms:
+                fact["terms"] = terms
+            facts.append(fact)
     ctx.info_facts = facts
 
 
@@ -1623,19 +1872,29 @@ def step_post_purchase(ctx):
                                                            "now": now_iso(ctx)}, cache=False)
         result = {**result, "requested_time": time_s}
     elif kind == "change_dates":
-        new = params.get("new_dates")
-        hotel = next((i for i in order.get("items") or [] if i["kind"] == "hotel"), None)
-        if not new and params.get("shift_days") and hotel and hotel.get("start") and hotel.get("end"):
-            k = int(params["shift_days"])
-            new = {"check_in": (_date(hotel["start"]) + timedelta(days=k)).isoformat(),
-                   "check_out": (_date(hotel["end"]) + timedelta(days=k)).isoformat()}
-        if not new:
+        new = _change_dates_target(ctx, params, order)
+        problem = _new_dates_problem(ctx, new)
+        if problem:
             ctx.present = None
-            ctx.message = "На какие даты перенести? Напишите новые даты заезда и выезда."
+            ctx.order = order
+            ctx.message = problem
             return
-        result = tool(ctx, "order_change_dates", {"order_id": s.order_id, "new_dates": new,
-                                                  "confirm": bool(params.get("confirm")), "now": now_iso(ctx)},
-                      cache=False)
+        ctx.order = order
+        if not _dates_changeable(ctx):
+            _rebook_on_dates(ctx, new)        # a fare without exchange: the same trip anew on the new dates
+            return
+        confirm = bool(params.get("confirm"))
+        result = tool(ctx, "order_change_dates", {"order_id": s.order_id, "new_dates": new, "confirm": confirm,
+                                                  "now": now_iso(ctx)}, cache=False)
+        if not result.get("available") and any(i.get("code") == "flight_change_not_allowed"
+                                                for i in result.get("issues") or []):
+            _rebook_on_dates(ctx, new)
+            return
+        result = {**result, "new_dates": new}
+        store_result(s, CachedResult(key=CHANGE_QUOTE_KEY, kind="order_change_dates", params={},
+                                     fetched_at=s.clock(),
+                                     data={"new_dates": new} if result.get("available") and not result.get("applied")
+                                     else {}))
     elif kind == "add_transfer":
         offer_id = params.get("offer_id")
         if not offer_id:
@@ -1653,6 +1912,97 @@ def step_post_purchase(ctx):
     ctx.order = tool(ctx, "order_get", {"order_id": s.order_id}, cache=False)
     ctx.aftercare_result = {"kind": kind, **result}
     s.stage = "aftercare"
+
+
+CHANGE_QUOTE_KEY = "aftercare:change_dates"
+
+
+def _stay_pair(start, end):
+    s, e = _iso_date_or_none(start), _iso_date_or_none(end)
+    return (s, e) if s else None
+
+
+def _iso_date_or_none(value):
+    try:
+        return _date(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _change_dates_target(ctx, params, order):
+    """New stay dates {check_in, check_out} for change_dates, or None when the user gave none.
+
+    Read in order: params.new_dates {check_in, check_out} (or {start, end}); params check_in/check_out or
+    start/end; the understand patch dates.start/dates.end; params.shift_days against the booked stay; a
+    bare confirmation reuses the dates quoted last. A start alone keeps the booked number of nights.
+    """
+    hotel = next((i for i in order.get("items") or [] if i["kind"] == "hotel"), None)
+    booked = (_date(hotel["start"]), _date(hotel["end"])) if hotel and hotel.get("start") and hotel.get("end") else None
+    nd = params.get("new_dates") if isinstance(params.get("new_dates"), dict) else {}
+    sets = (ctx.patch or {}).get("set") or {}
+    pair = None
+    for src in (nd, params):
+        pair = pair or _stay_pair(src.get("check_in") or src.get("start"), src.get("check_out") or src.get("end"))
+    pair = pair or _stay_pair(sets.get("dates.start"), sets.get("dates.end"))
+    if pair is None and params.get("shift_days") and booked:
+        k = int(params["shift_days"])
+        pair = (booked[0] + timedelta(days=k), booked[1] + timedelta(days=k))
+    if pair is None and params.get("confirm"):
+        rec = ctx.session.results.get(CHANGE_QUOTE_KEY)
+        quoted = (rec.data or {}).get("new_dates") if rec is not None else None
+        if quoted:
+            pair = (_date(quoted["check_in"]), _date(quoted["check_out"]))
+    if pair is None:
+        return None
+    start, end = pair
+    if end is None:
+        nights = (booked[1] - booked[0]).days if booked else int(sets.get("dates.nights") or 0) or None
+        if not nights:
+            return {"check_in": start.isoformat(), "check_out": None}
+        end = start + timedelta(days=nights)
+    return {"check_in": start.isoformat(), "check_out": end.isoformat()}
+
+
+def _new_dates_problem(ctx, new):
+    """A Russian question when the new dates are missing or impossible (asked instead of calling the mock)."""
+    if not new:
+        return "На какие даты перенести? Напишите даты заезда и выезда — например, «21–24 ноября»."
+    if not new.get("check_out"):
+        return "До какого числа остаётесь? Напишите дату выезда."
+    ci, co = _date(new["check_in"]), _date(new["check_out"])
+    if ci < ctx.session.today():
+        return "Эта дата заезда уже прошла — напишите будущие даты."
+    if co <= ci:
+        return "Дата выезда должна быть позже заезда — напишите даты ещё раз."
+    return None
+
+
+def _rebook_on_dates(ctx, new):
+    """The booked trip cannot move (a fare without exchange): build the same trip anew on the new dates.
+
+    The paid order stays as it is; a new selection after an order is allowed (choosing a variant opens a
+    new cart). Runs the variants route of the skill (data-driven) and answers with present.variants.
+    """
+    s = ctx.session
+    route = ctx.skill.match_route(intent="new_trip", stage="selection", brief=s.brief)
+    if route is None or not s.brief.has("destination") or route.present != "present.variants":
+        ctx.present = None
+        ctx.message = ("Перенести этот заказ нельзя: билеты по тарифу без обмена. Напишите, куда и на какие даты "
+                       "собрать новую поездку, — подберу.")
+        return
+    ctx.order = None
+    ctx.patch = {"set": {"dates.start": new["check_in"], "dates.end": new["check_out"]}, "unset": []}
+    ctx.patch_applied = False
+    ctx.trace["notes"].append(f"post_purchase: order cannot move -> new selection {new['check_in']}..{new['check_out']}"
+                              f" via {route.id}")
+    for name in route.steps:
+        if ctx.stop:
+            break
+        STEP_REGISTRY[name](ctx)
+        ctx.trace["steps"].append(name)
+    ctx.present = route.present
+    ctx.note(f"Оплаченный заказ на другие даты не перенести: билеты по тарифу без обмена. Собрал ту же поездку "
+             f"на {P.fmt_date_range(new['check_in'], new['check_out'])} заново — текущий заказ остаётся в силе.")
 
 
 def _transfer_offer_for_order(ctx, order):

@@ -20,7 +20,7 @@ Modules and where each formula is documented (module docstrings):
 - `pricing.py` — season curves (beach / tropical / ski / city + RU holidays), lead-time tables.
 - `flights.py` — routing (direct, or 1 stop via hub; domestic trips connect only at home),
   schedules, fare formula, tiers basic / standard / flex.
-- `trains.py` — RU only, ≤ 1000 km, fast/regular trains, class tariffs.
+- `trains.py` — RU only, ≤ 1000 km, fast/regular trains, class tariffs; high-speed corridors (`HIGH_SPEED`: Москва — Санкт-Петербург «Сапсан») always have day trains.
 - `hotels.py` — room fit, nightly price, meals, availability noise, score.
 - `transfers.py` — kinds, speeds, per-country tariffs, meeting points.
 - `quotes.py` — date choice for `month`, flight + mid-range stay estimate.

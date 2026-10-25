@@ -1,0 +1,61 @@
+{
+  "id": "b5_season_autumn",
+  "category": "B",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "хочу в Казань осенью, на 3 ночи, вдвоём",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/destination.name",
+      "value": "Казань",
+      "casefold": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.month",
+      "value": 11
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.nights",
+      "value": 3
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/dates.start"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.segment",
+      "value": "couple"
+    }
+  ],
+  "runs": 5,
+  "notes": "«осенью» with today 2026-10-25 -> the first autumn month after October = 11 (the code applies the same rule)."
+}

@@ -1,0 +1,78 @@
+{
+  "id": "a8_domestic_december",
+  "category": "A",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "куда-нибудь по России в декабре на 4 ночи, вдвоём",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/prefs.domestic",
+      "value": true
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.month",
+      "value": 12
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.nights",
+      "value": 4
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.segment",
+      "value": "couple"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "prefs.domestic",
+          "dates.month",
+          "dates.nights",
+          "party.segment",
+          "party.adults"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«по России» -> prefs.domestic true; «Россия» is not a destination."
+}

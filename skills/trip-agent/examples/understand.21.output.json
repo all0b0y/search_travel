@@ -1,0 +1,17 @@
+{
+  "intent": "new_trip",
+  "patch": {
+    "set": {
+      "destination.name": "Казань",
+      "dates.start": "2027-01-12",
+      "dates.end": "2027-01-15",
+      "prefs.arrive_before": "12:00",
+      "prefs.no_night_flights": true
+    },
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": null
+}

@@ -69,7 +69,8 @@ RANKING_DEFAULTS = {
     "fit_weights": {"budget": 0.25, "time": 0.15, "district": 0.15, "meals": 0.1, "cancellation": 0.07,
                     "stars": 0.08, "beach": 0.1, "constraints": 0.05, "rating": 0.05},
     "comfort_weights": {"stars": 0.2, "rating": 0.25, "meals": 0.15, "cancellation": 0.1, "direct": 0.1,
-                        "fare": 0.05, "transfer": 0.05, "district": 0.1},
+                        "fare": 0.05, "transfer": 0.05, "district": 0.1, "car_class": 0.1},
+    "comfort_legs": 2,                # extra transport offers kept per direction for comfort (fare, class)
 }
 SENSITIVITY_DEFAULTS = {"price_delta_pct": 10, "top_changes": True, "max_reruns": 12}
 
@@ -78,6 +79,7 @@ MEALS_RU = {"none": "без питания", "breakfast": "завтраки", "h
             "full_board": "полный пансион", "all_inclusive": "всё включено", "any": "любое"}
 TITLES = {"cheapest": "Дешевле", "fastest": "Быстрее", "comfort": "Комфортнее", "custom-1": "Удачнее по району"}
 SEA_TRAITS = {"sea", "beach", "island"}
+CAR_CLASS_COMFORT = {"sv": 1.0, "coupe": 0.6, "seat": 0.4, "platzkart": 0.2}
 COMFORT_TRANSFER = {"private": 1.0, "taxi": 0.8, "shuttle": 0.4, "public": 0.1}
 TRANSFER_RU = {"private": "индивидуальный трансфер", "taxi": "такси", "shuttle": "шаттл", "public": "общественный транспорт"}
 
@@ -133,6 +135,8 @@ class Leg:
     changeable: Optional[bool]
     min_layover: Optional[int]
     number: Optional[str]
+    car_class: Optional[str] = None
+    fare_name: Optional[str] = None
 
     @classmethod
     def flight(cls, o):
@@ -144,20 +148,20 @@ class Leg:
                    int(o["duration_min"]), int(o.get("stops", 0)), int(o["price_rub"]), o.get("carrier"),
                    bool(o.get("international")), bool(bag), fare.get("refundable"),
                    None if not fare else fare.get("change_fee_rub") is not None,
-                   min(lays) if lays else None, o.get("flight_no"))
+                   min(lays) if lays else None, o.get("flight_no"), None, fare.get("name"))
 
     @classmethod
     def train(cls, o):
         return cls("train", o, o["offer_id"], ts(o["dep"]), ts(o["arr"]), o["from_station"], o["to_station"],
                    int(o["duration_min"]), 0, int(o["price_rub"]), o.get("carrier"), False, True, None, None,
-                   None, o.get("train_no"))
+                   None, o.get("train_no"), o.get("car_class"))
 
 
 @dataclass
 class Combo:
     out: Optional[Leg]
     back: Optional[Leg]
-    hotel: dict
+    hotel: Optional[dict]          # None: transport-only scope (tickets without a stay)
     tr_out: Optional[dict]
     tr_back: Optional[dict]
     # computed
@@ -198,6 +202,32 @@ def _leg_ok(leg, brief, rr, today):
             if (prefs.transport == "plane") != (leg.kind == "flight"):
                 return False
     return True
+
+
+def _night_flight(leg, rr) -> bool:
+    return leg.kind == "flight" and (_night(leg.dep, rr) or _night(leg.arr, rr))
+
+
+def _soft_leg_filters(brief, direction, rr):
+    """User prefs on tickets, as (relaxed path, keep(leg)) in relaxation order. Each is a hard filter
+    unless it would leave no offer in this direction: then it is dropped and the path is reported
+    (risk `relaxed_pref`, or `non_refundable_only` for tickets under free cancellation)."""
+    prefs = brief.prefs.value
+    if prefs is None:
+        return []
+    out = []
+    if direction == "out" and prefs.arrive_before and _user(brief, "prefs.arrive_before"):
+        limit = prefs.arrive_before
+        out.append(("prefs.arrive_before", lambda l: l.arr.strftime("%H:%M") <= limit))
+    if prefs.no_night_flights and _user(brief, "prefs.no_night_flights"):
+        out.append(("prefs.no_night_flights", lambda l: not _night_flight(l, rr)))
+    if prefs.free_cancellation and _user(brief, "prefs.free_cancellation"):
+        # trains carry no fare flag in the mock (refundable by law); flights need a refundable fare
+        out.append((TICKETS_REFUNDABLE, lambda l: l.kind != "flight" or l.refundable is True))
+    return out
+
+
+TICKETS_REFUNDABLE = "tickets.refundable"   # relaxed marker: no refundable fare under free cancellation
 
 
 def _party_ok(h, brief):
@@ -259,7 +289,8 @@ def _pref_fails(h, brief) -> list[str]:
 
 RELAXED_RU = {"prefs.stars_min": "с нужной звёздностью", "prefs.meals": "с нужным питанием",
               "prefs.free_cancellation": "с бесплатной отменой", "prefs.beach_max_m": "так близко к пляжу",
-              "prefs.max_travel_hours": "с дорогой в нужное время"}
+              "prefs.max_travel_hours": "с дорогой в нужное время", "prefs.arrive_before": "с прибытием к нужному времени",
+              "prefs.no_night_flights": "без ночных рейсов"}
 
 
 # ---------------------------------------------------------------- district
@@ -385,29 +416,59 @@ def _evaluate(c: Combo, rules, rr, factor) -> bool:
     return True
 
 
+def _evaluate_transport(c: Combo, rules, rr) -> bool:
+    """Tickets only (no stay): the return must leave after the outbound arrives, with the
+    after-arrival and before-departure buffers between them. No transfers."""
+    buffers = _buffers(rules)
+    if c.out is None or c.back is None:
+        return False
+    if c.back.dep < c.out.arr + timedelta(minutes=_after(c.out, buffers, rr) + _before(c.back, buffers)):
+        return False
+    c.arrival, c.leave = c.out.arr, c.back.dep
+    c.out_hours = round((c.out.arr - c.out.dep).total_seconds() / 3600, 2)
+    c.back_hours = round((c.back.arr - c.back.dep).total_seconds() / 3600, 2)
+    c.hours = round(c.out_hours + c.back_hours, 1)
+    c.rub = int(c.out.price_rub + c.back.price_rub)
+    c.key = (c.out.offer_id, c.back.offer_id)
+    return True
+
+
 def _comfort(c: Combo, brief, districts, segments, rr) -> float:
     w = rr["comfort_weights"]
     h = c.hotel
     legs = [x for x in (c.out, c.back) if x is not None]
-    parts = {
-        "stars": (h.get("stars") or 0) / 5,
-        "rating": (h.get("rating") or 0) / 10,
-        "meals": MEALS_RANK.get(h.get("meals"), 0) / 4,
-        "cancellation": 1.0 if _free_cancel(h) else 0.0,
-    }
+    parts = {}
+    if h is not None:
+        parts.update({
+            "stars": (h.get("stars") or 0) / 5,
+            "rating": (h.get("rating") or 0) / 10,
+            "meals": MEALS_RANK.get(h.get("meals"), 0) / 4,
+            "cancellation": 1.0 if _free_cancel(h) else 0.0,
+        })
     if legs:
         parts["direct"] = 1.0 if all(l.stops == 0 for l in legs) else 0.0
         parts["fare"] = sum((1.0 if l.baggage else 0) * 0.5 + (0.5 if l.refundable else 0) for l in legs) / len(legs)
-        trs = [t for t in (c.tr_out, c.tr_back)]
-        parts["transfer"] = sum(COMFORT_TRANSFER.get(t.get("kind"), 0) if t else 0 for t in trs) / len(trs)
-    d = district_fit(brief, district_of(h, districts), segments)
+        if h is not None:
+            trs = [t for t in (c.tr_out, c.tr_back)]
+            parts["transfer"] = sum(COMFORT_TRANSFER.get(t.get("kind"), 0) if t else 0 for t in trs) / len(trs)
+        trains = [l for l in legs if l.kind == "train"]
+        if trains:
+            parts["car_class"] = sum(CAR_CLASS_COMFORT.get(l.car_class, 0.3) for l in trains) / len(trains)
+    d = district_fit(brief, district_of(h, districts), segments) if h is not None else None
     if d is not None:
         parts["district"] = d
     total = sum(w.get(k, 0) for k in parts) or 1.0
     return round(sum(w.get(k, 0) * v for k, v in parts.items()) / total, 4)
 
 
-def _prune_legs(legs, n):
+def _leg_comfort(leg) -> float:
+    if leg.kind == "train":
+        return CAR_CLASS_COMFORT.get(leg.car_class, 0.3)
+    return (0.4 if leg.stops == 0 else 0) + (0.3 if leg.baggage else 0) + (0.3 if leg.refundable else 0)
+
+
+def _prune_legs(legs, n, extra=0):
+    """Cheapest half + fastest up to n, plus `extra` most comfortable (fare, car class) for the comfort variant."""
     if len(legs) <= n:
         return legs
     keep = {}
@@ -415,6 +476,10 @@ def _prune_legs(legs, n):
         keep[leg.offer_id] = leg
     for leg in sorted(legs, key=lambda l: (l.duration_min, l.price_rub)):
         if len(keep) >= n:
+            break
+        keep.setdefault(leg.offer_id, leg)
+    for leg in sorted(legs, key=lambda l: (-_leg_comfort(l), l.duration_min, l.price_rub)):
+        if len(keep) >= n + extra:
             break
         keep.setdefault(leg.offer_id, leg)
     return list(keep.values())
@@ -441,7 +506,9 @@ def _scope(brief):
     return set(scope) if scope else {"flights", "trains", "stay", "transfers"}
 
 
-def _legs(results, direction, brief, rr, today):
+def _legs(results, direction, brief, rr, today, soft=True):
+    """Transport offers for one direction -> (legs, relaxed paths). Hard filters first (_leg_ok), then
+    the user's ticket prefs (_soft_leg_filters), each dropped only when it would leave nothing."""
     scope = _scope(brief)
     legs = []
     if "flights" in scope or "trains" not in scope:
@@ -449,7 +516,14 @@ def _legs(results, direction, brief, rr, today):
     if "trains" in scope or "flights" not in scope:
         legs += [Leg.train(_dump(o)) for o in _offers(results.get(f"trains_{direction}"))]
     legs = [l for l in legs if _leg_ok(l, brief, rr, today)]
-    return _prune_legs(legs, rr["max_legs"])
+    relaxed = []
+    for path, keep in _soft_leg_filters(brief, direction, rr):
+        kept = [l for l in legs if keep(l)]
+        if kept and soft:
+            legs = kept
+        elif legs and not (kept and kept == legs):
+            relaxed.append(path)
+    return _prune_legs(legs, rr["max_legs"], int(rr.get("comfort_legs", 0))), tuple(relaxed)
 
 
 def _max_hours_ok(c, brief):
@@ -484,7 +558,7 @@ def _steps_for(c: Combo, brief, rules, today, dest_name):
     rr = ranking_rules(rules)
     origin = brief.origin.value.city if brief.origin.value else None
     h = c.hotel
-    hotel_name = h["name"]
+    hotel_name = h["name"] if h is not None else None
     steps = []
     n = 0
 
@@ -504,9 +578,10 @@ def _steps_for(c: Combo, brief, rules, today, dest_name):
             steps.append(_step(nid(), "transfer", c.out.dest, hotel_name, t0, t1, c.tr_out["price_rub"], today,
                                duration_estimate_min=int(c.tr_out["duration_min"]), offer_id=c.tr_out["offer_id"],
                                title=f"{TRANSFER_RU.get(c.tr_out.get('kind'), 'Трансфер').capitalize()} до отеля"))
-    nights = (ts(h["check_out"]).date() - ts(h["check_in"]).date()).days
-    steps.append(_step(nid(), "stay", hotel_name, hotel_name, c.stay_start, c.stay_end, h["price_total_rub"], today,
-                       offer_id=h["offer_id"], title=f"{nights_text(nights)}, {MEALS_RU.get(h.get('meals'), '')}"))
+    if h is not None:
+        nights = (ts(h["check_out"]).date() - ts(h["check_in"]).date()).days
+        steps.append(_step(nid(), "stay", hotel_name, hotel_name, c.stay_start, c.stay_end, h["price_total_rub"], today,
+                           offer_id=h["offer_id"], title=f"{nights_text(nights)}, {MEALS_RU.get(h.get('meals'), '')}"))
     if c.back is not None:
         if c.tr_back:
             t1 = c.back.dep - timedelta(minutes=_before(c.back, buffers))
@@ -518,6 +593,8 @@ def _steps_for(c: Combo, brief, rules, today, dest_name):
                            carrier=c.back.carrier, international=c.back.international if c.back.kind == "flight" else None,
                            checked_baggage=c.back.baggage if c.back.kind == "flight" else None,
                            offer_id=c.back.offer_id, title=_leg_title(c.back, dest_name, origin)))
+    if h is None:   # tickets only: the days at the destination are not a connection
+        return steps
     risks = connection_risks([s.to_check_dict() for s in steps], rules)
     for s in steps:
         if s.id in risks:
@@ -527,6 +604,8 @@ def _steps_for(c: Combo, brief, rules, today, dest_name):
 
 def _facts(c: Combo, brief, districts, segments, rr):
     h = c.hotel
+    if h is None:
+        return _transport_facts(c)
     room = h.get("room") or {}
     kids = h.get("kids_policy") or {}
     canc = h.get("cancellation") or {}
@@ -563,27 +642,7 @@ def _facts(c: Combo, brief, districts, segments, rr):
         "early_checkin_available": early.get("available"),
         "early_checkin_price_rub": early.get("price_rub"),
     }
-    for direction, leg in (("out", c.out), ("back", c.back)):
-        if leg is None:
-            continue
-        f.update({
-            f"{direction}_kind": leg.kind,
-            f"{direction}_price_rub": leg.price_rub,
-            f"{direction}_from": leg.origin,
-            f"{direction}_to": leg.dest,
-            f"{direction}_date": leg.dep.date().isoformat(),
-            f"{direction}_dep_time": leg.dep.strftime("%H:%M"),
-            f"{direction}_arr_time": leg.arr.strftime("%H:%M"),
-            f"{direction}_duration_min": leg.duration_min,
-            f"{direction}_duration_hours": round(leg.duration_min / 60, 1),
-            f"{direction}_stops": leg.stops,
-            f"{direction}_carrier": leg.carrier,
-            f"{direction}_number": leg.number,
-            f"{direction}_baggage": leg.baggage,
-            f"{direction}_refundable": leg.refundable,
-            f"{direction}_layover_min": leg.min_layover,
-            f"{direction}_door_hours": round(getattr(c, f"{direction}_hours"), 1),
-        })
+    _leg_facts(f, c)
     for direction, tr in (("out", c.tr_out), ("back", c.tr_back)):
         if tr is not None:
             f[f"transfer_{direction}_min"] = int(tr["duration_min"])
@@ -611,6 +670,46 @@ def _facts(c: Combo, brief, districts, segments, rr):
         d = district_fit(brief, profile, segments)
         if d is not None:
             f["district_fit"] = d
+    f["comfort_score"] = c.comfort
+    if c.relaxed:
+        f["relaxed"] = ",".join(c.relaxed)
+    return {k: v for k, v in f.items() if v is not None}
+
+
+def _leg_facts(f, c: Combo):
+    for direction, leg in (("out", c.out), ("back", c.back)):
+        if leg is None:
+            continue
+        f.update({
+            f"{direction}_kind": leg.kind,
+            f"{direction}_price_rub": leg.price_rub,
+            f"{direction}_from": leg.origin,
+            f"{direction}_to": leg.dest,
+            f"{direction}_date": leg.dep.date().isoformat(),
+            f"{direction}_dep_time": leg.dep.strftime("%H:%M"),
+            f"{direction}_arr_time": leg.arr.strftime("%H:%M"),
+            f"{direction}_arr_date": leg.arr.date().isoformat(),
+            f"{direction}_duration_min": leg.duration_min,
+            f"{direction}_duration_hours": round(leg.duration_min / 60, 1),
+            f"{direction}_stops": leg.stops,
+            f"{direction}_carrier": leg.carrier,
+            f"{direction}_number": leg.number,
+            f"{direction}_baggage": leg.baggage,
+            f"{direction}_refundable": leg.refundable,
+            f"{direction}_fare": leg.fare_name,
+            f"{direction}_car_class": leg.car_class,
+            f"{direction}_layover_min": leg.min_layover,
+            f"{direction}_door_hours": round(getattr(c, f"{direction}_hours"), 1),
+        })
+
+
+def _transport_facts(c: Combo):
+    """Facts of a tickets-only variant (no stay, no transfers)."""
+    f: dict[str, Any] = {"total_rub": c.rub, "door_to_door_hours": c.hours, "transport_only": True}
+    _leg_facts(f, c)
+    f["price_transport_rub"] = c.rub
+    if c.out is not None and c.back is not None:
+        f["days_at_destination"] = (c.back.dep.date() - c.out.arr.date()).days
     f["comfort_score"] = c.comfort
     if c.relaxed:
         f["relaxed"] = ",".join(c.relaxed)
@@ -654,7 +753,7 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
         if risk["risky"]:
             out.append(_note("tight_connection", f"Короткая стыковка: запас {risk['slack_min']} мин",
                              slack_min=risk["slack_min"], step=sid))
-    if not facts.get("free_cancellation"):
+    if c.hotel is not None and not facts.get("free_cancellation"):
         pct, rub = facts.get("cancellation_penalty_pct"), facts.get("cancellation_penalty_rub")
         text = "Отель без бесплатной отмены" + (f": штраф {pct}% — {fmt_rub(rub)}" if pct and rub else
                                                (f": штраф {pct}%" if pct else ""))
@@ -663,14 +762,14 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
         if tr is not None and tr["duration_min"] > rr["long_transfer_min"]:
             out.append(_note("long_transfer", f"Дорога {'до отеля' if direction == 'out' else 'в аэропорт'} {tr['duration_min']} мин",
                              minutes=int(tr["duration_min"]), direction=direction))
-    if c.out is not None and c.tr_out is None:
+    if c.hotel is not None and c.out is not None and c.tr_out is None:
         out.append(_note("no_transfer", "Трансфер не нашли — до отеля добираться самим"))
     wait = facts.get("wait_before_checkin_min")
     if wait and wait > rr["wait_before_checkin_min"]:
         out.append(_note("wait_before_checkin",
                          f"Приезд в {facts['arrival_at_hotel_time']}, а заселение с {facts['check_in_time']} — ждать {fmt_hours(wait / 60)} ч",
                          minutes=wait, arrival=facts["arrival_at_hotel_time"], check_in=facts["check_in_time"]))
-    if c.out is not None and c.arrival is not None and in_clock_window(c.arrival.strftime("%H:%M"), late_window):
+    if c.hotel is not None and c.out is not None and c.arrival is not None and in_clock_window(c.arrival.strftime("%H:%M"), late_window):
         out.append(_note("late_checkin", f"Заселение поздно, в {c.arrival:%H:%M} — отель стоит предупредить",
                          time=c.arrival.strftime("%H:%M")))
     wait = facts.get("wait_after_checkout_min")
@@ -679,12 +778,25 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
                          minutes=wait))
     if "accessible" in (brief.constraints.value or []):
         out.append(_note("accessibility_unknown", "Доступность для коляски в демо-данных не проверена"))
+    # what the user asked for and did not get goes first: the list is capped
+    prefs = brief.prefs.value
+    head = []
     for path in c.relaxed:
-        out.append(_note("relaxed_pref", f"Вариантов {RELAXED_RU.get(path, path)} не нашли — показываем ближайшие", field=path))
-    return out[: rr["max_notes"] + 2]
+        if path == TICKETS_REFUNDABLE:
+            head.append(_note("non_refundable_only", "Возвратных билетов на эти даты нет — в варианте невозвратные",
+                              field="prefs.free_cancellation"))
+            continue
+        if path == "prefs.arrive_before" and prefs is not None and prefs.arrive_before:
+            text = f"Рейсов с прибытием до {prefs.arrive_before} не нашли — показываем ближайшие"
+        else:
+            text = f"Вариантов {RELAXED_RU.get(path, path)} не нашли — показываем ближайшие"
+        head.append(_note("relaxed_pref", text, field=path))
+    return (head + out)[: rr["max_notes"] + 2]
 
 
 def _not_for(c: Combo, facts, brief, districts, rr):
+    if c.hotel is None:
+        return []
     out = _not_for_all(c, facts, brief, districts, rr)
     party = brief.party.value
     traits = set(brief.traits.value or [])
@@ -867,7 +979,14 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
       45 without; trains rules.ranking.after_train_min), length = duration x taxi_time_factor rounded up
       to 5 min; the return transfer ends at departure - before-flight/train buffer. The stay step runs
       from max(check-in, arrival at the hotel) to min(check-out, leaving the hotel).
-    Returns [] when there are no hotel offers (honest "no data"; the engine says so).
+    - Tickets only (scope without "stay": flights and/or trains): out + back pairs, no hotel, no transfers;
+      cheapest / fastest / comfort (fare tier, baggage, car class) among them; facts `transport_only`.
+    - Ticket prefs (user-set): prefs.arrive_before (outbound arrival, local clock at the destination),
+      prefs.no_night_flights (no flight leaving or landing in ranking.night_window), and refundable fares
+      under prefs.free_cancellation. Each is relaxed per direction when nothing passes: risk
+      `relaxed_pref` (or `non_refundable_only` for tickets).
+    Returns [] when there are no hotel offers for a scope with "stay", or no out + back pair for a
+    tickets-only scope (honest "no data"; the engine says so).
     """
     from .state import Brief, DistrictProfile, Totals, Variant, VariantHotel
     brief = brief if isinstance(brief, Brief) else Brief.model_validate(brief)
@@ -881,9 +1000,10 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     dest = results.get("destination") or {}
     dest_name = dest.get("name") or (brief.destination.value.name if brief.destination.value else None)
 
-    hotels_all = [_dump(h) for h in _offers(results.get("hotels"))]
+    want_stay = "stay" in scope
+    hotels_all = [_dump(h) for h in _offers(results.get("hotels"))] if want_stay else []
     hotels_all = [h for h in hotels_all if _party_ok(h, brief)]
-    if not hotels_all:
+    if want_stay and not hotels_all:
         return []
     strict = [h for h in hotels_all if not _pref_fails(h, brief)]
     relaxed_paths: tuple = ()
@@ -895,30 +1015,47 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     hotels = _prune_hotels(hotels, rr["max_hotels"], brief, districts, segs)
 
     want_transport = bool(scope & {"flights", "trains"})
-    outs = _legs(results, "out", brief, rr, today) if want_transport else []
-    backs = _legs(results, "back", brief, rr, today) if want_transport else []
-    no_transport = want_transport and not (outs and backs)
-    door = want_transport and not no_transport
+    if not (want_stay or want_transport):
+        return []
     tr_out_all = results.get("transfers_out") or {}
     tr_back_all = results.get("transfers_back") or {}
-
-    combos: list[Combo] = []
-    for h in hotels:
-        if not door:
-            c = Combo(None, None, h, None, None, relaxed=relaxed_paths)
-            if _evaluate(c, rules, rr, factor):
-                combos.append(c)
-            continue
-        hid = h["hotel_id"]
-        for o in outs:
-            t_outs = _pick_transfers([_dump(t) for t in _offers(tr_out_all.get(hid))], o.dest) if "transfers" in scope else [None]
-            for bk in backs:
-                t_backs = _pick_transfers([_dump(t) for t in _offers(tr_back_all.get(hid))], bk.origin) if "transfers" in scope else [None]
-                for to in t_outs:
-                    for tb in t_backs:
-                        c = Combo(o, bk, h, to, tb, relaxed=relaxed_paths)
-                        if _evaluate(c, rules, rr, factor):
-                            combos.append(c)
+    hotel_relaxed = relaxed_paths
+    # second pass without the ticket prefs when the legs they keep fit no stay / no return at all
+    for soft in (True, False):
+        outs, out_relaxed = _legs(results, "out", brief, rr, today, soft) if want_transport else ([], ())
+        backs, back_relaxed = _legs(results, "back", brief, rr, today, soft) if want_transport else ([], ())
+        no_transport = want_transport and not (outs and backs)
+        if not want_stay and no_transport:
+            return []
+        door = want_transport and not no_transport
+        relaxed_paths = hotel_relaxed
+        if door:
+            relaxed_paths = tuple(sorted(set(hotel_relaxed) | set(out_relaxed) | set(back_relaxed)))
+        combos: list[Combo] = []
+        if not want_stay:   # tickets only
+            for o in outs:
+                for bk in backs:
+                    c = Combo(o, bk, None, None, None, relaxed=relaxed_paths)
+                    if _evaluate_transport(c, rules, rr):
+                        combos.append(c)
+        for h in hotels:
+            if not door:
+                c = Combo(None, None, h, None, None, relaxed=relaxed_paths)
+                if _evaluate(c, rules, rr, factor):
+                    combos.append(c)
+                continue
+            hid = h["hotel_id"]
+            for o in outs:
+                t_outs = _pick_transfers([_dump(t) for t in _offers(tr_out_all.get(hid))], o.dest) if "transfers" in scope else [None]
+                for bk in backs:
+                    t_backs = _pick_transfers([_dump(t) for t in _offers(tr_back_all.get(hid))], bk.origin) if "transfers" in scope else [None]
+                    for to in t_outs:
+                        for tb in t_backs:
+                            c = Combo(o, bk, h, to, tb, relaxed=relaxed_paths)
+                            if _evaluate(c, rules, rr, factor):
+                                combos.append(c)
+        if combos or not door or not (_soft_leg_filters(brief, "out", rr) or _soft_leg_filters(brief, "back", rr)):
+            break
     if door:
         timed = [c for c in combos if _max_hours_ok(c, brief)]
         if timed:
@@ -960,7 +1097,7 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     else:
         winner = max(picked, key=lambda pc: pc[1].comfort)[0]
         notes.setdefault(winner, []).append("comfort")
-    if not door:
+    if not door and want_stay:
         taken = {c.key for _, c in picked}
         rest = [c for c in combos if c.key not in taken and c.rub <= max(cap, cheapest.rub)]
         def loc(c):
@@ -997,11 +1134,13 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
                 f[f"also_{a}"] = True
             f["coincide_note"] = _coincide_text(vid, also)
         steps = _steps_for(c, brief, rules, today, dest_name)
-        profile = district_of(c.hotel, districts)
-        dp = DistrictProfile(labels=district_labels(profile, rr),
-                             scores={k: round(float(v), 3) for k, v in ((profile or {}).get("scores") or {}).items()})
-        hotel = VariantHotel(hotel_id=c.hotel["hotel_id"], offer_id=c.hotel["offer_id"], name=c.hotel["name"],
-                             stars=c.hotel.get("stars"), rating=c.hotel.get("rating"), district=dp)
+        hotel = None
+        if c.hotel is not None:
+            profile = district_of(c.hotel, districts)
+            dp = DistrictProfile(labels=district_labels(profile, rr),
+                                 scores={k: round(float(v), 3) for k, v in ((profile or {}).get("scores") or {}).items()})
+            hotel = VariantHotel(hotel_id=c.hotel["hotel_id"], offer_id=c.hotel["offer_id"], name=c.hotel["name"],
+                                 stars=c.hotel.get("stars"), rating=c.hotel.get("rating"), district=dp)
         risks = _risks(c, f, brief, rules, rr, steps)
         if no_transport:
             from .state import Note

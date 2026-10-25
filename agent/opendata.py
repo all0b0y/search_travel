@@ -18,7 +18,10 @@ Scoring constants (documented; override with `OpenData(..., weights=..., climate
 - destination score = 0.4 trait match + 0.3 climate fit + 0.2 travel time + 0.1 popularity
   (components without data are dropped and the rest renormalised; family weighs travel x1.5;
   friends get +0.05 for a `nightlife` tag). Budget is not scored here: prices come from the mock's
-  quote_destinations afterwards.
+  quote_destinations afterwards (the engine's destinations path in agent/steps.py orders by budget and
+  filters by prefs.transport == "train" via `train_reachable` and by prefs.domestic).
+- names: `geocode` / `name_score` are strict — wishes and common nouns (`wish_traits`: «горы», «море», «юг»,
+  «заграница», ...) are never places; short names match only exactly, by alias or by a case ending.
 - warm sea: air max 20 °C -> 0 .. 26 °C -> 1, sea 19 °C -> 0 .. 24 °C -> 1 (no marine data -> 0);
   warm without sea: air only; cold/snow/ski: air max 8 °C -> 0 .. 0 °C -> 1; otherwise comfortable
   15..28 °C -> 1, 0 at 0 °C and 38 °C; rain: x (1 - min(rain_days, 20) / 40).
@@ -69,7 +72,73 @@ ALIASES = {"питер": "санкт петербург", "спб": "санкт 
            "мск": "москва", "екб": "екатеринбург", "ебург": "екатеринбург", "нск": "новосибирск",
            "новосиб": "новосибирск", "нижний": "нижний новгород", "калининград": "калининград"}
 _PREPOSITIONS = ("в ", "во ", "на ", "из ", "до ")
-_ENDINGS = ("ами", "ями", "ого", "ему", "ой", "ей", "ом", "ем", "ах", "ях", "ам", "ям", "е", "у", "ю", "и", "ы", "а", "я", "ь")
+_ENDINGS = ("ами", "ями", "ого", "ему", "ому", "ий", "ый", "ых", "их", "ая", "ое", "ые", "ие", "ую", "ой", "ей", "ом", "ем", "ах",
+            "ях", "ам", "ям", "е", "у", "ю", "и", "ы", "а", "я", "ь", "й")
+
+# Wishes and common nouns that must never become a place (geocode / catalog match / lazy build):
+# «хочу в горы» is the trait `mountains`, not the town Gori. Lemma -> (word forms, traits it means).
+# A query is a wish when every word of it (after norm_name) is a wish form or a filler word.
+_WISH_LEMMAS = {
+    "горы": ("гора горы гор горах горам горами гору горе горой", ["mountains"]),
+    "горнолыжка": ("горнолыжка горнолыжку горнолыжке горнолыжный горнолыжные горнолыжных горнолыжным "
+                   "горнолыжном горнолыжного горнолыжному горнолыжная горнолыжной горнолыжное", ["ski", "mountains"]),
+    "лыжи": ("лыжи лыж лыжах лыжам лыжами сноуборд сноуборде сноуборда склон склоны склонам склонах склону "
+             "подъемник подъемники подъемники", ["ski"]),
+    "море": ("море моря морю морем морей морям морях морями морское морской морского морском морские "
+             "морских морскому", ["sea"]),
+    "океан": ("океан океана океану океане океаном океаны океанов", ["sea"]),
+    "пляж": ("пляж пляжа пляжу пляже пляжем пляжи пляжей пляжах пляжам пляжный пляжного пляжном пляжные "
+             "пляжных", ["beach", "sea"]),
+    "побережье": ("побережье побережья побережью побережьем берег берега берегу берегом", ["sea"]),
+    "тепло": ("тепло тепла теплу теплом теплое теплого теплому теплом теплый теплые теплых теплым теплая "
+              "теплой теплую жара жару жаре жарко жаркое жаркий жаркие жарких жаркую солнце солнца солнцу "
+              "солнышко солнышку солнечное солнечный солнечные солнечных", ["warm"]),
+    "юг": ("юг юга югу юге югом южное южный южные южных южному", ["warm"]),
+    "тропики": ("тропики тропиков тропиках тропикам тропический тропические тропических экзотика экзотику "
+                "экзотике", ["tropical", "warm"]),
+    "север": ("север севера северу севере севером северное северный северные северных", ["cold"]),
+    "холод": ("холод холода холодно холодное холодный снег снега снегу снегом снежное снежный снежные "
+              "снежных", ["snow", "cold"]),
+    "острова": ("остров острова островов островах островам остров островом островке островок", ["island"]),
+    "озеро": ("озеро озера озеру озере озером озер озерам озерах", ["lake"]),
+    "река": ("река реки реке реку рекой рек рекам реках", ["river"]),
+    "лес": ("лес леса лесу лесе лесом лесов лесах лесам", ["forest"]),
+    "природа": ("природа природы природе природу природой", ["nature"]),
+    "пустыня": ("пустыня пустыни пустыне пустыню пустыней", ["desert"]),
+    "город": ("город города городу городе городом городов городам городах столица столицу столице столицы",
+              ["city"]),
+    "деревня": ("деревня деревни деревне деревню деревней деревеньку село села селе селу глушь глуши "
+                "глушь дача дачу даче", ["village"]),
+    "курорт": ("курорт курорта курорту курорте курортом курорты курортов курортах санаторий санатория "
+               "санатории санаторий", ["resort"]),
+    "спа": ("спа термы термам термах источники источникам", ["spa"]),
+    "заграница": ("заграница заграницу загранице заграницей границу границей границы зарубеж", []),
+    "регионы": ("россия россии россию европа европу европе азия азию азии африка африку африке америка "
+                "америку америке страна страну стране", []),
+    "отдых": ("отдых отдыха отдыхе отпуск отпуска отпуске путешествие поездка поездку тур туры", []),
+    "куда": ("куда нибудь нибуть то где сюда туда никуда подальше поближе далеко недалеко", []),
+}
+_WISH_FILLERS = {"в", "во", "на", "к", "ко", "за", "у", "до", "по", "и", "или", "из", "с", "со", "очень", "самое",
+                 "самый", "какое", "какой", "какие", "хочу", "хотим", "просто", "чтобы", "было", "наше", "наш",
+                 "нашем", "наши", "покататься", "покупаться", "отдохнуть", "погреться", "поехать", "съездить"}
+
+
+def _wish_forms():
+    out = {}
+    for forms, traits in _WISH_LEMMAS.values():
+        for form in forms.split():
+            have = out.setdefault(form, [])
+            have.extend(t for t in traits if t not in have)
+    return out
+
+
+WISH_FORMS = _wish_forms()
+# Train rule mirrored from ostrovok_mcp/trains.py (pair_note): Russian domestic pairs only, both places
+# with a station in the catalog, great circle 30..1000 km. tests/agent/domain/test_opendata.py keeps the
+# constants in sync with the mock.
+TRAIN_COUNTRY = "RU"
+TRAIN_MAX_KM = 1000
+TRAIN_MIN_KM = 30
 
 
 def _resolve(path):
@@ -119,19 +188,73 @@ def _stems(s):
     return out
 
 
+def wish_traits(text):
+    """Traits meant by a wish phrase («горы», «к тёплому морю», «куда-нибудь на юг»), [] for a wish without a
+    trait («заграница», «куда-нибудь»), None when the text is not a pure wish (it may be a place)."""
+    words = norm_name(text).split()
+    if not words:
+        return None
+    traits, wish = [], False
+    for w in words:
+        if w in WISH_FORMS:
+            wish = True
+            traits += [t for t in WISH_FORMS[w] if t not in traits]
+        elif w not in _WISH_FILLERS:
+            return None
+    return traits if wish else None
+
+
+def is_wish(text):
+    return wish_traits(text) is not None
+
+
+def _shared_stem_ok(q, n, min_stem=4):
+    """Case-ending match: the query is the name plus endings («риме» ~ «рим»), or both share a stem of at
+    least `min_stem` letters that is at most 2 letters shorter than the name («анталию» ~ «анталья»).
+    «горы» ~ «гори» share only «гор» and do not match (words of multi-word names allow 3: «варах» ~ «вары»)."""
+    shared = _stems(q) & _stems(n)
+    if not shared:
+        return False
+    best = max(len(s) for s in shared)
+    return n in shared or (best >= min_stem and best >= len(n) - 2)
+
+
 def name_score(query, name):
+    """0..1 similarity of a user's place name to a catalog name. Strict on purpose: wishes are never places,
+    short names match only exactly (or through an alias / case ending), fuzzy needs >= 6 letters and a
+    ratio >= 0.86."""
     q, n = norm_name(query), norm_name(name)
     q = ALIASES.get(q, q)
     if not q or not n:
         return 0.0
     if q == n:
         return 1.0
-    if _stems(q) & _stems(n):
+    if is_wish(q):
+        return 0.0
+    qw, nw = q.split(), n.split()
+    min_stem = 4 if len(nw) == 1 else 3
+    if len(qw) == len(nw) and all(a == b or _shared_stem_ok(a, b, min_stem) for a, b in zip(qw, nw)):
         return 0.92
-    if len(q) >= 5 and (n.startswith(q) or q.startswith(n)) and abs(len(n) - len(q)) <= 3:
+    if min(len(q), len(n)) >= 5 and (n.startswith(q) or q.startswith(n)) and abs(len(n) - len(q)) <= 3:
         return 0.85
+    if min(len(q), len(n)) < 6:
+        return 0.0
     ratio = difflib.SequenceMatcher(None, q, n).ratio()
-    return round(ratio * 0.95, 3) if ratio >= 0.82 else 0.0
+    return round(ratio * 0.95, 3) if ratio >= 0.86 else 0.0
+
+
+def train_reachable(origin, dest):
+    """True when the mock sells trains between two place records (country_code, stations, lat, lon):
+    the rule of ostrovok_mcp/trains.py — both in Russia, both with a station, great circle 30..1000 km."""
+    if not origin or not dest:
+        return False
+    for p in (origin, dest):
+        if p.get("country_code") != TRAIN_COUNTRY or not p.get("stations"):
+            return False
+        if p.get("lat") is None or p.get("lon") is None:
+            return False
+    km = gc_km(origin["lat"], origin["lon"], dest["lat"], dest["lon"])
+    return TRAIN_MIN_KM <= km <= TRAIN_MAX_KM
 
 
 def _json(text, default):
@@ -454,6 +577,7 @@ class OpenData:
             out.append({"id": d["id"], "name": d["name_ru"], "name_en": d["name_en"], "country": d["country"],
                         "country_code": d["country_code"], "kind": d["kind"], "tags": d["tags"],
                         "lat": d["lat"], "lon": d["lon"], "airports": d["airports"],
+                        "stations": d.get("stations") or [],
                         "description_ru": d.get("description_ru"), "popularity": d.get("popularity"),
                         "match": match, "weather": weather, "climate_known": bool(clim),
                         "travel_time_h": tt["hours"] if tt else None, "stops": tt["stops"] if tt else None,
@@ -505,11 +629,12 @@ class OpenData:
                 "display_name": top.get("display_name")}
 
     def geocode(self, name):
-        """Catalog fuzzy match (ru/en names, aliases; case, ё/е, prepositions and case endings ignored),
+        """Catalog match (ru/en names, aliases; case, ё/е, prepositions and case endings ignored; strict fuzzy,
+        see name_score; wishes and common nouns like «горы», «море», «юг» are never places),
         then Nominatim (snapped to a catalog place within 40 km), then lazy_builder once per name.
         Returns a place dict (`in_catalog`, `source`, `confidence`) or None."""
-        if not str(name or "").strip():
-            return None
+        if not str(name or "").strip() or is_wish(name):
+            return None   # «горы», «море», «куда-нибудь на юг»: a wish, never a place (no Nominatim, no lazy build)
         hit = self._catalog_match(name)
         if hit is not None:
             return self._hit(hit[0], "catalog", hit[1])

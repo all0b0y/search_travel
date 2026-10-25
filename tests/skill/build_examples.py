@@ -112,7 +112,7 @@ und(und_input(SOCHI, "selection", "а если на 2 дня позже?", shown
     U("refine", {"dates.shift_days": 2}))
 und(und_input(SOCHI, "selection", "и мы едем с собакой, без ночных рейсов", shown=SHOWN_SOCHI,
               assumed=SOCHI_ASSUMED, assumptions=SOCHI_CHIPS),
-    U("refine", {"party.pets": ["dog"], "constraints.add": ["pet:dog", "no_night_flights"]}))
+    U("refine", {"party.pets": ["dog"], "constraints.add": ["pet:dog"], "prefs.no_night_flights": True}))
 und(und_input(brief({"traits.add": ["sea", "warm"], "dates.month": 11}), "inspiration", "вдвоём, из Питера",
               shown=[{"label": "1", "kind": "destination", "id": "hurghada", "title": "Хургада"},
                      {"label": "2", "kind": "destination", "id": "antalya", "title": "Анталья"}],
@@ -153,6 +153,30 @@ und(und_input(EMPTY, "inspiration", "через две недели с друз�
 und(und_input(SOCHI, "selection", "бюджет не важен, но хочу всё включено и от 4 звёзд", shown=SHOWN_SOCHI,
               assumed=SOCHI_ASSUMED, assumptions=SOCHI_CHIPS),
     U("refine", {"prefs.meals": "all_inclusive", "prefs.stars_min": 4}, unset=["budget_rub.max"]))
+# seasons -> a month by the table; wishes («на море», «в горы») are traits, never a destination
+und(und_input(EMPTY, "inspiration", "хочется на море летом, вдвоём"),
+    U("new_trip", {"traits.add": ["sea"], "dates.month": 7, "party.segment": "couple"}))
+und(und_input(EMPTY, "inspiration", "в горы зимой, покататься на лыжах, компанией из четырёх"),
+    U("new_trip", {"traits.add": ["mountains", "ski", "snow"], "dates.month": 12, "party.segment": "friends",
+                   "party.adults": 4}))
+# «в середине января» -> a start with flexible days; a range of nights -> its lower number
+und(und_input(SOCHI, "selection", "а в середине января можно, на 3–4 ночи?", shown=SHOWN_SOCHI,
+              assumed=SOCHI_ASSUMED, assumptions=SOCHI_CHIPS),
+    U("refine", {"dates.start": "2027-01-15", "dates.flexible_days": 3, "dates.nights": 3}))
+und(und_input(EMPTY, "inspiration", "Казань на 12–15 января, прилёт до 12:00, без ночных рейсов"),
+    U("new_trip", {"destination.name": "Казань", "dates.start": "2027-01-12", "dates.end": "2027-01-15",
+                   "prefs.arrive_before": "12:00", "prefs.no_night_flights": True}))
+und(und_input(EMPTY, "inspiration", "куда-нибудь по России на майские, вдвоём"),
+    U("new_trip", {"prefs.domestic": True, "dates.start": "2027-05-01", "dates.end": "2027-05-04",
+                   "party.segment": "couple"}))
+# after the order: new dates as params.new_dates; a bare confirmation after a quote
+und(und_input(SOCHI, "aftercare", "тогда подбери на 3–6 декабря", assumed=SOCHI_ASSUMED),
+    U("post_purchase", pp={"kind": "change_dates",
+                           "params": {"new_dates": {"check_in": "2026-12-03", "check_out": "2026-12-06"}}}))
+und(und_input(SOCHI, "aftercare", "да, переносим",
+              history=[{"role": "agent", "text": "На 14–21 ноября перенести можно. Доплата 4 200 ₽. Если подходит — "
+                                                 "напишите «переносим», и я подтвержу."}], assumed=SOCHI_ASSUMED),
+    U("post_purchase", pp={"kind": "change_dates", "params": {"confirm": True}}))
 
 print("understand", n)
 
@@ -561,14 +585,16 @@ def I(message):
 
 
 write("present.info", 1, i_input(FAM, "inspiration", "Какое море в Анталье в ноябре, можно ли купаться?",
-                                 [{"kind": "climate", "destination_id": "antalya", "destination": "Анталья", "month": 11,
-                                   "air_max_c": 22, "air_min_c": 13, "sea_c": 22, "rain_days": 6, "sunny_days": 20,
-                                   "source": "Open-Meteo"}]),
+                                 [{"kind": "climate", "id": "antalya", "month": 11,
+                                   "data": {"destination_id": "antalya", "month": 11, "air_max_c": 22, "air_min_c": 13,
+                                            "sea_c": 22, "rain_days": 6, "sunny_days": 20}}]),
       I("В ноябре море в Анталье около 22°, воздух днём до 22°, ночью 13°. Купаться можно, если не боитесь бодрящей "
         "воды; дождливых дней обычно 6, солнечных — 20."))
 write("present.info", 2, i_input(SOCHI, "selection", "Можно ли с собакой в «Морском бризе»?",
-                                 [{"kind": "hotel_policy", "hotel_id": "h_ex_briz", "hotel": BRZ, "pets_allowed": False,
-                                   "check_in": "15:00", "check_out": "12:00"}], SOCHI_CHIPS),
+                                 [{"kind": "hotel", "id": "h_ex_briz",
+                                   "data": {"hotel_id": "h_ex_briz", "name": BRZ, "stars": 4, "distance_beach_m": 250,
+                                            "policies": {"pets_allowed": False, "check_in_from": "15:00",
+                                                         "check_out_until": "12:00"}}}], SOCHI_CHIPS),
       I("Нет, в «Морской бриз» с питомцами не пускают. Если собака едет с вами — скажите, пересоберу варианты "
         "с отелями, где можно."))
 write("present.info", 3, i_input(FAM, "inspiration", "Нужна ли виза в Египет с ребёнком?", []),
@@ -597,8 +623,8 @@ write("present.aftercare", 2, a_input(ORDER, {"action": "early_checkin", "status
                                               "note": "Отель подтвердит за сутки до заезда"}),
       I("Запрос на заезд в 09:00 отправил. Отель подтвердит за сутки до заезда — пока это не гарантия, так что "
         "планируйте с запасом: обычное заселение с 15:00."))
-write("present.aftercare", 3, a_input(ORDER, {"action": "change_dates", "available": True, "applied": False,
-                                              "new_dates": {"start": "2026-11-14", "end": "2026-11-21"},
+write("present.aftercare", 3, a_input(ORDER, {"kind": "change_dates", "available": True, "applied": False,
+                                              "new_dates": {"check_in": "2026-11-14", "check_out": "2026-11-21"},
                                               "quote": {"old_total_rub": 90300, "new_total_rub": 94500,
                                                         "difference_rub": 4200, "penalty_rub": 0}}),
       I("На 14–21 ноября перенести можно. Новая цена — 94 500 ₽ вместо 90 300 ₽, доплата 4 200 ₽, штрафа нет. "

@@ -41,7 +41,10 @@
       "max_travel_hours": null,
       "district": "quiet",
       "beach_max_m": null,
-      "transport": "any"
+      "transport": "any",
+      "arrive_before": null,
+      "no_night_flights": null,
+      "domestic": null
     },
     "constraints": null,
     "mood": null

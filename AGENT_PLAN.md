@@ -130,7 +130,13 @@ Brief:
   prefs:         Field[{ meals: "any"|"none"|"breakfast"|"half_board"|"full_board"|"all_inclusive",
                          free_cancellation: bool|null, stars_min: int|null, direct_only: bool|null,
                          max_travel_hours: float|null, district: "any"|"lively"|"quiet"|"family"|"walkable",
-                         beach_max_m: int|null, transport: "any"|"plane"|"train" }]
+                         beach_max_m: int|null, transport: "any"|"plane"|"train",
+                         arrive_before: "HH:MM"|null,   # outbound arrival, local clock at the destination
+                         no_night_flights: bool|null,   # no flight leaving/landing in ranking.night_window
+                         domestic: bool|null }]         # inspiration: destinations in the origin's country
+                 # ranking: user-set arrive_before / no_night_flights / free_cancellation (refundable
+                 # fares) filter tickets, relaxed per direction with risk relaxed_pref / non_refundable_only;
+                 # a scope without "stay" builds tickets-only variants (no hotel, no transfers)
   constraints:   Field[[str]]   # hard constraints, enum-like tokens: "pet:dog", "accessible", "no_night_flights", ...
   mood:          Field[[str]]   # "relax", "party", "culture", "active", "romantic", "kids_fun"
 
@@ -267,6 +273,7 @@ Budget: ≤ 2 Flash calls per turn (plus at most one rerun per card on a failed 
   ```
   `Issue = {code, severity: "block"|"warn", message, data}`.
   As built (2026-10-25): `build_variants(..., segments=None)` and `fit(..., segments=None)` take `segments.json` data (else `rules["segments"]`); `results["hotel_upgrades"][hotel_id]` holds `search_hotels(hotel_id=…, all_rooms=True)` / higher-`meals` offers for room and meal upgrades; `recommended_hint(variants)`, `check_variant_set(variants)`, `offers_for_variant(variant, results)`, `OpenData.districts_for(ids)` / `origin_airports(city)`, `render_variant(session_id, variant, brief, rules, out_root=, now=)` exist. Ranking, sensitivity and guard thresholds live in `rules.json` (`ranking`, `sensitivity`, `guard`), code defaults only as fallback.
+  As built after the first level-3 run (2026-10-25): a scope without `stay` builds ticket-only variants (out + back pairs, no hotel, no transfers); trains are also searched for the evening before check-in (overnight trains); user-set `prefs.arrive_before` / `prefs.no_night_flights` / `free_cancellation` (refundable fares) are relaxable hard filters (`relaxed_pref` / `non_refundable_only` risks), the `no_night_flights` constraint token stays a never-relaxed filter and understand no longer emits it. Destinations path: wishes («горы», «море», «юг»…) are never places (`opendata.wish_traits`); `prefs.transport = train` keeps only train-reachable places (the mock's rule: Russia, a station at both ends, 30–1000 km) priced with real round-trip trains; `prefs.domestic` keeps the origin's country; with a budget, fitting places go first, places above 1.3× budget are dropped when ≥ 3 fit, otherwise the cheapest come first and `facts.within_budget` lets the card say so. Seasons («летом» 7, «весной» 4, «зимой» 12 or 1, «осенью» the next autumn month) are set by code and shown as a chip. After an order whose tickets cannot be exchanged, a request for other dates starts a new selection on those dates (the paid order stays).
 
 ## 6. Response contract (engine → UI)
 

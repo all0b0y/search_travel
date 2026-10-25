@@ -301,3 +301,77 @@ def test_closed_airports_are_never_origins(tmp_path):
     od = OpenData(path=str(db), overlay=None)
     assert od.origin_airports("Krasnodar") == []
     assert od.origin_airports("Sochi") == ["AER"]
+
+
+# ---------------------------------------------------------------- wishes are never places (L3 s02)
+
+GORI = {"id": "gori", "name_ru": "Гори", "name_en": "Gori", "country": "Грузия", "country_code": "GE",
+        "kind": "city", "lat": 41.98, "lon": 44.11, "tags": ["city"], "airports": ["TBS"]}
+
+
+@pytest.mark.parametrize("text,traits", [
+    ("горы", ["mountains"]), ("в горы", ["mountains"]), ("Горах", ["mountains"]), ("море", ["sea"]),
+    ("к тёплому морю", ["warm", "sea"]), ("океан", ["sea"]), ("на пляж", ["beach", "sea"]), ("тепло", ["warm"]),
+    ("на юг", ["warm"]), ("север", ["cold"]), ("острова", ["island"]), ("на озеро", ["lake"]), ("в лес", ["forest"]),
+    ("город", ["city"]), ("в деревню", ["village"]), ("курорт", ["resort"]), ("заграница", []),
+    ("куда-нибудь", []), ("горнолыжный курорт", ["ski", "mountains", "resort"]),
+])
+def test_wish_words_are_traits_not_places(text, traits):
+    from agent.opendata import is_wish, wish_traits
+    assert is_wish(text) and wish_traits(text) == traits
+
+
+@pytest.mark.parametrize("text", ["Гори", "Сочи", "Казань", "в Риме", "Нижний Новгород", "Красная Поляна", "Бали"])
+def test_places_are_not_wishes(text):
+    from agent.opendata import is_wish
+    assert not is_wish(text)
+
+
+def test_gory_never_matches_gori_even_with_nominatim_and_lazy(tmp_path):
+    db = make_opendata(tmp_path / "o.sqlite", DESTS + [GORI])
+    lazy = []
+    http = FakeHttp({NOMINATIM: nominatim({"горы": {"lat": "41.98", "lon": "44.11", "name": "Гори",
+                                                     "address": {"country": "Грузия", "country_code": "ge"}}})})
+    od = OpenData(path=db, overlay=None, http=http, lazy_builder=lambda q: lazy.append(q) or None)
+    for q in ("горы", "в горы", "Горы", "горах", "море", "на юг"):
+        assert od.geocode(q) is None, q
+    assert http.calls == [] and lazy == []          # a wish never reaches Nominatim or the lazy builder
+    assert od.geocode("Гори")["id"] == "gori"        # the town itself still resolves exactly
+    assert name_score("горы", "Гори") == 0.0 and name_score("Гори", "Горы") == 0.0
+
+
+@pytest.mark.parametrize("query,name,ok", [
+    ("Рима", "Рим", True), ("Риме", "Рим", True), ("Анталию", "Анталья", True), ("Пхукетт", "Пхукет", True),
+    ("Нижнем Новгороде", "Нижний Новгород", True), ("Карловых Варах", "Карловы Вары", True),
+    ("Алтае", "Алтай", True),
+    ("Гора", "Гори", False), ("Баку", "Бали", False), ("Сочи", "Сочо", False), ("Рим", "Римини", False),
+    ("Париж", "Пхукет", False), ("Тула", "Тур", False), ("Казань", "Каир", False),
+])
+def test_strict_name_score(query, name, ok):
+    assert (name_score(query, name) >= 0.8) is ok
+
+
+# ---------------------------------------------------------------- train rule (L3 s03)
+
+def test_train_reachable_mirrors_the_mock_rule():
+    from agent.opendata import TRAIN_MAX_KM, TRAIN_MIN_KM, train_reachable
+    from ostrovok_mcp import trains
+    assert TRAIN_MAX_KM == trains.MAX_KM and TRAIN_MIN_KM == 30
+    spb = {"country_code": "RU", "stations": ["Московский вокзал"], "lat": 59.94, "lon": 30.31}
+    msk = {"country_code": "RU", "stations": ["Ленинградский вокзал"], "lat": 55.76, "lon": 37.62}
+    sochi = {"country_code": "RU", "stations": ["Сочи"], "lat": 43.59, "lon": 39.72}
+    istanbul = {"country_code": "TR", "stations": ["Sirkeci"], "lat": 41.0, "lon": 28.97}
+    no_station = {"country_code": "RU", "stations": [], "lat": 56.42, "lon": 40.45}
+    assert train_reachable(spb, msk) and not train_reachable(spb, sochi)        # 630 km vs ~1950 km
+    assert not train_reachable(spb, istanbul) and not train_reachable(msk, no_station)
+    assert not train_reachable(None, msk)
+
+
+def test_real_catalog_wishes_and_ski_in_december():
+    od = OpenData(overlay=None)
+    if not od.available:
+        pytest.skip("data/opendata.sqlite missing")
+    assert od.geocode("горы") is None and od.geocode("в горы") is None
+    res = od.find_destinations(["mountains", "ski"], 12, "Москва", segment="solo", limit=6)
+    assert res and all("ski" in r["tags"] for r in res)
+    assert all("stations" in r for r in res)

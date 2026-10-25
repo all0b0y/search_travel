@@ -79,6 +79,7 @@ ALLOWED_PATCH_PATHS = (
     "budget_rub.max",
     "prefs.meals", "prefs.free_cancellation", "prefs.stars_min", "prefs.direct_only",
     "prefs.max_travel_hours", "prefs.district", "prefs.beach_max_m", "prefs.transport",
+    "prefs.arrive_before", "prefs.no_night_flights", "prefs.domestic",
     "constraints.add", "constraints.remove",
     "traits.add", "mood.add",
     "origin.city",
@@ -171,6 +172,12 @@ class Prefs(Model):
     district: District = "any"
     beach_max_m: Optional[int] = PField(default=None, ge=0)
     transport: Transport = "any"
+    # "HH:MM", local time at the destination: the outbound leg must arrive at or before it
+    arrive_before: Optional[str] = PField(default=None, pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+    # no flight departing or arriving inside the night window (rules.json ranking.night_window)
+    no_night_flights: Optional[bool] = None
+    # only destinations inside the origin's country (consumed by the inspiration path)
+    domestic: Optional[bool] = None
 
 
 class Brief(Model):

@@ -1,0 +1,122 @@
+{
+  "id": "e6_arrive_before_no_night",
+  "category": "E",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "istanbul",
+        "name": "Стамбул",
+        "country": "Турция"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-07",
+        "end": "2026-11-14",
+        "month": 11,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "origin.city",
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "origin.city",
+        "label": "из Москвы"
+      }
+    ],
+    "shown": [
+      {
+        "label": "1",
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле"
+      },
+      {
+        "label": "2",
+        "kind": "variant",
+        "id": "fastest",
+        "title": "Быстрее"
+      },
+      {
+        "label": "3",
+        "kind": "variant",
+        "id": "comfort",
+        "title": "Комфортнее"
+      }
+    ],
+    "pending_questions": [],
+    "history": [],
+    "message": "и чтобы прилёт был до 12, ночные рейсы не нужны",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "refine"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/prefs.arrive_before",
+      "value": "12:00"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/prefs.no_night_flights",
+      "value": true
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "prefs.arrive_before",
+          "prefs.no_night_flights",
+          "constraints.add"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "New prefs: an arrival deadline as \"HH:MM\" and no night flights (L3 s24)."
+}

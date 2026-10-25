@@ -6,9 +6,9 @@
         "dog"
       ],
       "constraints.add": [
-        "pet:dog",
-        "no_night_flights"
-      ]
+        "pet:dog"
+      ],
+      "prefs.no_night_flights": true
     },
     "unset": []
   },

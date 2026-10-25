@@ -13,6 +13,7 @@ rerun per card; enforced and recorded in the trace. `handle` never raises for us
 """
 import json
 import os
+import re
 import threading
 import time
 from collections import defaultdict
@@ -234,13 +235,22 @@ class Engine:
             else:
                 self._understand(ctx)
                 route_kw = {"intent": ctx.intent}
+                self._apply_season(ctx)
         self._validate_patch(ctx)
         self._resolve_shift(ctx)
         if ctx.stop:
             return
+        self._reconcile_dates(ctx)
         if ctx.image_info:
             run_image_match(ctx)
         tentative, _, _ = prepare_brief(ctx, s.brief, ctx.patch)
+        if _dates_inverted(tentative):
+            # last guard: never send check_out <= check_in to the mock (a bad_request for a sane refine)
+            ctx.patch["set"].pop("dates.end", None)
+            if "dates.end" not in ctx.patch["unset"]:
+                ctx.patch["unset"].append("dates.end")
+            ctx.trace["notes"].append("dates: end not after start, end recomputed from nights")
+            tentative, _, _ = prepare_brief(ctx, s.brief, ctx.patch)
         route = self.skill.match_route(stage=s.stage, brief=tentative, **route_kw)
         if route is None:
             raise StepError("bad_request", "Не понял, что сделать — попробуйте сформулировать иначе.")
@@ -365,6 +375,46 @@ class Engine:
             ctx.present = None
             ctx.message = "От каких дат сдвинуть? Напишите даты поездки — например, «с 12 по 19 ноября»."
 
+    # ------------------------------------------------------------ code guards on the patch (the model's slips)
+    def _apply_season(self, ctx):
+        """«летом», «осенью»...: the season's month by the code rule (season_month), shown as a chip."""
+        if ctx.intent not in ("new_trip", "refine", "answer") or not ctx.text:
+            return
+        sets = ctx.patch["set"]
+        if "dates.start" in sets or "dates.shift_days" in sets:
+            return
+        found = _season_of(ctx.text)
+        month = season_month(ctx.text, ctx.session.today())
+        if month is None:
+            return
+        given = sets.get("dates.month")
+        if given is not None and given not in SEASON_MONTHS[found]:
+            return                          # the model read another month on purpose; keep it
+        sets["dates.month"] = month
+        ctx.season = (found, month)
+        ctx.trace["notes"].append(f"season {found} -> dates.month {month}")
+
+    def _reconcile_dates(self, ctx):
+        """A new start or a new number of nights without an end: the old end is stale, recompute it.
+
+        (s04: a refine «в начале декабря на 4 ночи» kept the inferred end of the November dates shown
+        before -> check_out before check_in -> bad_request.)
+        """
+        sets, unsets = ctx.patch["set"], ctx.patch["unset"]
+        if "dates.end" in sets or "dates.end" in unsets:
+            return
+        brief = ctx.session.brief
+        old_end = _iso_date((brief.values().get("dates") or {}).get("end"))
+        if old_end is None:
+            return
+        drop = "dates.nights" in sets
+        new_start = _iso_date(sets.get("dates.start"))
+        if new_start is not None and (brief.source_of("dates.end") != "user" or new_start >= old_end):
+            drop = True
+        if drop:
+            unsets.append("dates.end")
+            ctx.trace["notes"].append("dates: stale end dropped (new start or nights)")
+
     # ------------------------------------------------------------ model calls
     def _call_card(self, ctx, card, payload, images=(), rerun_issues=None):
         spec = self.skill.card(card)
@@ -444,6 +494,10 @@ class Engine:
             return []
         asked = {q.field for q in ctx.questions}
         chips = P.build_chips(self.skill, ctx.session.brief, exclude_fields=asked) if self.flags.sensitivity else []
+        season = getattr(ctx, "season", None)
+        if season is not None and "dates.month" not in asked:
+            chips = [c for c in chips if c.field != "dates.month"]
+            chips.insert(0, season_chip(*season))
         scope = P.scope_chip(self.skill, ctx.session.brief)
         if scope is not None and all(c.field != "scope" for c in chips):
             chips.append(scope)
@@ -561,6 +615,67 @@ def validate_patch_hook(ctx):
         except ValueError:
             pass
     return out
+
+
+# ---------------------------------------------------------------- seasons and wishes (code rules behind understand)
+
+SEASON_MONTHS = {"summer": (6, 7, 8), "autumn": (9, 10, 11), "winter": (12, 1, 2), "spring": (3, 4, 5)}
+_SEASON_RE = {
+    "summer": re.compile(r"(?<![а-яё])(летом|лето|летн)", re.I),
+    "autumn": re.compile(r"(?<![а-яё])(осенью|осень|осенн)", re.I),
+    "winter": re.compile(r"(?<![а-яё])(зимой|зима|зиму|зимн)", re.I),
+    "spring": re.compile(r"(?<![а-яё])(весной|весна|весну|весенн)", re.I),
+}
+# an explicit month or a numeric date beats the season («летом, в августе» -> August)
+_MONTH_WORD_RE = re.compile(r"(?<![а-яё])(январ|феврал|март|апрел|ма[йяе](?![а-яё]*к)|майск|июн|июл|август|сентябр|"
+                            r"октябр|ноябр|декабр|новогодн)|\d{1,2}[./]\d{1,2}", re.I)
+
+
+def _season_of(text):
+    found = [s for s, rx in _SEASON_RE.items() if rx.search(text or "")]
+    return found[0] if len(found) == 1 else None
+
+
+def season_month(text, today):
+    """The month a season word stands for (documented in understand.md), or None.
+
+    летом -> 7; весной -> 4; зимой -> 12 (1 when today is already in December-February);
+    осенью -> the first autumn month still ahead (a month counts while today's day < 20, like the
+    engine's date resolution), else September of the next autumn.
+    An explicit month name or a numeric date in the text wins: None.
+    """
+    season = _season_of(text)
+    if season is None or _MONTH_WORD_RE.search(text or ""):
+        return None
+    if season == "summer":
+        return 7
+    if season == "spring":
+        return 4
+    if season == "winter":
+        return 1 if today.month in (12, 1, 2) else 12
+    for m in (9, 10, 11):
+        if m > today.month or (m == today.month and today.day < 20):
+            return m
+    return 9
+
+
+def season_chip(season, month):
+    from .state import Chip, ChipOption
+    return Chip(field="dates.month", label=f"в {P.MONTHS_PREP[month - 1]}", value=month,
+                options=[ChipOption(label=f"в {P.MONTHS_PREP[m - 1]}", value=m) for m in SEASON_MONTHS[season]])
+
+
+def _iso_date(value):
+    try:
+        return date.fromisoformat(str(value)[:10]) if value else None
+    except ValueError:
+        return None
+
+
+def _dates_inverted(brief):
+    d = brief.values().get("dates") or {}
+    start, end = _iso_date(d.get("start")), _iso_date(d.get("end"))
+    return start is not None and end is not None and end <= start
 
 
 def rerun_system(system, rerun_issues):

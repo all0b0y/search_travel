@@ -1,0 +1,89 @@
+{
+  "id": "f4_change_dates_new_dates",
+  "category": "F",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "aftercare",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "kaliningrad",
+        "name": "Калининград",
+        "country": "Россия"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-20",
+        "end": "2026-11-23",
+        "month": 11,
+        "window": null,
+        "nights": 3,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "solo",
+        "adults": 1,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [
+      {
+        "role": "user",
+        "text": "можно сдвинуть поездку?"
+      },
+      {
+        "role": "agent",
+        "text": "На какие даты перенести?"
+      }
+    ],
+    "message": "перенесите, пожалуйста, на 5–8 декабря — сколько будет доплата?",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "post_purchase"
+    },
+    {
+      "type": "path_equals",
+      "path": "/post_purchase/kind",
+      "value": "change_dates"
+    },
+    {
+      "type": "path_equals",
+      "path": "/post_purchase/params/new_dates/check_in",
+      "value": "2026-12-05"
+    },
+    {
+      "type": "path_equals",
+      "path": "/post_purchase/params/new_dates/check_out",
+      "value": "2026-12-08"
+    }
+  ],
+  "runs": 5,
+  "notes": "After purchase new dates travel as post_purchase.params.new_dates {check_in, check_out} (L3 s16 looped because the dates were not carried)."
+}

@@ -1,0 +1,138 @@
+{
+  "id": "e5_refine_mid_month_range",
+  "category": "E",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "SVO",
+          "VKO",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "istanbul",
+        "name": "Стамбул",
+        "country": "Турция"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-07",
+        "end": "2026-11-14",
+        "month": 11,
+        "window": null,
+        "nights": 7,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [
+      "origin.city",
+      "dates.start",
+      "dates.end",
+      "prefs.district"
+    ],
+    "assumptions": [
+      {
+        "field": "origin.city",
+        "label": "из Москвы"
+      },
+      {
+        "field": "dates.start",
+        "label": "7–14 ноября"
+      }
+    ],
+    "shown": [
+      {
+        "label": "1",
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле"
+      },
+      {
+        "label": "2",
+        "kind": "variant",
+        "id": "fastest",
+        "title": "Быстрее"
+      },
+      {
+        "label": "3",
+        "kind": "variant",
+        "id": "comfort",
+        "title": "Комфортнее"
+      }
+    ],
+    "pending_questions": [],
+    "history": [],
+    "message": "давайте лучше в середине декабря, ночи на 3–4",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "refine"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.start",
+      "value": "2026-12-15"
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/dates.nights",
+      "value": 3
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/dates.end"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    },
+    {
+      "type": "predicate",
+      "name": "patch_has_no_assumptions",
+      "args": {
+        "allowed": [
+          "dates.start",
+          "dates.nights",
+          "dates.flexible_days",
+          "dates.month"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "«в середине декабря» -> dates.start the 15th (+ flexible days); a range of nights -> its lower number (L3 s04: such a refine ended in bad_request).",
+  "unsure": "dates.flexible_days 3 is in the table but not asserted; a missing flexible_days still passes."
+}

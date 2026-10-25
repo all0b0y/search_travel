@@ -1,0 +1,16 @@
+{
+  "intent": "post_purchase",
+  "patch": {
+    "set": {},
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": {
+    "kind": "change_dates",
+    "params": {
+      "confirm": true
+    }
+  }
+}

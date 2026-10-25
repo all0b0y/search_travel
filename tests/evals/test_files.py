@@ -23,9 +23,9 @@ def load(p):
 
 
 def test_counts_and_categories():
-    assert len(CASES) == 40
+    assert len(CASES) == 47   # 40 v0 cases + 7 for the L3-fix understand rules (seasons, wishes, ranges, prefs, new_dates)
     cats = Counter(load(p)["category"] for p in CASES)
-    assert cats == {"A": 5, "A_photo": 3, "B": 4, "C": 3, "D": 3, "E": 4, "F": 3, "segments": 4, "edge": 6, "tone": 5}
+    assert cats == {"A": 8, "A_photo": 3, "B": 5, "C": 3, "D": 3, "E": 6, "F": 4, "segments": 4, "edge": 6, "tone": 5}
     assert len(SCENARIOS) == 25
     assert len(HOLDOUT) == 10
 

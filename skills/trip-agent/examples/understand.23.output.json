@@ -1,0 +1,19 @@
+{
+  "intent": "post_purchase",
+  "patch": {
+    "set": {},
+    "unset": []
+  },
+  "refs": [],
+  "image": null,
+  "info_question": null,
+  "post_purchase": {
+    "kind": "change_dates",
+    "params": {
+      "new_dates": {
+        "check_in": "2026-12-03",
+        "check_out": "2026-12-06"
+      }
+    }
+  }
+}

@@ -433,7 +433,7 @@ def build_cases():
                        assumed=["dates.start", "party.segment"],
                        assumptions=[("dates.start", "20–23 ноября"), ("party.segment", "один")]),
         [pred("recommended_in_items"),
-         a("regex_absent", path="$text", pattern=r"перел[её]т|рейс|самол[её]т|авиа|аэропорт|поезд(?!к)")   # «поездка» is a trip, not a train,
+         a("regex_absent", path="$text", pattern=r"перел[её]т|рейс|самол[её]т|авиа|аэропорт|поезд(?!к)"),   # «поездка» is a trip, not a train
          pred("keeps_notes", field="not_for")],
         "Hotels only: the text must not talk about flights or trains that are not in the variants."))
 
