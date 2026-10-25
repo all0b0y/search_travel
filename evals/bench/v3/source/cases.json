@@ -1,0 +1,942 @@
+[
+  {
+    "id": "bu_01_fortythousand",
+    "context": "new",
+    "base": null,
+    "message": "Я из Самары, куда-нибудь проветриться в ноябре. На всю поездку тыщ сорок, больше не наскребу.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "origin.city",
+        "equals": "Самара"
+      },
+      {
+        "set": "budget_rub.max",
+        "equals": 40000
+      },
+      {
+        "absent": "destination.name"
+      }
+    ]
+  },
+  {
+    "id": "bu_02_perperson",
+    "context": "new",
+    "base": null,
+    "message": "Казань — наш город выезда. Нас двое взрослых, у каждого по полтиннику на поездку целиком, общий потолок сто тысяч. Хотим отдохнуть.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "party.adults",
+        "equals": 2
+      },
+      {
+        "set": "budget_rub.max",
+        "equals": 100000
+      },
+      {
+        "set": "origin.city",
+        "equals": "Казань"
+      }
+    ]
+  },
+  {
+    "id": "bu_03_babyvoice",
+    "context": "new",
+    "base": null,
+    "message": "мы с мужем из москвы хотим в отпуск с двумя детьми старшей восемь младшему четыре месяца и кроватку ему пожалуйста",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "party.adults",
+        "equals": 2
+      },
+      {
+        "set": "party.children_ages",
+        "equals": [
+          8,
+          0
+        ]
+      },
+      {
+        "constraint": "crib"
+      }
+    ]
+  },
+  {
+    "id": "bu_04_whippet",
+    "context": "new",
+    "base": null,
+    "message": "Екатеринбург, хочу в отпуск с уиппетом, это собака, 12 кило. Нужна гостиница, куда с ним можно, и дорога туда-обратно.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "party.pets",
+        "equals": [
+          "dog"
+        ]
+      },
+      {
+        "constraint": "pet:dog"
+      },
+      {
+        "absent": "party.children_ages"
+      }
+    ]
+  },
+  {
+    "id": "bu_05_devonstay",
+    "context": "new",
+    "base": null,
+    "message": "Кострома, нужен только отель на три ночи. С нами кошечка девон-рекс, не собака; билеты уже куплены.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "party.pets",
+        "equals": [
+          "cat"
+        ]
+      },
+      {
+        "constraint": "pet:cat"
+      },
+      {
+        "set": "scope",
+        "equals": [
+          "stay"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bu_06_nosteps",
+    "context": "new",
+    "base": null,
+    "message": "Хочу из Петербурга отдохнуть, я на коляске. До номера без единой ступеньки, пожалуйста, один только лифт вопрос не решает.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "constraint": "accessible"
+      },
+      {
+        "absent": "party.children_ages"
+      }
+    ]
+  },
+  {
+    "id": "bu_07_ownstove",
+    "context": "new",
+    "base": null,
+    "message": "Псков на выходные, из Москвы. Хостелы мимо, нужна плита прямо в номере, сам готовлю, общая кухня не годится.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "constraint": "kitchen"
+      },
+      {
+        "constraint": "no_hostel"
+      },
+      {
+        "set": "destination.name",
+        "equals": "Псков"
+      }
+    ]
+  },
+  {
+    "id": "bu_08_threemeals",
+    "context": "new",
+    "base": null,
+    "message": "В Хургаду на отдых. В отеле хочу завтрак, обед и ужин включёнными, напитки и перекусы между едой не нужны.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "prefs.meals",
+        "equals": "full_board"
+      },
+      {
+        "absent": "budget_rub.max"
+      }
+    ]
+  },
+  {
+    "id": "bu_09_twomeals",
+    "context": "new",
+    "base": null,
+    "message": "Сиде, отпуск в июне. Питание — утром и вечером в отеле, обед сами где-нибудь найдём.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "prefs.meals",
+        "equals": "half_board"
+      },
+      {
+        "set": "dates.month",
+        "equals": 6
+      }
+    ]
+  },
+  {
+    "id": "bu_10_nomeals",
+    "context": "new",
+    "base": null,
+    "message": "Я один, в Минск погулять. Бронируйте номер вообще без питания, завтраков тоже не надо.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "prefs.meals",
+        "equals": "none"
+      },
+      {
+        "set": "party.adults",
+        "equals": 1
+      },
+      {
+        "set": "party.segment",
+        "equals": "solo"
+      }
+    ]
+  },
+  {
+    "id": "bu_11_flexiblerate",
+    "context": "new",
+    "base": null,
+    "message": "Ереван на семь ночей из Самары. Гостиница минимум четыре звезды, а отменить её хочу без штрафа.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "prefs.stars_min",
+        "equals": 4
+      },
+      {
+        "set": "prefs.free_cancellation",
+        "equals": true
+      },
+      {
+        "set": "dates.nights",
+        "equals": 7
+      }
+    ]
+  },
+  {
+    "id": "bu_12_nonstopday",
+    "context": "new",
+    "base": null,
+    "message": "Из Москвы в Баку. Ночью не летаю и пересадки не предлагайте — нужен беспересадочный перелёт туда и обратно.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "prefs.direct_only",
+        "equals": true
+      },
+      {
+        "set": "prefs.no_night_flights",
+        "equals": true
+      },
+      {
+        "set": "prefs.transport",
+        "equals": "plane"
+      }
+    ]
+  },
+  {
+    "id": "bu_13_railslang",
+    "context": "new",
+    "base": null,
+    "message": "Самара — Казань, мне тока поезд в обе стороны, самолёты не моё. И гостиницу подберите.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "prefs.transport",
+        "equals": "train"
+      },
+      {
+        "set": "origin.city",
+        "equals": "Самара"
+      },
+      {
+        "set": "destination.name",
+        "equals": "Казань"
+      }
+    ]
+  },
+  {
+    "id": "bu_14_namedmosque",
+    "context": "new",
+    "base": null,
+    "message": "Казань, хочу гостиницу рядом с мечетью Кул-Шариф. Стартую из Москвы, это не просьба жить в московском центре.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "prefs.near",
+        "in": [
+          "мечеть Кул-Шариф",
+          "Кул-Шариф"
+        ]
+      },
+      {
+        "set": "destination.name",
+        "equals": "Казань"
+      },
+      {
+        "absent": "prefs.center_max_m"
+      }
+    ]
+  },
+  {
+    "id": "bu_15_centerwalk",
+    "context": "new",
+    "base": null,
+    "message": "Нижний Новгород из Самары, пожить пару дней. От отеля до центра максимум полтора километра, звёзды без разницы.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "prefs.center_max_m",
+        "equals": 1500
+      },
+      {
+        "absent": "prefs.stars_min"
+      }
+    ]
+  },
+  {
+    "id": "bu_16_russiabeach",
+    "context": "new",
+    "base": null,
+    "message": "Хочу к морю, но только по России. От гостиницы до пляжа не больше трёхсот пятидесяти метров.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "prefs.domestic",
+        "equals": true
+      },
+      {
+        "set": "prefs.beach_max_m",
+        "equals": 350
+      },
+      {
+        "trait": "sea"
+      }
+    ]
+  },
+  {
+    "id": "bu_17_arrivalclock",
+    "context": "new",
+    "base": null,
+    "message": "Из Москвы в Санкт-Петербург, поездка с отелем. На саму дорогу не больше четырёх часов, прибыть надо до двух дня по местному времени.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "prefs.max_travel_hours",
+        "equals": 4
+      },
+      {
+        "set": "prefs.arrive_before",
+        "equals": "14:00"
+      },
+      {
+        "set": "origin.city",
+        "equals": "Москва"
+      }
+    ]
+  },
+  {
+    "id": "bu_18_monthboundary",
+    "context": "new",
+    "base": null,
+    "message": "Самара — Минск: заезд 28 февраля 2027, выезд 3 марта 2027. Подыщите поездку на одного.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "dates.start",
+        "equals": "2027-02-28"
+      },
+      {
+        "set": "dates.end",
+        "equals": "2027-03-03"
+      },
+      {
+        "set": "party.adults",
+        "equals": 1
+      }
+    ]
+  },
+  {
+    "id": "bu_19_fortnight",
+    "context": "new",
+    "base": null,
+    "message": "Хочу в поездку из Москвы ровно через две недели от сегодняшнего дня, отель на три ночи. Направление ещё не придумал.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "dates.start",
+        "equals": "2026-11-08"
+      },
+      {
+        "set": "dates.nights",
+        "equals": 3
+      },
+      {
+        "absent": "destination.name"
+      }
+    ]
+  },
+  {
+    "id": "bu_20_mayholidays",
+    "context": "new",
+    "base": null,
+    "message": "На майские куда бы съездить из Казани? Пока без конкретных чисел, отпуск ещё не подписали.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "dates.month",
+        "equals": 5
+      },
+      {
+        "absent": "dates.start"
+      },
+      {
+        "absent": "dates.end"
+      }
+    ]
+  },
+  {
+    "id": "bu_21_afternewyear",
+    "context": "new",
+    "base": null,
+    "message": "Сразу после Нового года, в январе, хочу куда-нибудь со снегом. Конкретный день отъезда не знаю.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "dates.month",
+        "equals": 1
+      },
+      {
+        "trait": "snow"
+      },
+      {
+        "absent": "dates.start"
+      }
+    ]
+  },
+  {
+    "id": "bu_22_wiggleroom",
+    "context": "new",
+    "base": null,
+    "message": "Из Новосибирска хочу в отпуск с 10 апреля 2027, но дату выезда можно двигать на три дня в любую сторону.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "dates.start",
+        "equals": "2027-04-10"
+      },
+      {
+        "set": "dates.flexible_days",
+        "equals": 3
+      },
+      {
+        "set": "origin.city",
+        "equals": "Новосибирск"
+      }
+    ]
+  },
+  {
+    "id": "bu_23_winterwish",
+    "context": "new",
+    "base": null,
+    "message": "Зимой бы туда, где тепло и море, а куда — посоветуйте сами. Никакую страну пока не выбрала.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "trait": "warm"
+      },
+      {
+        "trait": "sea"
+      },
+      {
+        "absent": "destination.name"
+      }
+    ]
+  },
+  {
+    "id": "bu_24_hotelonly",
+    "context": "new",
+    "base": null,
+    "message": "Светлогорск. Мне только гостиницу на май, транспорт уже полностью оплачен, не надо новые билеты.",
+    "expect": [
+      {
+        "intent": "new_trip"
+      },
+      {
+        "set": "scope",
+        "equals": [
+          "stay"
+        ]
+      },
+      {
+        "absent": "prefs.transport"
+      },
+      {
+        "absent": "party.adults"
+      }
+    ]
+  },
+  {
+    "id": "bu_25_visacar",
+    "context": "new",
+    "base": null,
+    "message": "Оформите мне британскую визу и арендуйте автомобиль в Лондоне. Билеты и гостиница не нужны.",
+    "expect": [
+      {
+        "intent": "out_of_scope"
+      },
+      {
+        "absent": "dates.start"
+      },
+      {
+        "absent": "budget_rub.max"
+      }
+    ]
+  },
+  {
+    "id": "bu_26_cruise",
+    "context": "new",
+    "base": null,
+    "message": "Забронируйте морской круиз с посадкой в Рейкьявике. Перелёт и гостиницу не ищите, нужен именно круиз.",
+    "expect": [
+      {
+        "intent": "out_of_scope"
+      },
+      {
+        "absent": "prefs.transport"
+      },
+      {
+        "absent": "dates.start"
+      }
+    ]
+  },
+  {
+    "id": "bu_27_twodaysearlier",
+    "context": "selection",
+    "base": {
+      "destination": "Бухара",
+      "origin": "Москва",
+      "start": "2027-04-06",
+      "end": "2027-04-10",
+      "adults": 2,
+      "children_ages": []
+    },
+    "message": "Давайте весь этот отпуск на два дня раньше, длительность оставьте как была.",
+    "expect": [
+      {
+        "intent": "refine"
+      },
+      {
+        "set": "dates.shift_days",
+        "equals": -2
+      },
+      {
+        "absent": "party.children_ages"
+      },
+      {
+        "absent": "budget_rub.max"
+      }
+    ]
+  },
+  {
+    "id": "bu_28_shortenbudget",
+    "context": "selection",
+    "base": {
+      "destination": "Нижний Новгород",
+      "origin": "Казань",
+      "start": "2026-11-24",
+      "end": "2026-11-29",
+      "adults": 1,
+      "children_ages": []
+    },
+    "message": "Не, пять ночей дороговато. Сократим до трёх, и за всю поездку максимум семьдесят пять тысяч.",
+    "expect": [
+      {
+        "intent": "refine"
+      },
+      {
+        "set": "dates.nights",
+        "equals": 3
+      },
+      {
+        "set": "budget_rub.max",
+        "equals": 75000
+      },
+      {
+        "absent": "party.adults"
+      }
+    ]
+  },
+  {
+    "id": "bu_29_junenotmay",
+    "context": "selection",
+    "base": {
+      "destination": "Дербент",
+      "origin": "Екатеринбург",
+      "start": "2027-05-10",
+      "end": "2027-05-15",
+      "adults": 2,
+      "children_ages": []
+    },
+    "message": "Май отпал, смотрим июнь. Место и число ночей те же, конкретные числа пока подберём.",
+    "expect": [
+      {
+        "intent": "refine"
+      },
+      {
+        "set": "dates.month",
+        "equals": 6
+      },
+      {
+        "absent": "destination.name"
+      },
+      {
+        "absent": "prefs.meals"
+      }
+    ]
+  },
+  {
+    "id": "bu_30_secondcard",
+    "context": "selection",
+    "base": {
+      "destination": "Дилижан",
+      "origin": "Самара",
+      "start": "2027-04-12",
+      "end": "2027-04-16",
+      "adults": 2,
+      "children_ages": []
+    },
+    "message": "Берём второй из этих трёх вариантов.",
+    "expect": [
+      {
+        "intent": "choose"
+      },
+      {
+        "absent": "destination.name"
+      },
+      {
+        "absent": "dates.start"
+      },
+      {
+        "absent": "budget_rub.max"
+      }
+    ]
+  },
+  {
+    "id": "bu_31_comparecards",
+    "context": "selection",
+    "base": {
+      "destination": "Светлогорск",
+      "origin": "Казань",
+      "start": "2027-05-15",
+      "end": "2027-05-20",
+      "adults": 2,
+      "children_ages": [
+        5,
+        0
+      ]
+    },
+    "message": "Сравните первый и третий: за что в третьем доплата? Пока ничего не выбираю.",
+    "expect": [
+      {
+        "intent": "compare"
+      },
+      {
+        "absent": "budget_rub.max"
+      },
+      {
+        "absent": "dates.start"
+      }
+    ]
+  },
+  {
+    "id": "bu_32_baggagequestion",
+    "context": "selection",
+    "base": {
+      "destination": "Териберка",
+      "origin": "Санкт-Петербург",
+      "start": "2027-02-20",
+      "end": "2027-02-24",
+      "adults": 1,
+      "children_ages": []
+    },
+    "message": "У второго варианта чемодан в багаж входит или одна ручная кладь? Просто уточняю, ничего пока не меняйте.",
+    "expect": [
+      {
+        "intent": "info"
+      },
+      {
+        "absent": "budget_rub.max"
+      },
+      {
+        "absent": "prefs.direct_only"
+      },
+      {
+        "absent": "party.pets"
+      }
+    ]
+  },
+  {
+    "id": "bu_33_cancelquestion",
+    "context": "selection",
+    "base": {
+      "destination": "Москва",
+      "origin": "Новосибирск",
+      "start": "2027-01-18",
+      "end": "2027-01-21",
+      "adults": 1,
+      "children_ages": []
+    },
+    "message": "А до какого числа выбранный отель можно отменить без штрафа? Это вопрос про условия, не просьба сменить тариф.",
+    "expect": [
+      {
+        "intent": "info"
+      },
+      {
+        "absent": "prefs.free_cancellation"
+      },
+      {
+        "absent": "destination.name"
+      },
+      {
+        "absent": "dates.start"
+      }
+    ]
+  },
+  {
+    "id": "bu_34_simplerhotel",
+    "context": "selection",
+    "base": {
+      "destination": "Хургада",
+      "origin": "Москва",
+      "start": "2026-12-07",
+      "end": "2026-12-12",
+      "adults": 2,
+      "children_ages": []
+    },
+    "message": "Теперь нижняя граница по звёздам — три. И подберите обязательно с бесплатной отменой.",
+    "expect": [
+      {
+        "intent": "refine"
+      },
+      {
+        "set": "prefs.stars_min",
+        "equals": 3
+      },
+      {
+        "set": "prefs.free_cancellation",
+        "equals": true
+      }
+    ]
+  },
+  {
+    "id": "bu_35_railsinstead",
+    "context": "selection",
+    "base": {
+      "destination": "Казань",
+      "origin": "Самара",
+      "start": "2027-05-07",
+      "end": "2027-05-10",
+      "adults": 1,
+      "children_ages": []
+    },
+    "message": "Окей, раз самолётов нет, пересоберите с поездом в обе стороны. Город выезда прежний.",
+    "expect": [
+      {
+        "intent": "refine"
+      },
+      {
+        "set": "prefs.transport",
+        "equals": "train"
+      },
+      {
+        "absent": "budget_rub.max"
+      }
+    ]
+  },
+  {
+    "id": "bu_36_changedplace",
+    "context": "selection",
+    "base": {
+      "destination": "Минск",
+      "origin": "Самара",
+      "start": "2027-04-09",
+      "end": "2027-04-12",
+      "adults": 2,
+      "children_ages": []
+    },
+    "message": "Передумали: вместо Минска хотим Тбилиси. Пока поменяйте только направление.",
+    "expect": [
+      {
+        "intent": "refine"
+      },
+      {
+        "set": "destination.name",
+        "equals": "Тбилиси"
+      },
+      {
+        "absent": "dates.start"
+      },
+      {
+        "absent": "party.adults"
+      }
+    ]
+  },
+  {
+    "id": "bu_37_teenisachild",
+    "context": "selection",
+    "base": {
+      "destination": "Иркутск",
+      "origin": "Новосибирск",
+      "start": "2027-06-08",
+      "end": "2027-06-14",
+      "adults": 3,
+      "children_ages": []
+    },
+    "message": "Поправка: нас два взрослых и один ребёнок двенадцати лет, а не три взрослых.",
+    "expect": [
+      {
+        "intent": "refine"
+      },
+      {
+        "set": "party.adults",
+        "equals": 2
+      },
+      {
+        "set": "party.children",
+        "equals": 1
+      },
+      {
+        "set": "party.children_ages",
+        "equals": [
+          12
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bu_38_putincart",
+    "context": "selection",
+    "base": {
+      "destination": "Кострома",
+      "origin": "Москва",
+      "start": "2026-12-04",
+      "end": "2026-12-07",
+      "adults": 2,
+      "children_ages": []
+    },
+    "message": "Второй подходит, положи его в корзину, данные для оплаты потом введу.",
+    "expect": [
+      {
+        "intent": "cart"
+      },
+      {
+        "absent": "budget_rub.max"
+      },
+      {
+        "absent": "dates.start"
+      }
+    ]
+  },
+  {
+    "id": "bu_39_sightdistance",
+    "context": "selection",
+    "base": {
+      "destination": "Бухара",
+      "origin": "Москва",
+      "start": "2027-05-18",
+      "end": "2027-05-22",
+      "adults": 2,
+      "children_ages": []
+    },
+    "message": "Сколько от первого отеля до Ляби-Хауза по вашим данным? Отель пока не меняйте, я только спрашиваю расстояние.",
+    "expect": [
+      {
+        "intent": "info"
+      },
+      {
+        "absent": "prefs.near"
+      },
+      {
+        "absent": "prefs.center_max_m"
+      },
+      {
+        "absent": "destination.name"
+      }
+    ]
+  },
+  {
+    "id": "bu_40_multicitytour",
+    "context": "selection",
+    "base": {
+      "destination": "Ереван",
+      "origin": "Самара",
+      "start": "2027-04-12",
+      "end": "2027-04-16",
+      "adults": 2,
+      "children_ages": []
+    },
+    "message": "Сделайте вместо этого маршрут Ереван — Тбилиси — Баку с ночёвкой в каждом городе и экскурсиями. Обычная поездка в один город больше не нужна.",
+    "expect": [
+      {
+        "intent": "out_of_scope"
+      },
+      {
+        "absent": "dates.start"
+      },
+      {
+        "absent": "origin.city"
+      }
+    ]
+  }
+]

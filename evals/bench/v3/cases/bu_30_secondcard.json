@@ -1,0 +1,103 @@
+{
+  "id": "bu_30_secondcard",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "selection",
+    "brief": {
+      "origin": {
+        "city": "Самара",
+        "iata": [
+          "KUF"
+        ]
+      },
+      "destination": {
+        "id": "dilijan",
+        "name": "Дилижан",
+        "country": "Армения"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2027-04-12",
+        "end": "2027-04-16",
+        "month": 4,
+        "window": null,
+        "nights": 4,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": null,
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "any",
+        "beach_max_m": null,
+        "transport": "any"
+      },
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [
+      {
+        "label": "1",
+        "kind": "variant",
+        "id": "cheapest",
+        "title": "Дешевле"
+      },
+      {
+        "label": "2",
+        "kind": "variant",
+        "id": "fastest",
+        "title": "Быстрее"
+      },
+      {
+        "label": "3",
+        "kind": "variant",
+        "id": "comfort",
+        "title": "Комфортнее"
+      }
+    ],
+    "pending_questions": [],
+    "history": [],
+    "message": "Берём второй из этих трёх вариантов.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "choose"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/destination.name"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/dates.start"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/budget_rub.max"
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}

@@ -1,0 +1,49 @@
+{
+  "id": "bu_25_visacar",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "Оформите мне британскую визу и арендуйте автомобиль в Лондоне. Билеты и гостиница не нужны.",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "out_of_scope"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/dates.start"
+    },
+    {
+      "type": "path_absent",
+      "path": "/patch/set/budget_rub.max"
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}

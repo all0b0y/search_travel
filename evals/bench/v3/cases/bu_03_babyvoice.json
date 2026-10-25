@@ -1,0 +1,75 @@
+{
+  "id": "bu_03_babyvoice",
+  "category": "bench",
+  "card": "understand",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": null,
+      "destination": null,
+      "traits": null,
+      "dates": null,
+      "party": null,
+      "budget_rub": null,
+      "scope": null,
+      "prefs": null,
+      "constraints": null,
+      "mood": null
+    },
+    "assumed": [],
+    "assumptions": [],
+    "shown": [],
+    "pending_questions": [],
+    "history": [],
+    "message": "мы с мужем из москвы хотим в отпуск с двумя детьми старшей восемь младшему четыре месяца и кроватку ему пожалуйста",
+    "has_image": false
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "path_equals",
+      "path": "/intent",
+      "value": "new_trip"
+    },
+    {
+      "type": "any_of",
+      "of": [
+        {
+          "type": "path_equals",
+          "path": "/patch/set/party.adults",
+          "value": 2
+        },
+        {
+          "type": "path_equals",
+          "path": "/patch/set/party.segment",
+          "value": "couple"
+        }
+      ]
+    },
+    {
+      "type": "path_equals",
+      "path": "/patch/set/party.children_ages",
+      "value": [
+        8,
+        0
+      ],
+      "casefold": true
+    },
+    {
+      "type": "predicate",
+      "name": "contains",
+      "args": {
+        "path": "/patch/set/constraints.add",
+        "values": [
+          "crib"
+        ]
+      }
+    }
+  ],
+  "runs": 5,
+  "notes": "sealed benchmark: written by an outside model; never tune on it"
+}
