@@ -1,0 +1,143 @@
+{
+  "run_id": "20261025-204612-L2-cases-guide-off",
+  "level": 2,
+  "set": "cases",
+  "model": "flash",
+  "flags": "stage1",
+  "flags_enabled": [],
+  "dry_run": false,
+  "persona": null,
+  "started_at": "2026-10-25T20:46:12+03:00",
+  "run_dir": "/Users/all0b0y/VSCodeProjects/search_travel-guide/evals/runs/20261025-204612-L2-cases-guide-off",
+  "argv": [
+    "--level",
+    "2",
+    "--model",
+    "flash",
+    "--parallel",
+    "6",
+    "--only",
+    "g1_guide_savings_recommends_cheapest,g2_guide_still_expensive_goes_further,g3_guide_dead_end_acts,g4_guide_vague_wish_places,g5_guide_weather_plain_answer,g6_guide_direct_flights_checks_the_road",
+    "--tag",
+    "guide-off"
+  ],
+  "policy": {},
+  "tag": "guide-off",
+  "cases": [
+    {
+      "id": "g1_guide_savings_recommends_cheapest",
+      "category": "guide",
+      "card": "guide",
+      "runs": 5,
+      "passed": 4,
+      "full_pass": false,
+      "latency_p50_ms": 4691,
+      "failures": [
+        "run 2: predicate guide_one_question: 2 questions"
+      ],
+      "unsure": null
+    },
+    {
+      "id": "g2_guide_still_expensive_goes_further",
+      "category": "guide",
+      "card": "guide",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1967,
+      "failures": [],
+      "unsure": "When find_savings finds no lever below the shown trip, a cheaper place or an honest «дешевле этой поездки нет» with the price parts is right; the regex then only bans the claim when places exist."
+    },
+    {
+      "id": "g3_guide_dead_end_acts",
+      "category": "guide",
+      "card": "guide",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1534,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "g4_guide_vague_wish_places",
+      "category": "guide",
+      "card": "guide",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1912,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "g5_guide_weather_plain_answer",
+      "category": "guide",
+      "card": "guide",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1753,
+      "failures": [],
+      "unsure": null
+    },
+    {
+      "id": "g6_guide_direct_flights_checks_the_road",
+      "category": "guide",
+      "card": "guide",
+      "runs": 5,
+      "passed": 5,
+      "full_pass": true,
+      "latency_p50_ms": 1273,
+      "failures": [],
+      "unsure": null
+    }
+  ],
+  "metrics": {
+    "cases_total": 6,
+    "cases_full_pass": 5,
+    "cases_full_pass_rate": 0.8333333333333334,
+    "runs_total": 30,
+    "runs_passed": 29,
+    "runs_pass_rate": 0.9666666666666667,
+    "llm_errors": 0,
+    "input_errors": 0,
+    "retries_total": 0,
+    "guard_reruns": 4,
+    "guard_rerun_reasons": [
+      "invented_number",
+      "too_many_questions"
+    ],
+    "latency_p50_ms": 1779.5,
+    "latency_p95_ms": 4967.1,
+    "input_tokens": 235149,
+    "output_tokens": 3659,
+    "cost_usd_total": 0.012291942000000004,
+    "served_models": {
+      "deepseek/deepseek-v4.1-flash-1017": 30
+    },
+    "served_providers": {
+      "DeepSeek": 30
+    },
+    "by_category": {
+      "guide": "5/6"
+    }
+  },
+  "finished_at": "2026-10-25T20:46:26+03:00",
+  "notes": [],
+  "thresholds": [
+    {
+      "metric": "cases_full_pass_rate",
+      "label": "фазовые кейсы 5/5 (каждый кейс прошёл все прогоны)",
+      "value": 0.8333333333333334,
+      "op": ">=",
+      "threshold": 1.0,
+      "pass": false
+    }
+  ],
+  "green": false,
+  "report_paths": {
+    "json": "/Users/all0b0y/VSCodeProjects/search_travel-guide/evals/reports/20261025-204612-L2-cases-guide-off.json",
+    "md": "/Users/all0b0y/VSCodeProjects/search_travel-guide/evals/reports/20261025-204612-L2-cases-guide-off.md"
+  }
+}
