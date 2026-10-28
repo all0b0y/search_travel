@@ -1,4 +1,4 @@
-"""Ported trip-planner finalize checks (skills/trip-planner/tests/test_trip.py) + agent extensions."""
+"""Ported trip-planner finalize checks (the removed skills/trip-planner/tests/test_trip.py; its fixture lives in tests/fixtures/trip_planner/) + agent extensions."""
 import copy
 import json
 from datetime import datetime
@@ -11,7 +11,7 @@ from agent.state import Variant, assume
 
 from .factory import ROOT, RULES, brief
 
-FIXTURE = json.loads((ROOT / "skills/trip-planner/tests/fixtures/berlin-lisbon.json").read_text(encoding="utf-8"))
+FIXTURE = json.loads((ROOT / "tests/fixtures/trip_planner/berlin-lisbon.json").read_text(encoding="utf-8"))
 IDS = {"v-cheap": "cheapest", "v-fast": "fastest", "v-comfort": "comfort"}
 RATES = {"EUR": 95.0}
 
