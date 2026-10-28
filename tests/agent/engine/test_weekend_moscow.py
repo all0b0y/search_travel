@@ -276,3 +276,27 @@ def test_guide_can_choose_more_time_from_code_facts_and_complete_purchase(live):
     response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "weekend-guide@example.com"})
     response = h.act("pay", order_id=response["order"]["order_id"])
     assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
+
+
+@pytest.mark.parametrize("phase", ["cart", "checkout"])
+def test_comparing_unchanged_weekend_options_keeps_purchase_available(live, phase):
+    h = live
+    _, variants = ask(h, "Из Москвы в Петербург вдвоем с 20 ноября на две ночи",
+                      **{"origin.city": "Москва", "destination.name": "Санкт-Петербург",
+                         "dates.start": "2026-11-20", "dates.nights": 2,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": 60000})
+    selected = variants[0]
+    h.act("choose_variant", variant_id=selected.id)
+    if phase == "checkout":
+        response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "compare@example.com"})
+        order_id = response["order"]["order_id"]
+    before = [tuple(step.offer_id for step in v.steps) for v in variants]
+    response = h.act("compare", variant_ids=[v.id for v in variants])
+    assert response["comparison"]
+    assert before == [tuple(step.offer_id for step in v.steps) for v in h.session().variants]
+    if phase == "cart":
+        response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "compare@example.com"})
+        assert response["stage"] == "checkout", response["message"]
+        order_id = response["order"]["order_id"]
+    response = h.act("pay", order_id=order_id)
+    assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
