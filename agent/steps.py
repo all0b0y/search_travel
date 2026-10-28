@@ -3207,6 +3207,12 @@ def comparison_rows(ctx, variants):
         {"key": "door_to_door", "label": "В дороге, туда и обратно",
          "values": {v.id: P.fmt_hours(v.totals.door_to_door_hours) for v in variants},
          "best_id": best({v.id: v.totals.door_to_door_hours for v in variants}, highest=False)}]
+    destination_times = {v.id: v.facts.get("destination_hours") for v in variants}
+    if any(hours is not None for hours in destination_times.values()):
+        rows.append({"key": "destination_time", "label": "На месте, включая ночи",
+                     "values": {key: P.fmt_hours(hours) if hours is not None else "Нет данных"
+                                for key, hours in destination_times.items()},
+                     "best_id": best(destination_times)})
     if any(v.hotel for v in variants):
         rows.append({"key": "hotel", "label": "Отель", "values": {
             v.id: (f"{v.hotel.stars or '–'}★, {v.hotel.rating if v.hotel.rating is not None else '–'}"

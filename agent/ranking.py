@@ -36,6 +36,7 @@ from .checks import (DEFAULT_BUFFERS, DEFAULT_LATE_CHECKIN, DEFAULT_TAXI_FACTOR,
                      fmt_hours, fmt_int, fmt_rub, in_clock_window, nights_text, plural, ts, wants_pet)
 from .payloads import MONTHS_GEN
 from .night_arrival import arrival_penalty
+from .weekend import add_weekend_choice, destination_hours, keep_weekend_schedule, short_break
 
 # ---------------------------------------------------------------- tunables
 
@@ -110,7 +111,7 @@ MEALS_RANK = {"none": 0, "breakfast": 1, "half_board": 2, "full_board": 3, "all_
 MEALS_RU = {"none": "без питания", "breakfast": "завтраки", "half_board": "полупансион",
             "full_board": "полный пансион", "all_inclusive": "всё включено", "any": "любое"}
 TITLES = {"cheapest": "Дешевле", "fastest": "Быстрее", "comfort": "Комфортнее", "custom-1": "Удачнее по району",
-          "custom-2": "Свой номер подешевле"}
+          "custom-2": "Свой номер подешевле", "custom-3": "Больше времени на месте"}
 SEA_TRAITS = {"sea", "beach", "island"}
 CAR_CLASS_COMFORT = {"sv": 1.0, "coupe": 0.6, "seat": 0.4, "platzkart": 0.2}
 COMFORT_TRANSFER = {"private": 1.0, "taxi": 0.8, "shuttle": 0.4, "public": 0.1}
@@ -934,7 +935,8 @@ def _legs(results, direction, brief, rr, today, soft=True):
             legs = kept
         elif legs and not (kept and kept == legs):
             relaxed.append(path)
-    return _prune_legs(legs, rr["max_legs"], int(rr.get("comfort_legs", 0))), tuple(relaxed)
+    kept = _prune_legs(legs, rr["max_legs"], int(rr.get("comfort_legs", 0)))
+    return keep_weekend_schedule(kept, legs, brief, direction), tuple(relaxed)
 
 
 def _one_way_hours(c) -> float:
@@ -1067,6 +1069,8 @@ def _facts(c: Combo, brief, districts, segments, rr):
     }
     _leg_facts(f, c, rr)
     _long_leg_facts(f, c, check_in, check_out)
+    if short_break(brief) and destination_hours(c) is not None:
+        f["destination_hours"] = destination_hours(c)
     for direction, tr in (("out", c.tr_out), ("back", c.tr_back)):
         if tr is not None:
             f[f"transfer_{direction}_min"] = int(tr["duration_min"])
@@ -1729,6 +1733,7 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
         _center_card(picked, private, ref, brief, rr, limit)
     if dorm_cheapest and len(picked) > limit:   # the private-room cards go first; the fastest may give way
         picked = [pc for pc in picked if pc[0] != "fastest"] or picked
+    add_weekend_choice(picked, private, brief, rr, limit)
     picked = picked[:limit]
 
     # assemble
