@@ -201,6 +201,7 @@ skills/trip-agent/
   segments.json        segment -> default prefs/district weights + Jev criteria
   upsell.json          add-on rules: condition on brief/variant -> add-on kind + reason template
   rules.json           thresholds: sensitivity, Jev thresholds, buffers, limits (max questions, max jokes, max upsells)
+  rules.d/*.json       optional new top-level rule sections, loaded in filename order after rules.json; duplicate keys across files fail loading (no nested merge)
   schema/understand.schema.json, schema/present.<card>.schema.json
   lessons.md           lessons from the improvement loop (rule + why)
 ```
