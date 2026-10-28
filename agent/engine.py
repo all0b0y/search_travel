@@ -586,7 +586,8 @@ class Engine:
             sets.pop("dates.shift_days")
             ctx.shift_days = k
             sets["dates.start"] = (span[0] + timedelta(days=k)).isoformat()
-            sets["dates.end"] = (span[1] + timedelta(days=k)).isoformat()
+            end = span[0] + timedelta(days=sets["dates.nights"]) if "dates.nights" in sets else span[1]
+            sets["dates.end"] = (end + timedelta(days=k)).isoformat()
             ctx.trace["notes"].append(f"shift_days {k} resolved against shown dates {span[0]}..{span[1]}")
         elif not s.brief.has("dates.start"):
             ctx.stop = True

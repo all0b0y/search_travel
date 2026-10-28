@@ -107,3 +107,35 @@ def test_weekend_api_accepts_the_complete_purchase_flow(live, tmp_path):
     response = post(action={"type": "pay", "payload": {"order_id": order_id}})
     assert response["stage"] == "ordered" and response["order"]["status"] == "paid"
     assert response["order"]["total_rub"] == selected.totals.rub
+
+
+@pytest.mark.parametrize("live", ["stage3", "stage5"], indirect=True)
+def test_weekend_cart_rebuild_uses_new_dates_budget_and_train(live):
+    h = live
+    _, variants = ask(h, "В Петербург вдвоем на две ночи с 20 ноября, до 60 тысяч",
+                      **{"origin.city": "Москва", "destination.name": "Санкт-Петербург",
+                         "dates.start": "2026-11-20", "dates.nights": 2,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": 60000})
+    h.act("choose_variant", variant_id=variants[0].id)
+    h.understand(u(intent="refine", set={"dates.shift_days": 7, "dates.nights": 3,
+                                         "budget_rub.max": 40000, "prefs.transport": "train"}))
+    response = h.turn("Пересоберите на неделю позже, на три ночи, только поездом и до 40 тысяч")
+    assert response["stage"] == "selection" and not response.get("error"), response["message"]
+    variants = h.session().variants
+    assert variants and all(v.facts["nights"] == 3 for v in variants)
+    assert all(v.facts["check_in_date"] == "2026-11-27" for v in variants)
+    assert all(v.steps[0].type == v.steps[-1].type == "train" for v in variants)
+    assert all(v.totals.rub <= 40000 for v in variants)
+    dates = h.session().brief.values()["dates"]
+    assert (dates["start"], dates["end"], dates["nights"]) == ("2026-11-27", "2026-11-30", 3)
+    no_blocks(h, variants)
+    selected = variants[0]
+    response = h.act("choose_variant", variant_id=selected.id)
+    assert {item["offer_id"] for item in response["cart"]["items"]} == {
+        step.offer_id for step in selected.steps}
+    assert response["cart"]["total_rub"] == selected.totals.rub
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "weekend-refine@example.com"})
+    assert response["stage"] == "checkout", response["message"]
+    order_id = response["order"]["order_id"]
+    response = h.act("pay", order_id=order_id)
+    assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
