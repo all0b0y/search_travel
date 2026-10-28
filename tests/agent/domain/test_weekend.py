@@ -139,3 +139,24 @@ def test_destination_time_uses_elapsed_time_across_timezones():
         arrival = datetime.fromisoformat(variant.steps[1].end)
         departure = datetime.fromisoformat(variant.steps[-2].start)
         assert variant.facts["destination_hours"] == round((departure - arrival).total_seconds() / 3600, 1)
+
+
+def test_unaffordable_fast_flights_do_not_hide_the_longer_stay_in_budget():
+    from datetime import timedelta
+
+    results = weekend_results()
+    for direction in ("out", "back"):
+        results[f"flights_{direction}"] = [flight(
+            offer["offer_id"], offer["origin_iata"], offer["dest_iata"],
+            (datetime.fromisoformat(offer["dep"]) - timedelta(hours=2)).isoformat(),
+            offer["arr"], offer["price_rub"]) for offer in results[f"flights_{direction}"]]
+        results[f"flights_{direction}"].append(flight(
+            f"expensive-{direction}", "SVO" if direction == "out" else "LED",
+            "LED" if direction == "out" else "SVO",
+            "2026-11-20T08:00:00+03:00" if direction == "out" else "2026-11-22T21:00:00+03:00",
+            "2026-11-20T09:00:00+03:00" if direction == "out" else "2026-11-22T22:00:00+03:00",
+            100000))
+    variants = build(results=results)
+    longer = next(v for v in variants if v.id == "custom-3")
+    assert longer.totals.rub == 33000
+    assert longer.facts["destination_hours"] > variants[0].facts["destination_hours"]

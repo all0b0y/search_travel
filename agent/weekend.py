@@ -45,13 +45,15 @@ def add_weekend_choice(picked, candidates, brief, rules, limit):
     budget = brief.budget_rub.value.max if brief.budget_rub.value else None
     if not budget:
         budget = min(combo.rub for combo in candidates) * rules["comfort_price_cap_ratio"]
-    fastest = min(combo.hours for combo in candidates)
-    pool = [combo for combo in candidates if combo.rub <= budget and
-            combo.hours <= fastest + rules["comfort_max_extra_hours"] and destination_hours(combo) is not None]
+    affordable = [combo for combo in candidates if combo.rub <= budget and destination_hours(combo) is not None]
+    if not affordable:
+        return
+    fastest = min(combo.hours for combo in affordable)
+    pool = [combo for combo in affordable if combo.hours <= fastest + rules["comfort_max_extra_hours"]]
     if not pool:
         return
     best = max(pool, key=lambda combo: (destination_hours(combo), -combo.hours, -combo.rub, combo.comfort))
-    shown_hours = [destination_hours(combo) for _, combo in picked]
+    shown_hours = [destination_hours(combo) for _, combo in picked if combo.rub <= budget]
     if destination_hours(best) <= max((hours for hours in shown_hours if hours is not None), default=0):
         return
     if len(picked) < limit:
