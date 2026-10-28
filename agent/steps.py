@@ -2170,10 +2170,10 @@ def build(ctx, brief, results, districts, exclude=(), pin=True):
         results = _exclude_offers(results, set(exclude))
     built = ctx.domain.build_variants(brief, results, districts, rules_view(ctx), ctx.session.today())
     variants = [_as_variant(v) for v in built or []][: int(ctx.rules.get("max_variants", 3))]
-    return _pin_transfers(ctx, variants, results) if pin else variants
+    return _pin_transfers(ctx, variants, results, brief, districts) if pin else variants
 
 
-def _pin_transfers(ctx, variants, results):
+def _pin_transfers(ctx, variants, results, brief, districts, attempt=0):
     """Re-quote every transfer step at the exact time of its own leg.
 
     Transfers are searched once per hotel and arrival point (at the earliest arrival there), so the
@@ -2185,7 +2185,7 @@ def _pin_transfers(ctx, variants, results):
         for offers in (results.get(key) or {}).values():
             for o in offers:
                 index[o.get("offer_id")] = (o, key == "transfers_back")
-    party = _party_payload(ctx.brief)
+    party = _party_payload(brief)
     pax = party["adults"] + len(party["children_ages"])
     jobs, where = {}, {}
     for v in variants:
@@ -2201,22 +2201,74 @@ def _pin_transfers(ctx, variants, results):
                 payload["reverse"] = True
             key = f"{v.id}|{s.id}"
             jobs[key] = ("search_transfers", payload)
-            where[key] = (v, s, o.get("kind"))
+            where[key] = (v, s, o, reverse)
     found = _parallel(ctx, jobs, tolerant=True)
-    for key, value in found.items():
-        v, s, kind = where[key]
+    rebuilds = {}
+    for key in jobs:
+        value = found.get(key)
+        v, s, old, reverse = where[key]
         offers = (value or {}).get("offers") or []
-        pick = next((o for o in offers if o.get("kind") == kind), None) or (offers[0] if offers else None)
-        if pick is None:
+        pick = next((o for o in offers if o.get("kind") == old.get("kind")), None) or (offers[0] if offers else None)
+        changed = pick is None or any(pick.get(field) != old.get(field)
+                                      for field in ("kind", "duration_min", "price_rub"))
+        if changed and v.id not in rebuilds:
+            pinned = dict(results)
+            legs = [step for step in v.steps if step.type in TRANSPORT_STEPS]
+            for direction, leg in zip(("out", "back"), legs):
+                for kind in ("flights", "trains"):
+                    pinned[f"{kind}_{direction}"] = [o for o in results.get(f"{kind}_{direction}") or []
+                                                     if o["offer_id"] == leg.offer_id]
+            if v.hotel is not None:
+                pinned["hotels"] = [o for o in results.get("hotels") or [] if o["offer_id"] == v.hotel.offer_id]
+            for direction in ("out", "back"):
+                pinned[f"transfers_{direction}"] = {}
+            for source, _, offer, back in where.values():
+                if source is v:
+                    pinned["transfers_back" if back else "transfers_out"][offer["hotel_id"]] = [offer]
+            rebuilds[v.id] = pinned
+        if v.id in rebuilds:
+            rebuilds[v.id]["transfers_back" if reverse else "transfers_out"][old["hotel_id"]] = (
+                [{**old, **pick}] if pick is not None else [])
+        if pick is not None:
+            s.offer_id = pick["offer_id"]
+            s.link = f"ostrovok-mock:transfer/{pick['offer_id']}"
+    if not rebuilds:
+        return variants
+    out = []
+    for variant in variants:
+        if variant.id not in rebuilds:
+            out.append(variant)
             continue
-        new_rub, old_rub = pick.get("price_rub"), s.price.rub if s.price.rub is not None else s.price.amount
-        s.offer_id = pick["offer_id"]
-        s.link = f"ostrovok-mock:transfer/{pick['offer_id']}"
-        delta = int(new_rub) - int(old_rub) if new_rub is not None and old_rub is not None else 0
-        if delta:
-            s.price = s.price.model_copy(update={"amount": int(pick["price_rub"]), "rub": int(pick["price_rub"])})
-            v.totals = v.totals.model_copy(update={"rub": v.totals.rub + delta})
-    return variants
+        # A replacement changes arrival/leave times too. Reuse the builder instead of patching its facts.
+        # Re-quote the rebuilt pickup once more; unstable quotes are left out rather than shown as valid.
+        if attempt >= 2:
+            ctx.trace["notes"].append(f"transfer quote did not settle for {variant.id}")
+            continue
+        pinned = rebuilds[variant.id]
+        built = build(ctx, brief, pinned, districts, pin=False)
+        if not built:
+            continue
+        fresh = built[0].model_copy(update={"id": variant.id, "title": variant.title})
+        for field in ("also_fastest", "also_comfort", "coincide_note"):
+            fresh.facts.pop(field, None)  # a one-combination rebuild cannot establish these claims
+        out.extend(_pin_transfers(ctx, [fresh], pinned, brief, districts, attempt + 1))
+    # A timed replacement can make another shown trip cheaper/faster. Keep the actual winner,
+    # rather than retaining a card with a superlative that no longer matches its journey.
+    for label, metric, title in (("cheapest", "rub", "Дешевле"),
+                                 ("fastest", "door_to_door_hours", "Быстрее")):
+        named = next((v for v in out if v.id == label), None)
+        winner = min(out, key=lambda v: getattr(v.totals, metric)) if out else None
+        if named is not None and getattr(named.totals, metric) > getattr(winner.totals, metric):
+            out.remove(named)
+            if winner.id == "cheapest":
+                winner.facts["also_fastest"] = True
+            else:
+                was_fastest = winner.id == "fastest"
+                winner.id, winner.title = label, title
+                if was_fastest:
+                    winner.facts["also_fastest"] = True
+    from .ranking import refresh_variant_comparison
+    return refresh_variant_comparison(out, brief, rules_view(ctx))
 
 
 def _exclude_offers(results, bad):

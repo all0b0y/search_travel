@@ -1700,7 +1700,8 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     low_id, ref = picked[-1]   # the cheapest variant with a private room (or «Дешевле» itself)
     if door:
         min_h = min(c.hours for c in private)
-        near = [c for c in private if c.hours <= min_h + rr["fastest_hours_tolerance"]]
+        tolerance = 0 if short_break(brief) else rr["fastest_hours_tolerance"]
+        near = [c for c in private if c.hours <= min_h + tolerance]
         base = min(c.rub for c in near) or 1
         fastest = max(near, key=lambda c: (round(c.comfort - rr["fastest_price_weight"] * (c.rub / base - 1), 6),
                                            -c.hours, -c.rub))
@@ -1791,6 +1792,23 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
                     hotel=hotel, facts=f,
                     risks=risks, not_for=_not_for(c, f, brief, districts, rr))
         variants.append(v)
+    return refresh_variant_comparison(variants, brief, rules, segs)
+
+
+def refresh_variant_comparison(variants, brief, rules, segments=None):
+    """Refresh comparisons after a timed quote changed a variant's price or journey."""
+    if not variants:
+        return variants
+    rr = ranking_rules(rules)
+    segs = _segments(rules, segments)
+    min_rub = min(v.totals.rub for v in variants)
+    min_hours = min(v.totals.door_to_door_hours for v in variants)
+    for v in variants:
+        v.facts.update(total_rub=v.totals.rub, ref_min_rub=min_rub,
+                       delta_rub_vs_cheapest=v.totals.rub - min_rub)
+        if "ref_min_hours" in v.facts:
+            v.facts.update(ref_min_hours=min_hours,
+                           delta_hours_vs_fastest=round(v.totals.door_to_door_hours - min_hours, 1))
     for v in variants:
         others = [{"id": o.id, "facts": o.facts} for o in variants if o.id != v.id]
         v.sacrifices = _sacrifices({"id": v.id, "facts": v.facts}, others, rr, brief)

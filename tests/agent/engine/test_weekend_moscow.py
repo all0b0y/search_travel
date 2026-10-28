@@ -172,3 +172,53 @@ def test_old_purchase_button_cannot_buy_the_trip_before_rebuild(live, before):
     assert new_id != order_id
     response = h.act("pay", order_id=new_id)
     assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
+
+
+def test_short_break_prices_stay_consistent_after_transfer_requote(live):
+    from datetime import datetime
+    from agent.checks import check_variant_set
+    from ostrovok_mcp.offer_ids import decode
+    from ostrovok_mcp.transfers import build as transfer_offer
+
+    h = live
+    h.new(profile_id=None)
+    _, variants = ask(h, "Из Москвы в Сочи вдвоем с 25 декабря на две ночи, до 60 тысяч",
+                      **{"origin.city": "Москва", "destination.name": "Сочи",
+                         "dates.start": "2026-12-25", "dates.nights": 2,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": 60000})
+    assert check_variant_set(variants) == []
+    minimum = min(v.totals.rub for v in variants)
+    for variant in variants:
+        assert variant.facts["total_rub"] == variant.totals.rub, {
+            "id": variant.id, "facts": variant.facts,
+            "total": variant.totals.rub, "steps": [(s.type, s.price.rub) for s in variant.steps]}
+        assert variant.facts["ref_min_rub"] == minimum
+        assert variant.facts["delta_rub_vs_cheapest"] == variant.totals.rub - minimum
+        assert variant.facts["price_transfers_rub"] == sum(
+            s.price.rub for s in variant.steps if s.type == "transfer")
+        for step in variant.steps:
+            if step.type == "transfer":
+                _, params = decode(step.offer_id, "transfer")
+                quote = transfer_offer(params)
+                assert quote is not None and params["at"] == step.start
+                assert step.duration_estimate_min == quote["duration_min"]
+                assert step.price.rub == quote["price_rub"]
+        arrival = next(s.end for s in variant.steps if s.type == "transfer")
+        departure = next(s.start for s in reversed(variant.steps) if s.type == "transfer")
+        assert variant.facts["destination_hours"] == round(
+            (datetime.fromisoformat(departure) - datetime.fromisoformat(arrival)).total_seconds() / 3600, 1)
+
+
+@pytest.mark.parametrize("budget", [30000, 100000])
+def test_weekend_extra_time_card_does_not_undercut_the_fastest(live, budget):
+    from agent.checks import check_variant_set
+
+    h = live
+    h.new(profile_id=None)
+    _, variants = ask(h, f"Из Москвы в Калининград поездом на три ночи с 20 ноября, до {budget} рублей",
+                      **{"origin.city": "Москва", "destination.name": "Калининград",
+                         "dates.start": "2026-11-20", "dates.nights": 3,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": budget,
+                         "scope": ["trains", "stay", "transfers"]})
+    assert check_variant_set(variants) == [], [
+        (v.id, v.totals.rub, v.totals.door_to_door_hours, v.facts.get("destination_hours")) for v in variants]
