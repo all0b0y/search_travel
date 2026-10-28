@@ -1336,7 +1336,23 @@ def check_reply(engine, ctx, reply, plan, pool, tool_results):
                                                          for x in cheaper[:3])))
     issues += unannounced_change(ctx, plan, msg)
     issues += nothing_changed_claim(ctx, plan, msg)
+    issues += offer_issues(plan, text)
     return issues
+
+
+def offer_issues(plan, text):
+    """An offer to search by what code cannot search or sell («искать с отдельным купе», «соберу на машине или
+    автобусе») in a reply the card guards do not check for promises (a plain answer, a question): promise_claim."""
+    if plan.card in ("present.variants", "present.update"):
+        return []   # check_card_output already ran the promise checks on every sentence
+    from .guards import NOT_SEARCHABLE_RE, REBUILD_OFFER_RE, _sentences
+    out = []
+    for sent in _sentences(text):
+        m = NOT_SEARCHABLE_RE.search(sent) if REBUILD_OFFER_RE.search(sent) else None
+        if m:
+            out.append(issue("promise_claim", f"«{m.group(0)}» — по этому код искать не умеет (или такого не продаёт): "
+                                              f"скажите прямо один раз и предложите ближайшее, что есть"))
+    return out
 
 
 REBUILD_CLAIM_RE = re.compile(r"(?<!не )\bпересобрал\w*|(?<!не )\b(?:собрал|подобрал)\w*\s+заново|"

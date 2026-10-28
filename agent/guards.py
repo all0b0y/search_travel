@@ -121,9 +121,14 @@ CLAIMS = (
 )
 # offers of a rebuild the engine cannot make: no searchable data behind these words
 REBUILD_OFFER_RE = re.compile(r"пересоберу|подберу|поищу|найду|соберу|могу\s+(?:подобрать|поискать|найти|пересобрать|"
-                              r"собрать)|скажите\s*[—-]", re.I)
+                              r"собрать)|скажите\s*[—-]|\bискать\s+(?:с|под|в)\b", re.I)
+# not searchable: amenities no data has, a train car class or a whole compartment (no brief path; the mock prices a
+# large dog's compartment only as a rule line), roads the agent does not sell (a car, a bus)
 NOT_SEARCHABLE_RE = re.compile(r"вид\w*\s+на\s+(?:мор|гор|город)|балкон|бассейн|парковк|\bспа\b|саун|тренаж|джакузи|"
-                               r"камин|террас|кондиционер|аквапарк|анимаци|песчан\w*\s+пляж|wi-?fi|вайфа", re.I)
+                               r"камин|террас|кондиционер|аквапарк|анимаци|песчан\w*\s+пляж|wi-?fi|вайфа|"
+                               r"отдельн\w*\s+купе|\bкупе\s+целиком|выкуп\w*\s+(?:вс\w+\s+)?(?:купе|мест)|"
+                               r"\bпод\s+купе\b|\bс\s+купе\b|\bна\s+(?:машин|автомобил)\w*\s+или\s+автобус\w*|"
+                               r"\bна\s+автобус\w*|\bавтобусом\b", re.I)
 AMENITY_WORDS = {"constraints.kitchen": re.compile(r"кухн", re.I), "constraints.crib": re.compile(r"кроватк", re.I),
                  "constraints.accessible": re.compile(r"ступен|лестниц|коляск|безбарьер", re.I)}
 ONE_TAP_RE = re.compile(r"одной\s+кнопк|(?:добавлю|докину|подкину)\s+(?:и\s+)?(?:дорогу|перел[её]т|билеты|поезд)", re.I)
