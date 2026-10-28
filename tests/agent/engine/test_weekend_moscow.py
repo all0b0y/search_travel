@@ -1,4 +1,6 @@
 """The Moscow couple short-break flow over the real mock and catalog, without model/network calls."""
+import json
+
 import pytest
 
 from .fakes import u
@@ -8,7 +10,7 @@ TRAVELLERS = [{"name": "Анна Тестовая", "birth_date": "1993-02-10"},
               {"name": "Иван Тестовый", "birth_date": "1991-06-15"}]
 
 
-@pytest.mark.parametrize("live", ["stage1", "stage3"], indirect=True)
+@pytest.mark.parametrize("live", ["stage1", "stage3", "stage5"], indirect=True)
 @pytest.mark.parametrize("city,nights", [("Санкт-Петербург", 2), ("Санкт-Петербург", 3), ("Казань", 2), (None, 2)])
 def test_couple_weekend_rebuild_compare_cart_and_purchase(live, city, nights):
     h = live
@@ -70,3 +72,38 @@ def test_couple_weekend_rebuild_compare_cart_and_purchase(live, city, nights):
     response = h.act("pay", order_id=order["order_id"])
     assert response["order"]["order_id"] == order["order_id"]
     assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == total
+
+
+@pytest.mark.parametrize("live", ["stage5"], indirect=True)
+def test_weekend_api_accepts_the_complete_purchase_flow(live, tmp_path):
+    from agent.server import Api
+
+    h = live
+    api = Api(h.engine, debug=True, files_root=tmp_path)
+
+    def post(**request):
+        reply = api.dispatch("POST", "/api/turn", json.dumps({"session_id": h.sid, **request}).encode())
+        assert reply.status == 200, reply.json()
+        response = reply.json()
+        assert not response.get("error"), response["message"]
+        assert not list(h.validator.iter_errors(response))
+        return response
+
+    h.understand(u(set={"origin.city": "Москва", "destination.name": "Санкт-Петербург",
+                        "dates.start": "2026-11-20", "dates.nights": 2,
+                        "party.segment": "couple", "party.adults": 2, "budget_rub.max": 60000}))
+    response = post(text="Из Москвы в Петербург вдвоем на две ночи с 20 ноября до 60 тысяч")
+    assert response["stage"] == "selection"
+    variants = h.session().variants
+    if len(variants) > 1:
+        response = post(action={"type": "compare", "payload": {"variant_ids": [v.id for v in variants]}})
+        assert any(row["key"] == "destination_time" for row in response["comparison"]["rows"])
+    selected = max(variants, key=lambda v: v.facts["destination_hours"])
+    response = post(action={"type": "choose_variant", "payload": {"variant_id": selected.id}})
+    assert response["cart"]["total_rub"] == selected.totals.rub
+    response = post(action={"type": "checkout", "payload": {
+        "travellers": TRAVELLERS, "contact": {"email": "weekend-api@example.com"}}})
+    order_id = response["order"]["order_id"]
+    response = post(action={"type": "pay", "payload": {"order_id": order_id}})
+    assert response["stage"] == "ordered" and response["order"]["status"] == "paid"
+    assert response["order"]["total_rub"] == selected.totals.rub
