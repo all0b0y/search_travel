@@ -119,6 +119,10 @@
       "06:00"
     ],
     "early_departure_before": "07:00",
+    "night_relax_penalty": 0.15,
+    "night_family_penalty": 0.2,
+    "night_senior_penalty": 0.2,
+    "night_senior_age": 65,
     "tight_layover_min": 60,
     "long_transfer_min": 90,
     "wait_before_checkin_min": 180,

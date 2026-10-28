@@ -2154,8 +2154,10 @@ def step_search(ctx):
 
 def rules_view(ctx):
     """skill rules for ranking/checks, plus segments.json (district weights) under `segments`."""
+    from .night_arrival import traveller_context
     view = dict(ctx.rules)
     view.setdefault("segments", ctx.skill.segments)
+    view.update(traveller_context(ctx))
     return view
 
 

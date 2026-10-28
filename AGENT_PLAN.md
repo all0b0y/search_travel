@@ -141,6 +141,8 @@ Measured 2026-10-25 (live, OpenRouter, provider DeepSeek; the account allows pro
 
 ## 3. State
 
+As built (W5a): optional `PastTrip` fields `order_id`, `price_rub`, `party`, `stars`, `transport`, `destination_kind`, `paid_at` retain compatibility with old profile JSON. A successful pay appends the order once per profile/order id. The `profile_history` turn-end analytics hook writes private `views(profile_id, kind, ref_id, at, source)` to `ostrovok_state.sqlite` (`kind`: destination/hotel/variant; `source`: shown/opened/carted); anonymous sessions and failed turns are not recorded. No history is added to prompts or insights.
+
 `agent/state.py`, pydantic v2. One `Session` per conversation, persisted as JSON in `runtime/sessions.sqlite`.
 
 ```
@@ -185,6 +187,8 @@ Session:
 ```
 
 `Variant` (built by code): `id` (`cheapest|fastest|comfort` or `custom-N`), `steps` (flight/train/transfer/stay steps compatible with `agent/checks.py`), `totals` (`rub`, `door_to_door_hours` both ways, `out_hours` / `back_hours` one-way door-to-door, 1 decimal, null when that direction is absent; `prefs.max_travel_hours` is a one-way limit checked against them), `facts` (computed numbers the card may cite), `sacrifices` (computed diffs vs the other variants), `risks` (computed: connection slack, night arrival, non-refundable, long transfer...), `not_for` (computed from district scores and hotel policies), `fit` (0..1 with per-criterion breakdown), `upsell_candidates` (rule hits from `upsell.json`, each with its reason).
+
+As built (v3-11): `fit` reduces a night-arrival variant's score for mood `relax`, families/children, or travellers aged at least `ranking.night_senior_age` (65) in the profile. `ranking.night_relax_penalty` / `night_family_penalty` / `night_senior_penalty` default to 0.15 / 0.2 / 0.2; the largest applicable reduction is used once. Local outbound arrival and the transfer's arrival at the hotel use `ranking.night_window`; return arrivals do not count. `fit.breakdown.arrival_time = 0` explains the reduction. Profile age or saved birth dates on the trip start date (session date when unknown) become only an internal ranking boolean; they are not put into the brief or model input. Night options and their risks remain visible; existing hard night-travel filters are unchanged.
 
 The model never produces prices, times or totals. It only selects ids and writes text; every number it writes must exist in its input (checked by a hook).
 
@@ -320,6 +324,8 @@ Budget: ≤ 2 Flash calls per turn (plus at most one rerun per card on a failed 
 
 ## 6. Response contract (engine → UI)
 
+As built: GIF input (W10a) is decoded by `agent/frames.py` before the HTTP server calls the engine: the first frame, plus the middle frame when there are at least three frames, becomes one PNG (frames side by side). The `image` request field and the existing photo path stay unchanged. Invalid GIFs return HTTP 400; the image size limit also applies to the resulting PNG (HTTP 413).
+
 `agent/contracts/response.schema.json` (JSON Schema draft-07), with fixtures in `agent/contracts/fixtures/` for every stage. HTTP API (`agent/server.py`):
 
 - `POST /api/session` `{profile_id?}` → `{session_id}`
@@ -357,6 +363,7 @@ Optional keys of `cart.items[]` / `order.items[]` (only on a flight / train line
 | `search_flights` | `origin_iata[]`, `dest_iata[]`, `date`, `adults`, `children`, `infants`, `flex_days` (0–3) | offers: `offer_id`, `carrier`, `flight_no`, `segments[]`, `dep`, `arr`, `duration_min`, `stops`, `baggage`, `fare {refundable, change_fee_rub}`, `price_rub`, `date` |
 | `search_trains` | `origin_city`, `dest_city`, `date`, `passengers` | offers (domestic RU routes 30..~2500 km, `ostrovok_mcp/rail.py`; over 1000 km only long-distance sleepers; empty with a note otherwise) |
 | `search_transfers` | `from {iata|station|lat,lon}`, `to {hotel_id}`, `at`, `pax`, `kinds?` | offers: `offer_id`, `kind` (taxi/shuttle/public/private), `duration_min`, `price_rub`, `meeting_point` |
+| `search_events` | `destination_id`, `date_from`, `date_to` (inclusive, up to 366 days), `kinds?`, `tags?` (any matching tag), `limit?` (1–100, default 20) | deterministic `events`: `event_id`, `destination_id`, `venue_poi_id`, `venue_name`, `kind` (concert/show/sport/festival/excursion), `title_ru`, `starts_at`, `ends_at`, `duration_min`, `price_from_rub`, `niche_tags`, `source: synthetic`; real named OSM venues from `pois`, synthetic schedule/prices explicitly marked; unknown place or no eligible venues → empty list |
 | `cart_create` / `cart_add` / `cart_remove` / `cart_get` | `session_id`, `offer_id`, `kind` | cart with items, totals, compatibility issues found by the mock |
 | `checkout` | `cart_id`, `travellers [{name, birth_date}]`, `contact` | `order_id`, `status: pending_payment`, `issues[]` (age policies: infant fare, child beds, hotel age limits) |
 | `pay` | `order_id`, `method: "mock_card"` | `status: paid`, booking numbers per item |

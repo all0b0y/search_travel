@@ -741,4 +741,10 @@ def check_card_output(card, card_input: dict, output: dict, rules: dict):
     emo = emoji_count(all_text)
     if emo > g["max_emoji"]:
         found.append(_issue("too_many_emoji", "warn", "Слишком много эмодзи", count=emo, limit=g["max_emoji"]))
+    for check in TEXT_CHECKS:
+        found.extend(check(card, card_input, output, rules))
     return found
+
+
+# Load after the guard helpers: claim modules may reuse them when registering their checks.
+from .claims import TEXT_CHECKS  # noqa: E402

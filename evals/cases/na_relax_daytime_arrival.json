@@ -1,0 +1,856 @@
+{
+  "id": "na_relax_daytime_arrival",
+  "category": "C",
+  "card": "present.variants",
+  "input": {
+    "today": "2026-10-25",
+    "stage": "inspiration",
+    "brief": {
+      "origin": {
+        "city": "Москва",
+        "iata": [
+          "VKO",
+          "SVO",
+          "ZIA",
+          "DME"
+        ]
+      },
+      "destination": {
+        "id": "yerevan",
+        "name": "Ереван",
+        "country": "Армения"
+      },
+      "traits": null,
+      "dates": {
+        "start": "2026-11-17",
+        "end": "2026-11-22",
+        "month": 11,
+        "window": null,
+        "nights": 5,
+        "flexible_days": 0
+      },
+      "party": {
+        "segment": "couple",
+        "adults": 2,
+        "children": 0,
+        "children_ages": null,
+        "pets": []
+      },
+      "budget_rub": null,
+      "scope": [
+        "flights",
+        "stay",
+        "transfers"
+      ],
+      "prefs": {
+        "meals": "any",
+        "free_cancellation": null,
+        "stars_min": null,
+        "direct_only": null,
+        "max_travel_hours": null,
+        "district": "quiet",
+        "beach_max_m": null,
+        "center_max_m": null,
+        "near": null,
+        "transport": "any",
+        "arrive_before": null,
+        "no_night_flights": null,
+        "domestic": null
+      },
+      "constraints": null,
+      "mood": [
+        "relax"
+      ]
+    },
+    "assumed": [
+      "dates.nights",
+      "scope",
+      "prefs.district"
+    ],
+    "assumptions": [],
+    "items": [
+      {
+        "id": "cheapest",
+        "label": "1",
+        "title": "Дешевле",
+        "totals": {
+          "rub": 64820,
+          "door_to_door_hours": 8.0,
+          "out_hours": 4.0,
+          "back_hours": 4.0
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "EVN",
+            "start": "2026-11-17T17:55:00+03:00",
+            "end": "2026-11-17T21:42:00+04:00",
+            "carrier": "Аэрофлот",
+            "price_rub": 27590
+          },
+          {
+            "type": "transfer",
+            "from": "EVN",
+            "to": "\"Hrashq\" Motel",
+            "start": "2026-11-17T22:27:00+04:00",
+            "end": "2026-11-17T23:42:00+04:00",
+            "carrier": null,
+            "price_rub": 160
+          },
+          {
+            "type": "stay",
+            "from": "\"Hrashq\" Motel",
+            "to": "\"Hrashq\" Motel",
+            "start": "2026-11-17T23:42:00+04:00",
+            "end": "2026-11-22T06:50:00+04:00",
+            "carrier": null,
+            "price_rub": 10010
+          },
+          {
+            "type": "transfer",
+            "from": "\"Hrashq\" Motel",
+            "to": "EVN",
+            "start": "2026-11-22T06:50:00+04:00",
+            "end": "2026-11-22T08:05:00+04:00",
+            "carrier": null,
+            "price_rub": 160
+          },
+          {
+            "type": "flight",
+            "from": "EVN",
+            "to": "DME",
+            "start": "2026-11-22T11:05:00+04:00",
+            "end": "2026-11-22T12:47:00+03:00",
+            "carrier": "S7 Airlines",
+            "price_rub": 26900
+          }
+        ],
+        "hotel": {
+          "name": "\"Hrashq\" Motel",
+          "stars": 1,
+          "rating": 8.7,
+          "district": {
+            "labels": [
+              "тихий район"
+            ],
+            "counts": {
+              "bar": 0,
+              "beach": 0,
+              "cafe": 0,
+              "convenience": 6,
+              "fast_food": 0,
+              "nightclub": 0,
+              "park": 0,
+              "pedestrian": 0,
+              "pharmacy": 0,
+              "playground": 0,
+              "pub": 0,
+              "restaurant": 1,
+              "station": 0,
+              "stop": 6,
+              "supermarket": 0
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 64820,
+          "door_to_door_hours": 8.0,
+          "price_stay_rub": 10010,
+          "nights": 5,
+          "check_in_date": "2026-11-17",
+          "check_out_date": "2026-11-22",
+          "check_in_time": "13:00",
+          "check_out_time": "12:00",
+          "hotel_name": "\"Hrashq\" Motel",
+          "hotel_kind": "motel",
+          "hotel_stars": 1,
+          "hotel_rating": 8.7,
+          "hotel_reviews": 1206,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": false,
+          "cancellation_penalty_pct": 100,
+          "cancellation_penalty_rub": 10010,
+          "distance_center_m": 2314,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": true,
+          "children_allowed": true,
+          "infant_cot": "on_request",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": true,
+          "lift": true,
+          "out_kind": "flight",
+          "out_price_rub": 27590,
+          "out_from": "SVO",
+          "out_to": "EVN",
+          "out_date": "2026-11-17",
+          "out_dep_time": "17:55",
+          "out_arr_time": "21:42",
+          "out_arr_date": "2026-11-17",
+          "out_duration_min": 167,
+          "out_duration_hours": 2.8,
+          "out_stops": 0,
+          "out_carrier": "Аэрофлот",
+          "out_number": "SU4784",
+          "out_baggage": false,
+          "out_refundable": false,
+          "out_fare": "basic",
+          "out_door_hours": 4.0,
+          "back_kind": "flight",
+          "back_price_rub": 26900,
+          "back_from": "EVN",
+          "back_to": "DME",
+          "back_date": "2026-11-22",
+          "back_dep_time": "11:05",
+          "back_arr_time": "12:47",
+          "back_arr_date": "2026-11-22",
+          "back_duration_min": 162,
+          "back_duration_hours": 2.7,
+          "back_stops": 0,
+          "back_carrier": "S7 Airlines",
+          "back_number": "S73356",
+          "back_baggage": false,
+          "back_refundable": false,
+          "back_fare": "basic",
+          "back_door_hours": 4.0,
+          "transfer_out_min": 59,
+          "transfer_out_price_rub": 160,
+          "transfer_out_kind": "public",
+          "transfer_back_min": 59,
+          "transfer_back_price_rub": 160,
+          "transfer_back_kind": "public",
+          "price_transfers_rub": 320,
+          "price_transport_rub": 54490,
+          "arrival_at_hotel_time": "23:42",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "06:50",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.01,
+          "district_quiet": 1.0,
+          "district_family": 0.2,
+          "district_walkable": 0.38,
+          "poi_bar": 0,
+          "poi_beach": 0,
+          "poi_cafe": 0,
+          "poi_convenience": 6,
+          "poi_fast_food": 0,
+          "poi_nightclub": 0,
+          "poi_park": 0,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 0,
+          "poi_playground": 0,
+          "poi_pub": 0,
+          "poi_restaurant": 1,
+          "poi_station": 0,
+          "poi_stop": 6,
+          "poi_supermarket": 0,
+          "nearest_beach_m": 2497,
+          "nearest_centre_m": 2314,
+          "nearest_major_road_m": 1030,
+          "nearest_railway_m": 3015,
+          "nearest_station_m": 1873,
+          "nearest_stop_m": 173,
+          "district_fit": 0.801,
+          "center_fit": 0.671,
+          "comfort_score": 0.4953,
+          "ref_min_rub": 64820,
+          "delta_rub_vs_cheapest": 0,
+          "ref_min_hours": 6.2,
+          "delta_hours_vs_fastest": 1.8
+        },
+        "sacrifices": [
+          {
+            "code": "slower",
+            "text": "+1,8 ч в пути",
+            "data": {
+              "delta_hours": 1.8
+            }
+          },
+          {
+            "code": "no_free_cancel",
+            "text": "Нет бесплатной отмены",
+            "data": {}
+          },
+          {
+            "code": "no_baggage",
+            "text": "Без багажа в тарифе",
+            "data": {}
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 1★",
+            "data": {
+              "stars": 1
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "non_refundable",
+            "text": "Невозвратные билеты без обмена",
+            "data": {
+              "directions": "out,back"
+            }
+          },
+          {
+            "code": "no_free_cancel",
+            "text": "Отель без бесплатной отмены: штраф 100% — 10 010 ₽",
+            "data": {
+              "penalty_pct": 100,
+              "penalty_rub": 10010
+            }
+          },
+          {
+            "code": "late_checkin",
+            "text": "Заселение поздно, в 23:42 — отель стоит предупредить",
+            "data": {
+              "time": "23:42"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "quiet_no_nightlife",
+            "text": "Тихо и почти нет баров — не для тех, кто хочет вечерней движухи",
+            "data": {
+              "quiet": 0.998
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.644,
+          "breakdown": {
+            "budget": 1.0,
+            "time": 0.775,
+            "district": 0.802,
+            "cancellation": 0.5,
+            "stars": 0.2,
+            "center": 0.671,
+            "rating": 0.87,
+            "arrival_time": 0.0
+          }
+        },
+        "diff_rub": 9440,
+        "diff_word": "дешевле",
+        "over_budget_rub": null
+      },
+      {
+        "id": "fastest",
+        "label": "2",
+        "title": "Быстрее",
+        "totals": {
+          "rub": 74260,
+          "door_to_door_hours": 6.3,
+          "out_hours": 3.2,
+          "back_hours": 3.1
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "SVO",
+            "to": "EVN",
+            "start": "2026-11-17T17:55:00+03:00",
+            "end": "2026-11-17T21:42:00+04:00",
+            "carrier": "Аэрофлот",
+            "price_rub": 27590
+          },
+          {
+            "type": "transfer",
+            "from": "EVN",
+            "to": "Kond Apart House",
+            "start": "2026-11-17T22:27:00+04:00",
+            "end": "2026-11-17T22:52:00+04:00",
+            "carrier": null,
+            "price_rub": 2800
+          },
+          {
+            "type": "stay",
+            "from": "Kond Apart House",
+            "to": "Kond Apart House",
+            "start": "2026-11-17T22:52:00+04:00",
+            "end": "2026-11-22T07:40:00+04:00",
+            "carrier": null,
+            "price_rub": 14170
+          },
+          {
+            "type": "transfer",
+            "from": "Kond Apart House",
+            "to": "EVN",
+            "start": "2026-11-22T07:40:00+04:00",
+            "end": "2026-11-22T08:05:00+04:00",
+            "carrier": null,
+            "price_rub": 2800
+          },
+          {
+            "type": "flight",
+            "from": "EVN",
+            "to": "DME",
+            "start": "2026-11-22T11:05:00+04:00",
+            "end": "2026-11-22T12:47:00+03:00",
+            "carrier": "S7 Airlines",
+            "price_rub": 26900
+          }
+        ],
+        "hotel": {
+          "name": "Kond Apart House",
+          "stars": 2,
+          "rating": 8.6,
+          "district": {
+            "labels": [
+              "движ",
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 8,
+              "beach": 0,
+              "cafe": 37,
+              "convenience": 7,
+              "fast_food": 13,
+              "nightclub": 0,
+              "park": 1,
+              "pedestrian": 0,
+              "pharmacy": 2,
+              "playground": 5,
+              "pub": 3,
+              "restaurant": 29,
+              "station": 1,
+              "stop": 15,
+              "supermarket": 5
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 74260,
+          "door_to_door_hours": 6.3,
+          "price_stay_rub": 14170,
+          "nights": 5,
+          "check_in_date": "2026-11-17",
+          "check_out_date": "2026-11-22",
+          "check_in_time": "15:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Kond Apart House",
+          "hotel_kind": "guest_house",
+          "hotel_stars": 2,
+          "hotel_rating": 8.6,
+          "hotel_reviews": 39,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-16",
+          "cancellation_penalty_pct": 50,
+          "cancellation_penalty_rub": 7080,
+          "distance_center_m": 1065,
+          "room_name": "Двухместный номер",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "free",
+          "early_checkin_available": true,
+          "early_checkin_price_rub": 1100,
+          "kitchen": false,
+          "step_free": false,
+          "lift": false,
+          "out_kind": "flight",
+          "out_price_rub": 27590,
+          "out_from": "SVO",
+          "out_to": "EVN",
+          "out_date": "2026-11-17",
+          "out_dep_time": "17:55",
+          "out_arr_time": "21:42",
+          "out_arr_date": "2026-11-17",
+          "out_duration_min": 167,
+          "out_duration_hours": 2.8,
+          "out_stops": 0,
+          "out_carrier": "Аэрофлот",
+          "out_number": "SU4784",
+          "out_baggage": false,
+          "out_refundable": false,
+          "out_fare": "basic",
+          "out_door_hours": 3.2,
+          "back_kind": "flight",
+          "back_price_rub": 26900,
+          "back_from": "EVN",
+          "back_to": "DME",
+          "back_date": "2026-11-22",
+          "back_dep_time": "11:05",
+          "back_arr_time": "12:47",
+          "back_arr_date": "2026-11-22",
+          "back_duration_min": 162,
+          "back_duration_hours": 2.7,
+          "back_stops": 0,
+          "back_carrier": "S7 Airlines",
+          "back_number": "S73356",
+          "back_baggage": false,
+          "back_refundable": false,
+          "back_fare": "basic",
+          "back_door_hours": 3.1,
+          "transfer_out_min": 20,
+          "transfer_out_price_rub": 2800,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 20,
+          "transfer_back_price_rub": 2800,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 5600,
+          "price_transport_rub": 54490,
+          "arrival_at_hotel_time": "22:52",
+          "wait_before_checkin_min": 0,
+          "leave_hotel_time": "07:40",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.95,
+          "district_quiet": 0.15,
+          "district_family": 0.17,
+          "district_walkable": 0.8,
+          "poi_bar": 8,
+          "poi_beach": 0,
+          "poi_cafe": 37,
+          "poi_convenience": 7,
+          "poi_fast_food": 13,
+          "poi_nightclub": 0,
+          "poi_park": 1,
+          "poi_pedestrian": 0,
+          "poi_pharmacy": 2,
+          "poi_playground": 5,
+          "poi_pub": 3,
+          "poi_restaurant": 29,
+          "poi_station": 1,
+          "poi_stop": 15,
+          "poi_supermarket": 5,
+          "nearest_beach_m": 3926,
+          "nearest_centre_m": 1065,
+          "nearest_major_road_m": 121,
+          "nearest_railway_m": 373,
+          "nearest_station_m": 373,
+          "nearest_stop_m": 172,
+          "district_fit": 0.338,
+          "center_fit": 0.984,
+          "comfort_score": 0.6723,
+          "ref_min_rub": 64820,
+          "delta_rub_vs_cheapest": 9440,
+          "ref_min_hours": 6.2,
+          "delta_hours_vs_fastest": 0.1
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+9 440 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 9440
+            }
+          },
+          {
+            "code": "no_baggage",
+            "text": "Без багажа в тарифе",
+            "data": {}
+          },
+          {
+            "code": "fewer_stars",
+            "text": "Отель попроще: 2★",
+            "data": {
+              "stars": 2
+            }
+          },
+          {
+            "code": "lower_rating",
+            "text": "Рейтинг 8,6 — ниже остальных",
+            "data": {
+              "rating": 8.6
+            }
+          }
+        ],
+        "risks": [
+          {
+            "code": "non_refundable",
+            "text": "Невозвратные билеты без обмена",
+            "data": {
+              "directions": "out,back"
+            }
+          }
+        ],
+        "not_for": [
+          {
+            "code": "noisy_evening",
+            "text": "Шумно вечером — не для тех, кто рано ложится",
+            "data": {
+              "lively": 0.95
+            }
+          }
+        ],
+        "fit": {
+          "score": 0.788,
+          "breakdown": {
+            "budget": 0.873,
+            "time": 0.984,
+            "district": 0.34,
+            "cancellation": 1.0,
+            "stars": 0.4,
+            "center": 0.984,
+            "rating": 0.86
+          }
+        },
+        "diff_rub": 0,
+        "diff_word": null,
+        "over_budget_rub": null
+      },
+      {
+        "id": "comfort",
+        "label": "3",
+        "title": "Комфортнее",
+        "totals": {
+          "rub": 123310,
+          "door_to_door_hours": 6.2,
+          "out_hours": 3.1,
+          "back_hours": 3.1
+        },
+        "steps": [
+          {
+            "type": "flight",
+            "from": "DME",
+            "to": "EVN",
+            "start": "2026-11-17T08:20:00+03:00",
+            "end": "2026-11-17T12:02:00+04:00",
+            "carrier": "S7 Airlines",
+            "price_rub": 41020
+          },
+          {
+            "type": "transfer",
+            "from": "EVN",
+            "to": "Ararat",
+            "start": "2026-11-17T13:17:00+04:00",
+            "end": "2026-11-17T13:42:00+04:00",
+            "carrier": null,
+            "price_rub": 2800
+          },
+          {
+            "type": "stay",
+            "from": "Ararat",
+            "to": "Ararat",
+            "start": "2026-11-17T15:00:00+04:00",
+            "end": "2026-11-22T07:40:00+04:00",
+            "carrier": null,
+            "price_rub": 37690
+          },
+          {
+            "type": "transfer",
+            "from": "Ararat",
+            "to": "EVN",
+            "start": "2026-11-22T07:40:00+04:00",
+            "end": "2026-11-22T08:05:00+04:00",
+            "carrier": null,
+            "price_rub": 2800
+          },
+          {
+            "type": "flight",
+            "from": "EVN",
+            "to": "DME",
+            "start": "2026-11-22T11:05:00+04:00",
+            "end": "2026-11-22T12:47:00+03:00",
+            "carrier": "S7 Airlines",
+            "price_rub": 39000
+          }
+        ],
+        "hotel": {
+          "name": "Ararat",
+          "stars": 4,
+          "rating": 9.1,
+          "district": {
+            "labels": [
+              "пешком до всего"
+            ],
+            "counts": {
+              "bar": 4,
+              "beach": 0,
+              "cafe": 11,
+              "convenience": 8,
+              "fast_food": 11,
+              "nightclub": 0,
+              "park": 6,
+              "pedestrian": 12,
+              "pharmacy": 7,
+              "playground": 2,
+              "pub": 0,
+              "restaurant": 11,
+              "station": 0,
+              "stop": 22,
+              "supermarket": 3
+            }
+          }
+        },
+        "facts": {
+          "total_rub": 123310,
+          "door_to_door_hours": 6.2,
+          "price_stay_rub": 37690,
+          "nights": 5,
+          "check_in_date": "2026-11-17",
+          "check_out_date": "2026-11-22",
+          "check_in_time": "15:00",
+          "check_out_time": "12:00",
+          "hotel_name": "Ararat",
+          "hotel_kind": "hotel",
+          "hotel_stars": 4,
+          "hotel_rating": 9.1,
+          "hotel_reviews": 7,
+          "meals": "none",
+          "meals_ru": "без питания",
+          "free_cancellation": true,
+          "free_cancellation_until": "2026-11-03",
+          "cancellation_penalty_pct": 50,
+          "cancellation_penalty_rub": 18840,
+          "distance_center_m": 730,
+          "room_name": "Стандартный двухместный",
+          "room_capacity_adults": 2,
+          "room_capacity_children": 1,
+          "pets_allowed": false,
+          "children_allowed": true,
+          "infant_cot": "on_request",
+          "early_checkin_available": false,
+          "kitchen": false,
+          "step_free": true,
+          "lift": true,
+          "out_kind": "flight",
+          "out_price_rub": 41020,
+          "out_from": "DME",
+          "out_to": "EVN",
+          "out_date": "2026-11-17",
+          "out_dep_time": "08:20",
+          "out_arr_time": "12:02",
+          "out_arr_date": "2026-11-17",
+          "out_duration_min": 162,
+          "out_duration_hours": 2.7,
+          "out_stops": 0,
+          "out_carrier": "S7 Airlines",
+          "out_number": "S73895",
+          "out_baggage": true,
+          "out_refundable": true,
+          "out_fare": "flex",
+          "out_door_hours": 3.1,
+          "back_kind": "flight",
+          "back_price_rub": 39000,
+          "back_from": "EVN",
+          "back_to": "DME",
+          "back_date": "2026-11-22",
+          "back_dep_time": "11:05",
+          "back_arr_time": "12:47",
+          "back_arr_date": "2026-11-22",
+          "back_duration_min": 162,
+          "back_duration_hours": 2.7,
+          "back_stops": 0,
+          "back_carrier": "S7 Airlines",
+          "back_number": "S73356",
+          "back_baggage": true,
+          "back_refundable": true,
+          "back_fare": "flex",
+          "back_door_hours": 3.1,
+          "transfer_out_min": 20,
+          "transfer_out_price_rub": 2800,
+          "transfer_out_kind": "private",
+          "transfer_back_min": 20,
+          "transfer_back_price_rub": 2800,
+          "transfer_back_kind": "private",
+          "price_transfers_rub": 5600,
+          "price_transport_rub": 80020,
+          "arrival_at_hotel_time": "13:42",
+          "wait_before_checkin_min": 78,
+          "leave_hotel_time": "07:40",
+          "wait_after_checkout_min": 0,
+          "district_lively": 0.53,
+          "district_quiet": 0.44,
+          "district_family": 0.5,
+          "district_walkable": 1.0,
+          "poi_bar": 4,
+          "poi_beach": 0,
+          "poi_cafe": 11,
+          "poi_convenience": 8,
+          "poi_fast_food": 11,
+          "poi_nightclub": 0,
+          "poi_park": 6,
+          "poi_pedestrian": 12,
+          "poi_pharmacy": 7,
+          "poi_playground": 2,
+          "poi_pub": 0,
+          "poi_restaurant": 11,
+          "poi_station": 0,
+          "poi_stop": 22,
+          "poi_supermarket": 3,
+          "nearest_beach_m": 2904,
+          "nearest_centre_m": 730,
+          "nearest_major_road_m": 24,
+          "nearest_railway_m": 953,
+          "nearest_station_m": 554,
+          "nearest_stop_m": 74,
+          "district_fit": 0.56,
+          "center_fit": 1.0,
+          "comfort_score": 0.8027,
+          "ref_min_rub": 64820,
+          "delta_rub_vs_cheapest": 58490,
+          "ref_min_hours": 6.2,
+          "delta_hours_vs_fastest": 0.0
+        },
+        "sacrifices": [
+          {
+            "code": "price_more",
+            "text": "+58 490 ₽ к самому дешёвому",
+            "data": {
+              "delta_rub": 58490
+            }
+          }
+        ],
+        "risks": [],
+        "not_for": [],
+        "fit": {
+          "score": 0.772,
+          "breakdown": {
+            "budget": 0.526,
+            "time": 1.0,
+            "district": 0.559,
+            "cancellation": 1.0,
+            "stars": 0.8,
+            "center": 1.0,
+            "rating": 0.91
+          }
+        },
+        "diff_rub": 49050,
+        "diff_word": "дороже",
+        "over_budget_rub": null
+      }
+    ],
+    "recommended_hint": "fastest",
+    "questions": [],
+    "upsell_candidates": []
+  },
+  "image": null,
+  "expect": [
+    {
+      "type": "schema"
+    },
+    {
+      "type": "ids_subset"
+    },
+    {
+      "type": "numbers_subset"
+    },
+    {
+      "type": "predicate",
+      "name": "russian_only"
+    },
+    {
+      "type": "path_equals",
+      "path": "/recommended_id",
+      "value": "fastest"
+    },
+    {
+      "type": "predicate",
+      "name": "no_unbacked_claims"
+    },
+    {
+      "type": "predicate",
+      "name": "money_risks_plain"
+    }
+  ],
+  "runs": 5,
+  "notes": "Own example: Moscow–Yerevan, 17–22 November. The cheapest trip arrives at night; code recommends a daytime arrival for a quiet holiday or older travellers. Follow recommended_hint and keep the cheaper night's risks honest."
+}

@@ -37,6 +37,8 @@ from urllib.parse import unquote, urlsplit
 
 import jsonschema
 
+from .frames import gif_to_png
+
 ROOT = Path(__file__).resolve().parent.parent
 CONTRACTS = ROOT / "agent" / "contracts"
 FIXTURES_DIR = CONTRACTS / "fixtures"
@@ -331,6 +333,14 @@ class Api:
             return error_reply(400, "bad_request", errors[0][0], [tech for _, tech in errors[:8]])
         if isinstance(image, str) and not image_is_decodable(image):
             return error_reply(400, "bad_request", "Картинка повреждена: base64 не читается.")
+        if isinstance(image, str) and image.startswith("data:image/gif;base64,"):
+            try:
+                image = gif_to_png(image)
+            except ValueError:
+                return error_reply(400, "bad_request", "Не удалось прочитать GIF — пришлите другую картинку.")
+            if image_size_bytes(image) > self.image_max_bytes or len(image) > IMAGE_MAX_CHARS:
+                return error_reply(413, "image_too_large", "Кадры GIF слишком большие — уменьшите картинку.")
+            data = dict(data, image=image)
         with self.lock:
             response = self.engine.handle(data["session_id"], data)
         if self.validate_responses:

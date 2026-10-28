@@ -711,6 +711,44 @@ class InsightsLogEventOut(Model):
 
 # ---------------------------------------------------------------- registry
 
+EventKind = Literal["concert", "show", "sport", "festival", "excursion"]
+
+
+class SearchEventsIn(Model):
+    destination_id: str
+    date_from: Date
+    date_to: Date
+    kinds: Optional[list[EventKind]] = None
+    tags: Optional[list[str]] = None
+    limit: int = PField(default=20, ge=1, le=100)
+
+    @model_validator(mode="after")
+    def valid_window(self):
+        if not 0 <= (self.date_to - self.date_from).days <= 365:
+            raise ValueError("event window must be ordered and at most 366 days inclusive")
+        return self
+
+
+class Event(Model):
+    event_id: str
+    destination_id: str
+    venue_poi_id: str
+    venue_name: str
+    kind: EventKind
+    title_ru: str
+    starts_at: IsoDateTime
+    ends_at: IsoDateTime
+    duration_min: int = PField(gt=0)
+    price_from_rub: Rub
+    niche_tags: list[str]
+    source: Literal["synthetic"] = "synthetic"
+
+
+class SearchEventsOut(Model):
+    events: list[Event]
+    synthetic: Literal[True] = True
+
+
 TOOLS = {
     "quote_destinations": (QuoteDestinationsIn, QuoteDestinationsOut),
     "search_hotels": (SearchHotelsIn, SearchHotelsOut),
@@ -718,6 +756,7 @@ TOOLS = {
     "search_flights": (SearchFlightsIn, SearchFlightsOut),
     "search_trains": (SearchTrainsIn, SearchTrainsOut),
     "search_transfers": (SearchTransfersIn, SearchTransfersOut),
+    "search_events": (SearchEventsIn, SearchEventsOut),
     "cart_create": (CartCreateIn, CartOut),
     "cart_add": (CartAddIn, CartOut),
     "cart_remove": (CartRemoveIn, CartOut),

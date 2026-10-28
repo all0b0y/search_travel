@@ -15,7 +15,7 @@ PINNED_NOW = datetime(2026, 10, 24, 12, 0, tzinfo=MSK)
 
 
 @pytest.fixture(autouse=True)
-def _no_network_no_key(monkeypatch):
+def _no_network_no_key(monkeypatch, tmp_path):
     """Any socket connection fails loudly; the real key is never visible to tests."""
     def guard(*args, **kwargs):
         raise RuntimeError("network access is not allowed in unit tests")
@@ -23,6 +23,7 @@ def _no_network_no_key(monkeypatch):
     monkeypatch.setattr(socket, "create_connection", guard)
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.delenv("TRIP_AGENT_FLAGS", raising=False)
+    monkeypatch.setenv("OSTROVOK_STATE_DB", str(tmp_path / "ostrovok_state.sqlite"))
 
 
 @pytest.fixture

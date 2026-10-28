@@ -32,9 +32,10 @@ def test_counts_and_categories():
     # + 5 dead-end / pet-fee / budget cases: a no-flight trip by train, a plane-fixed trip, a cart pet line, two
     #   places in the budget, «а с пересадкой?» after nothing built (cases_dead_ends.py)
     # + 6 guide-mode cases: savings, «ещё дешевле», a dead end, a vague wish, weather, another pair (cases_guide.py)
-    assert len(CASES) == 92
+    # + 2 daytime-arrival recommendations: relax and older travellers (cases_night_arrival.py)
+    assert len(CASES) == 94
     cats = Counter(load(p)["category"] for p in CASES)
-    assert cats == {"A": 11, "A_photo": 5, "B": 11, "C": 8, "D": 5, "E": 16, "F": 10, "segments": 4, "edge": 11,
+    assert cats == {"A": 11, "A_photo": 5, "B": 11, "C": 10, "D": 5, "E": 16, "F": 10, "segments": 4, "edge": 11,
                     "tone": 5, "guide": 6}
     assert len(SCENARIOS) == 25
     assert len(HOLDOUT) == 10
