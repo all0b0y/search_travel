@@ -3881,6 +3881,8 @@ def step_checkout(ctx):
     s = ctx.session
     if not s.cart_id:
         ctx.fail("bad_request", "Корзина пока пустая — сначала выберите вариант.")
+    if s.stage not in ("cart", "checkout"):
+        ctx.fail("bad_request", "Выберите вариант из новой подборки - затем оформим поездку.")
     payload = ctx.checkout_payload
     if not payload or not payload.get("travellers"):
         ctx.message = "Чтобы оформить, нужны имена и даты рождения всех путешественников и контакт для билетов."
@@ -4023,6 +4025,8 @@ def step_pay(ctx):
     order_id = ((ctx.action or {}).get("payload") or {}).get("order_id") or s.order_id
     if not order_id or order_id != s.order_id:
         ctx.fail("bad_request", "Не нашёл заказ для оплаты — оформите корзину ещё раз.")
+    if s.stage not in ("checkout", "ordered", "aftercare"):
+        ctx.fail("bad_request", "Подборка изменилась - выберите вариант и оформите его перед оплатой.")
     blockers = [i for i in checkout_issues(s, order_id) if (i.get("severity") or "").lower() in BLOCK_SEVERITIES]
     if blockers:
         ctx.fail("bad_request", f"Оплатить этот заказ пока нельзя: {attention(blockers)} "

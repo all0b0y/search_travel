@@ -139,3 +139,36 @@ def test_weekend_cart_rebuild_uses_new_dates_budget_and_train(live):
     order_id = response["order"]["order_id"]
     response = h.act("pay", order_id=order_id)
     assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
+
+
+@pytest.mark.parametrize("before", ["cart", "checkout"])
+def test_old_purchase_button_cannot_buy_the_trip_before_rebuild(live, before):
+    h = live
+    _, variants = ask(h, "Из Москвы в Петербург на две ночи вдвоем с 20 ноября",
+                      **{"origin.city": "Москва", "destination.name": "Санкт-Петербург",
+                         "dates.start": "2026-11-20", "dates.nights": 2,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": 60000})
+    h.act("choose_variant", variant_id=variants[0].id)
+    order_id = None
+    if before == "checkout":
+        response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "weekend-old@example.com"})
+        order_id = response["order"]["order_id"]
+    h.understand(u(intent="refine", set={"dates.shift_days": 7}))
+    response = h.turn("Пересоберите на неделю позже")
+    assert response["stage"] == "selection", response["message"]
+    if order_id:
+        response = h.act("pay", order_id=order_id)
+        stored = h.ostrovok.call("order_get", {"order_id": order_id})
+        assert stored["status"] == "pending_payment"
+    else:
+        response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "weekend-old@example.com"})
+        assert h.session().order_id is None
+    assert response.get("error") and response["stage"] == "selection", response["message"]
+    selected = h.session().variants[0]
+    assert selected.facts["check_in_date"] == "2026-11-27"
+    h.act("choose_variant", variant_id=selected.id)
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "weekend-new@example.com"})
+    new_id = response["order"]["order_id"]
+    assert new_id != order_id
+    response = h.act("pay", order_id=new_id)
+    assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
