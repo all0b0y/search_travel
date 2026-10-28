@@ -9,7 +9,7 @@ what the user said (source "user").
 """
 import sqlite3
 import threading
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Optional
 
@@ -32,6 +32,13 @@ class PastTrip(BaseModel):
     year: Optional[int] = None
     segment: Optional[Segment] = None
     nights: Optional[int] = None
+    order_id: Optional[str] = None
+    price_rub: Optional[int] = PField(default=None, ge=0)
+    party: Optional[dict[str, Any]] = None
+    stars: Optional[int] = PField(default=None, ge=0, le=5)
+    transport: Optional[str] = None
+    destination_kind: Optional[str] = None
+    paid_at: Optional[datetime] = None
 
 
 class SavedTraveller(BaseModel):
@@ -95,6 +102,18 @@ class ProfileStore:
     def close(self):
         with self._lock:
             self._conn.close()
+
+    def add_paid_trip(self, profile_id, trip):
+        """Append a paid order once, without overwriting concurrent profile updates."""
+        with self._lock:
+            profile = self.get(profile_id)
+            if profile is None or not trip.order_id:
+                return False
+            if any(p.order_id == trip.order_id for p in profile.past_trips):
+                return False
+            profile.past_trips.append(trip)
+            self.put(profile)
+            return True
 
 
 def profile_value(profile, path):

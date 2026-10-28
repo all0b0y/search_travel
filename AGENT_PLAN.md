@@ -141,6 +141,8 @@ Measured 2026-10-25 (live, OpenRouter, provider DeepSeek; the account allows pro
 
 ## 3. State
 
+As built (W5a): optional `PastTrip` fields `order_id`, `price_rub`, `party`, `stars`, `transport`, `destination_kind`, `paid_at` retain compatibility with old profile JSON. A successful pay appends the order once per profile/order id. The `profile_history` turn-end analytics hook writes private `views(profile_id, kind, ref_id, at, source)` to `ostrovok_state.sqlite` (`kind`: destination/hotel/variant; `source`: shown/opened/carted); anonymous sessions and failed turns are not recorded. No history is added to prompts or insights.
+
 `agent/state.py`, pydantic v2. One `Session` per conversation, persisted as JSON in `runtime/sessions.sqlite`.
 
 ```

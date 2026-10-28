@@ -211,12 +211,14 @@ class Engine:
             return None
 
     def _default_hooks(self):
+        from .views import record_turn
         hooks = DEFAULT_HOOKS.copy()
         hooks.register("after_understand", validate_patch_hook, "validate", "patch")
         hooks.register("after_variants", check_variants_hook, "validate", "checks")
         hooks.register("after_travellers", after_travellers_hook, "validate", "travellers")
         hooks.register("after_present", prefetch_hook, "prefetch", "prefetch_next")
         hooks.register("turn_end", step_log_event, "analytics", "insights")
+        hooks.register("turn_end", record_turn, "analytics", "profile_history")
         return hooks
 
     # ------------------------------------------------------------ sessions
