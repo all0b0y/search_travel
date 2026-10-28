@@ -222,3 +222,57 @@ def test_weekend_extra_time_card_does_not_undercut_the_fastest(live, budget):
                          "scope": ["trains", "stay", "transfers"]})
     assert check_variant_set(variants) == [], [
         (v.id, v.totals.rub, v.totals.door_to_door_hours, v.facts.get("destination_hours")) for v in variants]
+
+
+@pytest.mark.parametrize("live", ["stage3,guide"], indirect=True)
+def test_guide_can_choose_more_time_from_code_facts_and_complete_purchase(live):
+    from .test_guide import Script, calls, reply
+
+    h = live
+
+    def choose(context, request):
+        choices = context["default_plan"].get("variants") or context["screen"]["variants"]
+        best = max(choices,
+                   key=lambda v: v.get("facts", {}).get("destination_hours", 0))
+        return reply(f"Советую «{best['title']}»: этот вариант оставляет больше времени на месте, включая ночи.",
+                     rec=best["id"])
+
+    script = Script(h, choose)
+    h.understand(u(set={"origin.city": "Москва", "destination.name": "Санкт-Петербург",
+                        "dates.start": "2026-11-20", "dates.nights": 2,
+                        "party.segment": "couple", "party.adults": 2, "budget_rub.max": 60000}))
+    response = h.turn("Из Москвы в Петербург вдвоем на две ночи с 20 ноября. Хотим больше времени на месте")
+    assert response["debug"]["guide"]["used"] is True
+    variants = h.session().variants
+    for compact in script.ctx()["default_plan"]["variants"]:
+        assert compact["facts"]["destination_hours"] == h.session().variant(compact["id"]).facts["destination_hours"]
+    selected = max(variants, key=lambda v: v.facts["destination_hours"])
+    assert response["debug"]["guide"]["recommended_id"] == selected.id
+    followup = Script(h, choose)
+    h.understand(u(intent="info", info="В каком варианте больше времени на месте?"))
+    response = h.turn("А в каком варианте больше времени на месте?")
+    assert response["debug"]["guide"]["used"] is True
+    for compact in followup.ctx()["screen"]["variants"]:
+        assert compact["facts"]["destination_hours"] == h.session().variant(compact["id"]).facts["destination_hours"]
+    assert response["debug"]["guide"]["recommended_id"] == selected.id
+
+    def choose_rebuilt(context, request):
+        result = context["tool_results"][-1]["result"]
+        assert result["ok"] is True
+        best = max(result["variants"], key=lambda v: v["facts"]["destination_hours"])
+        return reply(f"Если сдвинуть поездку и остаться на три ночи, советую «{best['title']}»: больше времени на месте.",
+                     rec=best["id"])
+
+    Script(h, calls(("rebuild", {"set": {"dates.shift_days": 7, "dates.nights": 3,
+                                         "budget_rub.max": 40000, "prefs.transport": "train"}})), choose_rebuilt)
+    h.understand(u(intent="refine"))
+    response = h.turn("А если на неделю позже и на три ночи, поездом до сорока тысяч?")
+    assert response["debug"]["guide"]["used"] is True
+    variants = h.session().variants
+    assert all(v.facts["nights"] == 3 and v.facts["check_in_date"] == "2026-11-27" for v in variants)
+    assert all(v.totals.rub <= 40000 for v in variants)
+    selected = h.session().variant(response["debug"]["guide"]["recommended_id"])
+    h.act("choose_variant", variant_id=selected.id)
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "weekend-guide@example.com"})
+    response = h.act("pay", order_id=response["order"]["order_id"])
+    assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub

@@ -59,7 +59,7 @@ VARIANT_FACT_KEYS = ("budget_fit", "budget_rub", "budget_dropped_prefs", "dates_
                      "out_long_train", "back_long_train", "out_leave_ru", "back_home_ru", "out_days_before_checkin",
                      "out_pets_rule", "back_pets_rule", "price_pets_rub", "near_name", "distance_near_m", "dorm_bed",
                      "out_night", "back_night", "out_high_speed", "back_high_speed", "kitchen", "lift", "step_free",
-                     "infant_cot", "no_transport", "price_stay_rub", "lever", "saving_rub")
+                     "infant_cot", "no_transport", "price_stay_rub", "destination_hours", "lever", "saving_rub")
 KEEP_FALSE = ("free_cancellation",)
 GUARD_DROP = {"message_long", "message_longish", "message_short", "message_empty", "extra_question",
               "too_many_questions"}
@@ -397,7 +397,8 @@ def _reconcile(patch, brief, state):
         if span is None:
             raise ArgError("dates.shift_days needs a trip with dates")
         sets["dates.start"] = (span[0] + timedelta(days=k)).isoformat()
-        sets["dates.end"] = (span[1] + timedelta(days=k)).isoformat()
+        end = span[0] + timedelta(days=sets["dates.nights"]) if "dates.nights" in sets else span[1]
+        sets["dates.end"] = (end + timedelta(days=k)).isoformat()
     if "dates.end" not in sets and "dates.end" not in unsets and ("dates.nights" in sets or "dates.start" in sets):
         if (brief.values().get("dates") or {}).get("end"):
             unsets.append("dates.end")
