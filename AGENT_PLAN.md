@@ -320,6 +320,8 @@ Budget: ≤ 2 Flash calls per turn (plus at most one rerun per card on a failed 
 
 ## 6. Response contract (engine → UI)
 
+As built: GIF input (W10a) is decoded by `agent/frames.py` before the HTTP server calls the engine: the first frame, plus the middle frame when there are at least three frames, becomes one PNG (frames side by side). The `image` request field and the existing photo path stay unchanged. Invalid GIFs return HTTP 400; the image size limit also applies to the resulting PNG (HTTP 413).
+
 `agent/contracts/response.schema.json` (JSON Schema draft-07), with fixtures in `agent/contracts/fixtures/` for every stage. HTTP API (`agent/server.py`):
 
 - `POST /api/session` `{profile_id?}` → `{session_id}`
