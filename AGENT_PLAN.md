@@ -1,6 +1,6 @@
 # План: агент трека «О!дин запрос»
 
-Решения приняты в интервью 2026-10-24. Решение, которое нужно поменять, сначала согласуй с владельцем репозитория. `SYSTEM_PLAN.md` и `skills/trip-planner/` — прежний проект «от двери до двери»; они остаются как есть, как источник идей, и этим планом не меняются.
+Решения приняты в интервью 2026-10-24. Решение, которое нужно поменять, сначала согласуй с владельцем репозитория. Прежний проект «от двери до двери» (`SYSTEM_PLAN.md`, `skills/trip-planner/`, `system/`) удалён 2026-10-28, чтобы не путать команду; он остаётся в истории git, его проверки живут в `agent/checks.py`, фикстуры — в `tests/fixtures/trip_planner/`. Правила команды — `AGENTS.md`; схема — `docs/ARCHITECTURE.md`; потоки работ — `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Цель
 
@@ -38,6 +38,16 @@
 | 24 | Модель гида — та же DeepSeek V4.1 Flash, размышление выключено (решение владельца 2026-10-25 после замера на 6 кейсах гида: low — 30/30, p50 2,8 с, p95 9,7 с; off — 29/30, p50 1,8 с, p95 5,0 с). «Думание» — в цикле инструментов, а не в скрытых рассуждениях. Уровень — настройка rules.json guide.thinking. |
 | 25 | Ход гида — до 15 с. Контекст компактный: заданные поля брифа, что на экране, последние реплики, сжатые результаты инструментов; стабильный префикс промпта ради кэша. Скорость второстепенна по сравнению с качеством, но не больше 15 с. |
 | 26 | Гид становится режимом по умолчанию, только если на новом слепом наборе v3 и на наших наборах он не хуже конвейера по скрытым требованиям и лучше по касаниям или качеству. Работа — в ветке `guide` (worktree `../search_travel-guide`). |
+| 27 | Гибрид (2026-10-28, интервью по схеме команды; схема — `docs/ARCHITECTURE.md`, план — `docs/IMPLEMENTATION_PLAN.md`): конвейер идёт на каждом текстовом ходу; после него диспетчер (`agent/router.py`: правила кодом, в серой зоне Jev, без Jev — deep) выбирает `fast` (текст Flash по готовым цифрам) или `deep` (планировщик с инструментами гида); причина — в трассу. Меняет «гид на каждом ходу» решения 23. |
+| 28 | Планировщик глубокого пути — модель с открытыми весами через OpenRouter, провайдер закреплён; кандидаты DeepSeek V4 Pro, Qwen3.8 2.4T-A95B, GLM-5.3, выбор по замерам на наших кейсах гида и v3. Запасная цепочка: Flash с размышлением → `present` конвейера. Sonnet остаётся только персоной в тестах (решение 15). |
+| 29 | Глубокий ход — до 30 с, до 3 кругов (меняет 15 с решения 25 для deep). Шаги идут потоком: строка шага кодом из аргументов вызова + наша шутка под тип шага (≈ 9 типов × 4–5, без повтора в сессии); о деньгах и в жалобах не шутим. |
+| 30 | Первый ход сессии, даже размытый («хочу куда-нибудь улететь»), — быстрый путь: 3 направления разных типов, чипы допущений, ≤ 2 вопроса кнопками. Глубокий путь — с реакции человека. |
+| 31 | Метрика первого хода — попадание в топ-3: хотя бы одно из 3 направлений проходит скрытые требования персоны (проверка кодом). Персон и профили пишет внешняя модель, не видя `insights`. Доход до корзины — вторичная метрика без порога. Цель ≥ 80 % (новый), ≥ 85 % (вернувшийся). |
+| 32 | Вернувшийся человек: прошлые заказы и просмотры (новая таблица `views`) задают допущения и пул направлений неявно — «а может, махнём в Калининград?», никогда «вы смотрели / в прошлый раз вы» (проверка `history_claim`). |
+| 33 | Скидка в тексте — только из данных мока (`deals`, применяются в его ценах, поэтому карточка, корзина и заказ сходятся); проверка `deal_claim`. |
+| 34 | После оплаты агент пишет первым: за 2 дня до выезда, на 2-й день поездки, после возврата (отзыв). Планировщик с `outbox`, подменяемые часы, тихие часы по местному времени, ≤ 1 сообщения в день, отписка словами. Доставка в чат (SSE / опрос); внешние каналы — позже. Это система, не демо: перемотка времени только в dev-режиме. |
+| 35 | Жалобы: намерение `complaint` → обращение в мок (`support_create_ticket`) с контекстом заказа и срочностью → входящие компании + webhook. Без шуток, без обещаний компенсации; при срочном — сразу предложить, что агент может сделать сам. Срочно = проблема сейчас в поездке (трансфер не встретил, не заселяют, рейс отменён); срок ответа — наш (`rules.json`). |
+| 36 | Цифры в тексте модели — только метками: модель пишет `{price:<id>}`, `{out_hours:<id>}`, `{dates:<id>}`…, код подставляет значения в русском формате (`payloads.fmt_*`). Любая цифра в тексте модели — блок (порог «малых чисел» убирается). Действует для всех `present.*`, `guide`, `proactive`, `complaint`. Причина: модель не интерпретирует и не переносит числа вообще, ошибка «цифра от другого варианта» невозможна. |
 
 ### Режим «гид» (решения 23–26)
 
@@ -98,7 +108,7 @@ tests/                  unit tests (no network, no model calls): tests/agent, te
 runtime/                gitignored: sessions, profiles, carts/orders, caches
 ```
 
-Python 3.11, venv in `.venv` (`uv venv --python 3.11 .venv && uv pip install -r requirements.txt`). Dependencies: `openai` (OpenRouter client), `mcp` (server and client), `pydantic` v2, `jsonschema`, `httpx`, `pytest`. Nothing else without the orchestrator. HTTP server: stdlib `http.server` (as in `system/server.py`), no web framework.
+Python 3.11, venv in `.venv` (`uv venv --python 3.11 .venv && uv pip install -r requirements.txt`). Dependencies: `openai` (OpenRouter client), `mcp` (server and client), `pydantic` v2, `jsonschema`, `httpx`, `pytest`, `pillow` (GIF frames, W10, added 2026-10-28). Nothing else without the orchestrator. HTTP server: stdlib `http.server` (`ThreadingHTTPServer` in `agent/server.py`), no web framework.
 
 ## 2. Models
 
@@ -389,10 +399,9 @@ Open-data tools (`agent/opendata.py`, called by code): `destination(id)`, `find_
 ## 11. Tests and rules for builders
 
 - Unit tests: `.venv/bin/python -m pytest tests -q`. No network, no model calls, no real `codex` in tests; fakes only.
-- Old projects stay green: `python3 -m unittest discover -s skills/trip-planner/tests` and `python3 -m unittest discover -s system/tests -t .`.
-- Builders run only the tests of their own area; the orchestrator runs every suite after each batch.
+- Builders run the full suite before a PR (`AGENTS.md` §3); the lead runs every suite again when reviewing.
 - Never skip or delete a test to get green; never invent data — degrade to an honest "no data" state and report it.
-- No commits, no pushes; leave changes in the working tree.
+- Work goes through issues, branches and PRs (`AGENTS.md` §4); only the lead merges into `main`, nobody pushes to `main` directly.
 
 ## 12. Build order
 

@@ -24,3 +24,6 @@ data_build/cache/
 
 # Raw transcripts of the sealed benchmark runs (reports are committed)
 evals/bench/*/runs/
+
+# Local working notes (decision logs, handoffs) — not shared
+.dev/
