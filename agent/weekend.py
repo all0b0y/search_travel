@@ -24,16 +24,6 @@ def destination_hours(combo):
     return round(hours, 1) if hours > 0 else None
 
 
-def keep_weekend_schedule(kept, legs, brief, direction):
-    """Do not prune away an early arrival / late return merely because its fare is not the cheapest."""
-    if short_break(brief) and legs:
-        best = min(legs, key=lambda leg: (leg.arr.timestamp() if direction == "out" else -leg.dep.timestamp(),
-                                          leg.duration_min, leg.price_rub))
-        if all(leg.offer_id != best.offer_id for leg in kept):
-            kept.append(best)
-    return kept
-
-
 def add_weekend_choice(picked, candidates, brief, rules, limit):
     """Keep cheapest / fastest; use an optional card for a longer stay on a short break for two.
 

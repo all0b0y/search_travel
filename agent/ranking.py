@@ -36,7 +36,7 @@ from .checks import (DEFAULT_BUFFERS, DEFAULT_LATE_CHECKIN, DEFAULT_TAXI_FACTOR,
                      fmt_hours, fmt_int, fmt_rub, in_clock_window, nights_text, plural, ts, wants_pet)
 from .payloads import MONTHS_GEN
 from .night_arrival import arrival_penalty
-from .weekend import add_weekend_choice, destination_hours, keep_weekend_schedule, short_break
+from .weekend import add_weekend_choice, destination_hours, short_break
 
 # ---------------------------------------------------------------- tunables
 
@@ -918,7 +918,7 @@ def _scope(brief):
     return set(scope) if scope else {"flights", "trains", "stay", "transfers"}
 
 
-def _legs(results, direction, brief, rr, today, soft=True):
+def _legs(results, direction, brief, rr, today, soft=True, buffers=None):
     """Transport offers for one direction -> (legs, relaxed paths). Hard filters first (_leg_ok), then
     the user's ticket prefs (_soft_leg_filters), each dropped only when it would leave nothing."""
     scope = _scope(brief)
@@ -936,7 +936,16 @@ def _legs(results, direction, brief, rr, today, soft=True):
         elif legs and not (kept and kept == legs):
             relaxed.append(path)
     kept = _prune_legs(legs, rr["max_legs"], int(rr.get("comfort_legs", 0)))
-    return keep_weekend_schedule(kept, legs, brief, direction), tuple(relaxed)
+    if short_break(brief) and legs:
+        buffers = buffers or DEFAULT_BUFFERS
+        def schedule_key(leg):
+            time = (leg.arr.timestamp() + 60 * _after(leg, buffers, rr) if direction == "out" else
+                    -leg.dep.timestamp() + 60 * _before(leg, buffers))
+            return time, leg.duration_min, leg.price_rub
+        best = min(legs, key=schedule_key)
+        if all(leg.offer_id != best.offer_id for leg in kept):
+            kept.append(best)
+    return kept, tuple(relaxed)
 
 
 def _one_way_hours(c) -> float:
@@ -1629,8 +1638,8 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     hotel_relaxed = relaxed_paths
     # second pass without the ticket prefs when the legs they keep fit no stay / no return at all
     for soft in (True, False):
-        outs, out_relaxed = _legs(results, "out", brief, rr, today, soft) if want_transport else ([], ())
-        backs, back_relaxed = _legs(results, "back", brief, rr, today, soft) if want_transport else ([], ())
+        outs, out_relaxed = _legs(results, "out", brief, rr, today, soft, _buffers(rules)) if want_transport else ([], ())
+        backs, back_relaxed = _legs(results, "back", brief, rr, today, soft, _buffers(rules)) if want_transport else ([], ())
         no_transport = want_transport and not (outs and backs)
         if not want_stay and no_transport:
             return []

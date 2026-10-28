@@ -5,7 +5,7 @@ import pytest
 
 from agent.ranking import build_variants
 
-from .factory import RULES, SEGMENTS, TODAY, brief, flight, hotel, transfer
+from .factory import RULES, SEGMENTS, TODAY, brief, flight, hotel, train, transfer
 
 
 def weekend_brief(**changes):
@@ -160,3 +160,19 @@ def test_unaffordable_fast_flights_do_not_hide_the_longer_stay_in_budget():
     longer = next(v for v in variants if v.id == "custom-3")
     assert longer.totals.rub == 33000
     assert longer.facts["destination_hours"] > variants[0].facts["destination_hours"]
+
+
+@pytest.mark.parametrize("direction", ["out", "back"])
+def test_schedule_pruning_includes_airport_and_station_buffers(direction):
+    from agent.ranking import _legs, ranking_rules
+
+    dep, arr = (("2026-11-20T08:00:00+03:00", "2026-11-20T10:00:00+03:00") if direction == "out" else
+                ("2026-11-22T20:00:00+03:00", "2026-11-22T22:00:00+03:00"))
+    train_dep, train_arr = (("2026-11-20T07:45:00+03:00", "2026-11-20T10:15:00+03:00") if direction == "out" else
+                            ("2026-11-22T19:30:00+03:00", "2026-11-22T22:00:00+03:00"))
+    results = {f"flights_{direction}": [flight(f"flight-{index}", "SVO", "LED", dep, arr,
+                                              10000, baggage=23) for index in range(9)],
+               f"trains_{direction}": [train("useful-train", "Москва", "Санкт-Петербург", train_dep,
+                                             train_arr, 11000, car_class="seat")]}
+    kept, _ = _legs(results, direction, weekend_brief(), ranking_rules(RULES), TODAY)
+    assert "useful-train" in {leg.offer_id for leg in kept}
