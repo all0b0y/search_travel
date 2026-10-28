@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from . import flights, hotels, insights, orders, quotes, trains, transfers
+from . import events, flights, hotels, insights, orders, quotes, trains, transfers
 from .contract import TOOL_NAMES, TOOLS
 from .db import ServiceError, reset_caches  # noqa: F401  (re-exported for callers and tests)
 
@@ -102,6 +102,11 @@ def _insights_log_event(r) -> dict:
     return insights.log_event(r.event.model_dump(mode="json"))
 
 
+def _search_events(r) -> dict:
+    return {"events": events.search(r.destination_id, r.date_from.isoformat(), r.date_to.isoformat(),
+                                    r.kinds, r.tags, r.limit), "synthetic": True}
+
+
 IMPL: dict[str, Callable[[Any], dict]] = {
     "quote_destinations": _quote_destinations,
     "search_hotels": _search_hotels,
@@ -109,6 +114,7 @@ IMPL: dict[str, Callable[[Any], dict]] = {
     "search_flights": _search_flights,
     "search_trains": _search_trains,
     "search_transfers": _search_transfers,
+    "search_events": _search_events,
     "cart_create": _cart_create,
     "cart_add": _cart_add,
     "cart_remove": _cart_remove,
@@ -151,6 +157,7 @@ get_hotel = _plain("get_hotel")
 search_flights = _plain("search_flights")
 search_trains = _plain("search_trains")
 search_transfers = _plain("search_transfers")
+search_events = _plain("search_events")
 cart_create = _plain("cart_create")
 cart_add = _plain("cart_add")
 cart_remove = _plain("cart_remove")

@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from ostrovok_mcp import contract as c
 
-TABLE = ("quote_destinations", "search_hotels", "get_hotel", "search_flights", "search_trains", "search_transfers",
+TABLE = ("quote_destinations", "search_hotels", "get_hotel", "search_flights", "search_trains", "search_transfers", "search_events",
          "cart_create", "cart_add", "cart_remove", "cart_get", "checkout", "pay", "order_get",
          "order_request_early_checkin", "order_change_dates", "order_add_transfer",
          "insights_popular_destinations", "insights_segment_preferences", "insights_log_event")
@@ -37,6 +37,8 @@ ORDER = {"order_id": "o1", "cart_id": "c1", "session_id": "s_1", "status": "paid
          "total_rub": 11200, "events": [{"at": NOW, "kind": "paid"}]}
 
 SAMPLES = {
+    "search_events": ({"destination_id": "sochi", "date_from": "2026-11-12", "date_to": "2026-11-19"},
+                      {"events": [], "synthetic": True}),
     "quote_destinations": (
         {"destination_ids": ["antalya"], "origin_city": "Москва", "month": 11, "party": {"adults": 2, "children_ages": [4]},
          "today": TODAY},
