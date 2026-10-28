@@ -337,3 +337,27 @@ def test_weekend_destination_change_after_checkout_buys_only_the_new_trip(live, 
     assert new_order != old_order
     response = h.act("pay", order_id=new_order)
     assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
+
+
+@pytest.mark.parametrize("budget", [39000, 60000])
+def test_weekend_extra_time_keeps_its_budget_after_a_night_transfer_replacement(live, budget):
+    h = live
+    h.new(profile_id=None)
+    _, variants = ask(h, f"Из Москвы в Калининград вдвоем с 1 января на две ночи до {budget}",
+                      **{"origin.city": "Москва", "destination.name": "Калининград",
+                         "dates.start": "2027-01-01", "dates.nights": 2,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": budget})
+    extra = [v for v in variants if v.id == "custom-3"]
+    assert all(v.totals.rub <= budget for v in extra), [(v.id, v.totals.rub) for v in variants]
+    if budget == 60000:
+        assert extra, "a sufficient budget must keep the extra-time option available"
+        selected = extra[0]
+    else:
+        selected = min(variants, key=lambda v: v.totals.rub)
+        assert selected.totals.rub <= budget
+    no_blocks(h, variants)
+    response = h.act("choose_variant", variant_id=selected.id)
+    assert response["cart"]["total_rub"] == selected.totals.rub
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "budget-quote@example.com"})
+    response = h.act("pay", order_id=response["order"]["order_id"])
+    assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
