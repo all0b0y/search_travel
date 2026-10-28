@@ -12,7 +12,6 @@ and the real data (in-process Ostrovok mock over data/ostrovok_catalog.sqlite, r
 5. understanding: a service the agent does not sell is said once (or is out_of_scope alone), open dates stay a month.
 """
 import json
-import time
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
@@ -25,8 +24,9 @@ from agent.steps import not_sold_fact, unsold_cues, unsold_only
 from .conftest import skill
 from .fakes import u
 from .test_scopes import live  # noqa: F401  (the real-data harness fixture)
+from .turn_time import calibrated
 
-TURN_MS_MAX = 1500   # in-process turn on the live harness (measured 60–710 ms; slack for a slow machine)
+TURN_MS_MAX = 1500   # in-process turn on the live harness, turn_time.calibrated (measured 60–710 ms; slack for a slow machine)
 RULES = skill().rules
 DATES = {"dates.start": "2026-11-20", "dates.end": "2026-11-23", "party.segment": "couple", "party.adults": 2}
 
@@ -35,15 +35,11 @@ def card_input(h, card):
     return json.loads([r for r in h.backend.requests if r.card == card][-1].user)
 
 
-def turn_ms(r):
-    return r["debug"]["timings_ms"]["total"]
-
-
 def trip(h, origin, dest, text, **extra):
     h.understand(u(set={"origin.city": origin, "destination.name": dest, **DATES, **extra}))
-    r = h.turn(text)
+    r, ms = calibrated(h.turn, text)
     assert r.get("error") is None, r["message"]
-    assert turn_ms(r) < TURN_MS_MAX, r["debug"]["timings_ms"]
+    assert ms < TURN_MS_MAX, (ms, r["debug"]["timings_ms"])
     return r
 
 
@@ -230,8 +226,8 @@ def test_ekb_antalya_direct_only_names_connecting(live):
     from evals.card_inputs import validate_card_input
     assert validate_card_input("present.variants", inp) == []
     # the button shows the connecting flights, at the price said
-    r = h.act("set_chip", field="prefs.direct_only", value=False)
-    assert r.get("error") is None and turn_ms(r) < TURN_MS_MAX
+    r, ms = calibrated(h.act, "set_chip", field="prefs.direct_only", value=False)
+    assert r.get("error") is None and ms < TURN_MS_MAX, (ms, r["debug"]["timings_ms"])
     vs = h.session().variants
     assert all(legs(v) for v in vs) and min(v.totals.rub for v in vs) == low
     assert any((v.facts.get("out_stops") or 0) > 0 for v in vs)
@@ -288,10 +284,10 @@ def test_yaroslavl_by_plane_says_so_and_offers_the_train(live):
                                                  ("Москва", "Суздаль", "suzdal")])
 def test_nothing_reachable_offers_places_that_are(live, origin, dest, dest_id):
     h = live
-    t0 = time.perf_counter()
-    r = trip(h, origin, dest, f"{dest} на три ночи")
-    wall = (time.perf_counter() - t0) * 1000
-    assert wall < TURN_MS_MAX, wall
+    h.understand(u(set={"origin.city": origin, "destination.name": dest, **DATES}))
+    r, ms = calibrated(h.turn, f"{dest} на три ночи")
+    assert r.get("error") is None, r["message"]
+    assert ms < TURN_MS_MAX, ms
     vs = h.session().variants
     assert vs and all(v.facts.get("no_transport") and v.facts["transport_gap"] == "none" for v in vs)
     assert vs[0].facts["transport_gap_ru"] == (f"По маршруту {origin} — {dest} в данных нет ни рейсов, ни поездов — "

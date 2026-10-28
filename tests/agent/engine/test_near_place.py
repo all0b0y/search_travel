@@ -10,7 +10,6 @@ data with a scripted FakeBackend (level-3 s04_photo_landmark, level-2 e8_refine_
 """
 import json
 import math
-import time
 
 import pytest
 
@@ -19,6 +18,7 @@ from evals.card_inputs import validate_card_input
 
 from .fakes import u
 from .test_scopes import live  # noqa: F401  (the real-data harness fixture)
+from .turn_time import calibrated
 
 DATA_URL = "data:image/jpeg;base64,AAAA"
 HAGIA = (41.008583, 28.980175)   # roughly; the test reads the real point from the pois table
@@ -61,10 +61,9 @@ def poi(h, dest_id, text):
     return p
 
 
-def timed_turn(h, text, **kw):
-    t0 = time.perf_counter()
-    r = h.turn(text, **kw)
-    return r, time.perf_counter() - t0
+def timed_turn(h, text, **kw):   # (response, calibrated seconds): not the machine's other load
+    r, ms = calibrated(h.turn, text, **kw)
+    return r, ms / 1000
 
 
 def istanbul_trip(h):

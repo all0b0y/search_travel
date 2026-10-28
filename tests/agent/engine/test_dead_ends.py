@@ -11,7 +11,6 @@ data/ostrovok_catalog.sqlite, real open data, a scripted model). Our own example
 2. a pet fee priced into a ticket is named on its cart / order line (title suffix + pet_fee_rub / includes_ru),
    the cart / checkout / info answers name the line, and the lines still sum to the total.
 """
-import time
 
 import pytest
 
@@ -19,8 +18,9 @@ from agent.steps import plane_cue
 
 from .conftest import skill
 from .fakes import u
-from .test_honesty import TURN_MS_MAX, actions, card_input, legs, turn_ms
+from .test_honesty import TURN_MS_MAX, actions, card_input, legs
 from .test_scopes import live  # noqa: F401  (the real-data harness fixture)
+from .turn_time import calibrated
 
 RULES = skill().rules
 GELENDZHIK = {"origin.city": "Самара", "destination.name": "Геленджик", "dates.start": "2027-07-05",
@@ -34,10 +34,8 @@ TRAVELLERS2 = [{"name": "Иван Петров", "birth_date": "1990-01-01"}, {"
 
 def timed(h, text, **understand):
     h.understand(u(**understand))
-    t0 = time.perf_counter()
-    r = h.turn(text)
-    wall = (time.perf_counter() - t0) * 1000
-    assert wall < TURN_MS_MAX and turn_ms(r) < TURN_MS_MAX, (wall, r["debug"]["timings_ms"])
+    r, ms = calibrated(h.turn, text)
+    assert ms < TURN_MS_MAX, (ms, r["debug"]["timings_ms"])
     return r
 
 

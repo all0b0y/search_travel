@@ -12,7 +12,6 @@ scripted model):
 """
 import hashlib
 import json
-import time
 from datetime import date, datetime
 from pathlib import Path
 
@@ -23,8 +22,9 @@ from agent.opendata import long_train_pair, train_reachable
 from agent.ranking import road_time_ru
 
 from .fakes import u
-from .test_honesty import TURN_MS_MAX, actions, card_input, legs, turn_ms
+from .test_honesty import TURN_MS_MAX, actions, card_input, legs
 from .test_scopes import live  # noqa: F401  (the real-data harness fixture)
+from .turn_time import calibrated
 
 GOLDEN = Path(__file__).parent / "data" / "trains_up_to_1000km.json"
 HOMES = ["Москва", "Санкт-Петербург", "Екатеринбург", "Казань", "Новосибирск", "Самара"]
@@ -155,12 +155,10 @@ def test_road_time_words():
 
 def trip(h, origin, dest, text, **extra):
     h.understand(u(set={"origin.city": origin, "destination.name": dest, **extra}))
-    t0 = time.perf_counter()
-    r = h.turn(text)
-    wall = (time.perf_counter() - t0) * 1000
+    r, ms = calibrated(h.turn, text)
     assert r.get("error") is None, r["message"]
     assert r["cards"]["variants"], r["message"]
-    assert wall < TURN_MS_MAX and turn_ms(r) < TURN_MS_MAX, (wall, r["debug"]["timings_ms"])
+    assert ms < TURN_MS_MAX, (ms, r["debug"]["timings_ms"])
     return r
 
 
@@ -295,22 +293,20 @@ def _inspire(h, origin, budget, nights, traits=("sea",), month=7, **extra):
     h.new()
     h.understand(u(set={"origin.city": origin, "party.segment": "couple", "party.adults": 2, "budget_rub.max": budget,
                         "dates.month": month, "dates.nights": nights, "traits.add": list(traits), **extra}))
-    t0 = time.perf_counter()
-    r = h.turn("на море, бюджет")
-    wall = (time.perf_counter() - t0) * 1000
+    r, ms = calibrated(h.turn, "на море, бюджет")
     assert r.get("error") is None, r["message"]
-    return r, wall, card_input(h, "present.destinations")["items"]
+    return r, ms, card_input(h, "present.destinations")["items"]
 
 
 @pytest.mark.parametrize("origin,budget", [("Москва", 120000), ("Санкт-Петербург", 120000), ("Екатеринбург", 60000),
                                            ("Новосибирск", 80000)])
 def test_budget_inspiration_turn_time(live, origin, budget):
     h = live
-    walls = []
+    took = []
     for _ in range(2):
-        r, wall, items = _inspire(h, origin, budget, 7)
-        walls.append(wall)
-    assert min(walls) < INSPIRATION_MS_MAX, walls
+        r, ms, items = _inspire(h, origin, budget, 7)
+        took.append(ms)
+    assert min(took) < INSPIRATION_MS_MAX, took
     for i in items:
         f = i["facts"]
         assert f["transport_ru"] in ("поездом", "самолётом")
