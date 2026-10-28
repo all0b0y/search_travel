@@ -17,6 +17,7 @@ import os
 import sqlite3
 import threading
 from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Iterable, Iterator
 
@@ -101,9 +102,24 @@ class UnionDB:
 
 _CACHE: dict[tuple, UnionDB] = {}
 _CACHE_LOCK = threading.Lock()
+_SOURCE_KEYS: ContextVar[dict | None] = ContextVar("source_keys", default=None)
+
+
+@contextmanager
+def cache_source_keys():
+    """Reuse file signatures within one tool call; the next call checks live sources again."""
+    token = _SOURCE_KEYS.set({})
+    try:
+        yield
+    finally:
+        _SOURCE_KEYS.reset(token)
 
 
 def _cache_key(paths: list[Path]) -> tuple:
+    cached = _SOURCE_KEYS.get()
+    path_key = tuple(paths)
+    if cached is not None and path_key in cached:
+        return cached[path_key]
     key = []
     for p in paths:
         try:
@@ -111,7 +127,10 @@ def _cache_key(paths: list[Path]) -> tuple:
             key.append((str(p), st.st_mtime_ns, st.st_size))
         except FileNotFoundError:
             key.append((str(p), None, None))
-    return tuple(key)
+    result = tuple(key)
+    if cached is not None:
+        cached[path_key] = result
+    return result
 
 
 def _union(paths: list[Path]) -> UnionDB:
