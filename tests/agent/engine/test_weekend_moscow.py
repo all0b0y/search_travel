@@ -300,3 +300,40 @@ def test_comparing_unchanged_weekend_options_keeps_purchase_available(live, phas
         order_id = response["order"]["order_id"]
     response = h.act("pay", order_id=order_id)
     assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
+
+
+@pytest.mark.parametrize("live", ["stage1", "stage3", "stage5"], indirect=True)
+@pytest.mark.parametrize("city,destination_id", [("Казань", "kazan"), ("Сочи", "sochi")])
+def test_weekend_destination_change_after_checkout_buys_only_the_new_trip(live, city, destination_id):
+    h = live
+    _, variants = ask(h, "Из Москвы в Петербург вдвоем с 20 ноября на три ночи",
+                      **{"origin.city": "Москва", "destination.name": "Санкт-Петербург",
+                         "dates.start": "2026-11-20", "dates.nights": 3,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": 100000})
+    h.act("choose_variant", variant_id=variants[0].id)
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "switch@example.com"})
+    old_order = response["order"]["order_id"]
+    h.understand(u(intent="refine", set={"destination.name": city, "dates.nights": 2}))
+    response = h.turn(f"Лучше в {city} на две ночи, остальное оставьте")
+    assert response["stage"] == "selection" and not response.get("error"), response["message"]
+    values = h.session().brief.values()
+    assert values["destination"]["id"] == destination_id
+    assert values["origin"]["city"] == "Москва" and values["party"]["adults"] == 2
+    assert values["party"]["segment"] == "couple" and values["budget_rub"]["max"] == 100000
+    variants = h.session().variants
+    assert variants and all(v.destination_id == destination_id and v.facts["nights"] == 2 for v in variants)
+    assert all(v.facts["check_in_date"] == "2026-11-20" for v in variants)
+    no_blocks(h, variants)
+    response = h.act("pay", order_id=old_order)
+    assert response.get("error"), response["message"]
+    assert h.ostrovok.call("order_get", {"order_id": old_order})["status"] == "pending_payment"
+    selected = variants[0]
+    response = h.act("choose_variant", variant_id=selected.id)
+    assert {item["offer_id"] for item in response["cart"]["items"]} == {
+        step.offer_id for step in selected.steps}
+    assert response["cart"]["total_rub"] == selected.totals.rub
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "switch@example.com"})
+    new_order = response["order"]["order_id"]
+    assert new_order != old_order
+    response = h.act("pay", order_id=new_order)
+    assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
