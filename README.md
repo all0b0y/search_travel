@@ -13,6 +13,8 @@
 
 Схема — [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Решения и технический контракт — [`AGENT_PLAN.md`](AGENT_PLAN.md). План работ — [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md).
 
+Сценарий «Пара на выходные из Москвы»: [что показать, как считается время на месте и как проверить покупку](docs/WEEKEND_MOSCOW.md).
+
 ## Данные — честно
 
 - **Реальные:** направления, отели (названия и координаты), районы и достопримечательности (OpenStreetMap), климат (Open-Meteo), аэропорты (OurAirports), маршруты (OpenFlights).
