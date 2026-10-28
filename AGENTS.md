@@ -59,24 +59,37 @@ cp .env.example .env            # вписать OPENROUTER_API_KEY — толь
 | `status:changes-requested` | ведущий вернул с замечаниями | ведущий |
 | `status:blocked` | нужен ответ или решение человека | кто угодно, с комментарием |
 
-Ещё метки: `W0`…`W12` (поток из плана), `must` / `should` / `could` (порядок резки), `lead-only` (делает только ведущий: живые вызовы моделей, закрытый бенчмарк, слияния), `infra`, `v3` (класс провала из `docs/FAILURES_V3.md`). Сводка всех задач — issue-трекер с меткой `tracker`.
+Ещё метки: `W0`…`W12` (поток из плана), `must` / `should` / `could` (порядок резки), `lead-only` (делает только ведущий: живые вызовы моделей, закрытый бенчмарк, слияния), `infra`, `v3` (класс провала из `docs/FAILURES_V3.md`), `epic` (поток целиком — **не брать**, брать задачи из его чек-листа). Сводка всех задач — issue-трекер с меткой `tracker`.
 
 ### Взять задачу
 
-1. Только issue с `status:ready`, без исполнителя и без `lead-only`; зависимости («после #N») закрыты.
+1. Только issue с `status:ready`, без исполнителя, без `lead-only` и без `epic`; зависимости («Зависит от») закрыты.
 2. Сразу: назначить себя (`gh issue edit N --add-assignee @me`), сменить метку на `status:in-progress`, комментарий: `Взял: <кто/какой агент>, ветка <ветка>`.
 3. Одна задача на агента одновременно.
 
 ### Сделать
 
-- Ветка от свежего `main`: `w<N>/<коротко>` (например `w12/slots`).
-- Трогать только файлы своей зоны (таблица «Зоны файлов» в плане, раздел 2). Общие файлы — `agent/engine.py`, `agent/server.py`, `agent/guards.py`, `skills/trip-agent/schema/understand.schema.json`, `skills/trip-agent/rules.json`, `skills/trip-agent/turns.json`, `agent/contracts/*.schema.json`, `AGENT_PLAN.md` — правьте минимальной вставкой и перечислите в PR.
+- Одна задача — одна ветка — один PR: ≤ ~3 ч работы, ≤ ~400 строк без сгенерированных файлов. Выходит больше — остановитесь, напишите в issue, ведущий разобьёт.
+- Ветка от свежего `main`: `<ключ>/<коротко>` (например `w12a/slots-core`, `v3-2/direct-only`).
+- Трогать только файлы своей задачи (они названы в issue). Общие файлы — `agent/engine.py`, `agent/server.py`, `agent/steps.py`, `agent/guards.py`, `skills/trip-agent/schema/understand.schema.json`, `skills/trip-agent/understand.md`, `skills/trip-agent/rules.json`, `skills/trip-agent/turns.json`, `agent/contracts/*.schema.json`, `AGENT_PLAN.md` — правьте минимальной вставкой и перечислите в PR.
 - Меняете договор (состояние, схемы карточек, ответ API, инструменты мока, схемы БД) — обновите раздел «As built» / контракт в `AGENT_PLAN.md` и фикстуры в том же PR.
 - Новые зависимости — только через ведущего (комментарий в issue).
 
+### Горячие файлы — как не конфликтовать
+
+| Файл | Правило |
+|---|---|
+| `skills/trip-agent/rules.json` | новые секции — **только** в `skills/trip-agent/rules.d/<тема>.json` (после #27); в `rules.json` — точечная правка существующей секции |
+| `agent/guards.py` | новые проверки текста — в `agent/claims/<тема>.py` + одна строка регистрации (после #28); в `guards.py` — только правки существующих проверок |
+| `agent/steps.py` (4,5 тыс. строк), `agent/engine.py` | новая логика — в новом модуле; в этих файлах — только вызов в одной точке |
+| `skills/trip-agent/understand.md`, `understand.schema.json` | промпт на пределе строк: сначала страховка кодом. Если правка нужна — перед началом `gh pr list --search "understand in:title,body"`; есть открытый PR с ними — дождитесь слияния и перебазируйтесь |
+| `evals/cases/*.json` | перегенерировать **только** кейсы своих карточек; новые кейсы — новые файлы |
+
+Перед `status:review` — `git rebase origin/main` и полный `pytest`.
+
 ### Сдать
 
-PR в `main`, заголовок `W<N>: <что изменилось>`, в описании:
+PR в `main`, заголовок `<ключ задачи>: <что изменилось>` (например `W12a: …`, `v3-2: …`), в описании:
 
 ```
 Closes #N
