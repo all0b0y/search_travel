@@ -229,6 +229,62 @@ def test_broken_json_names_file(skill_copy):
         load_skill(skill_copy)
 
 
+def write_rule_fragment(skill_copy, name, value):
+    directory = skill_copy / "rules.d"
+    directory.mkdir(exist_ok=True)
+    path = directory / name
+    path.write_text(json.dumps(value, ensure_ascii=False), encoding="utf-8")
+    return path
+
+
+def test_rule_fragments_load_in_filename_order(skill_copy):
+    baseline = load_skill(skill_copy).rules
+    write_rule_fragment(skill_copy, "z-personal.json", {"personal": {"enabled": True}})
+    write_rule_fragment(skill_copy, "a-router.json", {"router": {"jev_down": "deep"}})
+    (skill_copy / "rules.d" / "notes.txt").write_text("not JSON", encoding="utf-8")
+    rules = load_skill(skill_copy).rules
+    assert rules == {**baseline, "router": {"jev_down": "deep"}, "personal": {"enabled": True}}
+    assert list(rules) == [*baseline, "router", "personal"]
+
+
+@pytest.mark.parametrize("directory_exists", [False, True])
+def test_rules_unchanged_without_fragments(skill_copy, directory_exists):
+    directory = skill_copy / "rules.d"
+    if directory.exists():
+        shutil.rmtree(directory)
+    if directory_exists:
+        directory.mkdir()
+    expected = json.loads((skill_copy / "rules.json").read_text(encoding="utf-8"))
+    assert load_skill(skill_copy).rules == expected
+
+
+def test_rule_fragment_cannot_override_base_section(skill_copy):
+    write_rule_fragment(skill_copy, "limits.json", {"max_questions": 2})
+    with pytest.raises(SkillLoadError, match=r"rules.d/limits.json: duplicate rule key 'max_questions'.*rules.json"):
+        load_skill(skill_copy)
+
+
+def test_rule_fragments_cannot_share_section(skill_copy):
+    write_rule_fragment(skill_copy, "a-router.json", {"router": {"jev_down": "deep"}})
+    write_rule_fragment(skill_copy, "b-router.json", {"router": {"subtext_min": 0.8}})
+    with pytest.raises(SkillLoadError, match=r"rules.d/b-router.json: duplicate rule key 'router'.*rules.d/a-router.json"):
+        load_skill(skill_copy)
+
+
+@pytest.mark.parametrize("value", [[], None, "router", 1, True])
+def test_rule_fragment_must_be_object(skill_copy, value):
+    write_rule_fragment(skill_copy, "router.json", value)
+    with pytest.raises(SkillLoadError, match=r"rules.d/router.json: must be an object"):
+        load_skill(skill_copy)
+
+
+def test_broken_rule_fragment_names_file(skill_copy):
+    path = write_rule_fragment(skill_copy, "router.json", {})
+    path.write_text("{", encoding="utf-8")
+    with pytest.raises(SkillLoadError, match=r"rules.d/router.json: invalid JSON"):
+        load_skill(skill_copy)
+
+
 def test_prompts_are_written(skill_dir):
     """The skill-content builder replaced the foundation placeholders (content is checked in tests/skill)."""
     files = [skill_dir / "understand.md", skill_dir / "voice.md", *sorted((skill_dir / "present").glob("*.md"))]

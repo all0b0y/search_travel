@@ -352,6 +352,23 @@ def _check_rules(data):
 GUIDE_DEFAULTS = {"thinking": "off", "temperature": None, "max_tokens": 1800}
 
 
+def _load_rules(root):
+    rules = _read_json(root, "rules.json")
+    _check_rules(rules)
+    owners = dict.fromkeys(rules, "rules.json")
+    for path in sorted((root / "rules.d").glob("*.json")):
+        rel = path.relative_to(root).as_posix()
+        fragment = _read_json(root, rel)
+        if not isinstance(fragment, dict):
+            _fail(rel, "must be an object")
+        for key in fragment:
+            if key in owners:
+                _fail(rel, f"duplicate rule key {key!r} (already defined in {owners[key]})")
+        rules.update(fragment)
+        owners.update(dict.fromkeys(fragment, rel))
+    return rules
+
+
 def _load_guide_card(root, rules):
     """The `guide` card (agent/guide.py) when guide.md and its schema exist; settings from rules.json "guide"."""
     if not (root / "guide.md").is_file():
@@ -391,8 +408,7 @@ def load_skill(path="skills/trip-agent", step_names=STEP_NAMES) -> SkillPackage:
     _check_segments(segments)
     upsell = _read_json(root, "upsell.json")
     _check_upsell(upsell)
-    rules = _read_json(root, "rules.json")
-    _check_rules(rules)
+    rules = _load_rules(root)
     lessons = (root / "lessons.md").read_text(encoding="utf-8") if (root / "lessons.md").is_file() else ""
     readme = (root / "README.md").read_text(encoding="utf-8") if (root / "README.md").is_file() else ""
     return SkillPackage(root=root, cards=cards, routes=routes, voice=voice, questions=questions["questions"],
