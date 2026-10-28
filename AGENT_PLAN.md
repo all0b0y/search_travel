@@ -188,6 +188,8 @@ Session:
 
 `Variant` (built by code): `id` (`cheapest|fastest|comfort` or `custom-N`), `steps` (flight/train/transfer/stay steps compatible with `agent/checks.py`), `totals` (`rub`, `door_to_door_hours` both ways, `out_hours` / `back_hours` one-way door-to-door, 1 decimal, null when that direction is absent; `prefs.max_travel_hours` is a one-way limit checked against them), `facts` (computed numbers the card may cite), `sacrifices` (computed diffs vs the other variants), `risks` (computed: connection slack, night arrival, non-refundable, long transfer...), `not_for` (computed from district scores and hotel policies), `fit` (0..1 with per-criterion breakdown), `upsell_candidates` (rule hits from `upsell.json`, each with its reason).
 
+As built (v3-11): `fit` reduces a night-arrival variant's score for mood `relax`, families/children, or travellers aged at least `ranking.night_senior_age` (65) in the profile. `ranking.night_relax_penalty` / `night_family_penalty` / `night_senior_penalty` default to 0.15 / 0.2 / 0.2; the largest applicable reduction is used once. Local outbound arrival and the transfer's arrival at the hotel use `ranking.night_window`; return arrivals do not count. `fit.breakdown.arrival_time = 0` explains the reduction. Profile age or saved birth dates on the trip start date (session date when unknown) become only an internal ranking boolean; they are not put into the brief or model input. Night options and their risks remain visible; existing hard night-travel filters are unchanged.
+
 The model never produces prices, times or totals. It only selects ids and writes text; every number it writes must exist in its input (checked by a hook).
 
 ## 4. Skill package format

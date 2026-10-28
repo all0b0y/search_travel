@@ -35,6 +35,7 @@ from typing import Any, Callable, Optional
 from .checks import (DEFAULT_BUFFERS, DEFAULT_LATE_CHECKIN, DEFAULT_TAXI_FACTOR, check_party, connection_risks,
                      fmt_hours, fmt_int, fmt_rub, in_clock_window, nights_text, plural, ts, wants_pet)
 from .payloads import MONTHS_GEN
+from .night_arrival import arrival_penalty
 
 # ---------------------------------------------------------------- tunables
 
@@ -49,6 +50,10 @@ RANKING_DEFAULTS = {
     "comfort_price_cap_ratio": 2.0,   # without a budget, comfort costs at most this x the cheapest
     "after_train_min": 10,            # leaving the platform after a train
     "night_window": ["23:00", "06:00"],   # night departure / arrival (local clock)
+    "night_relax_penalty": 0.15,       # fit reduction for a night arrival on a quiet holiday
+    "night_family_penalty": 0.2,
+    "night_senior_penalty": 0.2,
+    "night_senior_age": 65,
     "night_move_at": "03:00",             # a train still on the move at this local time is an overnight one
     "early_departure_before": "07:00",    # departures before this are "early"
     "tight_layover_min": 60,          # a flight's own connection shorter than this is tight
@@ -1516,6 +1521,10 @@ def fit(brief, variant, rules, segments=None):
         # a bed in a shared room is never the code's pick over a private room (only «Дешевле» may be one)
         b["room"] = 0.0
         score *= rr["dorm_fit_factor"]
+    penalty = arrival_penalty(brief, variant, rules, rr)
+    if penalty:
+        b["arrival_time"] = 0.0
+        score *= 1 - penalty
     return Fit(score=round(max(0.0, min(1.0, score)), 3), breakdown=b)
 
 
