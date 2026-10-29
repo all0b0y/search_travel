@@ -3175,6 +3175,7 @@ def upsell_offers(ctx, variant):
     The variant's hotel is re-searched with `hotel_id` + `all_rooms` (one offer per fitting room type,
     cached) so room upgrades exist to choose from; the extra offers only feed the upsell, not ranking.
     """
+    from .ranking import _party_ok
     results = dict(ctx.results or {})
     hotel = find_offer(ctx, variant.hotel.offer_id) if variant.hotel else None
     if hotel is not None and results.get("check_in"):
@@ -3186,6 +3187,7 @@ def upsell_offers(ctx, variant):
         known = {h.get("offer_id") for h in results.get("hotels") or []}
         extra = [o for o in (rooms or {}).get("offers") or [] if o.get("offer_id") not in known]
         results["hotels"] = list(results.get("hotels") or []) + extra
+    results["hotels"] = [offer for offer in results.get("hotels") or [] if _party_ok(offer, ctx.brief)]
     return ctx.domain.offers_for_variant(variant, results)
 
 
@@ -3692,17 +3694,12 @@ def now_iso(ctx):
 
 
 def step_cart_add(ctx):
+    from .ranking import _party_ok
     s = ctx.session
     vid = (ctx.variant_ids or [None])[0] or s.chosen_variant_id
     variant = s.variant(vid) if vid else None
     if variant is None:
         ctx.fail("bad_request", "Не понял, какой вариант положить в корзину — нажмите «Беру» на нужном.")
-    if s.cart_id:
-        cart = tool(ctx, "cart_get", {"session_id": s.id}, cache=False)
-        if cart.get("status") == "checked_out":
-            cart = tool(ctx, "cart_create", {"session_id": s.id, "now": now_iso(ctx)}, cache=False)
-    else:
-        cart = tool(ctx, "cart_create", {"session_id": s.id, "now": now_iso(ctx)}, cache=False)
     wanted = {st.offer_id: ITEM_KINDS[st.type] for st in variant.steps if st.offer_id and st.type in ITEM_KINDS}
     cands = {c.offer_id: c for c in variant.upsell_candidates if c.offer_id}
     for extra in ctx.extras:
@@ -3713,7 +3710,15 @@ def step_cart_add(ctx):
                 "train" if "train_no" in offer else "transfer")
         if kind is None:
             ctx.fail("bad_request", "Этот доп больше недоступен — обновите варианты.")
+        if kind == "hotel" and offer is not None and not _party_ok(offer, ctx.brief):
+            ctx.fail("bad_request", "Этот номер не подходит составу путешественников или условиям поездки.")
         wanted[extra] = kind
+    if s.cart_id:
+        cart = tool(ctx, "cart_get", {"session_id": s.id}, cache=False)
+        if cart.get("status") == "checked_out":
+            cart = tool(ctx, "cart_create", {"session_id": s.id, "now": now_iso(ctx)}, cache=False)
+    else:
+        cart = tool(ctx, "cart_create", {"session_id": s.id, "now": now_iso(ctx)}, cache=False)
     for item in cart.get("items") or []:
         if item["offer_id"] not in wanted:
             cart = tool(ctx, "cart_remove", {"session_id": s.id, "offer_id": item["offer_id"], "kind": item["kind"]},

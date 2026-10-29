@@ -661,3 +661,51 @@ def test_weekend_reselected_order_keeps_its_own_payment_and_exports(live, first_
     for kind, url in first_files.items():
         reply = api.dispatch("GET", url)
         assert reply.status == 200 and reply.data == first_content[kind]
+
+
+@pytest.mark.parametrize("live", ["stage5"], indirect=True)
+@pytest.mark.parametrize("mode", ["offered", "injected_cart", "injected_checkout"])
+def test_weekend_room_upgrade_respects_the_same_party_rules_as_selection(live, monkeypatch, mode):
+    from datetime import datetime
+    from agent.ranking import _party_ok
+
+    h = live
+    h.pinned_now = datetime.fromisoformat("2026-12-30T06:00:00+03:00")
+    h.new(profile_id=None)
+    call, rooms = h.ostrovok.call, []
+
+    def record(tool, payload):
+        result = call(tool, payload)
+        if tool == "search_hotels" and payload.get("all_rooms"):
+            rooms.extend(result.get("offers") or [])
+        return result
+
+    monkeypatch.setattr(h.ostrovok, "call", record)
+    _, variants = ask(h, "Во Владивосток вдвоем с 31 декабря на три ночи поездом, романтика до 60000",
+                      **{"origin.city": "Москва", "destination.name": "Владивосток",
+                         "dates.start": "2026-12-31", "dates.nights": 3,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": 60000,
+                         "mood.add": ["romantic"], "prefs.transport": "train"})
+    selected = next(v for v in variants if v.id == "cheapest")
+    forbidden = [offer for offer in rooms if offer["hotel_id"] == selected.hotel.hotel_id
+                 and not _party_ok(offer, h.session().brief)]
+    assert forbidden, "the real mock must expose the incompatible room for this regression"
+    if mode == "offered":
+        assert not {offer["offer_id"] for offer in forbidden}.intersection(
+            candidate.offer_id for candidate in selected.upsell_candidates)
+    response = h.act("choose_variant", variant_id=selected.id)
+    assert response["cart"]["total_rub"] == selected.totals.rub
+    if mode.startswith("injected"):
+        stage = "cart"
+        if mode == "injected_checkout":
+            response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "safe-upgrade@example.com"})
+            stage = "checkout"
+        response = h.act("add_to_cart", variant_id=selected.id, extras=[forbidden[0]["offer_id"]])
+        assert response.get("error") and response["stage"] == stage
+        cart = call("cart_get", {"session_id": h.sid})
+        assert cart["total_rub"] == selected.totals.rub
+        assert {item["offer_id"] for item in cart["items"]} == {step.offer_id for step in selected.steps}
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "safe-upgrade@example.com"})
+    response = h.act("pay", order_id=response["order"]["order_id"])
+    assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
+    assert response["files"]["page"] and response["files"]["ics"]

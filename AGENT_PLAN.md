@@ -328,6 +328,8 @@ As built: paid-plan exports (WK1): when paid order items differ from the selecte
 
 Paid-file isolation (WK1): `steps.render_files` uses the session and order IDs together as the existing renderer's file namespace. Separate purchases in one session no longer overwrite the previous order's ICS/HTML; repeated payment of the same order keeps its URLs. No new state or API fields.
 
+Room-upgrade eligibility (WK1): `steps.upsell_offers` reuses ranking's existing `_party_ok` for hotel add-ons. `step_cart_add` rejects an incompatible hotel extra before creating or modifying the cart, including after checkout. Couple/family dorm restrictions, capacity, pets and room constraints remain the same as in selection; paid-plan validation stays strict.
+
 ## 6. Response contract (engine → UI)
 
 As built: GIF input (W10a) is decoded by `agent/frames.py` before the HTTP server calls the engine: the first frame, plus the middle frame when there are at least three frames, becomes one PNG (frames side by side). The `image` request field and the existing photo path stay unchanged. Invalid GIFs return HTTP 400; the image size limit also applies to the resulting PNG (HTTP 413).
