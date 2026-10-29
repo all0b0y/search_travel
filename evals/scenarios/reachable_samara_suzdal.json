@@ -1,0 +1,42 @@
+{
+  "id": "reachable_samara_suzdal",
+  "category": "C",
+  "persona": {
+    "start_message": "Хотим из Самары в Суздаль на неделю с 20 ноября, вдвоём, нужна дорога и отель",
+    "image": null,
+    "profile": {
+      "name": "Нина",
+      "age": 36,
+      "home_city": "Самара",
+      "travellers": [
+        {
+          "name": "Нина Кузнецова",
+          "birth_date": "1990-03-14"
+        },
+        {
+          "name": "Олег Кузнецов",
+          "birth_date": "1989-08-09"
+        }
+      ],
+      "contact": {
+        "email": "nina@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "adults": 2,
+        "nights": 7
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        }
+      ],
+      "nice": [
+        "Полная поездка с дорогой"
+      ]
+    },
+    "behaviour": "Если дороги в Суздаль нет, выбирает первое достижимое похожее место кнопкой choose_destination. Затем выбирает вариант с транспортом и оформляет заказ. Не соглашается на одно проживание без дороги."
+  },
+  "max_turns": 8
+}

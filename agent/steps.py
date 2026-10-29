@@ -2742,7 +2742,7 @@ def recover_transport(ctx, built_nothing=False):
             v.risks = [n.model_copy(update={"text": gap["line"]}) if n.code == "no_transport" else n for n in v.risks]
         else:
             v.risks.insert(0, _risk_note("transport_switched", gap["line"], mode="train"))
-    if gap["code"] in ("none", "plane_fixed", "train_fixed"):
+    if gap["code"] in ("none", "plane_fixed", "train_fixed", "direct_only"):
         places = reachable_places(ctx, rec, mode=fixed if gap["code"] != "none" else None)
         ctx.other_places = places
         actions += [{"type": "choose_destination", "label": f"Смотреть {p['name']}",
