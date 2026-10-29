@@ -605,3 +605,59 @@ def test_quoted_weekend_extra_keeps_its_time_advantage_and_detour_limit(live, mo
         assert variant.totals.door_to_door_hours <= min(v.totals.door_to_door_hours for v in base) + ranking_rules(
             h.engine.skill.rules)["comfort_max_extra_hours"]
         assert variant.facts["destination_hours"] > max(v.facts["destination_hours"] for v in base)
+
+
+@pytest.mark.parametrize("live", ["stage5"], indirect=True)
+@pytest.mark.parametrize("first_paid", [False, True])
+def test_weekend_reselected_order_keeps_its_own_payment_and_exports(live, first_paid):
+    from agent.server import Api
+
+    h = live
+    h.new(profile_id=None)
+    _, variants = ask(h, "Из Москвы в Петербург вдвоем с 20 ноября на три ночи, романтика до 60000",
+                      **{"origin.city": "Москва", "destination.name": "Санкт-Петербург",
+                         "dates.start": "2026-11-20", "dates.nights": 3,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": 60000,
+                         "mood.add": ["romantic"]})
+    selected, extra = next((v, c) for v in variants for c in v.upsell_candidates
+                          if v.id == "cheapest" and c.kind == "room_upgrade" and c.offer_id and c.price_rub > 0)
+    api = Api(h.engine, debug=True, files_root=h.engine.files_dir)
+    h.act("choose_variant", variant_id=selected.id)
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "order-files@example.com"})
+    first_id = response["order"]["order_id"]
+    first_files, first_content = {}, {}
+    if first_paid:
+        response = h.act("pay", order_id=first_id)
+        assert response["order"]["status"] == "paid"
+        first_files = response["files"]
+        for kind, url in first_files.items():
+            assert url
+            reply = api.dispatch("GET", url)
+            assert reply.status == 200
+            first_content[kind] = reply.data
+
+    response = h.act("add_to_cart", variant_id=selected.id, extras=[extra.offer_id])
+    total = selected.totals.rub + extra.price_rub
+    assert response["stage"] == "cart" and response["cart"]["total_rub"] == total
+    response = h.act("pay", order_id=first_id)
+    assert response.get("error") and response["stage"] == "cart"
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "order-files@example.com"})
+    second_id = response["order"]["order_id"]
+    assert second_id != first_id and response["order"]["total_rub"] == total
+    response = h.act("pay", order_id=first_id)
+    assert response.get("error") and response["stage"] == "checkout"
+    response = h.act("pay", order_id=second_id)
+    assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == total
+    second_files = response["files"]
+    for kind, url in second_files.items():
+        assert url and url != first_files.get(kind)
+        reply = api.dispatch("GET", url)
+        assert reply.status == 200 and extra.offer_id.encode() in reply.data.replace(b"\r\n ", b"")
+    response = h.act("pay", order_id=second_id)
+    assert response["order"]["total_rub"] == total and response["files"] == second_files
+    first_order = h.ostrovok.call("order_get", {"order_id": first_id})
+    assert first_order["status"] == ("paid" if first_paid else "pending_payment")
+    assert first_order["total_rub"] == selected.totals.rub
+    for kind, url in first_files.items():
+        reply = api.dispatch("GET", url)
+        assert reply.status == 200 and reply.data == first_content[kind]

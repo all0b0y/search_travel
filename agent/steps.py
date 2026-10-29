@@ -4047,7 +4047,7 @@ def render_files(ctx, order):
     try:
         from .paid_plan import for_order
         variant = for_order(ctx, order, variant)
-        out = fn(ctx.session.id, variant, ctx.session.brief, ctx.rules, out_root=str(ctx.engine.files_dir),
+        out = fn(f"{ctx.session.id}-{order['order_id']}", variant, ctx.session.brief, ctx.rules, out_root=str(ctx.engine.files_dir),
                  now=ctx.session.clock())
     except Exception as exc:
         ctx.trace["errors"].append(f"render: {type(exc).__name__}: {exc}")

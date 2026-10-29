@@ -326,6 +326,8 @@ As built: short breaks for two (WK1): for a couple on 2-3 nights, ranking preser
 
 As built: paid-plan exports (WK1): when paid order items differ from the selected variant after a cart upgrade, `agent/paid_plan.py` rebuilds the export from the existing order offer snapshots through the same builder, without re-quoting paid items. The rebuilt offer IDs and total must match the order exactly; item titles identify the purchased room/fare. Discovery variants remain unchanged. Missing snapshots or an incompatible plan leave export links null through the existing render-error path, rather than exporting the old selection. Public API and renderer signatures are unchanged.
 
+Paid-file isolation (WK1): `steps.render_files` uses the session and order IDs together as the existing renderer's file namespace. Separate purchases in one session no longer overwrite the previous order's ICS/HTML; repeated payment of the same order keeps its URLs. No new state or API fields.
+
 ## 6. Response contract (engine → UI)
 
 As built: GIF input (W10a) is decoded by `agent/frames.py` before the HTTP server calls the engine: the first frame, plus the middle frame when there are at least three frames, becomes one PNG (frames side by side). The `image` request field and the existing photo path stay unchanged. Invalid GIFs return HTTP 400; the image size limit also applies to the resulting PNG (HTTP 413).
