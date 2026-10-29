@@ -709,3 +709,52 @@ def test_weekend_room_upgrade_respects_the_same_party_rules_as_selection(live, m
     response = h.act("pay", order_id=response["order"]["order_id"])
     assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
     assert response["files"]["page"] and response["files"]["ics"]
+
+
+@pytest.mark.parametrize("live", ["stage1", "stage3", "stage5"], indirect=True)
+@pytest.mark.parametrize("with_transport", [False, True])
+def test_weekend_public_cards_show_current_elapsed_destination_time(live, with_transport):
+    from datetime import datetime
+
+    h = live
+    h.new(profile_id=None)
+    scope = ["flights", "trains", "stay", "transfers"] if with_transport else ["stay"]
+    text = "Из Москвы в Петербург вдвоем с 20 ноября на три ночи до 60000"
+    if not with_transport:
+        text += ", только проживание"
+    response, _ = ask(h, text, **{"origin.city": "Москва", "destination.name": "Санкт-Петербург",
+        "dates.start": "2026-11-20", "dates.nights": 3, "party.segment": "couple", "party.adults": 2,
+        "budget_rub.max": 60000, "scope": scope})
+
+    def check_cards(reply):
+        for card in reply["cards"]["variants"]:
+            variant = h.session().variant(card["id"])
+            if not with_transport:
+                assert "destination_hours" not in variant.facts
+                assert "На месте, включая ночи:" not in card["why"]
+                continue
+            transfers = [step for step in variant.steps if step.type == "transfer"]
+            assert len(transfers) == 2
+            elapsed = round((datetime.fromisoformat(transfers[-1].start) - datetime.fromisoformat(
+                transfers[0].end)).total_seconds() / 3600, 1)
+            value = f"{elapsed:.1f}".replace(".", ",") + " ч"
+            assert variant.facts["destination_hours"] == elapsed
+            assert f"На месте, включая ночи: {value}." in card["why"]
+        variants = h.session().variants
+        if len(variants) > 1:
+            compared = h.act("compare", variant_ids=[v.id for v in variants])
+            rows = [row for row in compared["comparison"]["rows"] if row["key"] == "destination_time"]
+            if not with_transport:
+                assert not rows
+            else:
+                cards = {card["id"]: card for card in reply["cards"]["variants"]}
+                assert len(rows) == 1
+                for variant_id, value in rows[0]["values"].items():
+                    assert f"На месте, включая ночи: {value}." in cards[variant_id]["why"]
+
+    check_cards(response)
+    h.understand(u(intent="refine", set={"dates.shift_days": 7, "dates.nights": 2}))
+    response = h.turn("Перенесите на неделю позже и оставьте две ночи")
+    assert response["stage"] == "selection" and not response.get("error")
+    assert all(v.facts["nights"] == 2 and v.facts["check_in_date"] == "2026-11-27" for v in h.session().variants)
+    check_cards(response)
