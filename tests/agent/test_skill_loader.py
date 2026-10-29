@@ -238,6 +238,8 @@ def write_rule_fragment(skill_copy, name, value):
 
 
 def test_rule_fragments_load_in_filename_order(skill_copy):
+    # Exercise ordering with only this test's fragments, independent of production rules.d contents.
+    shutil.rmtree(skill_copy / "rules.d", ignore_errors=True)
     baseline = load_skill(skill_copy).rules
     write_rule_fragment(skill_copy, "z-personal.json", {"personal": {"enabled": True}})
     write_rule_fragment(skill_copy, "a-router.json", {"router": {"jev_down": "deep"}})

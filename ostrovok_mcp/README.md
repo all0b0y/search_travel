@@ -32,3 +32,5 @@ Modules and where each formula is documented (module docstrings):
 Determinism: every random draw is `sha256(entity|field|date|…)` (`rng.py`); `today` / `now` come
 from the payload; the wall clock is never read. Everything priced or scheduled is synthetic
 (`synthetic: true`); names, coordinates, airports and routes are real data from the DBs.
+
+`Accessibility.accessible_room` and `step_free_route` are synthetic booleans seeded by hotel_id; `synthetic=true` remains explicit. A step-free entrance does not imply an accessible room. `search_hotels.filters.accessible_room=true` keeps matching hotels before the limit. The synthetic model gives every accessible room a step-free route; the agent still checks both fields, including offers from older data where either may be absent.

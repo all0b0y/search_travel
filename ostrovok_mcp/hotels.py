@@ -81,11 +81,14 @@ def room_kitchen(h: dict, room: dict) -> bool:
 def accessibility(h: dict) -> dict:
     """Synthetic step-free access and lift, seeded by hotel_id (never a hostel)."""
     if h.get("kind") == "hostel":
-        return {"step_free": False, "lift": False, "synthetic": True}
+        return {"step_free": False, "lift": False, "accessible_room": False, "step_free_route": False,
+                "synthetic": True}
     tier = "high" if h.get("kind") in ("hotel", "resort") and (h.get("stars") or 0) >= 3 else "other"
     step_free = rng.unit("hotel", h["hotel_id"], "step_free") < STEP_FREE_SHARE[tier]
     lift = step_free or rng.unit("hotel", h["hotel_id"], "lift") < LIFT_SHARE[tier]
-    return {"step_free": step_free, "lift": lift, "synthetic": True}
+    room = step_free and rng.unit("hotel", h["hotel_id"], "accessible_room") < 0.65
+    return {"step_free": step_free, "lift": lift, "accessible_room": room, "step_free_route": step_free,
+            "synthetic": True}
 
 
 def kids_policy(pol: dict) -> dict:
@@ -256,6 +259,8 @@ def search(dest_id: str, ci: date, co: date, adults: int, ages: list[int], filte
         if filters.get("kinds") and h["kind"] not in filters["kinds"]:
             continue
         if filters.get("step_free") and not accessibility(h)["step_free"]:
+            continue
+        if filters.get("accessible_room") and not accessibility(h)["accessible_room"]:
             continue
         if filters.get("max_distance_center_m") is not None and \
                 _distance_center(h, dest) > int(filters["max_distance_center_m"]):

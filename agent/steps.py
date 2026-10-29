@@ -704,6 +704,8 @@ def prepare_brief(ctx, brief, patch, allow_lazy=True):
     """Patch + destination resolution + normalisation -> (brief, changed_paths, unknown_name)."""
     new, changed = apply_patch(brief, patch)
     new = room_cues(ctx, new)
+    from .accessibility import read_cues
+    new = read_cues(ctx, new)
     new = train_cues(ctx, new)
     new = plane_cues(ctx, new)
     unknown = None
@@ -1760,6 +1762,7 @@ def amenity_filters(brief):
         out["kitchen"] = True
     if "accessible" in cons:
         out["step_free"] = True
+        out["accessible_room"] = True
     return out
 
 
@@ -3331,6 +3334,8 @@ def _stay_fact(variant, offer):
            "kitchen": (o.get("room") or {}).get("kitchen") if o.get("room") else None,
            "step_free": (o.get("accessibility") or {}).get("step_free") if o.get("accessibility") else None,
            "lift": (o.get("accessibility") or {}).get("lift") if o.get("accessibility") else None}
+    from .accessibility import facts
+    out.update(facts(o))
     return {k: v for k, v in out.items() if v is not None}
 
 
