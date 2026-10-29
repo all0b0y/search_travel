@@ -427,3 +427,67 @@ def test_weekend_extra_time_requires_both_timed_transfer_quotes(live, monkeypatc
     response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "missing-quote@example.com"})
     response = h.act("pay", order_id=response["order"]["order_id"])
     assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
+
+
+@pytest.mark.parametrize("live", ["stage5"], indirect=True)
+@pytest.mark.parametrize("city,variant_id,missing_snapshot", [("Санкт-Петербург", "cheapest", False),
+    ("Нижний Новгород", "cheapest", False), ("Нижний Новгород", "custom-3", False),
+    ("Нижний Новгород", "cheapest", True)])
+def test_weekend_paid_exports_include_the_upgraded_room(live, monkeypatch, city, variant_id, missing_snapshot):
+    import copy
+    import html
+    from agent.server import Api
+
+    h = live
+    h.new(profile_id=None)
+    _, variants = ask(h, f"Из Москвы в {city} вдвоем с 20 ноября на три ночи, романтика до 60000",
+                      **{"origin.city": "Москва", "destination.name": city,
+                         "dates.start": "2026-11-20", "dates.nights": 3,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": 60000,
+                         "mood.add": ["romantic"]})
+    selected, extra = next((v, c) for v in variants for c in v.upsell_candidates
+                           if v.id == variant_id and c.kind == "room_upgrade" and c.offer_id and c.price_rub > 0)
+    base_offer, base_price = selected.hotel.offer_id, selected.totals.rub
+    response = h.act("add_to_cart", variant_id=selected.id, extras=[extra.offer_id])
+    total = base_price + extra.price_rub
+    assert response["cart"]["total_rub"] == total
+    assert [item["offer_id"] for item in response["cart"]["items"] if item["kind"] == "hotel"] == [extra.offer_id]
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "paid-upgrade@example.com"})
+    order_id = response["order"]["order_id"]
+    call, called = h.ostrovok.call, []
+
+    def record(tool, payload):
+        called.append(tool)
+        result = call(tool, payload)
+        if missing_snapshot and tool == "order_get" and result.get("status") == "paid":
+            result = copy.deepcopy(result)
+            for item in result["items"]:
+                if item["kind"] == "hotel":
+                    item["details"].pop("offer", None)
+        return result
+
+    monkeypatch.setattr(h.ostrovok, "call", record)
+    response = h.act("pay", order_id=order_id)
+    assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == total
+    assert "pay" in called and not any(tool.startswith("search_") for tool in called)
+    if missing_snapshot:
+        assert response["files"] == {"ics": None, "page": None}
+        assert h.session().variant(selected.id).hotel.offer_id == base_offer
+        return
+    order = h.ostrovok.call("order_get", {"order_id": order_id})
+    api = Api(h.engine, debug=True, files_root=h.engine.files_dir)
+    files = {}
+    for kind in ("page", "ics"):
+        assert response["files"][kind], response.get("debug")
+        reply = api.dispatch("GET", response["files"][kind])
+        assert reply.status == 200
+        files[kind] = reply.data.decode("utf-8").replace("\r\n ", "")
+    paid_price = f"{total:,}".replace(",", " ") + " ₽"
+    assert f"<b>{paid_price}</b><span>итого</span>" in files["page"]
+    room = next(item for item in order["items"] if item["kind"] == "hotel")["details"]["offer"]["room"]["name"]
+    assert html.escape(room) in files["page"] and room in files["ics"]
+    for item in order["items"]:
+        assert item["offer_id"] in files["page"] and item["offer_id"] in files["ics"]
+    assert base_offer not in files["page"] and base_offer not in files["ics"]
+    assert h.session().variant(selected.id).hotel.offer_id == base_offer
+    assert h.session().variant(selected.id).totals.rub == base_price

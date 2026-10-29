@@ -4060,6 +4060,8 @@ def render_files(ctx, order):
         ctx.trace["notes"].append("render: unavailable (no agent/render.py or no chosen variant), files null")
         return {"ics": None, "page": None}
     try:
+        from .paid_plan import for_order
+        variant = for_order(ctx, order, variant)
         out = fn(ctx.session.id, variant, ctx.session.brief, ctx.rules, out_root=str(ctx.engine.files_dir),
                  now=ctx.session.clock())
     except Exception as exc:
