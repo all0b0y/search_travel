@@ -702,6 +702,8 @@ def normalize_brief(ctx, brief):
 
 def prepare_brief(ctx, brief, patch, allow_lazy=True):
     """Patch + destination resolution + normalisation -> (brief, changed_paths, unknown_name)."""
+    if (ctx.understand or {}).get("unsupported_reason") == "multi_city":
+        return brief, [], None
     new, changed = apply_patch(brief, patch)
     new = room_cues(ctx, new)
     new = train_cues(ctx, new)

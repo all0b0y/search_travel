@@ -83,6 +83,8 @@ def settings(rules):
 
 def eligible(engine, ctx, route):
     """A free-text turn (no button, no Jev-routed reply) whose route ends in a present card the guide may replace."""
+    if (ctx.understand or {}).get("unsupported_reason") == "multi_city":
+        return False
     if not getattr(engine.flags, "guide", False) or ctx.action is not None or not ctx.text:
         return False
     if route is None or not route.present:
