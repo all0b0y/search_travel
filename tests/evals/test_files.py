@@ -37,7 +37,7 @@ def test_counts_and_categories():
     cats = Counter(load(p)["category"] for p in CASES)
     assert cats == {"A": 11, "A_photo": 5, "B": 11, "C": 10, "D": 5, "E": 16, "F": 10, "segments": 4, "edge": 11,
                     "tone": 5, "guide": 6}
-    assert len(SCENARIOS) == 25
+    assert len(SCENARIOS) == 26
     assert len(HOLDOUT) == 10
 
 

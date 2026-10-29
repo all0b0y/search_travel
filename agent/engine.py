@@ -651,6 +651,9 @@ class Engine:
         """Car rental, a visa, excursions, insurance, a cruise (rules.json `unsold`): not sold here. With a trip in
         the same message the trip goes on and the card says one sentence (search_question `not_sold` fact); a
         message that asks only for such a service («…больше ничего не надо») is out_of_scope with no trip patch."""
+        from .multi_city import read_multi_city
+        if read_multi_city(ctx):
+            return
         from .steps import unsold_cues, unsold_only
         if not ctx.text:
             return
