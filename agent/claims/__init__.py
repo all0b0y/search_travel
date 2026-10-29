@@ -12,3 +12,6 @@ Registration order is execution order. Existing guards stay in agent.guards.
 """
 
 TEXT_CHECKS = []
+
+from .accessibility import check_accessibility
+TEXT_CHECKS.append(check_accessibility)

@@ -36,6 +36,7 @@ from .checks import (DEFAULT_BUFFERS, DEFAULT_LATE_CHECKIN, DEFAULT_TAXI_FACTOR,
                      fmt_hours, fmt_int, fmt_rub, in_clock_window, nights_text, plural, ts, wants_pet)
 from .payloads import MONTHS_GEN
 from .night_arrival import arrival_penalty
+from .accessibility import facts as accessibility_facts, suitable as accessible_suitable
 
 # ---------------------------------------------------------------- tunables
 
@@ -463,7 +464,7 @@ def _pref_fails(h, brief, near=None) -> list[str]:
         bad.append(CRIB)
     if wants_kitchen(brief) and not has_kitchen(h):
         bad.append(KITCHEN)
-    if wants_step_free(brief) and not step_free(h):
+    if wants_step_free(brief) and not accessible_suitable(h):
         bad.append(ACCESSIBLE)
     if near is not None and near.get("radius_m") is not None:
         d = h.get("distance_near_m")
@@ -1063,6 +1064,7 @@ def _facts(c: Combo, brief, districts, segments, rr):
         "early_checkin_price_rub": early.get("price_rub"),
         "kitchen": has_kitchen(h) if "room" in h else None,   # synthetic (the mock): a kitchen in the room
         "step_free": step_free(h),                            # synthetic: step-free access
+        **accessibility_facts(h),
         "lift": lift(h),
     }
     _leg_facts(f, c, rr)
@@ -1283,7 +1285,8 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
     if wait and wait > rr["wait_after_checkout_min"]:
         out.append(_note("wait_after_checkout", f"После выезда из отеля {fmt_hours(wait / 60)} ч до отправления",
                          minutes=wait))
-    if wants_step_free(brief) and c.hotel is not None and step_free(c.hotel) is None:
+    if wants_step_free(brief) and c.hotel is not None and any(
+            accessibility_facts(c.hotel)[key] is None for key in ('accessible_room', 'step_free_route')):
         out.append(_note("accessibility_unknown", "Доступность для коляски в демо-данных не проверена"))
     # what the user asked for and did not get goes first: the list is capped
     prefs = brief.prefs.value
@@ -1316,7 +1319,7 @@ def _risks(c: Combo, facts, brief, rules, rr, steps):
             head.append(_note("relaxed_pref", "С кухней в номере на эти даты ничего нет — показываю без неё", field=path))
             continue
         if path == ACCESSIBLE:
-            head.append(_note("relaxed_pref", "Отелей без ступенек на эти даты нет — показываю без этого условия",
+            head.append(_note("relaxed_pref", "Подходящих доступных номеров с путём без ступенек на эти даты нет — показываю без этого условия",
                               field=path))
             continue
         if path == "prefs.no_night_flights":

@@ -368,7 +368,7 @@ def test_mock_amenities_are_synthetic_and_deterministic():
     assert H.room_kitchen(hotel, {"name": "Апартаменты с одной спальней"})
     assert not H.room_kitchen(hotel, {"name": "Стандартный двухместный"})
     assert H.accessibility({"hotel_id": "h", "kind": "hostel", "stars": 3}) == {"step_free": False, "lift": False,
-                                                                               "synthetic": True}
+                                                                               "accessible_room": False, "step_free_route": False, "synthetic": True}
     a1 = H.accessibility(hotel)
     assert a1 == H.accessibility(dict(hotel)) and a1["synthetic"] is True and (a1["lift"] or not a1["step_free"])
     from ostrovok_mcp import db

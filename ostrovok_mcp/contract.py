@@ -137,6 +137,7 @@ class HotelFilters(Model):
     # cheapest fitting room with a kitchen; step_free -> only hotels with step-free access
     kitchen: Optional[bool] = None
     step_free: Optional[bool] = None
+    accessible_room: Optional[bool] = None
 
 
 class SearchHotelsIn(Model):
@@ -172,6 +173,8 @@ class Accessibility(Model):
     to the upper floors; seeded by hotel_id, a higher share for hotels / resorts of 3+ stars, never hostels."""
     step_free: bool = False
     lift: bool = False
+    accessible_room: bool = False
+    step_free_route: bool = False
     synthetic: bool = True
 
 

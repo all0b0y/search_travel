@@ -55,6 +55,7 @@ LEVER_TITLES = {"dates": "Другие даты", "nights_1": "На ночь к�
                 "train": "Поездом"}
 # variant facts the guide sees (truthy values only, except the ones whose false matters)
 VARIANT_FACT_KEYS = ("budget_fit", "budget_rub", "budget_dropped_prefs", "dates_shifted_days", "nights_changed_from",
+                     "accessible_room", "step_free_route", "accessibility_synthetic",
                      "transport_gap_ru", "out_road_ru", "back_road_ru", "out_on_road_ru", "back_on_road_ru",
                      "out_long_train", "back_long_train", "out_leave_ru", "back_home_ru", "out_days_before_checkin",
                      "out_pets_rule", "back_pets_rule", "price_pets_rub", "near_name", "distance_near_m", "dorm_bed",
