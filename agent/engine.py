@@ -640,6 +640,8 @@ class Engine:
         if ctx.intent not in ("new_trip", "refine", "answer") or not ctx.text:
             return
         sets = ctx.patch["set"]
+        from .cheaper_request import read_request
+        read_request(ctx)
         if wants_other_dates(ctx.text) and not ({"dates.start", "dates.shift_days"} & set(sets)):
             ctx.ask_other_dates = True
             ctx.trace["notes"].append("wish: other dates without values -> date search")
@@ -1008,7 +1010,8 @@ class Engine:
     def _items(self, ctx, labels):
         """(card hint, variant items) with the ready price gaps: diff_rub from the card's recommended item,
         over_budget_rub above brief.budget_rub.max."""
-        hint = card_hint(ctx.session.brief, ctx.variants)
+        from .cheaper_request import recommendation
+        hint = recommendation(ctx, card_hint(ctx.session.brief, ctx.variants))
         base = next((v.totals.rub for v in ctx.variants if v.id == hint), None)
         budget = budget_max(ctx.session.brief)
         return hint, [P.variant_item(v, labels[v.id], self._district_counts(ctx, v), base_rub=base, budget_max=budget)
