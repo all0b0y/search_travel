@@ -2257,23 +2257,8 @@ def _pin_transfers(ctx, variants, results, brief, districts, attempt=0):
         for field in ("also_fastest", "also_comfort", "coincide_note"):
             fresh.facts.pop(field, None)  # a one-combination rebuild cannot establish these claims
         out.extend(_pin_transfers(ctx, [fresh], pinned, brief, districts, attempt + 1))
-    # A timed replacement can make another shown trip cheaper/faster. Keep the actual winner,
-    # rather than retaining a card with a superlative that no longer matches its journey.
-    for label, metric, title in (("cheapest", "rub", "Дешевле"),
-                                 ("fastest", "door_to_door_hours", "Быстрее")):
-        named = next((v for v in out if v.id == label), None)
-        winner = min(out, key=lambda v: getattr(v.totals, metric)) if out else None
-        if named is not None and getattr(named.totals, metric) > getattr(winner.totals, metric):
-            out.remove(named)
-            if winner.id == "cheapest":
-                winner.facts["also_fastest"] = True
-            else:
-                was_fastest = winner.id == "fastest"
-                winner.id, winner.title = label, title
-                if was_fastest:
-                    winner.facts["also_fastest"] = True
     from .ranking import refresh_variant_comparison
-    return refresh_variant_comparison(out, brief, rules_view(ctx))
+    return refresh_variant_comparison(out, brief, rules_view(ctx), original_ids=[v.id for v in variants])
 
 
 def _exclude_offers(results, bad):

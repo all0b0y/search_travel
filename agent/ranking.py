@@ -1795,10 +1795,25 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     return refresh_variant_comparison(variants, brief, rules, segs)
 
 
-def refresh_variant_comparison(variants, brief, rules, segments=None):
+def refresh_variant_comparison(variants, brief, rules, segments=None, original_ids=None):
     """Refresh comparisons after a timed quote changed a variant's price or journey."""
     if not variants:
         return variants
+    if original_ids is not None:
+        winners = {}
+        for label, metric in (("cheapest", "rub"), ("fastest", "door_to_door_hours")):
+            if label not in original_ids:
+                continue
+            named = next((v for v in variants if v.id == label), None)
+            best = min(variants, key=lambda v: getattr(v.totals, metric))
+            winners[label] = named if named is not None and getattr(named.totals, metric) == getattr(
+                best.totals, metric) else best
+        variants = [v for v in variants if v.id not in winners or any(v is winner for winner in winners.values())]
+        for label, winner in winners.items():
+            if label == "fastest" and winner is winners.get("cheapest"):
+                winner.facts["also_fastest"] = True
+            else:
+                winner.id, winner.title = label, TITLES[label]
     rr = ranking_rules(rules)
     segs = _segments(rules, segments)
     min_rub = min(v.totals.rub for v in variants)
@@ -1806,6 +1821,14 @@ def refresh_variant_comparison(variants, brief, rules, segments=None):
     for v in variants:
         v.facts.update(total_rub=v.totals.rub, ref_min_rub=min_rub,
                        delta_rub_vs_cheapest=v.totals.rub - min_rub)
+        if original_ids is not None:
+            if v.facts.get("also_fastest") and v.totals.door_to_door_hours > min_hours:
+                v.facts.pop("also_fastest")
+            also = [label for label in ("fastest", "comfort") if v.facts.get(f"also_{label}")]
+            if also:
+                v.facts["coincide_note"] = _coincide_text(v.id, also)
+            else:
+                v.facts.pop("coincide_note", None)
         if "ref_min_hours" in v.facts:
             v.facts.update(ref_min_hours=min_hours,
                            delta_hours_vs_fastest=round(v.totals.door_to_door_hours - min_hours, 1))

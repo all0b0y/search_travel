@@ -491,3 +491,68 @@ def test_weekend_paid_exports_include_the_upgraded_room(live, monkeypatch, city,
     assert base_offer not in files["page"] and base_offer not in files["ics"]
     assert h.session().variant(selected.id).hotel.offer_id == base_offer
     assert h.session().variant(selected.id).totals.rub == base_price
+
+
+@pytest.mark.parametrize("live", ["stage3"], indirect=True)
+@pytest.mark.parametrize("mode", ["normal", "cross", "lost_cheapest", "merged", "tie"])
+def test_quoted_weekend_roles_keep_both_actual_winners(live, monkeypatch, mode):
+    """Controlled quote stress is selection-only; synthetic quote IDs are never used for payment."""
+    from agent import steps
+    from agent.checks import check_variant_set
+
+    h = live
+    values = {"origin.city": "Москва", "destination.name": "Санкт-Петербург",
+              "dates.start": "2026-11-20", "dates.nights": 3,
+              "party.segment": "couple", "party.adults": 2, "budget_rub.max": 100000}
+
+    def request():
+        h.new(profile_id=None)
+        return ask(h, "В Петербург вдвоем с 20 ноября на три ночи, до 100000", **values)[1]
+
+    before = request()
+    before_fast = next(v for v in before if v.id == "fastest")
+    before_extra = next(v for v in before if v.id == "custom-3")
+    original, injected = steps._parallel, []
+
+    def quote(ctx, jobs, *args, **kwargs):
+        found = original(ctx, jobs, *args, **kwargs)
+        for key, (tool, payload) in jobs.items():
+            role = key.split("|")[0]
+            if tool != "search_transfers" or "|" not in key or role not in ("cheapest", "fastest", "custom-3"):
+                continue
+            price, duration = {"cheapest": (50000, 600 if mode == "lost_cheapest" else 100),
+                               "fastest": (50000, 100) if mode == "merged" else (1, 30),
+                               "custom-3": (1000, 1)}[role]
+            if mode == "tie":
+                price, duration = 2500, 30
+            offers = (found.get(key) or {}).get("offers") or []
+            if offers:
+                found[key] = {"offers": [{**offers[0], "kind": "taxi", "price_rub": price,
+                    "duration_min": duration, "offer_id": f"synthetic-{role}-{payload['at']}-{payload.get('reverse', False)}"}]}
+                injected.append(key)
+        return found
+
+    if mode == "normal":
+        variants = before
+    else:
+        monkeypatch.setattr(steps, "_parallel", quote)
+        variants = request()
+        assert injected
+    assert check_variant_set(variants) == []
+    cheapest = next(v for v in variants if v.id == "cheapest")
+    minimum_hours = min(v.totals.door_to_door_hours for v in variants)
+    assert cheapest.totals.rub == min(v.totals.rub for v in variants)
+    assert all(not v.facts.get("also_fastest") or v.totals.door_to_door_hours == minimum_hours for v in variants)
+    if mode == "merged":
+        assert len(variants) == 1 and cheapest.facts["also_fastest"] is True
+        assert "самым быстрым" in cheapest.facts["coincide_note"]
+    else:
+        fastest = next(v for v in variants if v.id == "fastest")
+        assert fastest.totals.door_to_door_hours == minimum_hours
+        if mode in ("cross", "lost_cheapest"):
+            transfers = [step for step in before_fast.steps if step.type == "transfer"]
+            assert cheapest.totals.rub == before_fast.totals.rub - sum(s.price.rub for s in transfers) + len(transfers)
+            assert [s.offer_id for s in fastest.steps if s.type == "flight"] == [
+                s.offer_id for s in before_extra.steps if s.type == "flight"]
+        if mode == "tie":
+            assert fastest is not cheapest and fastest.totals.door_to_door_hours == cheapest.totals.door_to_door_hours
