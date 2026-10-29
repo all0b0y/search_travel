@@ -37,12 +37,14 @@ def test_multi_city_preserves_trip_and_explains_limit(live, text):
         assert h.session().brief.values()['dates'] == before['dates']
 
 
-def test_single_trip_with_connection_stays_supported(live):
+@pytest.mark.parametrize('text', ['В Казань на три ночи, перелёт с пересадкой в Самаре подходит',
+                                 'Маршрут Москва — Казань через два города с пересадками, ночёвки только в Казани'])
+def test_single_trip_with_connection_stays_supported(live, text):
     h = live
     h.understand(u(set={'origin.city': 'Москва', 'destination.name': 'Казань',
                        'dates.start': '2026-11-20', 'dates.end': '2026-11-23',
                        'party.adults': 2, 'party.segment': 'couple'}))
-    r = h.turn('В Казань на три ночи, перелёт с пересадкой в Самаре подходит')
+    r = h.turn(text)
     assert not r.get('error') and r['cards']['variants']
     assert not any('multi_city:' in n for n in h.session().trace[-1]['notes'])
 
