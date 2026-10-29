@@ -758,3 +758,45 @@ def test_weekend_public_cards_show_current_elapsed_destination_time(live, with_t
     assert response["stage"] == "selection" and not response.get("error")
     assert all(v.facts["nights"] == 2 and v.facts["check_in_date"] == "2026-11-27" for v in h.session().variants)
     check_cards(response)
+
+
+@pytest.mark.parametrize("live", ["stage5"], indirect=True)
+@pytest.mark.parametrize("budget", [33000, 34690, 60000])
+def test_weekend_upgrade_budget_gap_is_explicit_before_payment(live, budget):
+    h = live
+    h.new(profile_id=None)
+    _, variants = ask(h, "Из Москвы в Петербург вдвоем с 20 ноября на три ночи, романтика",
+                      **{"origin.city": "Москва", "destination.name": "Санкт-Петербург",
+                         "dates.start": "2026-11-20", "dates.nights": 3,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": budget,
+                         "mood.add": ["romantic"]})
+    selected, extra = next((v, c) for v in variants for c in v.upsell_candidates
+                          if v.id == "cheapest" and c.kind == "room_upgrade" and c.offer_id and c.price_rub > 0)
+    total = selected.totals.rub + extra.price_rub
+    assert selected.totals.rub <= budget
+    if budget == 34690:
+        assert total == budget
+    if budget == 33000:
+        assert total > budget
+
+    def check_message(reply, expected):
+        if expected > budget:
+            amount = f"{expected - budget:,}".replace(",", " ") + " ₽"
+            assert f"Это на {amount} выше бюджета." in reply["message"]
+        else:
+            assert "выше бюджета" not in reply["message"]
+
+    response = h.act("add_to_cart", variant_id=selected.id, extras=[extra.offer_id])
+    assert response["cart"]["total_rub"] == total
+    check_message(response, total)
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "budget-extra@example.com"})
+    assert response["order"]["total_rub"] == total
+    check_message(response, total)
+    response = h.act("pay", order_id=response["order"]["order_id"])
+    assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == total
+    response = h.act("choose_variant", variant_id=selected.id)
+    assert response["cart"]["total_rub"] == selected.totals.rub
+    check_message(response, selected.totals.rub)
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "budget-extra@example.com"})
+    assert response["order"]["total_rub"] == selected.totals.rub
+    check_message(response, selected.totals.rub)

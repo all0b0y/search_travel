@@ -332,6 +332,8 @@ Room-upgrade eligibility (WK1): `steps.upsell_offers` reuses ranking's existing 
 
 Weekend card explanation (WK1): when `facts.destination_hours` is known, response assembly appends its code-formatted value with "На месте, включая ночи" to the existing public variant `why`. Selection and update cards expose the same current value as comparison; incomplete/stay-only plans do not claim destination hours. No schema fields added.
 
+Cart budget explanation (WK1): cart and checkout messages use existing `payloads.price_gap` with their actual total to name any positive difference above the brief budget, including after a room upgrade. At/below budget there is no extra sentence; removing the extra clears it. This changes text only, without a new payment block or response field.
+
 ## 6. Response contract (engine → UI)
 
 As built: GIF input (W10a) is decoded by `agent/frames.py` before the HTTP server calls the engine: the first frame, plus the middle frame when there are at least three frames, becomes one PNG (frames side by side). The `image` request field and the existing photo path stay unchanged. Invalid GIFs return HTTP 400; the image size limit also applies to the resulting PNG (HTTP 413).

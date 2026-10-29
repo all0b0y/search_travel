@@ -3693,6 +3693,13 @@ def now_iso(ctx):
     return ctx.session.clock().isoformat(timespec="seconds")
 
 
+def budget_over_text(total_rub, brief=None):
+    values = brief.values() if brief is not None else {}
+    budget = (values.get("budget_rub") or {}).get("max")
+    over = P.price_gap(total_rub, None, budget)["over_budget_rub"]
+    return f" Это на {P.fmt_rub(over)} выше бюджета." if over else ""
+
+
 def step_cart_add(ctx):
     from .ranking import _party_ok
     s = ctx.session
@@ -3734,6 +3741,7 @@ def step_cart_add(ctx):
     ctx.cart = cart
     title = variant.title or P.VARIANT_TITLES.get(variant.id, variant.id)
     msg = f"Положил «{title}» в корзину: {P.fmt_rub(cart.get('total_rub') or 0)} за всё."
+    msg += budget_over_text(cart.get("total_rub") or 0, s.brief)
     pets = pet_fee_sentence(cart.get("items"), s.brief)
     if pets:   # the fee is inside the ticket lines: name the line, so the sum of the lines is the total
         msg += " " + pets
@@ -4002,12 +4010,13 @@ def pending_order(ctx):
 
 def checkout_text(order, extra_issues=(), brief=None) -> str:
     total = order.get("total_rub") or 0
+    over = budget_over_text(total, brief)
     issues = list(order.get("issues") or []) + list(extra_issues or [])
     if order_blockers(order, extra_issues):
         problems = attention(order_blockers(order, extra_issues))
         return (f"Заказ собран на {P.fmt_rub(total)}, но оплатить его пока нельзя: {problems} "
-                "Выберите другой вариант кнопкой ниже или напишите, что поменять, — пересоберу.")
-    msg = f"Заказ собран, осталось оплатить {P.fmt_rub(total)} — кнопка «{pay_label(total)}»."
+                "Выберите другой вариант кнопкой ниже или напишите, что поменять, — пересоберу." + over)
+    msg = f"Заказ собран, осталось оплатить {P.fmt_rub(total)} — кнопка «{pay_label(total)}»." + over
     pets = pet_fee_sentence(order.get("items"), brief)
     if pets:
         msg += " " + pets
