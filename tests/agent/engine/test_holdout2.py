@@ -9,7 +9,6 @@
 """
 import json
 import sqlite3
-import time
 from pathlib import Path
 
 import pytest
@@ -23,10 +22,11 @@ from agent.steps import NON_HOSTEL_KINDS, _hotel_filters, hostel_refused
 from .conftest import skill
 from .fakes import u
 from .test_scopes import live  # noqa: F401  (the real-data harness fixture)
+from .turn_time import calibrated
 
 ROOT = Path(__file__).resolve().parents[3]
 CATALOG = ROOT / "data" / "ostrovok_catalog.sqlite"
-TURN_MS_MAX = 1500   # in-process turn on the live harness (measured ~100–600 ms; a slow CI machine gets slack)
+TURN_MS_MAX = 1500   # in-process turn on the live harness, turn_time.calibrated (measured ~100–600 ms; a slow CI machine gets slack)
 
 H01_T1 = "Устали от слякоти. Солнца бы в декабре, мы с мужем, бюджет скромный"
 H01_T3 = ("Быстрее слишком дорого, у нас максимум 180 тысяч. А хостел в нашем возрасте как-то не очень. Нам вообще "
@@ -58,10 +58,6 @@ def no_blocks(h):
     s = h.session()
     for v in s.variants:
         assert blocking(check_variant(v, s.brief, h.engine.skill.rules)) == [], (v.id, check_variant(v, s.brief, h.engine.skill.rules))
-
-
-def turn_ms(r):
-    return r["debug"]["timings_ms"]["total"]
 
 
 # ---------------------------------------------------------------- A. the refusal cue (code safety net)
@@ -138,9 +134,9 @@ def test_h01_hostel_refused_budget_fit_without_hostels(live):
     h = live
     h01_to_dubai(h)
     h.understand(u(intent="refine", set={"budget_rub.max": 180000, "dates.nights": 8}))   # understand missed it
-    r = h.turn(H01_T3)
+    r, ms = calibrated(h.turn, H01_T3)
     assert r.get("error") is None, r["message"]
-    assert turn_ms(r) < TURN_MS_MAX, r["debug"]["timings_ms"]
+    assert ms < TURN_MS_MAX, (ms, r["debug"]["timings_ms"])
     s = h.session()
     cons = s.brief.values()["constraints"]
     assert "no_hostel" in cons and "hostel" not in cons, cons     # «хостел в » is no hostel wish here
@@ -154,9 +150,9 @@ def test_h01_hostel_refused_budget_fit_without_hostels(live):
     no_blocks(h)
     # t4: still no hostel, other dates, and the other city is answered with places that fit the budget
     h.understand(u(intent="refine"))
-    r = h.turn(H01_T4)
+    r, ms = calibrated(h.turn, H01_T4)
     assert r.get("error") is None, r["message"]
-    assert turn_ms(r) < TURN_MS_MAX, r["debug"]["timings_ms"]
+    assert ms < TURN_MS_MAX, (ms, r["debug"]["timings_ms"])
     no_hostels(h)
     assert h.session().brief.values()["destination"]["id"] == "dubai"          # the date search ran here
     inp = card_input(h, "present.update")
@@ -198,9 +194,9 @@ def test_other_places_without_shown_destinations(live):
     h.understand(u(set={"origin.city": "Новосибирск", "party.segment": "couple", "party.adults": 2,
                         "destination.name": "Дубай", "dates.month": 12, "dates.nights": 8,
                         "budget_rub.max": 150000}))
-    r = h.turn("Дубай в декабре на 8 ночей вдвоём, до 150 тысяч, без хостелов")
+    r, ms = calibrated(h.turn, "Дубай в декабре на 8 ночей вдвоём, до 150 тысяч, без хостелов")
     assert r.get("error") is None and r["cards"]["variants"], r["message"]
-    assert turn_ms(r) < TURN_MS_MAX * 2, r["debug"]["timings_ms"]   # one fresh find_destinations on top
+    assert ms < TURN_MS_MAX * 2, (ms, r["debug"]["timings_ms"])   # one fresh find_destinations on top
     places = card_input(h, "present.variants")["other_places"]
     assert all(p["id"] != "dubai" and p["price_from_rub"] <= 150000 for p in places), places
     assert places, r["debug"]["notes"]
@@ -222,17 +218,15 @@ def test_allow_hostel_drops_the_refusal(live):
 def h10_first(h):
     h.understand(u(set={"origin.city": "Екатеринбург", "party.segment": "solo", "party.adults": 1,
                         "budget_rub.max": 25000, "dates.nights": 3}))
-    t0 = time.perf_counter()
-    r = h.turn(H10_T1)
-    wall = (time.perf_counter() - t0) * 1000
+    r, ms = calibrated(h.turn, H10_T1)
     assert r.get("error") is None, r["message"]
-    return r, wall
+    return r, ms
 
 
 def test_h10_budget_inspiration_offers_trains_that_fit(live):
     h = live
-    r, wall = h10_first(h)
-    assert wall < TURN_MS_MAX, (wall, r["debug"]["timings_ms"])
+    r, ms = h10_first(h)
+    assert ms < TURN_MS_MAX, (ms, r["debug"]["timings_ms"])
     items = card_input(h, "present.destinations")["items"]
     by_id = {i["id"]: i for i in items}
     assert {"kazan", "samara"} <= set(by_id), list(by_id)
@@ -257,9 +251,9 @@ def test_h10_choose_train_place_builds_train_variants(live):
     h = live
     h10_first(h)
     quoted = {i["id"]: i["price_from_rub"] for i in card_input(h, "present.destinations")["items"]}
-    r = h.act("choose_destination", destination_id="kazan")
+    r, ms = calibrated(h.act, "choose_destination", destination_id="kazan")
     assert r.get("error") is None and r["cards"]["variants"], r["message"]
-    assert turn_ms(r) < TURN_MS_MAX, r["debug"]["timings_ms"]
+    assert ms < TURN_MS_MAX, (ms, r["debug"]["timings_ms"])
     s = h.session()
     assert s.brief.values()["prefs"]["transport"] == "train"
     for v in s.variants:
