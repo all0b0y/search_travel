@@ -361,3 +361,44 @@ def test_weekend_extra_time_keeps_its_budget_after_a_night_transfer_replacement(
     response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "budget-quote@example.com"})
     response = h.act("pay", order_id=response["order"]["order_id"])
     assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
+
+
+@pytest.mark.parametrize("missing", [None, "out", "back", "both"])
+def test_weekend_extra_time_requires_both_timed_transfer_quotes(live, monkeypatch, missing):
+    from agent import steps
+
+    h = live
+    h.new(profile_id=None)
+    original = steps._parallel
+    injected = []
+
+    def quote(ctx, jobs, *args, **kwargs):
+        found = original(ctx, jobs, *args, **kwargs)
+        for key, (tool, payload) in jobs.items():
+            reverse = bool(payload.get("reverse"))
+            unavailable = missing == "both" or (missing == "out" and not reverse) or (missing == "back" and reverse)
+            if key.startswith("custom-3|") and tool == "search_transfers" and unavailable:
+                found[key] = {"offers": []}
+                injected.append(key)
+        return found
+
+    monkeypatch.setattr(steps, "_parallel", quote)
+    _, variants = ask(h, "Из Москвы в Нижний Новгород вдвоем с 20 ноября на три ночи до 60000",
+                      **{"origin.city": "Москва", "destination.name": "Нижний Новгород",
+                         "dates.start": "2026-11-20", "dates.nights": 3,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": 60000})
+    extra = [v for v in variants if v.id == "custom-3"]
+    if missing:
+        assert injected
+        assert not extra, "an absent timed quote cannot support the extra-time claim"
+        selected = min(variants, key=lambda v: v.totals.rub)
+    else:
+        assert extra and extra[0].facts["destination_hours"] > 0
+        assert sum(step.type == "transfer" for step in extra[0].steps) == 2
+        selected = extra[0]
+    no_blocks(h, variants)
+    response = h.act("choose_variant", variant_id=selected.id)
+    assert response["cart"]["total_rub"] == selected.totals.rub
+    response = h.act("checkout", travellers=TRAVELLERS, contact={"email": "missing-quote@example.com"})
+    response = h.act("pay", order_id=response["order"]["order_id"])
+    assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub

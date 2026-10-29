@@ -2250,8 +2250,9 @@ def _pin_transfers(ctx, variants, results, brief, districts, attempt=0):
             continue
         fresh = built[0].model_copy(update={"id": variant.id, "title": variant.title})
         budget = brief.budget_rub.value.max if brief.budget_rub.value else None
-        if fresh.id == "custom-3" and budget and fresh.totals.rub > budget:
-            ctx.trace["notes"].append("weekend extra-time quote exceeds budget")
+        if fresh.id == "custom-3" and (fresh.facts.get("destination_hours") is None
+                                       or budget and fresh.totals.rub > budget):
+            ctx.trace["notes"].append("weekend extra-time quote no longer eligible")
             continue
         for field in ("also_fastest", "also_comfort", "coincide_note"):
             fresh.facts.pop(field, None)  # a one-combination rebuild cannot establish these claims
