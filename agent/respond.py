@@ -636,7 +636,11 @@ def code_text(ctx):
 
 
 def build_message(ctx):
-    if ctx.error and ctx.message:
+    from .reachable_reply import reachable_reply
+    reachable = reachable_reply(ctx) if not ctx.error else None
+    if reachable:
+        body = reachable
+    elif ctx.error and ctx.message:
         body = ctx.message
     elif ctx.message:
         body = ctx.message
