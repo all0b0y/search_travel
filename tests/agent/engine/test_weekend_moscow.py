@@ -163,7 +163,7 @@ def test_weekend_cart_rebuild_uses_new_dates_budget_and_train(live):
         assert datetime.fromisoformat(step.end).strftime("%d.%m %H:%M") in downloaded["page"]
     price = f"{selected.totals.rub:,}".replace(",", " ") + " ₽"
     assert price in downloaded["page"]
-    assert '<b>3</b><span>ночей в отеле</span>' in downloaded["page"]
+    assert '<b>3</b><span>ночи в отеле</span>' in downloaded["page"]
 
 
 @pytest.mark.parametrize("before", ["cart", "checkout"])
