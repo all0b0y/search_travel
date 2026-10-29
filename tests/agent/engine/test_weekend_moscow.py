@@ -556,3 +556,52 @@ def test_quoted_weekend_roles_keep_both_actual_winners(live, monkeypatch, mode):
                 s.offer_id for s in before_extra.steps if s.type == "flight"]
         if mode == "tie":
             assert fastest is not cheapest and fastest.totals.door_to_door_hours == cheapest.totals.door_to_door_hours
+
+
+@pytest.mark.parametrize("live", ["stage3"], indirect=True)
+@pytest.mark.parametrize("duration,detour_limit", [(30, 3), (300, 3), (500, 100)])
+def test_quoted_weekend_extra_keeps_its_time_advantage_and_detour_limit(live, monkeypatch, duration, detour_limit):
+    """Synthetic transfer quotes exercise selection only, never cart or payment."""
+    from agent import steps
+    from agent.checks import check_variant_set
+    from agent.ranking import ranking_rules
+
+    h = live
+    h.new(profile_id=None)
+    monkeypatch.setitem(h.engine.skill.rules["ranking"], "comfort_max_extra_hours", detour_limit)
+    original, injected = steps._parallel, []
+
+    def quote(ctx, jobs, *args, **kwargs):
+        found = original(ctx, jobs, *args, **kwargs)
+        for key, (tool, payload) in jobs.items():
+            if tool != "search_transfers" or "|" not in key:
+                continue
+            role = key.split("|")[0]
+            if role not in ("cheapest", "fastest", "custom-3"):
+                continue
+            offers = (found.get(key) or {}).get("offers") or []
+            if offers:
+                found[key] = {"offers": [{**offers[0], "kind": "taxi",
+                    "price_rub": 1000 if role == "custom-3" else 2500,
+                    "duration_min": duration if role == "custom-3" else 30,
+                    "offer_id": f"synthetic-{role}-{payload['at']}-{payload.get('reverse', False)}"}]}
+                injected.append(key)
+        return found
+
+    monkeypatch.setattr(steps, "_parallel", quote)
+    _, variants = ask(h, "Из Москвы в Петербург вдвоем на три ночи с 20 ноября, до 100000",
+                      **{"origin.city": "Москва", "destination.name": "Санкт-Петербург",
+                         "dates.start": "2026-11-20", "dates.nights": 3,
+                         "party.segment": "couple", "party.adults": 2, "budget_rub.max": 100000})
+    assert injected and check_variant_set(variants) == []
+    base = [v for v in variants if v.id != "custom-3"]
+    extra = [v for v in variants if v.id == "custom-3"]
+    assert {v.id for v in base} == {"cheapest", "fastest"}
+    if duration == 30:
+        assert len(extra) == 1
+    else:
+        assert not extra
+    for variant in extra:
+        assert variant.totals.door_to_door_hours <= min(v.totals.door_to_door_hours for v in base) + ranking_rules(
+            h.engine.skill.rules)["comfort_max_extra_hours"]
+        assert variant.facts["destination_hours"] > max(v.facts["destination_hours"] for v in base)

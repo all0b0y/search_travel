@@ -53,3 +53,21 @@ def add_weekend_choice(picked, candidates, brief, rules, limit):
             if picked[index][0] not in ("cheapest", "fastest"):
                 picked[index] = ("custom-3", best)
                 break
+
+
+def quoted_weekend_choices(variants, brief, rules):
+    """Recheck the optional time claim against the other affordable, now-quoted choices."""
+    extra = next((v for v in variants if v.id == "custom-3"), None)
+    if extra is None or not short_break(brief):
+        return variants
+    budget = brief.budget_rub.value.max if brief.budget_rub.value else None
+    budget = budget or min(v.totals.rub for v in variants) * rules["comfort_price_cap_ratio"]
+    peers = [v for v in variants if v.id != "custom-3" and v.totals.rub <= budget]
+    hours = extra.facts.get("destination_hours")
+    eligible = extra.totals.rub <= budget and hours is not None
+    if peers and eligible:
+        fastest = min(v.totals.door_to_door_hours for v in peers)
+        longest = max((v.facts["destination_hours"] for v in peers
+                       if v.facts.get("destination_hours") is not None), default=0)
+        eligible = extra.totals.door_to_door_hours <= fastest + rules["comfort_max_extra_hours"] and hours > longest
+    return variants if eligible else [v for v in variants if v is not extra]

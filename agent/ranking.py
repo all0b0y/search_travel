@@ -36,7 +36,7 @@ from .checks import (DEFAULT_BUFFERS, DEFAULT_LATE_CHECKIN, DEFAULT_TAXI_FACTOR,
                      fmt_hours, fmt_int, fmt_rub, in_clock_window, nights_text, plural, ts, wants_pet)
 from .payloads import MONTHS_GEN
 from .night_arrival import arrival_penalty
-from .weekend import add_weekend_choice, destination_hours, short_break
+from .weekend import add_weekend_choice, destination_hours, quoted_weekend_choices, short_break
 
 # ---------------------------------------------------------------- tunables
 
@@ -1816,6 +1816,10 @@ def refresh_variant_comparison(variants, brief, rules, segments=None, original_i
                 winner.id, winner.title = label, TITLES[label]
     rr = ranking_rules(rules)
     segs = _segments(rules, segments)
+    if original_ids is not None:
+        variants = quoted_weekend_choices(variants, brief, rr)
+        if not variants:
+            return variants
     min_rub = min(v.totals.rub for v in variants)
     min_hours = min(v.totals.door_to_door_hours for v in variants)
     for v in variants:
