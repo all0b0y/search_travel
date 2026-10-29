@@ -39,10 +39,10 @@ def test_level3_dry_run(tmp_path):
     out = tmp_path / "run3"
     rep = run_mod.main(["--level", "3", "--dry-run", "--out", str(out), "--parallel", "3"], log=lambda *a: None)
     m = rep["metrics"]
-    assert m["scenarios"] == 25 and m["completion_rate"] == 1.0 and m["first_rec_rate"] == 1.0
+    assert m["scenarios"] == 26 and m["completion_rate"] == 1.0 and m["first_rec_rate"] == 1.0
     assert m["touches_to_cart_mean"] is not None and m["touches_to_cart_max"] <= 3
     assert m["response_schema_error_turns"] == 0
-    assert m["jev_calls"] == 25 and m["jev_fallback_rate"] == 1.0
+    assert m["jev_calls"] == 26 and m["jev_fallback_rate"] == 1.0
     assert m["served_models"] and m["persona_models"] == {"fake/buttons": m["persona_models"]["fake/buttons"]}
     assert 0 < m["hidden_must_rate"] < 1
     assert rep["scenarios"][0]["must"]
@@ -51,7 +51,7 @@ def test_level3_dry_run(tmp_path):
     photo = [t for t in turns if t["scenario_id"] == "s04_photo_landmark" and t["turn"] == 1][0]
     assert photo["request"]["image"] == "<image evals/images/landmark_hagia_sophia.jpg>"
     packets = sorted((out / "judge").glob("*.md"))
-    assert len(packets) == 25
+    assert len(packets) == 26
     text = (out / "judge" / "s15_after_early_checkin.md").read_text(encoding="utf-8")
     assert "Hidden facts" in text and "Must predicates" in text and "Пользователь:" in text and "[A1]" not in text
     s15 = next(s for s in rep["scenarios"] if s["scenario_id"] == "s15_after_early_checkin")

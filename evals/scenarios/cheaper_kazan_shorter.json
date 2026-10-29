@@ -1,0 +1,49 @@
+{
+  "id": "cheaper_kazan_shorter",
+  "category": "C",
+  "persona": {
+    "start_message": "Из Москвы в Казань вдвоём с 20 по 24 ноября, до двухсот тысяч",
+    "image": null,
+    "profile": {
+      "name": "Ирина",
+      "age": 38,
+      "home_city": "Москва",
+      "travellers": [
+        {
+          "name": "Ирина Волкова",
+          "birth_date": "1988-05-11"
+        },
+        {
+          "name": "Павел Волков",
+          "birth_date": "1987-06-12"
+        }
+      ],
+      "contact": {
+        "email": "irina@example.com"
+      }
+    },
+    "hidden": {
+      "facts": {
+        "adults": 2,
+        "nights": 2
+      },
+      "must": [
+        {
+          "name": "order_paid"
+        },
+        {
+          "name": "nights_between",
+          "args": {
+            "min": 2,
+            "max": 2
+          }
+        }
+      ],
+      "nice": [
+        "Самая дешёвая подходящая рекомендация"
+      ]
+    },
+    "behaviour": "После первой подборки пишет: «Можно подешевле, на две ночи и попроще». Проверяет, что осталось две ночи, выбирает рекомендованный дешёвый вариант кнопкой и оформляет заказ."
+  },
+  "max_turns": 10
+}

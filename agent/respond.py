@@ -80,6 +80,8 @@ def variant_cards(ctx, variants, output):
     by_id = {i["id"]: i for i in (output or {}).get("items") or []}
     labels = {i.id: i.label for i in ctx.session.shown.variants}
     rec = (output or {}).get("recommended_id")
+    if ctx.ask_cheaper and not (ctx.trace.get("guide") or {}).get("used"):
+        rec = (ctx.card_input or {}).get("recommended_hint")
     ids = [v.id for v in variants]
     if rec not in ids:
         rec = recommended_hint(variants)
@@ -636,7 +638,11 @@ def code_text(ctx):
 
 
 def build_message(ctx):
-    if ctx.error and ctx.message:
+    from .cheaper_request import explanation
+    if (ctx.ask_cheaper and not ctx.error and ctx.present in ("present.variants", "present.update")
+            and not (ctx.trace.get("guide") or {}).get("used")):
+        body = explanation(ctx) + code_text(ctx)
+    elif ctx.error and ctx.message:
         body = ctx.message
     elif ctx.message:
         body = ctx.message
@@ -735,6 +741,8 @@ def build_response(ctx):
         response["error"] = {"code": ctx.error["code"], "retryable": bool(ctx.error.get("retryable"))}
     if s.debug:
         response["debug"] = debug_out(ctx)
+    from .cheaper_request import remember
+    remember(ctx, response)
     return response
 
 
