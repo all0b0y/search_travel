@@ -92,6 +92,9 @@ def variant_cards(ctx, variants, output):
     cards = []
     for i, v in enumerate(variants):
         o = by_id.get(v.id)
+        why = (o or {}).get("why") or code_why(v)
+        if v.facts.get("destination_hours") is not None:
+            why += f" На месте, включая ночи: {P.fmt_hours(v.facts['destination_hours'])}."
         hotel = None
         if v.hotel is not None:
             scores = {k: float(v.hotel.district.scores.get(k, 0.0)) for k in ("lively", "quiet", "family", "walkable")}
@@ -103,7 +106,7 @@ def variant_cards(ctx, variants, output):
             "title": v.title or P.VARIANT_TITLES.get(v.id, v.id), "recommended": v.id == rec,
             "totals": {"rub": int(v.totals.rub), "door_to_door_hours": float(v.totals.door_to_door_hours)},
             "steps": [step_out(s) for s in v.steps], "hotel": hotel,
-            "why": (o or {}).get("why") or code_why(v),
+            "why": why,
             "sacrifices": _texts(o, "sacrifices", v.sacrifices), "risks": _texts(o, "risks", v.risks),
             "not_for": _texts(o, "not_for", v.not_for),
             "upsell": [{"offer_id": c.offer_id, "label": c.label, "price_rub": c.price_rub,

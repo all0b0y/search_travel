@@ -16,7 +16,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .checks import fmt_hours, fmt_rub, ts
+from .checks import fmt_hours, fmt_rub, plural, ts
 
 REPO = Path(__file__).resolve().parent.parent
 TITLES = {"taxi": "Такси", "flight": "Рейс", "train": "Поезд", "transfer": "Трансфер", "stay": "Отель"}
@@ -41,7 +41,7 @@ ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--line);margin-l
 li{position:relative;margin:0 0 16px;padding-left:22px}li:before{content:"";position:absolute;left:-7px;top:22px;width:12px;height:12px;border-radius:50%;background:var(--accent)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px}.when{color:var(--muted);font-size:14px}
 .what{font-weight:600;margin:2px 0}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px}
-.id{color:var(--muted);font-size:12px}.note{color:var(--warn);font-size:14px;margin-top:6px}ul.notes{margin:0;padding-left:20px}
+.note{color:var(--warn);font-size:14px;margin-top:6px}ul.notes{margin:0;padding-left:20px}
 .foot{color:var(--muted);font-size:13px;margin-top:24px}
 """
 
@@ -138,7 +138,7 @@ def page(variant, title=None, subtitle=None, now=None, rates=None):
         tiles.append((f"{fmt_hours(v.totals.door_to_door_hours)} ч", "в пути туда и обратно"))
     nights = v.facts.get("nights")
     if nights:
-        tiles.append((str(nights), "ночей в отеле"))
+        tiles.append((str(nights), f"{plural(nights, 'ночь', 'ночи', 'ночей')} в отеле"))
     items = []
     for s in v.steps:
         notes = []
@@ -147,11 +147,11 @@ def page(variant, title=None, subtitle=None, now=None, rates=None):
         what = esc(s.to) if s.type == "stay" else f"{esc(s.from_)} → {esc(s.to)}"
         carrier = f" · {esc(s.carrier)}" if s.carrier else ""
         label = esc(s.title) if s.title else TITLES[s.type]
-        oid = f'<span class="id">{esc(s.offer_id)}</span>' if s.offer_id else ""
+        oid = f' data-offer-id="{esc(s.offer_id)}"' if s.offer_id else ""
         items.append(
-            f'<li><div class="card"><div class="when">{when(s.start)} — {when(s.end)}</div>'
+            f'<li><div class="card"{oid}><div class="when">{when(s.start)} — {when(s.end)}</div>'
             f'<div class="what">{ICONS[s.type]} {label}: {what}{carrier}</div>'
-            f'<div class="row"><span>{esc(fmt_rub(s.price.rub if s.price.rub is not None else s.price.amount))}</span>{oid}</div>'
+            f'<div class="row"><span>{esc(fmt_rub(s.price.rub if s.price.rub is not None else s.price.amount))}</span></div>'
             + "".join(f'<div class="note">{esc(n)}</div>' for n in notes)
             + "</div></li>")
     sections = []

@@ -2170,10 +2170,10 @@ def build(ctx, brief, results, districts, exclude=(), pin=True):
         results = _exclude_offers(results, set(exclude))
     built = ctx.domain.build_variants(brief, results, districts, rules_view(ctx), ctx.session.today())
     variants = [_as_variant(v) for v in built or []][: int(ctx.rules.get("max_variants", 3))]
-    return _pin_transfers(ctx, variants, results) if pin else variants
+    return _pin_transfers(ctx, variants, results, brief, districts) if pin else variants
 
 
-def _pin_transfers(ctx, variants, results):
+def _pin_transfers(ctx, variants, results, brief, districts, attempt=0):
     """Re-quote every transfer step at the exact time of its own leg.
 
     Transfers are searched once per hotel and arrival point (at the earliest arrival there), so the
@@ -2185,7 +2185,7 @@ def _pin_transfers(ctx, variants, results):
         for offers in (results.get(key) or {}).values():
             for o in offers:
                 index[o.get("offer_id")] = (o, key == "transfers_back")
-    party = _party_payload(ctx.brief)
+    party = _party_payload(brief)
     pax = party["adults"] + len(party["children_ages"])
     jobs, where = {}, {}
     for v in variants:
@@ -2201,22 +2201,64 @@ def _pin_transfers(ctx, variants, results):
                 payload["reverse"] = True
             key = f"{v.id}|{s.id}"
             jobs[key] = ("search_transfers", payload)
-            where[key] = (v, s, o.get("kind"))
+            where[key] = (v, s, o, reverse)
     found = _parallel(ctx, jobs, tolerant=True)
-    for key, value in found.items():
-        v, s, kind = where[key]
+    rebuilds = {}
+    for key in jobs:
+        value = found.get(key)
+        v, s, old, reverse = where[key]
         offers = (value or {}).get("offers") or []
-        pick = next((o for o in offers if o.get("kind") == kind), None) or (offers[0] if offers else None)
-        if pick is None:
+        pick = next((o for o in offers if o.get("kind") == old.get("kind")), None) or (offers[0] if offers else None)
+        changed = pick is None or any(pick.get(field) != old.get(field)
+                                      for field in ("kind", "duration_min", "price_rub"))
+        if changed and v.id not in rebuilds:
+            pinned = dict(results)
+            legs = [step for step in v.steps if step.type in TRANSPORT_STEPS]
+            for direction, leg in zip(("out", "back"), legs):
+                for kind in ("flights", "trains"):
+                    pinned[f"{kind}_{direction}"] = [o for o in results.get(f"{kind}_{direction}") or []
+                                                     if o["offer_id"] == leg.offer_id]
+            if v.hotel is not None:
+                pinned["hotels"] = [o for o in results.get("hotels") or [] if o["offer_id"] == v.hotel.offer_id]
+            for direction in ("out", "back"):
+                pinned[f"transfers_{direction}"] = {}
+            for source, _, offer, back in where.values():
+                if source is v:
+                    pinned["transfers_back" if back else "transfers_out"][offer["hotel_id"]] = [offer]
+            rebuilds[v.id] = pinned
+        if v.id in rebuilds:
+            rebuilds[v.id]["transfers_back" if reverse else "transfers_out"][old["hotel_id"]] = (
+                [{**old, **pick}] if pick is not None else [])
+        if pick is not None:
+            s.offer_id = pick["offer_id"]
+            s.link = f"ostrovok-mock:transfer/{pick['offer_id']}"
+    if not rebuilds:
+        return variants
+    out = []
+    for variant in variants:
+        if variant.id not in rebuilds:
+            out.append(variant)
             continue
-        new_rub, old_rub = pick.get("price_rub"), s.price.rub if s.price.rub is not None else s.price.amount
-        s.offer_id = pick["offer_id"]
-        s.link = f"ostrovok-mock:transfer/{pick['offer_id']}"
-        delta = int(new_rub) - int(old_rub) if new_rub is not None and old_rub is not None else 0
-        if delta:
-            s.price = s.price.model_copy(update={"amount": int(pick["price_rub"]), "rub": int(pick["price_rub"])})
-            v.totals = v.totals.model_copy(update={"rub": v.totals.rub + delta})
-    return variants
+        # A replacement changes arrival/leave times too. Reuse the builder instead of patching its facts.
+        # Re-quote the rebuilt pickup once more; unstable quotes are left out rather than shown as valid.
+        if attempt >= 2:
+            ctx.trace["notes"].append(f"transfer quote did not settle for {variant.id}")
+            continue
+        pinned = rebuilds[variant.id]
+        built = build(ctx, brief, pinned, districts, pin=False)
+        if not built:
+            continue
+        fresh = built[0].model_copy(update={"id": variant.id, "title": variant.title})
+        budget = brief.budget_rub.value.max if brief.budget_rub.value else None
+        if fresh.id == "custom-3" and (fresh.facts.get("destination_hours") is None
+                                       or budget and fresh.totals.rub > budget):
+            ctx.trace["notes"].append("weekend extra-time quote no longer eligible")
+            continue
+        for field in ("also_fastest", "also_comfort", "coincide_note"):
+            fresh.facts.pop(field, None)  # a one-combination rebuild cannot establish these claims
+        out.extend(_pin_transfers(ctx, [fresh], pinned, brief, districts, attempt + 1))
+    from .ranking import refresh_variant_comparison
+    return refresh_variant_comparison(out, brief, rules_view(ctx), original_ids=[v.id for v in variants])
 
 
 def _exclude_offers(results, bad):
@@ -3133,6 +3175,7 @@ def upsell_offers(ctx, variant):
     The variant's hotel is re-searched with `hotel_id` + `all_rooms` (one offer per fitting room type,
     cached) so room upgrades exist to choose from; the extra offers only feed the upsell, not ranking.
     """
+    from .ranking import _party_ok
     results = dict(ctx.results or {})
     hotel = find_offer(ctx, variant.hotel.offer_id) if variant.hotel else None
     if hotel is not None and results.get("check_in"):
@@ -3144,6 +3187,7 @@ def upsell_offers(ctx, variant):
         known = {h.get("offer_id") for h in results.get("hotels") or []}
         extra = [o for o in (rooms or {}).get("offers") or [] if o.get("offer_id") not in known]
         results["hotels"] = list(results.get("hotels") or []) + extra
+    results["hotels"] = [offer for offer in results.get("hotels") or [] if _party_ok(offer, ctx.brief)]
     return ctx.domain.offers_for_variant(variant, results)
 
 
@@ -3207,6 +3251,12 @@ def comparison_rows(ctx, variants):
         {"key": "door_to_door", "label": "В дороге, туда и обратно",
          "values": {v.id: P.fmt_hours(v.totals.door_to_door_hours) for v in variants},
          "best_id": best({v.id: v.totals.door_to_door_hours for v in variants}, highest=False)}]
+    destination_times = {v.id: v.facts.get("destination_hours") for v in variants}
+    if any(hours is not None for hours in destination_times.values()):
+        rows.append({"key": "destination_time", "label": "На месте, включая ночи",
+                     "values": {key: P.fmt_hours(hours) if hours is not None else "Нет данных"
+                                for key, hours in destination_times.items()},
+                     "best_id": best(destination_times)})
     if any(v.hotel for v in variants):
         rows.append({"key": "hotel", "label": "Отель", "values": {
             v.id: (f"{v.hotel.stars or '–'}★, {v.hotel.rating if v.hotel.rating is not None else '–'}"
@@ -3643,18 +3693,20 @@ def now_iso(ctx):
     return ctx.session.clock().isoformat(timespec="seconds")
 
 
+def budget_over_text(total_rub, brief=None):
+    values = brief.values() if brief is not None else {}
+    budget = (values.get("budget_rub") or {}).get("max")
+    over = P.price_gap(total_rub, None, budget)["over_budget_rub"]
+    return f" Это на {P.fmt_rub(over)} выше бюджета." if over else ""
+
+
 def step_cart_add(ctx):
+    from .ranking import _party_ok
     s = ctx.session
     vid = (ctx.variant_ids or [None])[0] or s.chosen_variant_id
     variant = s.variant(vid) if vid else None
     if variant is None:
         ctx.fail("bad_request", "Не понял, какой вариант положить в корзину — нажмите «Беру» на нужном.")
-    if s.cart_id:
-        cart = tool(ctx, "cart_get", {"session_id": s.id}, cache=False)
-        if cart.get("status") == "checked_out":
-            cart = tool(ctx, "cart_create", {"session_id": s.id, "now": now_iso(ctx)}, cache=False)
-    else:
-        cart = tool(ctx, "cart_create", {"session_id": s.id, "now": now_iso(ctx)}, cache=False)
     wanted = {st.offer_id: ITEM_KINDS[st.type] for st in variant.steps if st.offer_id and st.type in ITEM_KINDS}
     cands = {c.offer_id: c for c in variant.upsell_candidates if c.offer_id}
     for extra in ctx.extras:
@@ -3665,7 +3717,15 @@ def step_cart_add(ctx):
                 "train" if "train_no" in offer else "transfer")
         if kind is None:
             ctx.fail("bad_request", "Этот доп больше недоступен — обновите варианты.")
+        if kind == "hotel" and offer is not None and not _party_ok(offer, ctx.brief):
+            ctx.fail("bad_request", "Этот номер не подходит составу путешественников или условиям поездки.")
         wanted[extra] = kind
+    if s.cart_id:
+        cart = tool(ctx, "cart_get", {"session_id": s.id}, cache=False)
+        if cart.get("status") == "checked_out":
+            cart = tool(ctx, "cart_create", {"session_id": s.id, "now": now_iso(ctx)}, cache=False)
+    else:
+        cart = tool(ctx, "cart_create", {"session_id": s.id, "now": now_iso(ctx)}, cache=False)
     for item in cart.get("items") or []:
         if item["offer_id"] not in wanted:
             cart = tool(ctx, "cart_remove", {"session_id": s.id, "offer_id": item["offer_id"], "kind": item["kind"]},
@@ -3681,6 +3741,7 @@ def step_cart_add(ctx):
     ctx.cart = cart
     title = variant.title or P.VARIANT_TITLES.get(variant.id, variant.id)
     msg = f"Положил «{title}» в корзину: {P.fmt_rub(cart.get('total_rub') or 0)} за всё."
+    msg += budget_over_text(cart.get("total_rub") or 0, s.brief)
     pets = pet_fee_sentence(cart.get("items"), s.brief)
     if pets:   # the fee is inside the ticket lines: name the line, so the sum of the lines is the total
         msg += " " + pets
@@ -3875,6 +3936,8 @@ def step_checkout(ctx):
     s = ctx.session
     if not s.cart_id:
         ctx.fail("bad_request", "Корзина пока пустая — сначала выберите вариант.")
+    if s.stage not in ("cart", "checkout"):
+        ctx.fail("bad_request", "Выберите вариант из новой подборки - затем оформим поездку.")
     payload = ctx.checkout_payload
     if not payload or not payload.get("travellers"):
         ctx.message = "Чтобы оформить, нужны имена и даты рождения всех путешественников и контакт для билетов."
@@ -3947,12 +4010,13 @@ def pending_order(ctx):
 
 def checkout_text(order, extra_issues=(), brief=None) -> str:
     total = order.get("total_rub") or 0
+    over = budget_over_text(total, brief)
     issues = list(order.get("issues") or []) + list(extra_issues or [])
     if order_blockers(order, extra_issues):
         problems = attention(order_blockers(order, extra_issues))
         return (f"Заказ собран на {P.fmt_rub(total)}, но оплатить его пока нельзя: {problems} "
-                "Выберите другой вариант кнопкой ниже или напишите, что поменять, — пересоберу.")
-    msg = f"Заказ собран, осталось оплатить {P.fmt_rub(total)} — кнопка «{pay_label(total)}»."
+                "Выберите другой вариант кнопкой ниже или напишите, что поменять, — пересоберу." + over)
+    msg = f"Заказ собран, осталось оплатить {P.fmt_rub(total)} — кнопка «{pay_label(total)}»." + over
     pets = pet_fee_sentence(order.get("items"), brief)
     if pets:
         msg += " " + pets
@@ -3995,7 +4059,9 @@ def render_files(ctx, order):
         ctx.trace["notes"].append("render: unavailable (no agent/render.py or no chosen variant), files null")
         return {"ics": None, "page": None}
     try:
-        out = fn(ctx.session.id, variant, ctx.session.brief, ctx.rules, out_root=str(ctx.engine.files_dir),
+        from .paid_plan import for_order
+        variant = for_order(ctx, order, variant)
+        out = fn(f"{ctx.session.id}-{order['order_id']}", variant, ctx.session.brief, ctx.rules, out_root=str(ctx.engine.files_dir),
                  now=ctx.session.clock())
     except Exception as exc:
         ctx.trace["errors"].append(f"render: {type(exc).__name__}: {exc}")
@@ -4017,6 +4083,8 @@ def step_pay(ctx):
     order_id = ((ctx.action or {}).get("payload") or {}).get("order_id") or s.order_id
     if not order_id or order_id != s.order_id:
         ctx.fail("bad_request", "Не нашёл заказ для оплаты — оформите корзину ещё раз.")
+    if s.stage not in ("checkout", "ordered", "aftercare"):
+        ctx.fail("bad_request", "Подборка изменилась - выберите вариант и оформите его перед оплатой.")
     blockers = [i for i in checkout_issues(s, order_id) if (i.get("severity") or "").lower() in BLOCK_SEVERITIES]
     if blockers:
         ctx.fail("bad_request", f"Оплатить этот заказ пока нельзя: {attention(blockers)} "

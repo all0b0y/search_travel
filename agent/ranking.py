@@ -36,6 +36,7 @@ from .checks import (DEFAULT_BUFFERS, DEFAULT_LATE_CHECKIN, DEFAULT_TAXI_FACTOR,
                      fmt_hours, fmt_int, fmt_rub, in_clock_window, nights_text, plural, ts, wants_pet)
 from .payloads import MONTHS_GEN
 from .night_arrival import arrival_penalty
+from .weekend import add_weekend_choice, destination_hours, quoted_weekend_choices, short_break
 
 # ---------------------------------------------------------------- tunables
 
@@ -110,7 +111,7 @@ MEALS_RANK = {"none": 0, "breakfast": 1, "half_board": 2, "full_board": 3, "all_
 MEALS_RU = {"none": "без питания", "breakfast": "завтраки", "half_board": "полупансион",
             "full_board": "полный пансион", "all_inclusive": "всё включено", "any": "любое"}
 TITLES = {"cheapest": "Дешевле", "fastest": "Быстрее", "comfort": "Комфортнее", "custom-1": "Удачнее по району",
-          "custom-2": "Свой номер подешевле"}
+          "custom-2": "Свой номер подешевле", "custom-3": "Больше времени на месте"}
 SEA_TRAITS = {"sea", "beach", "island"}
 CAR_CLASS_COMFORT = {"sv": 1.0, "coupe": 0.6, "seat": 0.4, "platzkart": 0.2}
 COMFORT_TRANSFER = {"private": 1.0, "taxi": 0.8, "shuttle": 0.4, "public": 0.1}
@@ -917,7 +918,7 @@ def _scope(brief):
     return set(scope) if scope else {"flights", "trains", "stay", "transfers"}
 
 
-def _legs(results, direction, brief, rr, today, soft=True):
+def _legs(results, direction, brief, rr, today, soft=True, buffers=None):
     """Transport offers for one direction -> (legs, relaxed paths). Hard filters first (_leg_ok), then
     the user's ticket prefs (_soft_leg_filters), each dropped only when it would leave nothing."""
     scope = _scope(brief)
@@ -934,7 +935,17 @@ def _legs(results, direction, brief, rr, today, soft=True):
             legs = kept
         elif legs and not (kept and kept == legs):
             relaxed.append(path)
-    return _prune_legs(legs, rr["max_legs"], int(rr.get("comfort_legs", 0))), tuple(relaxed)
+    kept = _prune_legs(legs, rr["max_legs"], int(rr.get("comfort_legs", 0)))
+    if short_break(brief) and legs:
+        buffers = buffers or DEFAULT_BUFFERS
+        def schedule_key(leg):
+            time = (leg.arr.timestamp() + 60 * _after(leg, buffers, rr) if direction == "out" else
+                    -leg.dep.timestamp() + 60 * _before(leg, buffers))
+            return time, leg.duration_min, leg.price_rub
+        best = min(legs, key=schedule_key)
+        if all(leg.offer_id != best.offer_id for leg in kept):
+            kept.append(best)
+    return kept, tuple(relaxed)
 
 
 def _one_way_hours(c) -> float:
@@ -1067,6 +1078,8 @@ def _facts(c: Combo, brief, districts, segments, rr):
     }
     _leg_facts(f, c, rr)
     _long_leg_facts(f, c, check_in, check_out)
+    if short_break(brief) and destination_hours(c) is not None:
+        f["destination_hours"] = destination_hours(c)
     for direction, tr in (("out", c.tr_out), ("back", c.tr_back)):
         if tr is not None:
             f[f"transfer_{direction}_min"] = int(tr["duration_min"])
@@ -1625,8 +1638,8 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     hotel_relaxed = relaxed_paths
     # second pass without the ticket prefs when the legs they keep fit no stay / no return at all
     for soft in (True, False):
-        outs, out_relaxed = _legs(results, "out", brief, rr, today, soft) if want_transport else ([], ())
-        backs, back_relaxed = _legs(results, "back", brief, rr, today, soft) if want_transport else ([], ())
+        outs, out_relaxed = _legs(results, "out", brief, rr, today, soft, _buffers(rules)) if want_transport else ([], ())
+        backs, back_relaxed = _legs(results, "back", brief, rr, today, soft, _buffers(rules)) if want_transport else ([], ())
         no_transport = want_transport and not (outs and backs)
         if not want_stay and no_transport:
             return []
@@ -1687,7 +1700,8 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
     low_id, ref = picked[-1]   # the cheapest variant with a private room (or «Дешевле» itself)
     if door:
         min_h = min(c.hours for c in private)
-        near = [c for c in private if c.hours <= min_h + rr["fastest_hours_tolerance"]]
+        tolerance = 0 if short_break(brief) else rr["fastest_hours_tolerance"]
+        near = [c for c in private if c.hours <= min_h + tolerance]
         base = min(c.rub for c in near) or 1
         fastest = max(near, key=lambda c: (round(c.comfort - rr["fastest_price_weight"] * (c.rub / base - 1), 6),
                                            -c.hours, -c.rub))
@@ -1729,6 +1743,7 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
         _center_card(picked, private, ref, brief, rr, limit)
     if dorm_cheapest and len(picked) > limit:   # the private-room cards go first; the fastest may give way
         picked = [pc for pc in picked if pc[0] != "fastest"] or picked
+    add_weekend_choice(picked, private, brief, rr, limit)
     picked = picked[:limit]
 
     # assemble
@@ -1777,6 +1792,50 @@ def build_variants(brief, results: dict, districts: dict, rules: dict, today, se
                     hotel=hotel, facts=f,
                     risks=risks, not_for=_not_for(c, f, brief, districts, rr))
         variants.append(v)
+    return refresh_variant_comparison(variants, brief, rules, segs)
+
+
+def refresh_variant_comparison(variants, brief, rules, segments=None, original_ids=None):
+    """Refresh comparisons after a timed quote changed a variant's price or journey."""
+    if not variants:
+        return variants
+    if original_ids is not None:
+        winners = {}
+        for label, metric in (("cheapest", "rub"), ("fastest", "door_to_door_hours")):
+            if label not in original_ids:
+                continue
+            named = next((v for v in variants if v.id == label), None)
+            best = min(variants, key=lambda v: getattr(v.totals, metric))
+            winners[label] = named if named is not None and getattr(named.totals, metric) == getattr(
+                best.totals, metric) else best
+        variants = [v for v in variants if v.id not in winners or any(v is winner for winner in winners.values())]
+        for label, winner in winners.items():
+            if label == "fastest" and winner is winners.get("cheapest"):
+                winner.facts["also_fastest"] = True
+            else:
+                winner.id, winner.title = label, TITLES[label]
+    rr = ranking_rules(rules)
+    segs = _segments(rules, segments)
+    if original_ids is not None:
+        variants = quoted_weekend_choices(variants, brief, rr)
+        if not variants:
+            return variants
+    min_rub = min(v.totals.rub for v in variants)
+    min_hours = min(v.totals.door_to_door_hours for v in variants)
+    for v in variants:
+        v.facts.update(total_rub=v.totals.rub, ref_min_rub=min_rub,
+                       delta_rub_vs_cheapest=v.totals.rub - min_rub)
+        if original_ids is not None:
+            if v.facts.get("also_fastest") and v.totals.door_to_door_hours > min_hours:
+                v.facts.pop("also_fastest")
+            also = [label for label in ("fastest", "comfort") if v.facts.get(f"also_{label}")]
+            if also:
+                v.facts["coincide_note"] = _coincide_text(v.id, also)
+            else:
+                v.facts.pop("coincide_note", None)
+        if "ref_min_hours" in v.facts:
+            v.facts.update(ref_min_hours=min_hours,
+                           delta_hours_vs_fastest=round(v.totals.door_to_door_hours - min_hours, 1))
     for v in variants:
         others = [{"id": o.id, "facts": o.facts} for o in variants if o.id != v.id]
         v.sacrifices = _sacrifices({"id": v.id, "facts": v.facts}, others, rr, brief)

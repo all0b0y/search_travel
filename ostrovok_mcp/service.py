@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from . import events, flights, hotels, insights, orders, quotes, trains, transfers
+from . import db, events, flights, hotels, insights, orders, quotes, trains, transfers
 from .contract import TOOL_NAMES, TOOLS
 from .db import ServiceError, reset_caches  # noqa: F401  (re-exported for callers and tests)
 
@@ -138,7 +138,8 @@ def call(tool: str, payload: dict) -> dict:
         raise ServiceError("unknown_tool", f"unknown tool {tool!r}")
     model_in, model_out = TOOLS[tool]
     req = model_in.model_validate(payload)
-    result = IMPL[tool](req)
+    with db.cache_source_keys():
+        result = IMPL[tool](req)
     return model_out.model_validate(result).model_dump(mode="json", by_alias=True)
 
 
