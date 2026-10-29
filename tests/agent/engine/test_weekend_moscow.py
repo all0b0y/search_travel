@@ -111,6 +111,9 @@ def test_weekend_api_accepts_the_complete_purchase_flow(live, tmp_path):
 
 @pytest.mark.parametrize("live", ["stage3", "stage5"], indirect=True)
 def test_weekend_cart_rebuild_uses_new_dates_budget_and_train(live):
+    from datetime import datetime, timezone
+    from agent.server import Api
+
     h = live
     _, variants = ask(h, "В Петербург вдвоем на две ночи с 20 ноября, до 60 тысяч",
                       **{"origin.city": "Москва", "destination.name": "Санкт-Петербург",
@@ -139,6 +142,28 @@ def test_weekend_cart_rebuild_uses_new_dates_budget_and_train(live):
     order_id = response["order"]["order_id"]
     response = h.act("pay", order_id=order_id)
     assert response["order"]["status"] == "paid" and response["order"]["total_rub"] == selected.totals.rub
+
+    api = Api(h.engine, debug=True, files_root=h.engine.files_dir)
+    downloaded = {}
+    for name, content_type in (("ics", "text/calendar"), ("page", "text/html")):
+        assert response["files"][name]
+        reply = api.dispatch("GET", response["files"][name])
+        assert reply.status == 200 and reply.content_type.startswith(content_type)
+        downloaded[name] = reply.data.decode("utf-8")
+    calendar = downloaded["ics"].replace("\r\n ", "")
+    assert calendar.count("BEGIN:VEVENT") == len(selected.steps)
+    for field, attribute in (("DTSTART", "start"), ("DTEND", "end")):
+        actual = [line for line in calendar.split("\r\n") if line.startswith(field + ":")]
+        expected = [field + ":" + datetime.fromisoformat(getattr(step, attribute)).astimezone(
+            timezone.utc).strftime("%Y%m%dT%H%M%SZ") for step in selected.steps]
+        assert actual == expected
+    for step in selected.steps:
+        assert step.offer_id in calendar and step.offer_id in downloaded["page"]
+        assert datetime.fromisoformat(step.start).strftime("%d.%m %H:%M") in downloaded["page"]
+        assert datetime.fromisoformat(step.end).strftime("%d.%m %H:%M") in downloaded["page"]
+    price = f"{selected.totals.rub:,}".replace(",", " ") + " ₽"
+    assert price in downloaded["page"]
+    assert '<b>3</b><span>ночей в отеле</span>' in downloaded["page"]
 
 
 @pytest.mark.parametrize("before", ["cart", "checkout"])
